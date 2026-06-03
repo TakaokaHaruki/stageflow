@@ -24,10 +24,6 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useTabNavigation } from "@/hooks/useTabNavigation";
 import { EVENT_MODE_REFETCH_INTERVAL, loadEventById } from "@/lib/eventLoader";
 
-const TIMELINE_STORAGE_KEY = "stageflow_timeline_enabled";
-const MAP_STORAGE_KEY = "stageflow_map_enabled";
-const TASKS_STORAGE_KEY = "stageflow_tasks_enabled";
-
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.2 } },
@@ -42,24 +38,12 @@ export default function EventDetail() {
   const { isAdmin, isChief, canEdit, canManageSettings, role } = useUserRole();
   const isPrivileged = isAdmin || isChief;
   const [currentUser, setCurrentUser] = useState(null);
-  
 
-  // Feature toggles (persisted in localStorage)
-  const [showTimeline, setShowTimeline] = useState(() => {
-    try { return localStorage.getItem(TIMELINE_STORAGE_KEY) === "true"; } catch { return false; }
-  });
-  const [showMap, setShowMap] = useState(() => {
-    try {
-      const v = localStorage.getItem(MAP_STORAGE_KEY);
-      return v === null ? false : v === "true";
-    } catch { return false; }
-  });
-  const [showTasks, setShowTasks] = useState(() => {
-    try {
-      const v = localStorage.getItem(TASKS_STORAGE_KEY);
-      return v === null ? true : v === "true";
-    } catch { return true; }
-  });
+  // Feature toggles (persisted in Event entity on server)
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [showTasks, setShowTasks] = useState(true);
+  const [featureFlagsLoaded, setFeatureFlagsLoaded] = useState(false);
 
   const canShowTimeline = Boolean(role) && showTimeline && role !== "user";
   const canShowMap = Boolean(role) && showMap;
@@ -67,17 +51,17 @@ export default function EventDetail() {
 
   const handleToggleTimeline = (val) => {
     setShowTimeline(val);
-    try { localStorage.setItem(TIMELINE_STORAGE_KEY, String(val)); } catch {}
+    base44.entities.Event.update(eventId, { show_timeline: val }).catch(() => {});
     if (!val && tab === "timeline") setTab("staff");
   };
   const handleToggleMap = (val) => {
     setShowMap(val);
-    try { localStorage.setItem(MAP_STORAGE_KEY, String(val)); } catch {}
+    base44.entities.Event.update(eventId, { show_map: val }).catch(() => {});
     if (!val && tab === "map") setTab("staff");
   };
   const handleToggleTasks = (val) => {
     setShowTasks(val);
-    try { localStorage.setItem(TASKS_STORAGE_KEY, String(val)); } catch {}
+    base44.entities.Event.update(eventId, { show_tasks: val }).catch(() => {});
     if (!val && tab === "tasks") setTab("staff");
   };
 
@@ -89,15 +73,30 @@ export default function EventDetail() {
     setTabResetKey((key) => key + 1);
   };
 
+  // イベントデータからfeature flagsを初期化（初回のみ）
   useEffect(() => {
+    if (!featureFlagsLoaded) return;
     if (role && !canShowTimeline && tab === "timeline") setTab("staff", { replace: true, reset: true });
     if (role && !canShowMap && tab === "map") setTab("staff", { replace: true, reset: true });
     if (role && !canShowTasks && tab === "tasks") setTab("staff", { replace: true, reset: true });
-  }, [role, canShowTimeline, canShowMap, canShowTasks, tab, setTab]);
+  }, [role, canShowTimeline, canShowMap, canShowTasks, tab, setTab, featureFlagsLoaded]);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
+
+  // イベントのfeature flagsをサーバーから読み込む（初回のみ）
+  useEffect(() => {
+    if (featureFlagsLoaded) return;
+    base44.entities.Event.filter({ id: eventId }).then((events) => {
+      const ev = events?.[0];
+      if (!ev) return;
+      setShowTimeline(ev.show_timeline ?? false);
+      setShowMap(ev.show_map ?? false);
+      setShowTasks(ev.show_tasks !== false); // デフォルトtrue
+      setFeatureFlagsLoaded(true);
+    }).catch(() => { setFeatureFlagsLoaded(true); });
+  }, [eventId, featureFlagsLoaded]);
 
   const { data: event, isLoading, refetch: refetchEvent } = useQuery({
     queryKey: ["event", eventId],

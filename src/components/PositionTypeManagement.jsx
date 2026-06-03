@@ -36,8 +36,6 @@ export default function PositionTypeManagement({ eventId, showTimeline = false, 
   const { canEdit: isAdmin } = useUserRole();
   const { isDark, setIsDark } = useTheme();
 
-  const debugStorageKey = `stageflow:debug-enabled:${eventId}`;
-
   const { data: rawPositionTypes = [], isLoading } = useQuery({
     queryKey: ["positionTypes"],
     queryFn: () => base44.entities.PositionType.list(),
@@ -73,16 +71,10 @@ export default function PositionTypeManagement({ eventId, showTimeline = false, 
   });
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(debugStorageKey);
-    setLocalDebugEnabled(saved === null ? null : saved === "true");
-  }, [debugStorageKey]);
-
-  useEffect(() => {
-    if (window.localStorage.getItem(debugStorageKey) === null && typeof event?.debug_enabled === "boolean") {
+    if (typeof event?.debug_enabled === "boolean" && localDebugEnabled === null) {
       setLocalDebugEnabled(event.debug_enabled);
-      window.localStorage.setItem(debugStorageKey, String(event.debug_enabled));
     }
-  }, [debugStorageKey, event?.debug_enabled]);
+  }, [event?.debug_enabled, localDebugEnabled]);
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.PositionType.create(data),
@@ -115,7 +107,6 @@ export default function PositionTypeManagement({ eventId, showTimeline = false, 
     onMutate: async (debug_enabled) => {
       const previousLocalDebugEnabled = localDebugEnabled;
       setLocalDebugEnabled(debug_enabled);
-      window.localStorage.setItem(debugStorageKey, String(debug_enabled));
       await queryClient.cancelQueries({ queryKey: ["event", eventId] });
       const previousEvent = queryClient.getQueryData(["event", eventId]);
       queryClient.setQueryData(["event", eventId], (old) => {
@@ -130,13 +121,11 @@ export default function PositionTypeManagement({ eventId, showTimeline = false, 
       const previousDebugEnabled = context?.previousLocalDebugEnabled ??
         Boolean(context?.previousEvent?.[0]?.debug_enabled ?? context?.previousEvent?.debug_enabled);
       setLocalDebugEnabled(previousDebugEnabled);
-      window.localStorage.setItem(debugStorageKey, String(previousDebugEnabled));
       queryClient.setQueryData(["event", eventId], context?.previousEvent);
       toast.error("デバッグ設定の保存に失敗しました");
     },
     onSuccess: (_, debug_enabled) => {
       setLocalDebugEnabled(debug_enabled);
-      window.localStorage.setItem(debugStorageKey, String(debug_enabled));
       toast.success(debug_enabled ? "デバッグ機能をONにしました" : "デバッグ機能をOFFにしました");
     },
   });

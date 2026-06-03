@@ -2,21 +2,22 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Download, Loader2, CheckCircle2, AlertCircle, ChevronLeft, RotateCcw } from "lucide-react";
+import { X, Download, Loader2, CheckCircle2, AlertCircle, ChevronLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { unwrapFunctionResponse } from "@/lib/base44Response";
 
 export default function StaffScrapeModal({ eventId, onClose }) {
-  const [savedUrl, setSavedUrl] = useState("");
+  const [urlHistory, setUrlHistory] = useState([]);
   const [url, setUrl] = useState("");
 
-  // サーバーからイベントのscrape_urlを取得
+  // サーバーからイベントのscrape_url履歴を取得
   useEffect(() => {
     base44.entities.Event.filter({ id: eventId }).then((events) => {
-      const scrapeUrl = events?.[0]?.scrape_url || "";
-      setSavedUrl(scrapeUrl);
-      setUrl(scrapeUrl);
+      const ev = events?.[0];
+      const history = ev?.scrape_url_history || (ev?.scrape_url ? [ev.scrape_url] : []);
+      setUrlHistory(history);
+      setUrl(history[0] || "");
     }).catch(() => {});
   }, [eventId]);
   const [loading, setLoading] = useState(false);
@@ -44,8 +45,10 @@ export default function StaffScrapeModal({ eventId, onClose }) {
     const fetchedExistingNames = new Set((existingRes?.data?.staff ?? []).map((s) => s.name));
     setExistingNames(fetchedExistingNames);
 
-    base44.entities.Event.update(eventId, { scrape_url: url.trim() }).catch(() => {});
-    setSavedUrl(url.trim());
+    const trimmedUrl = url.trim();
+    const nextHistory = [trimmedUrl, ...urlHistory.filter((u) => u !== trimmedUrl)].slice(0, 10);
+    base44.entities.Event.update(eventId, { scrape_url: trimmedUrl, scrape_url_history: nextHistory }).catch(() => {});
+    setUrlHistory(nextHistory);
     const res = await base44.functions.invoke("scrapeStaffNames", { url: url.trim(), eventId });
     const data = unwrapFunctionResponse(res);
     if (data.error) {
@@ -158,23 +161,21 @@ export default function StaffScrapeModal({ eventId, onClose }) {
                     if (e.key === "Enter" && !e.nativeEvent.isComposing) handleFetch();
                   }}
                 />
-                {savedUrl && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="shrink-0 gap-1 h-8 px-2 text-xs"
-                    onClick={() => setUrl(savedUrl)}
-                    title="前回のURLを再使用"
-                  >
-                    <RotateCcw className="w-3 h-3" />再使用
-                  </Button>
-                )}
               </div>
-              {savedUrl && (
-                <p className="text-[11px] text-muted-foreground mt-1 truncate">
-                  前回: <span className="font-medium text-foreground">{savedUrl}</span>
-                </p>
-              )}
+            {urlHistory.length > 0 && (
+              <div className="mt-2 space-y-1">
+                <p className="text-[11px] text-muted-foreground font-medium">履歴</p>
+                {urlHistory.map((u, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setUrl(u)}
+                    className={`w-full text-left text-[11px] px-2 py-1 rounded-lg border transition-colors truncate ${url === u ? "border-primary bg-primary/5 text-primary" : "border-border hover:bg-muted text-muted-foreground"}`}
+                  >
+                    {u}
+                  </button>
+                ))}
+              </div>
+            )}
               <p className="text-[11px] text-muted-foreground mt-1">
                 A-CAST 点呼表からスタッフリストを取得します。電話番号などの情報は収集しません。
               </p>

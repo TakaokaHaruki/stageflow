@@ -44,6 +44,29 @@
     "scrape_url": {
       "type": "string",
       "description": "\u70b9\u547c\u8868\u53d6\u5f97URL\uff08\u6700\u5f8c\u306b\u4f7f\u7528\u3057\u305fURL\uff09"
+    },
+    "scrape_url_history": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "\u70b9\u547c\u8868\u53d6\u5f97URL\u306e\u5c65\u6b74\u30ea\u30b9\u30c8"
+    },
+    "show_timeline": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u30bf\u30a4\u30e0\u30e9\u30a4\u30f3\u6a5f\u80fd\u306e\u8868\u793a\u30d5\u30e9\u30b0"
+    },
+    "show_map": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u4f1a\u5834\u30de\u30c3\u30d7\u6a5f\u80fd\u306e\u8868\u793a\u30d5\u30e9\u30b0"
+    },
+    "show_tasks": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u30c1\u30a7\u30c3\u30af\u30ea\u30b9\u30c8\u6a5f\u80fd\u306e\u8868\u793a\u30d5\u30e9\u30b0"
     }
   },
   "required": [
