@@ -19,5 +19,11 @@
   "required": [
     "group_id",
     "group_name"
-  ]
+  ],
+  "rls": {
+    "create": false,
+    "read": true,
+    "update": false,
+    "delete": true
+  }
 }
