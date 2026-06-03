@@ -1,4 +1,4 @@
-import { Users, Map, Clock, Megaphone, ClipboardList, Settings, CheckSquare } from "lucide-react";
+import { Users, Map, Clock, Megaphone, ClipboardList, Settings, CheckSquare, ShieldCheck } from "lucide-react";
 
 const ALL_TABS = [
   { id: "staff", label: "スタッフ", icon: Users },
@@ -7,7 +7,8 @@ const ALL_TABS = [
   { id: "timeline", label: "タイムライン", icon: Clock },
   { id: "notice", label: "連絡事項", icon: Megaphone },
   { id: "tasks", label: "チェックリスト", icon: CheckSquare },
-  { id: "admin", label: "管理者設定", icon: Settings },
+  { id: "admin", label: "管理者設定", icon: ShieldCheck },
+  { id: "settings", label: "管理設定", icon: Settings },
 ];
 
 export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset, showTimeline = false, showMap = false, showTasks = true, isPrivileged = true }) {
@@ -16,6 +17,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
     if (t.id === "map" && !showMap) return false;
     if (t.id === "tasks" && !showTasks) return false;
     if (!isPrivileged && t.id === "admin") return false;
+    if (!isPrivileged && t.id === "settings") return false;
     return true;
   });
 

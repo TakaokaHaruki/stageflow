@@ -1,0 +1,67 @@
+import { MessageCircle, MapPin, CheckSquare, Clock } from "lucide-react";
+import LineNotifySettings from "@/components/LineNotifySettings";
+
+export default function AdminSettings({
+  eventId,
+  event,
+  showTimeline,
+  onToggleTimeline,
+  showMap,
+  onToggleMap,
+  showTasks,
+  onToggleTasks,
+}) {
+  const featureToggles = [
+    {
+      icon: MapPin,
+      label: "会場マップ機能",
+      desc: "会場マップタブを表示します",
+      value: showMap,
+      onToggle: onToggleMap,
+    },
+    {
+      icon: CheckSquare,
+      label: "チェックリスト機能",
+      desc: "チェックリストタブを表示します",
+      value: showTasks,
+      onToggle: onToggleTasks,
+    },
+    {
+      icon: Clock,
+      label: "タイムライン機能",
+      desc: "スタッフの時間軸表示を有効にします（管理者・チーフのみ）",
+      value: showTimeline,
+      onToggle: onToggleTimeline,
+    },
+  ];
+
+  return (
+    <div>
+      <h2 className="text-sm font-bold mb-3">管理者設定</h2>
+
+      {/* Feature toggles */}
+      <div className="space-y-2 mb-3">
+        {featureToggles.map(({ icon: Icon, label, desc, value, onToggle }) => (
+          <div key={label} className="bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Icon className="w-4 h-4 text-primary shrink-0" />
+              <div>
+                <p className="text-xs font-semibold">{label}</p>
+                <p className="text-[10px] text-muted-foreground">{desc}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => onToggle && onToggle(!value)}
+              className={`relative w-10 h-6 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0 ${value ? "bg-primary" : "bg-muted-foreground/30"}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${value ? "translate-x-4" : "translate-x-0"}`} />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* LINE notify */}
+      <LineNotifySettings eventId={eventId} event={event} />
+    </div>
+  );
+}

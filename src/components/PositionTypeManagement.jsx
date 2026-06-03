@@ -4,10 +4,9 @@ import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Settings, Moon, Sun, GripVertical, Clock, Bug, Wand2, Loader2, AlertTriangle, MapPin, CheckSquare } from "lucide-react";
+import { Plus, Trash2, Settings, Moon, Sun, GripVertical, Bug, Wand2, Loader2, AlertTriangle } from "lucide-react";
 import MapTemplateManagement from "@/components/MapTemplateManagement";
 import PositionPresetManager from "@/components/PositionPresetManager";
-import LineNotifySettings from "@/components/LineNotifySettings";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useTheme } from "@/lib/ThemeProvider";
 import { unwrapFunctionResponse } from "@/lib/base44Response";
@@ -25,7 +24,7 @@ const PRESET_COLORS = [
   "#ef4444", "#8b5cf6", "#06b6d4", "#f97316",
 ];
 
-export default function PositionTypeManagement({ eventId, showTimeline = false, onToggleTimeline, showMap = false, onToggleMap, showTasks = true, onToggleTasks }) {
+export default function PositionTypeManagement({ eventId }) {
   const [name, setName] = useState("");
   const [color, setColor] = useState(PRESET_COLORS[0]);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -267,31 +266,6 @@ export default function PositionTypeManagement({ eventId, showTimeline = false, 
         </button>
       </div>
 
-      {/* Feature toggles */}
-      <div className="space-y-2 mb-3">
-        {[
-          { icon: MapPin, label: "会場マップ機能", desc: "会場マップタブを表示します", value: showMap, onToggle: onToggleMap },
-          { icon: CheckSquare, label: "チェックリスト機能", desc: "チェックリストタブを表示します", value: showTasks, onToggle: onToggleTasks },
-          { icon: Clock, label: "タイムライン機能", desc: "スタッフの時間軸表示を有効にします（管理者・チーフのみ）", value: showTimeline, onToggle: onToggleTimeline },
-        ].map(({ icon: Icon, label, desc, value, onToggle }) => (
-          <div key={label} className="bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Icon className="w-4 h-4 text-primary shrink-0" />
-              <div>
-                <p className="text-xs font-semibold">{label}</p>
-                <p className="text-[10px] text-muted-foreground">{desc}</p>
-              </div>
-            </div>
-            <button
-              onClick={() => onToggle && onToggle(!value)}
-              className={`relative w-10 h-6 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0 ${value ? "bg-primary" : "bg-muted-foreground/30"}`}
-            >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${value ? "translate-x-4" : "translate-x-0"}`} />
-            </button>
-          </div>
-        ))}
-      </div>
-
       {/* Debug tools */}
       <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-3 mb-3 shadow-sm dark:bg-amber-950/40 dark:border-amber-500">
         <div className="flex items-center justify-between gap-3">
@@ -424,7 +398,6 @@ export default function PositionTypeManagement({ eventId, showTimeline = false, 
       )}
 
       <div className="border-t border-border my-3" />
-      <LineNotifySettings eventId={eventId} event={event} />
       <PositionPresetManager eventId={eventId} />
       <MapTemplateManagement eventId={eventId} />
     </div>

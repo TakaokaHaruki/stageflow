@@ -3,11 +3,12 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, User, LogOut, Users, ClipboardList, MapPin, Clock, Bell, Settings, CheckSquare, LogIn } from "lucide-react";
+import { ChevronLeft, User, LogOut, Users, ClipboardList, MapPin, Clock, Bell, Settings, CheckSquare, LogIn, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import VenueMap from "@/components/VenueMap";
 import StaffManagement from "@/components/StaffManagement";
 import PositionTypeManagement from "@/components/PositionTypeManagement";
+import AdminSettings from "@/components/AdminSettings";
 import StaffTimeline from "@/components/StaffTimeline";
 import AnnouncementManager from "@/components/AnnouncementManager";
 import TaskChecklist from "@/components/TaskChecklist";
@@ -126,7 +127,8 @@ export default function EventDetail() {
     ...(canShowTimeline ? [{ id: "timeline", label: "タイムライン", icon: Clock }] : []),
     { id: "notice", label: "連絡事項", icon: Bell },
     ...(canShowTasks ? [{ id: "tasks", label: "チェックリスト", icon: CheckSquare }] : []),
-    ...(isPrivileged ? [{ id: "admin", label: "管理者設定", icon: Settings }] : []),
+    ...(isPrivileged ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
+    ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ];
 
   return (
@@ -220,8 +222,9 @@ export default function EventDetail() {
             {tab === "staff" && <StaffManagement eventId={eventId} />}
             {tab === "dragdrop" && <StaffDragDropManager eventId={eventId} />}
             {tab === "admin" && (
-              <PositionTypeManagement
+              <AdminSettings
                 eventId={eventId}
+                event={event}
                 showTimeline={showTimeline}
                 onToggleTimeline={handleToggleTimeline}
                 showMap={showMap}
@@ -230,6 +233,7 @@ export default function EventDetail() {
                 onToggleTasks={handleToggleTasks}
               />
             )}
+            {tab === "settings" && <PositionTypeManagement eventId={eventId} />}
             {tab === "map" && canShowMap && (
               <ErrorBoundary resetKey={`${eventId}:map`} label="VenueMap" title="会場マップを表示できませんでした">
                 <VenueMap eventId={eventId} />
