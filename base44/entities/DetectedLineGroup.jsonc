@@ -1,0 +1,23 @@
+{
+  "name": "DetectedLineGroup",
+  "type": "object",
+  "properties": {
+    "group_id": {
+      "type": "string",
+      "description": "LINE\u30b0\u30eb\u30fc\u30d7ID"
+    },
+    "group_name": {
+      "type": "string",
+      "description": "LINE\u30b0\u30eb\u30fc\u30d7\u540d"
+    },
+    "detected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u691c\u77e5\u65e5\u6642"
+    }
+  },
+  "required": [
+    "group_id",
+    "group_name"
+  ]
+}
