@@ -226,7 +226,7 @@ export default function StaffManagement({ eventId }) {
             onClick={() => canUseEditTools && setShowScrapeModal(true)}
             disabled={!canUseEditTools}
           >
-            <Download className="w-3 h-3" />A-CAST取得
+            <Download className="w-3 h-3" />点呼表から取得
           </Button>
         </div>
       </div>

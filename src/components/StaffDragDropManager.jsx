@@ -568,7 +568,7 @@ export default function StaffDragDropManager({ eventId }) {
           <span className="font-bold text-xs">スタッフ一覧</span>
           <span className="text-[10px] text-muted-foreground">{staffList.length}名</span>
         </div>
-        <div className="bg-card sm:grid sm:grid-cols-3 sm:divide-y-0 divide-y divide-border sm:[&>*]:border-b sm:[&>*]:border-border/50">
+        <div className="bg-card sm:grid sm:grid-cols-3 divide-y divide-border">
           {staffList.length === 0 ? (
             <p className="text-[11px] text-muted-foreground text-center py-3">スタッフが登録されていません</p>
           ) : (

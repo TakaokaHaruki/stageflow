@@ -181,7 +181,7 @@ export default function EventDetail() {
         </div>
 
         {/* Desktop tab bar */}
-        <div className="hidden sm:block border-t border-border">
+        <div className="hidden sm:block border-t border-border sticky top-0 z-50 bg-card">
           <div className="max-w-6xl mx-auto px-3">
             <div className="flex gap-3 overflow-x-auto scrollbar-hide">
               {desktopTabs.map(({ id, label, icon: Icon }) => (
