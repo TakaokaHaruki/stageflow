@@ -31,7 +31,7 @@ export default function Events() {
   const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ["events"],
     queryFn: () => base44.entities.Event.list("-created_date"),
-    refetchInterval: LIVE_SYNC_INTERVAL,
+    refetchInterval: LIVE_SYNC_INTERVAL
   });
 
   const { isPulling, pullDistance } = usePullToRefresh(async () => {
@@ -94,8 +94,8 @@ export default function Events() {
         {/* Row 1: Title */}
         <div className="mb-1">
           <h1 className="text-base font-bold text-foreground tracking-tight">イベント一覧</h1>
-          <p className="text-muted-foreground text-xs">イベント・コンサートの配置管理を行うアプリケーションです
-スマートフォンやタブレット、パソコンからご利用いただけます</p>
+          <p className="text-muted-foreground text-xs">A-CAST社員の方、各チーフの方はログインボタンより
+            </p>
         </div>
         {/* Row 2: New button + Account */}
         <div className="flex items-center justify-between gap-1.5">
@@ -114,9 +114,9 @@ export default function Events() {
               <div className="ml-1 flex gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                 <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
                 <button
-                onClick={() => setConfirmDeleteAccount(true)}
-                className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none"
-                title="アカウント削除">
+                  onClick={() => setConfirmDeleteAccount(true)}
+                  className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none"
+                  title="アカウント削除">
                 <Trash2 className="w-3 h-3" />
                 </button>
                 <button
@@ -127,8 +127,8 @@ export default function Events() {
                   <LogOut className="w-3 h-3" />
                 </button>
               </div>
-            </div>
-            : <Button size="sm" variant="outline" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => base44.auth.redirectToLogin(window.location.href)}>
+            </div> :
+            <Button size="sm" variant="outline" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => base44.auth.redirectToLogin(window.location.href)}>
                 <LogIn className="w-3 h-3" />ログイン
               </Button>
             }
@@ -190,8 +190,8 @@ export default function Events() {
                        <Pencil className="w-3 h-3" />
                      </button>
                      <button
-                     onClick={(e) => handleDelete(e, event.id, event.name)}
-                     disabled={!canEdit}
+                  onClick={(e) => handleDelete(e, event.id, event.name)}
+                  disabled={!canEdit}
                   className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none">
                   
                        <Trash2 className="w-3 h-3" />
@@ -205,28 +205,28 @@ export default function Events() {
         }
       </div>
 
-      {confirmDeleteEvent && (
-        <ConfirmDialog
-          message={`「${confirmDeleteEvent.name}」を削除しますか？`}
-          confirmLabel="削除"
-          confirmVariant="destructive"
-          onConfirm={() => {
-            deleteMutation.mutate(confirmDeleteEvent.id);
-            setConfirmDeleteEvent(null);
-          }}
-          onCancel={() => setConfirmDeleteEvent(null)}
-        />
-      )}
+      {confirmDeleteEvent &&
+      <ConfirmDialog
+        message={`「${confirmDeleteEvent.name}」を削除しますか？`}
+        confirmLabel="削除"
+        confirmVariant="destructive"
+        onConfirm={() => {
+          deleteMutation.mutate(confirmDeleteEvent.id);
+          setConfirmDeleteEvent(null);
+        }}
+        onCancel={() => setConfirmDeleteEvent(null)} />
 
-      {confirmDeleteAccount && (
-        <ConfirmDialog
-          message={"アカウントを削除しますか？\nこの操作は取り消せません。"}
-          confirmLabel="削除する"
-          confirmVariant="destructive"
-          onConfirm={() => { setConfirmDeleteAccount(false); handleDeleteAccount(); }}
-          onCancel={() => setConfirmDeleteAccount(false)}
-        />
-      )}
+      }
+
+      {confirmDeleteAccount &&
+      <ConfirmDialog
+        message={"アカウントを削除しますか？\nこの操作は取り消せません。"}
+        confirmLabel="削除する"
+        confirmVariant="destructive"
+        onConfirm={() => {setConfirmDeleteAccount(false);handleDeleteAccount();}}
+        onCancel={() => setConfirmDeleteAccount(false)} />
+
+      }
 
       {showModal &&
       <EventFormModal
