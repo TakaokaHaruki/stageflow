@@ -94,7 +94,7 @@ export default function Events() {
         {/* Row 1: Title */}
         <div className="mb-1">
           <h1 className="text-base font-bold text-foreground tracking-tight">イベント一覧</h1>
-          <p className="text-muted-foreground text-xs">A-CAST社員の方、各チーフの方はログインボタンより会員登録を行い、システム管理者へ
+          <p className="text-muted-foreground text-xs">A-CAST社員の方、各チーフの方はログインボタンより会員登録を行い、システム管理者へその旨お伝えください。
             </p>
         </div>
         {/* Row 2: New button + Account */}
