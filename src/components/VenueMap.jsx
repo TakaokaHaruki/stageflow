@@ -287,6 +287,8 @@ export default function VenueMap({ eventId }) {
   const [slotFilter, setSlotFilter] = useState(TIME_SLOTS[0]);
   const [draggingPin, setDraggingPin] = useState(null);
   const [tooltip, setTooltip] = useState(null);
+  const [touchDragging, setTouchDragging] = useState(null); // { pin, x, y } for active touch drag
+  const touchDragRef = useRef(null);
   const [uploadingPDF, setUploadingPDF] = useState(false);
   const [loadingPDF, setLoadingPDF] = useState(false);
   const [pdfError, setPdfError] = useState("");
@@ -374,6 +376,19 @@ export default function VenueMap({ eventId }) {
   useEffect(() => {
     setImageLoadError(false);
   }, [effectiveMapImageUrl]);
+
+  // Register non-passive touchmove on map container to allow preventDefault during pin drag
+  useEffect(() => {
+    const el = mapRef.current;
+    if (!el) return;
+    const onTouchMove = (e) => {
+      if (touchDragRef.current?.moved !== undefined) {
+        e.preventDefault();
+      }
+    };
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    return () => el.removeEventListener("touchmove", onTouchMove);
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -467,6 +482,38 @@ export default function VenueMap({ eventId }) {
     const { x, y } = getMapCoords(touch.clientX, touch.clientY);
     placePin(draggingPin, x, y);
   };
+
+  // Touch drag handlers for pins already on the map
+  const handlePinTouchStart = useCallback((e, pos) => {
+    if (!canUseEditTools) return;
+    e.stopPropagation();
+    const touch = e.touches[0];
+    touchDragRef.current = { pin: pos, startX: touch.clientX, startY: touch.clientY, moved: false };
+    setTouchDragging({ pin: pos, x: touch.clientX, y: touch.clientY });
+  }, [canUseEditTools]);
+
+  const handlePinTouchMove = useCallback((e) => {
+    if (!touchDragRef.current) return;
+    e.preventDefault(); // block page scroll
+    const touch = e.touches[0];
+    touchDragRef.current.moved = true;
+    setTouchDragging((prev) => prev ? { ...prev, x: touch.clientX, y: touch.clientY } : null);
+  }, []);
+
+  const handlePinTouchEnd = useCallback((e) => {
+    if (!touchDragRef.current || !mapRef.current) {
+      touchDragRef.current = null;
+      setTouchDragging(null);
+      return;
+    }
+    const { pin, moved } = touchDragRef.current;
+    touchDragRef.current = null;
+    setTouchDragging(null);
+    if (!moved) return; // treat as tap, not drag
+    const touch = e.changedTouches[0];
+    const { x, y } = getMapCoords(touch.clientX, touch.clientY);
+    placePin(pin, x, y);
+  }, [getMapCoords, placePin]);
 
   const handleMapFileUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -611,8 +658,35 @@ export default function VenueMap({ eventId }) {
     }
   };
 
+  // Floating touch-drag ghost rendered at finger position (fixed overlay)
+  const touchGhost = touchDragging && (
+    <div
+      className="fixed z-[9999] pointer-events-none"
+      style={{
+        left: touchDragging.x,
+        top: touchDragging.y,
+        transform: "translate(-50%, -50%) scale(1.2)",
+        filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.35))",
+        transition: "transform 0.05s",
+      }}
+    >
+      <div className="flex flex-col items-center">
+        <span
+          className="w-7 h-7 rounded-full border-2 border-white shadow-2xl flex items-center justify-center text-white text-[10px] font-bold"
+          style={{ backgroundColor: getPinColor(touchDragging.pin) }}
+        >
+          {(touchDragging.pin.name || "?").charAt(0)}
+        </span>
+        <span className="mt-0.5 max-w-[96px] rounded bg-white/95 px-1 py-0.5 text-center text-[9px] font-medium leading-tight shadow">
+          <span className="block truncate">{touchDragging.pin.name}</span>
+        </span>
+      </div>
+    </div>
+  );
+
   return (
     <div>
+      {touchGhost}
       <div className="flex flex-col gap-1.5 mb-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1 min-w-0">
           <h2 className="text-sm font-bold flex items-center gap-1.5"><Map className="w-4 h-4 text-primary" />会場マップ</h2>
@@ -692,7 +766,7 @@ export default function VenueMap({ eventId }) {
         ))}
       </div>
 
-      {draggingPin && (
+      {draggingPin && !touchDragging && (
         <div className="mb-2 rounded-lg bg-primary/10 px-3 py-2 text-xs text-primary flex items-center gap-2">
           <Move className="w-3.5 h-3.5 shrink-0" />
           「{draggingPin.name}」をPDF上の配置したい場所にクリック、またはドラッグしてください。
@@ -776,24 +850,38 @@ export default function VenueMap({ eventId }) {
 
               {pinsOnMap.map((pos) => {
                 const isActive = tooltip?.id === pos.id;
+                const isTouchDragged = touchDragging?.pin?.id === pos.id;
+                // During touch drag, render the ghost at finger position
+                const pinStyle = isTouchDragged
+                  ? {
+                      left: `${pos.map_x}%`,
+                      top: `${pos.map_y}%`,
+                      transform: "translate(-50%, -50%)",
+                      opacity: 0.35,
+                      pointerEvents: "none",
+                    }
+                  : {
+                      left: `${pos.map_x}%`,
+                      top: `${pos.map_y}%`,
+                      transform: "translate(-50%, -50%)",
+                    };
                 return (
                   <div
                     key={pos.id}
                     className="absolute z-20"
-                    style={{
-                      left: `${pos.map_x}%`,
-                      top: `${pos.map_y}%`,
-                      transform: "translate(-50%, -50%)",
-                    }}
+                    style={pinStyle}
                   >
                     <button
                       draggable={canUseEditTools}
                       onDragStart={(e) => handlePinDragStart(e, pos)}
+                      onTouchStart={(e) => handlePinTouchStart(e, pos)}
+                      onTouchMove={handlePinTouchMove}
+                      onTouchEnd={handlePinTouchEnd}
                       onClick={(e) => {
                         e.stopPropagation();
                         setTooltip(isActive ? null : pos);
                       }}
-                      className={`flex flex-col items-center select-none ${canUseEditTools ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"}`}
+                      className={`flex flex-col items-center select-none touch-none ${canUseEditTools ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"}`}
                     >
                       <span
                         className="w-5 h-5 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-[9px] font-bold"
