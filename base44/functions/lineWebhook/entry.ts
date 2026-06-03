@@ -1,28 +1,24 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-Deno.serve(async (req) => {
-  try {
-    const base44 = createClientFromRequest(req);
-    const body = await req.json();
+async function processEvents(req, events) {
+  const base44 = createClientFromRequest(req);
+  const token = Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN');
 
-    const events = body.events ?? [];
+  for (const event of events) {
+    if (
+      event.type !== 'message' ||
+      event.message?.type !== 'text' ||
+      event.source?.type !== 'group'
+    ) continue;
 
-    for (const event of events) {
-      // グループ内のメッセージイベントのみ処理
-      if (
-        event.type !== 'message' ||
-        event.message?.type !== 'text' ||
-        event.source?.type !== 'group'
-      ) continue;
+    const text = event.message.text?.trim();
+    if (text !== '登録') continue;
 
-      const text = event.message.text?.trim();
-      if (text !== '登録') continue;
+    const groupId = event.source.groupId;
+    if (!groupId) continue;
 
-      const groupId = event.source.groupId;
-      if (!groupId) continue;
-
-      const token = Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN');
-      let groupName = groupId; // fallback
+    try {
+      let groupName = groupId;
 
       if (token) {
         const summaryRes = await fetch(`https://api.line.me/v2/bot/group/${groupId}/summary`, {
@@ -36,7 +32,6 @@ Deno.serve(async (req) => {
 
       const detectedAt = new Date(event.timestamp).toISOString();
 
-      // upsert: 既存のgroup_idがあれば更新、なければ作成
       const existing = await base44.asServiceRole.entities.DetectedLineGroup.filter({ group_id: groupId });
       if (existing && existing.length > 0) {
         await base44.asServiceRole.entities.DetectedLineGroup.update(existing[0].id, {
@@ -50,10 +45,23 @@ Deno.serve(async (req) => {
           detected_at: detectedAt,
         });
       }
+    } catch (err) {
+      console.error(`Failed to process group ${groupId}:`, err.message);
     }
-
-    return Response.json({ ok: true });
-  } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
   }
+}
+
+Deno.serve(async (req) => {
+  let events = [];
+  try {
+    const body = await req.json();
+    events = body.events ?? [];
+  } catch (_) {
+    // bodyのパース失敗でも200を返す
+  }
+
+  // fire-and-forget: 即座に200を返し、バックグラウンドで処理
+  processEvents(req, events).catch((err) => console.error('processEvents error:', err.message));
+
+  return Response.json({ ok: true });
 });
