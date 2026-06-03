@@ -63,6 +63,6 @@
     "create": false,
     "read": true,
     "update": false,
-    "delete": false
+    "delete": true
   }
 }
