@@ -7,7 +7,7 @@ const ALL_TABS = [
   { id: "timeline", label: "タイムライン", icon: Clock },
   { id: "notice", label: "連絡事項", icon: Megaphone },
   { id: "tasks", label: "チェックリスト", icon: CheckSquare },
-  { id: "admin", label: "管理", icon: Settings },
+  { id: "admin", label: "管理者設定", icon: Settings },
 ];
 
 export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset, showTimeline = false, showMap = false, showTasks = true, isPrivileged = true }) {

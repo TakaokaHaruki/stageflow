@@ -126,7 +126,7 @@ export default function EventDetail() {
     ...(canShowTimeline ? [{ id: "timeline", label: "タイムライン", icon: Clock }] : []),
     { id: "notice", label: "連絡事項", icon: Bell },
     ...(canShowTasks ? [{ id: "tasks", label: "チェックリスト", icon: CheckSquare }] : []),
-    ...(isPrivileged ? [{ id: "admin", label: "管理", icon: Settings }] : []),
+    ...(isPrivileged ? [{ id: "admin", label: "管理者設定", icon: Settings }] : []),
   ];
 
   return (
