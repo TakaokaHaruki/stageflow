@@ -1,7 +1,7 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest, createClient } from 'npm:@base44/sdk@0.8.31';
 
-async function processEvents(req, events) {
-  const base44 = createClientFromRequest(req);
+async function processEvents(events) {
+  const base44 = createClient({ serviceRoleKey: Deno.env.get('BASE44_APP_ID') });
   const token = Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN');
 
   for (const event of events) {
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
   }
 
   // fire-and-forget: 即座に200を返し、バックグラウンドで処理
-  processEvents(req, events).catch((err) => console.error('processEvents error:', err.message));
+  processEvents(events).catch((err) => console.error('processEvents error:', err.message));
 
   return Response.json({ ok: true });
 });
