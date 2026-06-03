@@ -67,6 +67,15 @@
       "type": "boolean",
       "default": true,
       "description": "\u30c1\u30a7\u30c3\u30af\u30ea\u30b9\u30c8\u6a5f\u80fd\u306e\u8868\u793a\u30d5\u30e9\u30b0"
+    },
+    "line_notify_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "LINE\u901a\u77e5\u306e\u6709\u52b9\u30d5\u30e9\u30b0"
+    },
+    "line_group_id": {
+      "type": "string",
+      "description": "LINE\u901a\u77e5\u5148\u30b0\u30eb\u30fc\u30d7ID"
     }
   },
   "required": [

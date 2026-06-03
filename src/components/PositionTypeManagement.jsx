@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Trash2, Settings, Moon, Sun, GripVertical, Clock, Bug, Wand2, Loader2, AlertTriangle, MapPin, CheckSquare } from "lucide-react";
 import MapTemplateManagement from "@/components/MapTemplateManagement";
 import PositionPresetManager from "@/components/PositionPresetManager";
+import LineNotifySettings from "@/components/LineNotifySettings";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useTheme } from "@/lib/ThemeProvider";
 import { unwrapFunctionResponse } from "@/lib/base44Response";
@@ -423,6 +424,7 @@ export default function PositionTypeManagement({ eventId, showTimeline = false, 
       )}
 
       <div className="border-t border-border my-3" />
+      <LineNotifySettings eventId={eventId} event={event} />
       <PositionPresetManager eventId={eventId} />
       <MapTemplateManagement eventId={eventId} />
     </div>

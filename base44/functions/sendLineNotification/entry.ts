@@ -17,12 +17,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No announcement data' }, { status: 400 });
     }
 
+    const eventId = announcement.event_id;
+    if (!eventId) {
+      return Response.json({ skipped: true, reason: 'No event_id' });
+    }
+
+    // Fetch event to check LINE notify settings
+    const events = await base44.asServiceRole.entities.Event.filter({ id: eventId });
+    const event = events?.[0];
+
+    if (!event?.line_notify_enabled || !event?.line_group_id) {
+      console.log(`LINE notification skipped for event ${eventId}: notify disabled or no group ID`);
+      return Response.json({ skipped: true, reason: 'LINE notify disabled or no group ID' });
+    }
+
     const token = Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN');
-    const groupId = Deno.env.get('LINE_GROUP_ID');
+    const groupId = event.line_group_id;
     const baseUrl = Deno.env.get('APP_BASE_URL') || '';
 
-    if (!token || !groupId) {
-      console.error('Missing LINE_CHANNEL_ACCESS_TOKEN or LINE_GROUP_ID');
+    if (!token) {
+      console.error('Missing LINE_CHANNEL_ACCESS_TOKEN');
       return Response.json({ error: 'LINE credentials not configured' }, { status: 500 });
     }
 
@@ -31,8 +45,7 @@ Deno.serve(async (req) => {
     const title = announcement.title || '（件名なし）';
     const rawBody = announcement.body || '';
     const truncatedBody = rawBody.length > 100 ? rawBody.slice(0, 100) + '…' : rawBody;
-    const eventId = announcement.event_id;
-    const detailUrl = eventId ? `${baseUrl}/events/${eventId}` : baseUrl;
+    const detailUrl = `${baseUrl}/events/${eventId}`;
 
     const messageText = [
       `${emoji}【${priority}】${title}`,
