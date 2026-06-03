@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, CheckCircle2, AlertTriangle, XCircle, ChevronDown, ChevronUp, Clock } from "lucide-react";
-import { format } from "date-fns";
-import { ja } from "date-fns/locale";
+import { MessageCircle, CheckCircle2, AlertTriangle, XCircle, ChevronDown, ChevronUp } from "lucide-react";
+import DetectedGroupList from "@/components/DetectedGroupList";
 
 // LINEグループIDの形式チェック: C + 32文字の英数字
 function isValidGroupIdFormat(id) {
@@ -66,13 +65,6 @@ export default function LineNotifySettings({ eventId, event }) {
       setGroupId(event.line_group_id || "");
     }
   }, [event?.id]);
-
-  // 検知済みグループ一覧
-  const { data: detectedGroups = [], refetch: refetchDetected } = useQuery({
-    queryKey: ["detectedLineGroups"],
-    queryFn: () => base44.entities.DetectedLineGroup.list("-detected_at", 20),
-    staleTime: 30000,
-  });
 
   const checkGroupId = useCallback(async (id) => {
     if (!id.trim()) { setGroupStatus(null); setGroupInfo(null); return; }
@@ -160,51 +152,19 @@ export default function LineNotifySettings({ eventId, event }) {
           {/* 検知済みグループパネル */}
           <div className="mt-2">
             <button
-              onClick={() => { setShowDetected((v) => !v); refetchDetected(); }}
+              onClick={() => setShowDetected((v) => !v)}
               className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
             >
               {showDetected ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
               最近検知したグループ
-              {detectedGroups.length > 0 && (
-                <span className="ml-1 bg-primary/15 text-primary rounded px-1 py-0.5 text-[10px] font-semibold">{detectedGroups.length}</span>
-              )}
             </button>
 
             {showDetected && (
-              <div className="mt-1.5 space-y-1">
-                {detectedGroups.length === 0 ? (
-                  <p className="text-[10px] text-muted-foreground px-1">
-                    検知済みのグループはありません。LINEグループ内でボットに「登録」とメッセージを送ると自動登録されます。
-                  </p>
-                ) : (
-                  detectedGroups.map((g) => (
-                    <div
-                      key={g.id}
-                      className="flex items-center justify-between gap-2 bg-muted/50 rounded-lg px-2.5 py-1.5"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-xs font-medium truncate">{g.group_name}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] text-muted-foreground font-mono">...{g.group_id.slice(-8)}</span>
-                          {g.detected_at && (
-                            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                              <Clock className="w-2.5 h-2.5" />
-                              {format(new Date(g.detected_at), "M/d HH:mm", { locale: ja })}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-6 text-[10px] px-2 shrink-0"
-                        onClick={() => applyDetectedGroup(g)}
-                      >
-                        設定する
-                      </Button>
-                    </div>
-                  ))
-                )}
+              <div className="mt-1.5">
+                <DetectedGroupList
+                  currentEventId={eventId}
+                  onApply={applyDetectedGroup}
+                />
               </div>
             )}
           </div>
