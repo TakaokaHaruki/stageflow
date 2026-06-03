@@ -1,7 +1,7 @@
 import { createClientFromRequest, createClient } from 'npm:@base44/sdk@0.8.31';
 
 async function processEvents(events) {
-  const base44 = createClient({ serviceRoleKey: Deno.env.get('BASE44_APP_ID') });
+  const base44 = createClient({ appId: Deno.env.get('BASE44_APP_ID') });
   const token = Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN');
 
   for (const event of events) {
