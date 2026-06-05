@@ -38,14 +38,14 @@ export default function AdminSettings({
 
   return (
     <div>
-      <h2 className="text-sm font-bold mb-3">管理者設定</h2>
+      <h2 className="text-sm font-bold mb-2">管理者設定</h2>
 
       {/* Feature toggles */}
-      <div className="space-y-2 mb-3">
+      <div className="border border-border rounded-lg overflow-hidden divide-y divide-border mb-2">
         {featureToggles.map(({ icon: Icon, label, desc, value, onToggle }) => (
-          <div key={label} className="bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
+          <div key={label} className="bg-card px-2.5 py-2 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Icon className="w-4 h-4 text-primary shrink-0" />
+              <Icon className="w-3.5 h-3.5 text-primary shrink-0" />
               <div>
                 <p className="text-xs font-semibold">{label}</p>
                 <p className="text-[10px] text-muted-foreground">{desc}</p>

@@ -97,11 +97,11 @@ export default function ActivityLogViewer({ eventId }) {
   });
 
   return (
-    <div className="mt-3 border border-border rounded-xl overflow-hidden">
+    <div className="mt-2 border border-border rounded-lg overflow-hidden">
       {/* Header toggle */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-3 py-2.5 bg-muted/50 hover:bg-muted/80 transition-colors"
+        className="w-full flex items-center justify-between px-2.5 py-2 bg-muted/50 hover:bg-muted/80 transition-colors"
       >
         <div className="flex items-center gap-2">
           <History className="w-4 h-4 text-primary" />
@@ -128,7 +128,7 @@ export default function ActivityLogViewer({ eventId }) {
                     ? format(new Date(log.created_date), "M/d HH:mm", { locale: ja })
                     : "";
                   return (
-                    <div key={log.id} className={`flex items-start gap-2 px-3 py-2 ${log.is_undone ? "opacity-40" : ""}`}>
+                    <div key={log.id} className={`flex items-start gap-2 px-2.5 py-1.5 ${log.is_undone ? "opacity-40" : ""}`}>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${meta.color}`}>
@@ -159,7 +159,7 @@ export default function ActivityLogViewer({ eventId }) {
                   );
                 })}
               </div>
-              <div className="border-t border-border px-3 py-2 flex justify-end">
+              <div className="border-t border-border px-2.5 py-1.5 flex justify-end">
                 <Button
                   size="sm"
                   variant="ghost"

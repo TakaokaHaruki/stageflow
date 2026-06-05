@@ -122,7 +122,7 @@ export default function LineNotifySettings({ eventId, event }) {
     groupId !== (event?.line_group_id || "");
 
   return (
-    <div className="bg-card border border-border rounded-xl p-3 mb-3">
+    <div className="bg-card border border-border rounded-lg px-2.5 py-2 mb-2">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <MessageCircle className="w-4 h-4 text-green-500 shrink-0" />
