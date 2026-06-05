@@ -1,10 +1,15 @@
 import { Pencil, Trash2, Minus, Plus, Lock, LockOpen } from "lucide-react";
 import { getStaffDisplayName } from "@/lib/staffName";
 
+const SLOT_NOTE_KEY = { "開場中": "note_before", "開演中": "note_during", "終演後": "note_after" };
+
 function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, isLocked, side = null }) {
   const staffData = staffList.find((s) => s.name === name);
   const displayName = getStaffDisplayName(name, maskStaffNames);
   const nameColor = staffData?.color || undefined;
+  const slotNoteKey = SLOT_NOTE_KEY[pos.time_slot];
+  const slotNote = slotNoteKey ? staffData?.[slotNoteKey] : null;
+  const displayNote = slotNote || staffData?.note;
   return (
     <div
       draggable={draggable && isAdmin && !isLocked}
@@ -18,7 +23,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
       <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-1 gap-y-0.5">
         {isLocked && <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />}
         <span className="text-xs font-medium" style={{ color: nameColor }}>{displayName}</span>
-        {staffData?.note && <span className="text-[10px] text-muted-foreground">({staffData.note})</span>}
+        {displayNote && <span className="text-[10px] text-muted-foreground">({displayNote})</span>}
         {staffData?.costume_change && (
           <span className="text-[10px] px-1 py-0.5 rounded bg-purple-100 border border-purple-300 text-purple-700 dark:bg-purple-900/40 dark:border-purple-700 dark:text-purple-300 font-medium">着替</span>
         )}

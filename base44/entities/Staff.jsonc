@@ -12,7 +12,19 @@
     },
     "note": {
       "type": "string",
-      "description": "\u5099\u8003"
+      "description": "\u5099\u8003\uff08\u5171\u901a\uff09"
+    },
+    "note_before": {
+      "type": "string",
+      "description": "\u958b\u5834\u4e2d\u306e\u5099\u8003"
+    },
+    "note_during": {
+      "type": "string",
+      "description": "\u958b\u6f14\u4e2d\u306e\u5099\u8003"
+    },
+    "note_after": {
+      "type": "string",
+      "description": "\u7d42\u6f14\u5f8c\u306e\u5099\u8003"
     },
     "color": {
       "type": "string",

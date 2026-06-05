@@ -554,14 +554,18 @@ export default function StaffDragDropManager({ eventId }) {
                 onDragStart={isAdmin ? (e) => handleStaffDragStart(e, s.name) : undefined}
                 onDragEnd={isAdmin ? handleStaffDragEnd : undefined}
                 className={`flex items-center gap-1.5 px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 ${isAdmin ? "cursor-move hover:bg-amber-100 dark:hover:bg-amber-900/50" : "cursor-default"} ${draggedStaff === s.name ? "opacity-50" : ""}`}>
-                <div className="min-w-0 flex-1 flex items-center gap-1.5 flex-wrap">
-                  <span className="text-xs font-medium text-foreground truncate">{displayName}</span>
-                  {s.note && <span className="text-[10px] text-muted-foreground truncate">({s.note})</span>}
+                <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-medium text-foreground">{displayName}</span>
+                  {s.note && <span className="text-[10px] text-muted-foreground">({s.note})</span>}
+                </div>
+                <div className="flex flex-wrap gap-1 mt-0.5">
                   {s.missingSlots.map((slot) => (
                     <span key={slot} className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${TIME_SLOT_STYLES[slot].header}`}>
                       {slot}未配置
                     </span>
                   ))}
+                </div>
                 </div>
               </div>
               );
@@ -597,6 +601,13 @@ export default function StaffDragDropManager({ eventId }) {
                       <p className="text-xs font-medium" style={{ color: nameColor }}>{displayName}</p>
                       {s.note && <span className="text-[10px] text-muted-foreground">({s.note})</span>}
                     </div>
+                    {(s.note_before || s.note_during || s.note_after) && (
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {s.note_before && <span className="text-[10px] text-muted-foreground">開場中: {s.note_before}</span>}
+                        {s.note_during && <span className="text-[10px] text-muted-foreground">開演中: {s.note_during}</span>}
+                        {s.note_after && <span className="text-[10px] text-muted-foreground">終演後: {s.note_after}</span>}
+                      </div>
+                    )}
                     {slotAssignments.length === 0 ? (
                       <span className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-0.5"><AlertCircle className="w-2.5 h-2.5" />全スロット未配置</span>
                     ) : (

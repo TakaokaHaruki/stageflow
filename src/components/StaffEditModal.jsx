@@ -24,10 +24,18 @@ const PRESET_COLORS = [
 export default function StaffEditModal({ staff, onClose, onSaved }) {
   const [localName, setLocalName] = useState(staff.name);
   const [localNote, setLocalNote] = useState(staff.note || "");
+  const [localNoteBefore, setLocalNoteBefore] = useState(staff.note_before || "");
+  const [localNoteDuring, setLocalNoteDuring] = useState(staff.note_during || "");
+  const [localNoteAfter, setLocalNoteAfter] = useState(staff.note_after || "");
   const [localColor, setLocalColor] = useState(staff.color || "");
   const [localSkills, setLocalSkills] = useState(staff.skills || []);
   const [skillInput, setSkillInput] = useState("");
-  const prevDataRef = useRef({ name: staff.name, note: staff.note || "", color: staff.color || "", skills: staff.skills || [] });
+  const [noteTab, setNoteTab] = useState("all");
+  const prevDataRef = useRef({
+    name: staff.name, note: staff.note || "",
+    note_before: staff.note_before || "", note_during: staff.note_during || "", note_after: staff.note_after || "",
+    color: staff.color || "", skills: staff.skills || []
+  });
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
@@ -78,9 +86,17 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
     if (!localName.trim()) return;
     const prev = prevDataRef.current;
     const skillsChanged = JSON.stringify(localSkills) !== JSON.stringify(prev.skills);
-    if (localName === prev.name && localNote === prev.note && localColor === prev.color && !skillsChanged) return;
+    if (
+      localName === prev.name && localNote === prev.note &&
+      localNoteBefore === prev.note_before && localNoteDuring === prev.note_during && localNoteAfter === prev.note_after &&
+      localColor === prev.color && !skillsChanged
+    ) return;
     const timer = setTimeout(() => {
-      const nextData = { name: localName.trim(), note: localNote.trim(), color: localColor, skills: localSkills };
+      const nextData = {
+        name: localName.trim(), note: localNote.trim(),
+        note_before: localNoteBefore.trim(), note_during: localNoteDuring.trim(), note_after: localNoteAfter.trim(),
+        color: localColor, skills: localSkills
+      };
       updateMutation.mutate(nextData, {
         onSuccess: () => {
           toast.success("保存しました");
@@ -89,7 +105,7 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
       });
     }, 500);
     return () => clearTimeout(timer);
-  }, [localName, localNote, localColor, localSkills]);
+  }, [localName, localNote, localNoteBefore, localNoteDuring, localNoteAfter, localColor, localSkills]);
 
   return (
     <motion.div
@@ -118,7 +134,37 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground">備考</label>
-            <Input value={localNote} onChange={(e) => setLocalNote(e.target.value)} placeholder="任意" className="mt-1" />
+            <div className="mt-1.5 flex gap-0.5 bg-muted rounded-md p-0.5">
+              {[
+                { key: "all", label: "すべて" },
+                { key: "before", label: "開場中" },
+                { key: "during", label: "開演中" },
+                { key: "after", label: "終演後" },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setNoteTab(tab.key)}
+                  className={`flex-1 text-[11px] font-medium px-1 py-1 rounded transition-colors ${noteTab === tab.key ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="mt-1.5">
+              {noteTab === "all" && (
+                <Input value={localNote} onChange={(e) => setLocalNote(e.target.value)} placeholder="全時間帯共通の備考" className="h-8 text-xs" />
+              )}
+              {noteTab === "before" && (
+                <Input value={localNoteBefore} onChange={(e) => setLocalNoteBefore(e.target.value)} placeholder="開場中の備考" className="h-8 text-xs" />
+              )}
+              {noteTab === "during" && (
+                <Input value={localNoteDuring} onChange={(e) => setLocalNoteDuring(e.target.value)} placeholder="開演中の備考" className="h-8 text-xs" />
+              )}
+              {noteTab === "after" && (
+                <Input value={localNoteAfter} onChange={(e) => setLocalNoteAfter(e.target.value)} placeholder="終演後の備考" className="h-8 text-xs" />
+              )}
+            </div>
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground">スキルタグ</label>
