@@ -132,7 +132,7 @@ export default function EventDetail() {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative scrollbar-hide overflow-x-hidden">
+    <div className="min-h-screen bg-background relative scrollbar-hide">
       {isPulling && (
         <div className="fixed top-0 left-0 right-0 flex justify-center pt-2 z-30">
           <div className="w-6 h-6 border-3 border-primary/30 border-t-primary rounded-full animate-spin" style={{ opacity: pullDistance / 100 }} />
