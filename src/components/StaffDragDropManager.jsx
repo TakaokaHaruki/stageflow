@@ -428,7 +428,7 @@ export default function StaffDragDropManager({ eventId }) {
         {TIME_SLOTS.map((slot) => {
           const style = TIME_SLOT_STYLES[slot];
           const slotPositions = grouped[slot];
-          const slotStaffCount = [...new Set(slotPositions.flatMap((p) => p.staff_names || []))].length;
+          const slotStaffCount = slotPositions.reduce((sum, p) => sum + (p.required_count ?? 0), 0);
           const slotBorderClass = slot === "開場中" ? "border-amber-400 dark:border-amber-500" : slot === "開演中" ? "border-blue-400 dark:border-blue-500" : "border-slate-400 dark:border-slate-400";
           return (
             <div key={slot} className={`border-2 rounded-lg overflow-hidden ${slotBorderClass}`}>
