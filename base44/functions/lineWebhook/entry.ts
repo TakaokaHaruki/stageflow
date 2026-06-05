@@ -1,7 +1,22 @@
-import { createClient } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-async function processEvents(events) {
-  const base44 = createClient({ appId: Deno.env.get('BASE44_APP_ID') });
+Deno.serve(async (req) => {
+  let events = [];
+  try {
+    const body = await req.json();
+    events = body.events ?? [];
+  } catch (_) {
+    // bodyのパース失敗でも200を返す
+  }
+
+  // fire-and-forget: 即座に200を返し、バックグラウンドで処理
+  processEvents(req, events).catch((err) => console.error('processEvents error:', err.message));
+
+  return Response.json({ ok: true });
+});
+
+async function processEvents(req, events) {
+  const base44 = createClientFromRequest(req);
   const token = Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN');
 
   for (const event of events) {
@@ -50,18 +65,3 @@ async function processEvents(events) {
     }
   }
 }
-
-Deno.serve(async (req) => {
-  let events = [];
-  try {
-    const body = await req.json();
-    events = body.events ?? [];
-  } catch (_) {
-    // bodyのパース失敗でも200を返す
-  }
-
-  // fire-and-forget: 即座に200を返し、バックグラウンドで処理
-  processEvents(events).catch((err) => console.error('processEvents error:', err.message));
-
-  return Response.json({ ok: true });
-});

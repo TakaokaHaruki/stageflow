@@ -15,9 +15,9 @@ import {
 } from "@/lib/positionSideSettings";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { X, Check, Plus } from "lucide-react";
+import { motion } from "framer-motion";
 
 const SKILL_PRESETS = ["誘導", "受付", "音響", "照明", "映像", "司会", "警備", "救護", "物販", "清掃"];
-import { motion } from "framer-motion";
 
 const PRESET_COLORS = [
   "#6366f1", "#3b82f6", "#10b981", "#f59e0b",

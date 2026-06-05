@@ -103,7 +103,7 @@ export default function AutoAssignModal({ positions, staffList, lockedNames = []
   const displayBySlot = TIME_SLOTS.map((slot) => {
     const slotPositions = positions.filter((p) => (p.time_slot || "開場中") === slot);
     const items = slotPositions
-      .map((pos) => ({ posName: pos.name, newStaff: plan[pos.id] || [] }))
+      .map((pos) => ({ posName: pos.name, posId: pos.id, newStaff: plan[pos.id] || [] }))
       .filter((item) => item.newStaff.length > 0);
     return { slot, items };
   }).filter((s) => s.items.length > 0);
@@ -229,10 +229,10 @@ export default function AutoAssignModal({ positions, staffList, lockedNames = []
                     {slot}
                   </div>
                   <div className="space-y-1">
-                    {items.map(({ posName, newStaff, pos }) =>
+                    {items.map(({ posName, posId, newStaff }) =>
                       newStaff.map((name) => {
                         const staffObj = staffList.find((s) => s.name === name);
-                        const posObj = positions.find((p) => p.name === posName && (p.time_slot || "開場中") === slot);
+                        const posObj = positions.find((p) => p.id === posId);
                         const matchedSkills = posObj && staffObj
                           ? (posObj.required_skills || []).filter((s) => (staffObj.skills || []).includes(s))
                           : [];
