@@ -4,14 +4,14 @@ import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Users, AlertCircle, Pencil, UserCog, Download, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, Users, AlertCircle, Pencil, UserCog, Download } from "lucide-react";
 import StaffScrapeModal from "@/components/StaffScrapeModal";
 import StaffEditModal from "@/components/StaffEditModal";
 import { TIME_SLOT_STYLES } from "@/lib/constants";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 import { getStaffDisplayName } from "@/lib/staffName";
-import { unwrapFunctionResponse } from "@/lib/base44Response";
+
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { HiddenInEditMode, ModeLoadingPlaceholder, ModeVisibilityControls, useResolvedEventMode } from "@/components/ModeVisibilityControls";
@@ -23,7 +23,6 @@ export default function StaffManagement({ eventId }) {
   const [editingStaff, setEditingStaff] = useState(null);
   const [showScrapeModal, setShowScrapeModal] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [localChiefName, setLocalChiefName] = useState("");
   const queryClient = useQueryClient();
   const { canEdit, canManageSettings, role } = useUserRole();
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
@@ -53,12 +52,6 @@ export default function StaffManagement({ eventId }) {
     queryFn: () => loadEventById(eventId),
     refetchInterval: LIVE_SYNC_INTERVAL,
   });
-
-  useEffect(() => {
-    const storageKey = `stageflow:event-chief:${eventId}`;
-    const savedChiefName = window.localStorage.getItem(storageKey);
-    setLocalChiefName(savedChiefName || event?.chief_staff_name || "");
-  }, [eventId, event?.chief_staff_name]);
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
@@ -147,59 +140,6 @@ export default function StaffManagement({ eventId }) {
       queryClient.invalidateQueries({ queryKey: ["staff", eventId] });
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
     }
-  });
-
-  const updateChiefMutation = useMutation({
-    mutationFn: async (chief_staff_name) => {
-      const response = await base44.functions.invoke("updateEventChief", {
-        eventId: event?.id || eventId,
-        chief_staff_name,
-      });
-      const payload = unwrapFunctionResponse(response);
-      if (payload?.error) throw new Error(payload.error);
-      return payload?.event;
-    },
-    onMutate: async (chief_staff_name) => {
-      await queryClient.cancelQueries({ queryKey: ["event", eventId] });
-      const previousEvent = queryClient.getQueryData(["event", eventId]);
-      const previousLocalChiefName = localChiefName;
-      setLocalChiefName(chief_staff_name);
-      window.localStorage.setItem(`stageflow:event-chief:${eventId}`, chief_staff_name);
-      queryClient.setQueryData(["event", eventId], (old) => {
-        if (Array.isArray(old)) {
-          return old.map((item) => item.id === (event?.id || eventId) ? { ...item, chief_staff_name } : item);
-        }
-        return old ? { ...old, chief_staff_name } : old;
-      });
-      return { previousEvent, previousLocalChiefName };
-    },
-    onError: (_, __, context) => {
-      queryClient.setQueryData(["event", eventId], context?.previousEvent);
-      setLocalChiefName(context?.previousLocalChiefName || "");
-      window.localStorage.setItem(`stageflow:event-chief:${eventId}`, context?.previousLocalChiefName || "");
-      toast.error("チーフの保存に失敗しました");
-    },
-    onSuccess: (updatedEvent, chief_staff_name) => {
-      const savedChiefName = updatedEvent?.chief_staff_name ?? chief_staff_name;
-      const previousChief = event?.chief_staff_name || "";
-      setLocalChiefName(savedChiefName);
-      window.localStorage.setItem(`stageflow:event-chief:${eventId}`, savedChiefName);
-      queryClient.setQueryData(["event", eventId], (old) => {
-        if (Array.isArray(old)) {
-          return old.map((item) => item.id === (event?.id || eventId) ? { ...item, chief_staff_name: savedChiefName } : item);
-        }
-        return old ? { ...old, chief_staff_name: savedChiefName } : old;
-      });
-      record({
-        action_type: "chief_update",
-        description: `チーフを「${previousChief || "未設定"}」→「${savedChiefName || "未設定"}」に変更しました`,
-        entity_type: "Event",
-        entity_id: event?.id || eventId,
-        snapshot_before: { chief_staff_name: previousChief },
-        snapshot_after: { chief_staff_name: savedChiefName },
-      });
-      toast.success("チーフを保存しました");
-    },
   });
 
   const handleAdd = () => {
@@ -291,36 +231,6 @@ export default function StaffManagement({ eventId }) {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-lg px-2 py-1.5 mb-1.5">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
-          <div className="flex items-center gap-1.5 shrink-0">
-            <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-            <h3 className="text-xs font-bold">チーフ・システム管理者</h3>
-          </div>
-          <div className="flex items-center gap-1.5 flex-1 min-w-0">
-            <span className="text-[10px] font-medium text-muted-foreground shrink-0">チーフ</span>
-            <select
-              value={localChiefName}
-              onChange={(e) => updateChiefMutation.mutate(e.target.value)}
-              className="h-7 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              disabled={!canUseEditTools || staffList.length === 0 || updateChiefMutation.isPending}
-            >
-              <option value="">未選択</option>
-              {staffList.map((staff) => (
-                <option key={staff.id} value={staff.name}>{getStaffDisplayName(staff.name, shouldMaskStaffNames)}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0 text-xs">
-            <span className="text-[10px] font-medium text-muted-foreground">システム管理者</span>
-            <span className="font-medium">髙岡 永輝</span>
-          </div>
-        </div>
-        <p className="mt-1.5 border-t border-border pt-1.5 text-[11px] font-medium text-destructive">
-          バグ・不具合の緊急対応はシステム管理者までご報告ください
-        </p>
-      </div>
-
       {/* Staff list */}
       {isLoading ?
       <div className="flex justify-center py-10">
@@ -332,57 +242,37 @@ export default function StaffManagement({ eventId }) {
           <p className="text-sm font-medium">スタッフが登録されていません</p>
         </div> :
 
-      <div className="space-y-1">
+      <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
           {staffList.map((staff) => {
           const assigned = assignedMap[staff.name] || [];
           const displayName = getStaffDisplayName(staff.name, shouldMaskStaffNames);
           const unassigned = assigned.length === 0;
           return (
-            <div key={staff.id} className={`bg-card border rounded-md px-2 py-1 min-h-[44px] ${unassigned ? "border-amber-300" : "border-border"}`}>
-                <div className="flex items-center gap-2 min-h-[36px]">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px] shrink-0">
+            <div key={staff.id} className={`bg-card px-2 py-1 ${unassigned ? "bg-amber-50/50 dark:bg-amber-900/10" : ""}`}>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px] shrink-0">
                     {displayName.charAt(0)}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <p className="font-medium text-xs" style={{ color: staff.color || undefined }}>{displayName}</p>
-                      {staff.note && <span className="text-[10px] text-muted-foreground">({staff.note})</span>}
-                      {staff.costume_change && <span className="text-[10px] px-1 py-0.5 rounded bg-purple-100 border border-purple-300 text-purple-700 dark:bg-purple-900/40 dark:border-purple-700 dark:text-purple-300 font-medium">着替</span>}
-                      {staff.break && <span className="text-[10px] px-1 py-0.5 rounded bg-sky-100 border border-sky-300 text-sky-700 dark:bg-sky-900/40 dark:border-sky-700 dark:text-sky-300 font-medium">休憩</span>}
-                      {unassigned &&
-                    <span className="flex items-center gap-0.5 text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1 py-0.5 rounded-full dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700">
-                          <AlertCircle className="w-2 h-2" />未配置
-                        </span>
-                    }
-                    </div>
+                  <div className="flex-1 min-w-0 flex items-center gap-1 flex-wrap">
+                    <p className="font-medium text-xs" style={{ color: staff.color || undefined }}>{displayName}</p>
+                    {staff.note && <span className="text-[10px] text-muted-foreground">({staff.note})</span>}
+                    {staff.costume_change && <span className="text-[10px] px-1 rounded bg-purple-100 border border-purple-300 text-purple-700 dark:bg-purple-900/40 dark:border-purple-700 dark:text-purple-300 font-medium">着替</span>}
+                    {staff.break && <span className="text-[10px] px-1 rounded bg-sky-100 border border-sky-300 text-sky-700 dark:bg-sky-900/40 dark:border-sky-700 dark:text-sky-300 font-medium">休憩</span>}
+                    {unassigned && <span className="flex items-center gap-0.5 text-[10px] text-amber-700 dark:text-amber-300"><AlertCircle className="w-2.5 h-2.5" />未配置</span>}
+                    {assigned.map((a, i) =>
+                      <span key={i} className={`text-[10px] font-semibold px-1 rounded border ${TIME_SLOT_STYLES[a.slot]?.badge || "bg-slate-100 border-slate-200 text-slate-700"}`}>
+                        {a.slot}：{a.posName}
+                      </span>
+                    )}
                   </div>
-                  <button
-                  onClick={() => canUseEditTools && setEditingStaff(staff)}
-                  disabled={!canUseEditTools}
-                  className="p-1 rounded-lg hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-30 disabled:pointer-events-none"
-                  title="編集">
-                  
+                  <button onClick={() => canUseEditTools && setEditingStaff(staff)} disabled={!canUseEditTools} className="p-1 rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none" title="編集">
                     <Pencil className="w-3 h-3" />
                   </button>
-                  <button
-                  onClick={() => canUseEditTools && setConfirmDelete({ id: staff.id, name: staff.name })}
-                  disabled={!canUseEditTools}
-                  className="p-1 rounded-lg hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-30 disabled:pointer-events-none"
-                  title="削除">
+                  <button onClick={() => canUseEditTools && setConfirmDelete({ id: staff.id, name: staff.name })} disabled={!canUseEditTools} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none" title="削除">
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
-                {assigned.length > 0 &&
-              <div className="mt-0.5 flex flex-wrap gap-0.5 pl-8">
-                    {assigned.map((a, i) =>
-                <span key={i} className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full border ${TIME_SLOT_STYLES[a.slot]?.badge || "bg-slate-100 border-slate-200 text-slate-700"}`}>
-                        {a.slot}：{a.posName}
-                      </span>
-                )}
-                  </div>
-              }
               </div>);
-
         })}
         </div>
       }
