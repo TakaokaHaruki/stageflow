@@ -443,9 +443,8 @@ export default function StaffDragDropManager({ eventId }) {
                 {isAdmin && (
                   <div className="flex items-center gap-1">
                     <button onClick={() => handleBulkCreatePositions(slot)}
-                      disabled
                       title="ポジション種別をこの時間帯に一括登録"
-                      className="text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 transition-colors font-medium select-none cursor-not-allowed opacity-50">
+                      className="text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/60 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 text-current transition-colors font-medium select-none">
                       <Plus className="w-2.5 h-2.5" />一括登録
                     </button>
                     <button onClick={() => openAdd(slot)}
