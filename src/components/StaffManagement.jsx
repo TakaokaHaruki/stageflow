@@ -263,6 +263,13 @@ export default function StaffManagement({ eventId }) {
                       ))}
                     </div>
                     {staff.note && <p className="text-[10px] text-muted-foreground">{staff.note}</p>}
+                    {(staff.note_before || staff.note_during || staff.note_after) && (
+                      <div className="flex flex-wrap gap-x-2 gap-y-0">
+                        {staff.note_before && <span className="text-[10px] text-muted-foreground">開場中: {staff.note_before}</span>}
+                        {staff.note_during && <span className="text-[10px] text-muted-foreground">開演中: {staff.note_during}</span>}
+                        {staff.note_after && <span className="text-[10px] text-muted-foreground">終演後: {staff.note_after}</span>}
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-0.5 mt-0.5">
                       {unassigned && <span className="flex items-center gap-0.5 text-[10px] text-amber-700 dark:text-amber-300"><AlertCircle className="w-2.5 h-2.5" />未配置</span>}
                       {assigned.map((a, i) =>
