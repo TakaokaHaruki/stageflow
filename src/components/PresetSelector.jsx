@@ -2,16 +2,18 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ChevronDown, ChevronUp, Zap } from "lucide-react";
+import { BookOpen, BookmarkPlus, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { TIME_SLOTS } from "@/lib/constants";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import SaveAsPresetModal from "@/components/SaveAsPresetModal";
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 
-export default function PresetSelector({ eventId, compact = false }) {
+export default function PresetSelector({ eventId, compact = false, positions = [] }) {
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState(null);
+  const [showSaveModal, setShowSaveModal] = useState(false);
   const queryClient = useQueryClient();
   const { canEdit: isAdmin } = useUserRole();
 
@@ -92,6 +94,15 @@ export default function PresetSelector({ eventId, compact = false }) {
           <>
             <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
             <div className="absolute right-0 top-8 z-50 w-56 border border-border rounded-xl bg-card shadow-lg overflow-hidden">
+              {/* 現在の配置を保存 */}
+              <div className="px-3 py-2 border-b border-border">
+                <button
+                  onClick={() => { setOpen(false); setShowSaveModal(true); }}
+                  className="w-full flex items-center gap-1.5 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+                >
+                  <BookmarkPlus className="w-3 h-3" />現在の配置をプリセット保存
+                </button>
+              </div>
               {presets.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-4">プリセットが登録されていません</p>
               ) : (
@@ -138,6 +149,13 @@ export default function PresetSelector({ eventId, compact = false }) {
           <ConfirmDialog message="プリセットの適用を解除しますか？" confirmLabel="解除" confirmVariant="default"
             onConfirm={() => { clearMutation.mutate(); setConfirm(null); }}
             onCancel={() => setConfirm(null)} />
+        )}
+        {showSaveModal && (
+          <SaveAsPresetModal
+            positions={positions}
+            positionTypes={positionTypes}
+            onClose={() => setShowSaveModal(false)}
+          />
         )}
       </div>
     );
