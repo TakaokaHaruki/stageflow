@@ -1,5 +1,6 @@
 import { useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { getUserDisplayName } from "@/components/UserNameEditor";
 
 /**
  * 操作ログ記録フック
@@ -13,7 +14,7 @@ export function useOperationLog(eventId) {
     if (actorRef.current) return actorRef.current;
     try {
       const user = await base44.auth.me();
-      actorRef.current = { name: user?.full_name || user?.email || "不明", email: user?.email || "" };
+      actorRef.current = { name: getUserDisplayName(user) || "不明", email: user?.email || "" };
     } catch {
       actorRef.current = { name: "不明", email: "" };
     }
