@@ -24,25 +24,25 @@ function generateHTML(event, positions, staff, type) {
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { 
         font-family: 'Noto Sans JP', 'Arial Unicode MS', sans-serif; 
-        padding: 2px;
+        padding: 1px 16px;
         background: white;
         color: #000;
         font-size: 14px;
       }
-      .title-block { display: flex; align-items: center; gap: 12px; margin: 0 0 6px 0; }
+      .title-block { display: flex; align-items: center; gap: 12px; margin: 0 0 4px 0; }
       .event-title { font-size: 21px; font-weight: bold; }
       .event-info { font-size: 13px; color: #555; }
-      table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 0 0 6px 0; }
-      td, th { border: 1px solid #999; padding: 3px 4px; vertical-align: middle; text-align: left; line-height: 1.3; height: 30px; overflow: visible; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 0 0 3px 0; }
+      td, th { border: 1px solid #999; padding: 2px 4px; vertical-align: middle; text-align: left; line-height: 1.2; height: 24px; overflow: visible; }
       
       /* 時間帯セクションヘッダー（サーモン色） */
       tr.slot-header td { 
         background: #f4a07a; 
         font-weight: bold; 
         text-align: left;
-        padding: 4px 4px;
+        padding: 2px 4px;
         font-size: 15.5px;
-        line-height: 1.25;
+        line-height: 1.2;
         vertical-align: middle;
       }
       tr.slot-header td.count-cell {
@@ -150,7 +150,6 @@ function generateHTML(event, positions, staff, type) {
         <td>${slot}</td>
         <td class="count-cell">${totalStaff}</td>
         ${Array(staffCols).fill('<td></td>').join('')}
-        <td></td>
       </tr>`;
 
       // カラムヘッダー
@@ -158,7 +157,6 @@ function generateHTML(event, positions, staff, type) {
         <td>ポジション</td>
         <td>人数</td>
         ${Array(staffCols).fill('').map((_, i) => `<td>${i + 1}</td>`).join('')}
-        <td>備考欄</td>
       </tr>`;
 
       // 各ポジション
@@ -185,7 +183,7 @@ function generateHTML(event, positions, staff, type) {
             content += `<td class="empty"></td>`;
           }
         }
-        content += `<td class="notes">${pos.notes || ''}</td></tr>`;
+        content += `</tr>`;
       });
     });
 
@@ -193,12 +191,12 @@ function generateHTML(event, positions, staff, type) {
     const assignedNames = new Set(orderedPositions.flatMap(p => p.staff_names || []));
     const unassigned = orderedStaff.filter((s) => !assignedNames.has(s.name));
     if (unassigned.length > 0) {
-      content += `<tr class="slot-header"><td>未配置スタッフ</td><td class="count-cell">${unassigned.length}</td>${Array(staffCols).fill('<td></td>').join('')}<td></td></tr>`;
-      content += `<tr class="col-header"><td>スタッフ名</td><td colspan="${staffCols + 2}">備考</td></tr>`;
+      content += `<tr class="slot-header"><td>未配置スタッフ</td><td class="count-cell">${unassigned.length}</td>${Array(staffCols).fill('<td></td>').join('')}</tr>`;
+      content += `<tr class="col-header"><td>スタッフ名</td><td colspan="${staffCols + 1}">備考</td></tr>`;
       unassigned.forEach((s) => {
         content += `<tr>
           <td class="pos-name">${s.name}</td>
-          <td colspan="${staffCols + 2}" class="notes">${s.note || ''}</td>
+          <td colspan="${staffCols + 1}" class="notes">${s.note || ''}</td>
         </tr>`;
       });
     }
