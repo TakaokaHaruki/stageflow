@@ -12,9 +12,9 @@ import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 
 const pageVariants = {
-  initial: { opacity: 0, x: 18 },
-  animate: { opacity: 1, x: 0, transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] } },
-  exit: { opacity: 0, x: -18, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } },
+  initial: { opacity: 0, x: "100%" },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } },
+  exit: { opacity: 0, x: "-30%", transition: { duration: 0.22, ease: [0.4, 0, 1, 1] } },
 };
 
 const AuthenticatedApp = () => {

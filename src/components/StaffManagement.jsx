@@ -309,8 +309,8 @@ export default function StaffManagement({ eventId }) {
           const displayName = getStaffDisplayName(staff.name, shouldMaskStaffNames);
           const unassigned = assigned.length === 0;
           return (
-            <div key={staff.id} className={`bg-card border rounded-md px-2 py-0.5 ${unassigned ? "border-amber-300" : "border-border"}`}>
-                <div className="flex items-center gap-2">
+            <div key={staff.id} className={`bg-card border rounded-md px-2 py-1 min-h-[44px] ${unassigned ? "border-amber-300" : "border-border"}`}>
+                <div className="flex items-center gap-2 min-h-[36px]">
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px] shrink-0">
                     {displayName.charAt(0)}
                   </div>

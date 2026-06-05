@@ -31,7 +31,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40 safe-area-bottom">
+    <div className="fixed bottom-0 left-0 right-0 bg-card/80 dark:bg-card/70 backdrop-blur-md border-t border-border z-40 safe-area-bottom">
       <div className="flex items-stretch justify-around min-h-14">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
