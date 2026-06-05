@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { BookOpen, BookmarkPlus, ChevronDown, ChevronUp, Zap } from "lucide-react";
+import { BookOpen, BookmarkPlus, ChevronDown, ChevronRight, ChevronUp, Zap } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
-import { TIME_SLOTS } from "@/lib/constants";
+import { TIME_SLOTS, TIME_SLOT_STYLES } from "@/lib/constants";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SaveAsPresetModal from "@/components/SaveAsPresetModal";
 import { loadEventById } from "@/lib/eventLoader";
@@ -14,6 +14,7 @@ export default function PresetSelector({ eventId, compact = false, positions = [
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState(null);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [expandedPresetId, setExpandedPresetId] = useState(null);
   const queryClient = useQueryClient();
   const { canEdit: isAdmin } = useUserRole();
 
@@ -37,12 +38,14 @@ export default function PresetSelector({ eventId, compact = false, positions = [
 
   const activePreset = presets.find((p) => p.id === event?.active_preset_id);
 
+  const slotToField = { "開場中": "required_count_before", "開演中": "required_count_during", "終演後": "required_count_after" };
+
+  // 全時間帯一括適用
   const applyMutation = useMutation({
     mutationFn: async (preset) => {
       const existing = await base44.entities.Position.filter({ event_id: eventId });
       if (existing.length > 0) await Promise.all(existing.map((p) => base44.entities.Position.delete(p.id)));
       const slotMap = preset.slot_positions || {};
-      const slotToField = { "開場中": "required_count_before", "開演中": "required_count_during", "終演後": "required_count_after" };
       const creates = [];
       for (const slot of TIME_SLOTS) {
         const ids = slotMap[slot] || [];
@@ -66,6 +69,30 @@ export default function PresetSelector({ eventId, compact = false, positions = [
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });
       setOpen(false);
+    },
+  });
+
+  // 時間帯別個別適用（確認なし・即反映）
+  const applySlotMutation = useMutation({
+    mutationFn: async ({ preset, slot }) => {
+      const existing = await base44.entities.Position.filter({ event_id: eventId });
+      const slotExisting = existing.filter((p) => (p.time_slot || "開場中") === slot);
+      if (slotExisting.length > 0) await Promise.all(slotExisting.map((p) => base44.entities.Position.delete(p.id)));
+      const ids = (preset.slot_positions || {})[slot] || [];
+      const field = slotToField[slot];
+      await Promise.all(ids.map((id, i) => {
+        const pt = positionTypes.find((p) => p.id === id);
+        if (!pt) return Promise.resolve();
+        return base44.entities.Position.create({
+          event_id: eventId, name: pt.name, color: pt.color || "#6366f1",
+          time_slot: slot, staff_names: [],
+          required_count: field ? (pt[field] ?? pt.required_count ?? 0) : 0,
+          order: i,
+        });
+      }));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
     },
   });
 
@@ -106,29 +133,62 @@ export default function PresetSelector({ eventId, compact = false, positions = [
               {presets.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-4">プリセットが登録されていません</p>
               ) : (
-                <div className="divide-y divide-border">
+                <div className="divide-y divide-border max-h-[70vh] overflow-y-auto">
                   {presets.map((preset) => {
                     const isActive = event?.active_preset_id === preset.id;
                     const totalSlots = Object.values(preset.slot_positions || {}).flat().length;
+                    const isExpanded = expandedPresetId === preset.id;
+                    const isApplyingSlot = applySlotMutation.isPending;
                     return (
-                      <div key={preset.id} className={`flex items-center gap-2 px-3 py-2 ${isActive ? "bg-primary/5" : "hover:bg-muted/40"} transition-colors`}>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs font-semibold truncate">{preset.name}</span>
-                            {isActive && <span className="text-[9px] font-bold px-1 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0">適用中</span>}
-                          </div>
-                          <div className="text-[10px] text-muted-foreground">計{totalSlots}ポジション</div>
+                      <div key={preset.id} className={`${isActive ? "bg-primary/5" : ""}`}>
+                        {/* プリセット行 */}
+                        <div className="flex items-center gap-2 px-3 py-2 hover:bg-muted/40 transition-colors">
+                          <button
+                            onClick={() => setExpandedPresetId(isExpanded ? null : preset.id)}
+                            className="flex-1 min-w-0 text-left"
+                          >
+                            <div className="flex items-center gap-1">
+                              <ChevronRight className={`w-3 h-3 text-muted-foreground shrink-0 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                              <span className="text-xs font-semibold truncate">{preset.name}</span>
+                              {isActive && <span className="text-[9px] font-bold px-1 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0">適用中</span>}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground pl-4">計{totalSlots}ポジション</div>
+                          </button>
+                          {isActive ? (
+                            <Button size="sm" variant="outline" className="h-6 text-[11px] px-2 shrink-0"
+                              disabled={clearMutation.isPending} onClick={() => setConfirm({ type: 'clear' })}>
+                              解除
+                            </Button>
+                          ) : (
+                            <Button size="sm" className="h-6 text-[11px] px-2 gap-1 shrink-0"
+                              disabled={applyMutation.isPending} onClick={() => setConfirm({ type: 'apply', preset })}>
+                              <Zap className="w-2.5 h-2.5" />全適用
+                            </Button>
+                          )}
                         </div>
-                        {isActive ? (
-                          <Button size="sm" variant="outline" className="h-6 text-[11px] px-2 shrink-0"
-                            disabled={clearMutation.isPending} onClick={() => setConfirm({ type: 'clear' })}>
-                            解除
-                          </Button>
-                        ) : (
-                          <Button size="sm" className="h-6 text-[11px] px-2 gap-1 shrink-0"
-                            disabled={applyMutation.isPending} onClick={() => setConfirm({ type: 'apply', preset })}>
-                            <Zap className="w-2.5 h-2.5" />適用
-                          </Button>
+                        {/* 時間帯別ボタン（展開時） */}
+                        {isExpanded && (
+                          <div className="px-3 pb-2 bg-muted/30 space-y-1">
+                            <p className="text-[10px] text-muted-foreground pt-1 pb-0.5">時間帯別に適用：</p>
+                            {TIME_SLOTS.map((slot) => {
+                              const slotStyle = TIME_SLOT_STYLES[slot];
+                              const count = ((preset.slot_positions || {})[slot] || []).length;
+                              return (
+                                <button
+                                  key={slot}
+                                  disabled={isApplyingSlot || count === 0}
+                                  onClick={() => applySlotMutation.mutate({ preset, slot })}
+                                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${slotStyle.header} hover:opacity-80`}
+                                >
+                                  <span>{slot}</span>
+                                  <span className="flex items-center gap-1">
+                                    {count}件を適用
+                                    <Zap className="w-2.5 h-2.5" />
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         )}
                       </div>
                     );
