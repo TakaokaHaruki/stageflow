@@ -32,7 +32,6 @@ export default function StaffDragDropManager({ eventId }) {
   const queryClient = useQueryClient();
   const { canEdit, canManageSettings, role } = useUserRole();
   const { record } = useOperationLog(eventId);
-  const { lockedNames, isLocked, toggleLock, clearAllLocks } = useLockedStaff(eventId, event ?? null);
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -57,6 +56,8 @@ export default function StaffDragDropManager({ eventId }) {
     queryFn: () => loadEventById(eventId),
     refetchInterval: LIVE_SYNC_INTERVAL,
   });
+
+  const { lockedNames, isLocked, toggleLock, clearAllLocks } = useLockedStaff(eventId, event ?? null);
 
   const { data: presets = [] } = useQuery({
     queryKey: ["positionPresets"],
