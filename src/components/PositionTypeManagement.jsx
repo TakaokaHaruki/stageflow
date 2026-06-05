@@ -88,11 +88,32 @@ export default function PositionTypeManagement({ eventId }) {
   };
 
   const handleToggleSplitBySide = (positionType, splitBySide) => {
-    const matchingPositionIds = new Set(
-      (queryClient.getQueryData(["positions", eventId]) || [])
-        .filter((position) => position.name === positionType.name)
-        .map((position) => position.id)
+    const matchingPositions = (queryClient.getQueryData(["positions", eventId]) || [])
+      .filter((position) => position.name === positionType.name);
+    const matchingPositionIds = new Set(matchingPositions.map((p) => p.id));
+
+    // ONにする場合: 既存のstaff_namesを上手に移動
+    // OFFにする場合: kamite+shimoteをマージしてstaff_namesに戻す
+    const positionMigrationMap = Object.fromEntries(
+      matchingPositions.map((position) => {
+        if (splitBySide) {
+          return [position.id, {
+            split_by_side: true,
+            staff_names_kamite: position.staff_names || [],
+            staff_names_shimote: [],
+          }];
+        } else {
+          const merged = [...new Set([...(position.staff_names_kamite || []), ...(position.staff_names_shimote || [])])];
+          return [position.id, {
+            split_by_side: false,
+            staff_names: merged,
+            staff_names_kamite: [],
+            staff_names_shimote: [],
+          }];
+        }
+      })
     );
+
     queryClient.setQueryData(["positionSideSettings", eventId], (old) => ({
       position_types: {
         ...(old?.position_types || {}),
@@ -101,8 +122,8 @@ export default function PositionTypeManagement({ eventId }) {
       positions: Object.fromEntries(
         Object.entries(old?.positions || {}).map(([positionId, data]) => [
           positionId,
-          splitBySide && matchingPositionIds.has(positionId)
-            ? { ...data, split_by_side: true, staff_names_kamite: [], staff_names_shimote: [] }
+          matchingPositionIds.has(positionId) && positionMigrationMap[positionId]
+            ? { ...data, ...positionMigrationMap[positionId] }
             : data,
         ])
       ),
@@ -110,13 +131,7 @@ export default function PositionTypeManagement({ eventId }) {
     }));
     queryClient.setQueryData(["positions", eventId], (old = []) =>
       old.map((position) => position.name === positionType.name
-        ? {
-            ...position,
-            split_by_side: splitBySide,
-            staff_names: splitBySide ? [] : (position.staff_names || []),
-            staff_names_kamite: splitBySide ? [] : (position.staff_names_kamite || []),
-            staff_names_shimote: splitBySide ? [] : (position.staff_names_shimote || []),
-          }
+        ? { ...position, ...(positionMigrationMap[position.id] || {}) }
         : position)
     );
     base44.functions.invoke("updatePositionSide", {

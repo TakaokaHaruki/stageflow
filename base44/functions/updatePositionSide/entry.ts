@@ -91,11 +91,20 @@ Deno.serve(async (req) => {
 
       for (const position of matchingPositions) {
         const existingSide = nextSideData.positions[position.id] || {};
-        const kamite = splitBySide ? [] : (existingSide.staff_names_kamite || []);
-        const shimote = splitBySide ? [] : (existingSide.staff_names_shimote || []);
-        const staffNames = splitBySide
-          ? []
-          : unique(position.staff_names || []);
+        let kamite: string[];
+        let shimote: string[];
+        let staffNames: string[];
+        if (splitBySide) {
+          // ON: 既存のstaff_namesを上手に移動
+          kamite = unique(position.staff_names || []);
+          shimote = [];
+          staffNames = kamite;
+        } else {
+          // OFF: kamite+shimoteをマージしてstaff_namesに戻す
+          kamite = [];
+          shimote = [];
+          staffNames = unique([...(existingSide.staff_names_kamite || []), ...(existingSide.staff_names_shimote || [])]);
+        }
         const updated = await base44.asServiceRole.entities.Position.update(position.id, { staff_names: staffNames });
         nextSideData.positions[position.id] = {
           ...existingSide,

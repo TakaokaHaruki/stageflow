@@ -182,14 +182,46 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     });
   };
 
+  const handleSplitBySideToggle = (enabled) => {
+    setForm((f) => {
+      if (enabled) {
+        // 上手下手ON: 既存スタッフを全員上手に移動
+        return {
+          ...f,
+          split_by_side: true,
+          staff_names_kamite: [...f.staff_names],
+          staff_names_shimote: [],
+        };
+      } else {
+        // 上手下手OFF: kamite+shimoteをマージしてstaff_namesに戻す
+        const merged = [...new Set([...f.staff_names_kamite, ...f.staff_names_shimote])];
+        return {
+          ...f,
+          split_by_side: false,
+          staff_names: merged,
+          staff_names_kamite: [],
+          staff_names_shimote: [],
+        };
+      }
+    });
+  };
+
   const handlePositionTypeSelect = (ptId) => {
     const pt = positionTypes.find((p) => p.id === ptId);
-    if (pt) setForm((f) => ({
-      ...f,
-      name: pt.name,
-      color: pt.color || f.color,
-      split_by_side: Boolean(pt.split_by_side),
-    }));
+    if (pt) {
+      const nextSplit = Boolean(pt.split_by_side);
+      setForm((f) => {
+        if (nextSplit === f.split_by_side) {
+          return { ...f, name: pt.name, color: pt.color || f.color };
+        }
+        if (nextSplit) {
+          return { ...f, name: pt.name, color: pt.color || f.color, split_by_side: true, staff_names_kamite: [...f.staff_names], staff_names_shimote: [] };
+        } else {
+          const merged = [...new Set([...f.staff_names_kamite, ...f.staff_names_shimote])];
+          return { ...f, name: pt.name, color: pt.color || f.color, split_by_side: false, staff_names: merged, staff_names_kamite: [], staff_names_shimote: [] };
+        }
+      });
+    }
   };
 
   return (
