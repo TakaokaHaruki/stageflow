@@ -14,7 +14,9 @@ import {
   rememberPositionSideSettings,
 } from "@/lib/positionSideSettings";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
-import { X, Check } from "lucide-react";
+import { X, Check, Plus } from "lucide-react";
+
+const SKILL_PRESETS = ["誘導", "受付", "音響", "照明", "映像", "司会", "警備", "救護", "物販", "清掃"];
 import { motion } from "framer-motion";
 
 const PRESET_COLORS = [
@@ -34,8 +36,10 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     color: position?.color || PRESET_COLORS[0],
     map_x: position?.map_x ?? null,
     map_y: position?.map_y ?? null,
+    required_skills: position?.required_skills || [],
     event_id: eventId,
   });
+  const [skillInput, setSkillInput] = useState("");
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -131,7 +135,8 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     prev.staff_names_kamite !== cur.staff_names_kamite ||
     prev.staff_names_shimote !== cur.staff_names_shimote ||
     prev.split_by_side !== cur.split_by_side ||
-    prev.color !== cur.color;
+    prev.color !== cur.color ||
+    JSON.stringify(prev.required_skills) !== JSON.stringify(cur.required_skills);
 
   useEffect(() => {
     if (!position) return;
@@ -323,6 +328,56 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
             </div>
           </div>
 
+          <div>
+            <Label>必要スキル（自動配置で優先）</Label>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {(form.required_skills || []).map((skill) => (
+                <span key={skill} className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30 text-xs font-medium">
+                  {skill}
+                  <button type="button" onClick={() => setForm((f) => ({ ...f, required_skills: f.required_skills.filter((s) => s !== skill) }))} className="ml-0.5 hover:text-destructive transition-colors">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {SKILL_PRESETS.filter((s) => !(form.required_skills || []).includes(s)).map((s) => (
+                <button key={s} type="button" onClick={() => setForm((f) => ({ ...f, required_skills: [...(f.required_skills || []), s] }))} className="text-[11px] px-2 py-0.5 rounded-full border border-border hover:border-primary hover:text-primary text-muted-foreground transition-colors">
+                  +{s}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1.5 mt-1.5">
+              <Input
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    const s = skillInput.trim();
+                    if (s && !(form.required_skills || []).includes(s)) {
+                      setForm((f) => ({ ...f, required_skills: [...(f.required_skills || []), s] }));
+                      setSkillInput("");
+                    }
+                  }
+                }}
+                placeholder="カスタムスキルを入力"
+                className="h-7 text-xs flex-1"
+              />
+              <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-0.5" type="button"
+                onClick={() => {
+                  const s = skillInput.trim();
+                  if (s && !(form.required_skills || []).includes(s)) {
+                    setForm((f) => ({ ...f, required_skills: [...(f.required_skills || []), s] }));
+                    setSkillInput("");
+                  }
+                }}
+                disabled={!skillInput.trim()}
+              >
+                <Plus className="w-3 h-3" />追加
+              </Button>
+            </div>
+          </div>
           <div>
             <Label>備考</Label>
             <Input className="mt-1" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="メモなど" />

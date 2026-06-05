@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+const SKILL_PRESETS = ["誘導", "受付", "音響", "照明", "映像", "司会", "警備", "救護", "物販", "清掃"];
 
 const PRESET_COLORS = [
   { label: "デフォルト", value: "" },
@@ -23,7 +25,9 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
   const [localName, setLocalName] = useState(staff.name);
   const [localNote, setLocalNote] = useState(staff.note || "");
   const [localColor, setLocalColor] = useState(staff.color || "");
-  const prevDataRef = useRef({ name: staff.name, note: staff.note || "", color: staff.color || "" });
+  const [localSkills, setLocalSkills] = useState(staff.skills || []);
+  const [skillInput, setSkillInput] = useState("");
+  const prevDataRef = useRef({ name: staff.name, note: staff.note || "", color: staff.color || "", skills: staff.skills || [] });
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
@@ -62,12 +66,21 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
     },
   });
 
+  const addSkill = (skill) => {
+    const s = skill.trim();
+    if (!s || localSkills.includes(s)) return;
+    setLocalSkills((prev) => [...prev, s]);
+    setSkillInput("");
+  };
+  const removeSkill = (skill) => setLocalSkills((prev) => prev.filter((s) => s !== skill));
+
   useEffect(() => {
     if (!localName.trim()) return;
     const prev = prevDataRef.current;
-    if (localName === prev.name && localNote === prev.note && localColor === prev.color) return;
+    const skillsChanged = JSON.stringify(localSkills) !== JSON.stringify(prev.skills);
+    if (localName === prev.name && localNote === prev.note && localColor === prev.color && !skillsChanged) return;
     const timer = setTimeout(() => {
-      const nextData = { name: localName.trim(), note: localNote.trim(), color: localColor };
+      const nextData = { name: localName.trim(), note: localNote.trim(), color: localColor, skills: localSkills };
       updateMutation.mutate(nextData, {
         onSuccess: () => {
           toast.success("保存しました");
@@ -76,7 +89,7 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
       });
     }, 500);
     return () => clearTimeout(timer);
-  }, [localName, localNote, localColor]);
+  }, [localName, localNote, localColor, localSkills]);
 
   return (
     <motion.div
@@ -106,6 +119,38 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
           <div>
             <label className="text-xs font-medium text-muted-foreground">備考</label>
             <Input value={localNote} onChange={(e) => setLocalNote(e.target.value)} placeholder="任意" className="mt-1" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">スキルタグ</label>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {localSkills.map((skill) => (
+                <span key={skill} className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30 text-xs font-medium">
+                  {skill}
+                  <button onClick={() => removeSkill(skill)} className="ml-0.5 hover:text-destructive transition-colors" aria-label="削除">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {SKILL_PRESETS.filter((s) => !localSkills.includes(s)).map((s) => (
+                <button key={s} onClick={() => addSkill(s)} className="text-[11px] px-2 py-0.5 rounded-full border border-border hover:border-primary hover:text-primary text-muted-foreground transition-colors">
+                  +{s}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1.5 mt-1.5">
+              <Input
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); addSkill(skillInput); } }}
+                placeholder="カスタムスキルを入力"
+                className="h-7 text-xs flex-1"
+              />
+              <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-0.5" onClick={() => addSkill(skillInput)} disabled={!skillInput.trim()}>
+                <Plus className="w-3 h-3" />追加
+              </Button>
+            </div>
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground">表示文字色</label>

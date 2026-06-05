@@ -258,6 +258,9 @@ export default function StaffManagement({ eventId }) {
                       <p className="font-medium text-xs" style={{ color: staff.color || undefined }}>{displayName}</p>
                       {staff.costume_change && <span className="text-[10px] px-1 rounded bg-purple-100 border border-purple-300 text-purple-700 dark:bg-purple-900/40 dark:border-purple-700 dark:text-purple-300 font-medium">着替</span>}
                       {staff.break && <span className="text-[10px] px-1 rounded bg-sky-100 border border-sky-300 text-sky-700 dark:bg-sky-900/40 dark:border-sky-700 dark:text-sky-300 font-medium">休憩</span>}
+                      {(staff.skills || []).map((skill) => (
+                        <span key={skill} className="text-[10px] px-1 rounded bg-primary/10 border border-primary/30 text-primary font-medium">{skill}</span>
+                      ))}
                     </div>
                     {staff.note && <p className="text-[10px] text-muted-foreground">{staff.note}</p>}
                     <div className="flex flex-wrap gap-0.5 mt-0.5">

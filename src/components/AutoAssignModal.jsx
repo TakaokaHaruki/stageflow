@@ -4,6 +4,14 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, Wand2, X, ChevronRight, Lock, LockOpen, ChevronDown } from "lucide-react";
 import { TIME_SLOTS, TIME_SLOT_STYLES } from "@/lib/constants";
 
+// スタッフがポジションの必要スキルにどれだけマッチするかのスコア（0〜）
+function skillMatchScore(staff, pos) {
+  const required = pos.required_skills || [];
+  if (required.length === 0) return 0;
+  const staffSkills = staff.skills || [];
+  return required.filter((s) => staffSkills.includes(s)).length;
+}
+
 export function computeAutoAssign(positions, staffList) {
   const plan = {};
   const warnings = [];
@@ -25,15 +33,13 @@ export function computeAutoAssign(positions, staffList) {
 
     if (unassignedInSlot.length === 0) return;
 
-    const prioritized = [...unassignedInSlot].sort((a, b) => {
-      const countUnassigned = (staff) =>
-        TIME_SLOTS.filter(
-          (sl) => !positions.some(
-            (p) => (p.time_slot || "開場中") === sl && (p.staff_names || []).includes(staff.name)
-          )
-        ).length;
-      return countUnassigned(b) - countUnassigned(a);
-    });
+    // 未配置スロット数が多い人を優先（均等配置）
+    const countUnassigned = (staff) =>
+      TIME_SLOTS.filter(
+        (sl) => !positions.some(
+          (p) => (p.time_slot || "開場中") === sl && (p.staff_names || []).includes(staff.name)
+        )
+      ).length;
 
     const slotPlan = {};
     const assignedThisRound = new Set();
@@ -42,16 +48,27 @@ export function computeAutoAssign(positions, staffList) {
       slotPlan[pos.id] = [];
     });
 
-    prioritized.forEach((staff) => {
-      if (assignedThisRound.has(staff.name)) return;
-      for (const pos of slotPositions) {
-        if ((pos.required_count ?? 0) === 0) continue;
-        const currentCount = (pos.staff_names || []).length + (slotPlan[pos.id] || []).length;
-        if (currentCount < (pos.required_count ?? 0)) {
-          slotPlan[pos.id].push(staff.name);
-          assignedThisRound.add(staff.name);
-          break;
-        }
+    // ポジションごとにスキルマッチを考慮して割り当て
+    slotPositions.forEach((pos) => {
+      if ((pos.required_count ?? 0) === 0) return;
+      const needed = (pos.required_count ?? 0) - (pos.staff_names || []).length;
+      if (needed <= 0) return;
+
+      // このポジション未割り当てのスタッフをスキルスコア→均等順でソート
+      const candidates = unassignedInSlot
+        .filter((s) => !assignedThisRound.has(s.name))
+        .sort((a, b) => {
+          const scoreDiff = skillMatchScore(b, pos) - skillMatchScore(a, pos);
+          if (scoreDiff !== 0) return scoreDiff;
+          return countUnassigned(b) - countUnassigned(a);
+        });
+
+      let filled = 0;
+      for (const staff of candidates) {
+        if (filled >= needed) break;
+        slotPlan[pos.id].push(staff.name);
+        assignedThisRound.add(staff.name);
+        filled++;
       }
     });
 
@@ -212,14 +229,26 @@ export default function AutoAssignModal({ positions, staffList, lockedNames = []
                     {slot}
                   </div>
                   <div className="space-y-1">
-                    {items.map(({ posName, newStaff }) =>
-                      newStaff.map((name) => (
-                        <div key={`${posName}-${name}`} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 text-xs">
-                          <span className="font-medium text-foreground">{name}</span>
-                          <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />
-                          <span className="text-muted-foreground">{posName}</span>
-                        </div>
-                      ))
+                    {items.map(({ posName, newStaff, pos }) =>
+                      newStaff.map((name) => {
+                        const staffObj = staffList.find((s) => s.name === name);
+                        const posObj = positions.find((p) => p.name === posName && (p.time_slot || "開場中") === slot);
+                        const matchedSkills = posObj && staffObj
+                          ? (posObj.required_skills || []).filter((s) => (staffObj.skills || []).includes(s))
+                          : [];
+                        return (
+                          <div key={`${posName}-${name}`} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 text-xs">
+                            <span className="font-medium text-foreground">{name}</span>
+                            {matchedSkills.length > 0 && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
+                                {matchedSkills.join("・")}
+                              </span>
+                            )}
+                            <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />
+                            <span className="text-muted-foreground">{posName}</span>
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                 </div>
