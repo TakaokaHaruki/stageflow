@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, ClipboardList, Plus, Download, Users, GripVertical, Trash2 } from "lucide-react";
+import { AlertCircle, ClipboardList, Plus, Download, Users, GripVertical, Trash2, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PositionCard from "@/components/PositionCard";
 import PositionBulkAddModal from "@/components/PositionBulkAddModal";
@@ -24,6 +24,7 @@ import {
 } from "@/lib/positionSideSettings";
 import PresetSelector from "@/components/PresetSelector";
 import { HiddenInEditMode, ModeLoadingPlaceholder, ModeVisibilityControls, useResolvedEventMode } from "@/components/ModeVisibilityControls";
+import AutoAssignModal from "@/components/AutoAssignModal";
 
 export default function StaffDragDropManager({ eventId }) {
   const queryClient = useQueryClient();
@@ -143,6 +144,7 @@ export default function StaffDragDropManager({ eventId }) {
   const [defaultSlot, setDefaultSlot] = useState("開場中");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(null); // slot name
+  const [showAutoAssign, setShowAutoAssign] = useState(false);
 
   const stopAutoScroll = useCallback(() => {
     autoScrollActiveRef.current = false;
@@ -386,6 +388,11 @@ export default function StaffDragDropManager({ eventId }) {
             label="配置表"
           />
           {canManageSettings && <PresetSelector eventId={eventId} compact positions={positions} />}
+          {canEdit && (
+            <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 shrink-0" onClick={() => setShowAutoAssign(true)} disabled={positions.length === 0}>
+              <Wand2 className="w-3 h-3" />自動配置
+            </Button>
+          )}
           <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 shrink-0" onClick={handleExportPDF} disabled={!isVisibilityReady || hideForUser || exportingPDF || positions.length === 0}>
             <Download className="w-3 h-3" />{exportingPDF ? '...' : 'PDF'}
           </Button>
@@ -644,6 +651,33 @@ export default function StaffDragDropManager({ eventId }) {
           confirmLabel="一括削除"
           onConfirm={() => handleBulkDelete(confirmBulkDelete)}
           onCancel={() => setConfirmBulkDelete(null)}
+        />
+      )}
+      {showAutoAssign && (
+        <AutoAssignModal
+          positions={positions}
+          staffList={staffList}
+          onCancel={() => setShowAutoAssign(false)}
+          onConfirm={async (plan) => {
+            setShowAutoAssign(false);
+            await Promise.all(
+              Object.entries(plan).map(([positionId, newStaff]) => {
+                const pos = positions.find((p) => p.id === positionId);
+                if (!pos) return Promise.resolve();
+                const merged = [...new Set([...(pos.staff_names || []), ...newStaff])];
+                return updatePositionMutation.mutateAsync({
+                  positionId,
+                  data: {
+                    staff_names: merged,
+                    split_by_side: Boolean(pos.split_by_side),
+                    staff_names_kamite: pos.staff_names_kamite || [],
+                    staff_names_shimote: pos.staff_names_shimote || [],
+                  },
+                });
+              })
+            );
+            queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+          }}
         />
       )}
         </>
