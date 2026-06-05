@@ -210,31 +210,6 @@ export default function StaffDragDropManager({ eventId }) {
     setConfirmBulkDelete(null);
   };
 
-  const getRequiredCountForSlot = (positionType, slot) => {
-    if (slot === TIME_SLOTS[0]) return positionType.required_count_before ?? positionType.required_count ?? 0;
-    if (slot === TIME_SLOTS[1]) return positionType.required_count_during ?? positionType.required_count ?? 0;
-    return positionType.required_count_after ?? positionType.required_count ?? 0;
-  };
-
-  const handleBulkCreatePositions = async (slot) => {
-    const existingNames = new Set((grouped[slot] || []).map((p) => p.name));
-    const targets = positionTypes.filter((pt) => !existingNames.has(pt.name));
-    if (targets.length === 0) return;
-    const startOrder = grouped[slot]?.length || 0;
-    await Promise.all(targets.map((pt, idx) =>
-      base44.entities.Position.create({
-        event_id: eventId,
-        name: pt.name,
-        time_slot: slot,
-        staff_names: [],
-        notes: "",
-        color: pt.color || "#6366f1",
-        required_count: getRequiredCountForSlot(pt, slot),
-        order: startOrder + idx,
-      })
-    ));
-    queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
-  };
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Position.delete(id),
@@ -442,11 +417,7 @@ export default function StaffDragDropManager({ eventId }) {
                 </div>
                 {isAdmin && (
                   <div className="flex items-center gap-1">
-                    <button onClick={() => handleBulkCreatePositions(slot)}
-                      title="ポジション種別をこの時間帯に一括登録"
-                      className="text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/60 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 text-current transition-colors font-medium select-none">
-                      <Plus className="w-2.5 h-2.5" />一括登録
-                    </button>
+
                     <button onClick={() => openAdd(slot)}
                       title="ポジションを追加"
                       className="text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/60 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 text-current transition-colors font-medium select-none">
