@@ -178,9 +178,6 @@ function LogEntry({ log, onUndo, undoPending }) {
             {log.actor_name && (
               <span className="text-[10px] text-muted-foreground font-medium">👤 {log.actor_name}</span>
             )}
-            {log.actor_email && (
-              <span className="text-[10px] text-muted-foreground">({log.actor_email})</span>
-            )}
             <span className="text-[10px] text-muted-foreground">🕐 {timeStr}</span>
           </div>
         </div>
