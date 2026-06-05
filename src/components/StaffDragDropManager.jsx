@@ -445,7 +445,8 @@ export default function StaffDragDropManager({ eventId }) {
           const style = TIME_SLOT_STYLES[slot];
           const slotPositions = grouped[slot];
           const slotRequiredCount = slotPositions.reduce((sum, p) => sum + (p.required_count ?? 0), 0);
-          const slotAssignedCount = [...new Set(slotPositions.flatMap((p) => p.staff_names || []))].length;
+          const slotAssignedStaffNames = new Set(slotPositions.flatMap((p) => p.staff_names || []));
+          const slotAssignedCount = staffList.filter((s) => slotAssignedStaffNames.has(s.name)).length;
           const slotBorderClass = slot === "開場中" ? "border-amber-400 dark:border-amber-500" : slot === "開演中" ? "border-blue-400 dark:border-blue-500" : "border-slate-400 dark:border-slate-400";
           return (
             <div key={slot} className={`border-2 rounded-lg overflow-hidden ${slotBorderClass}`}>
