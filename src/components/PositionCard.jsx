@@ -1,20 +1,22 @@
-import { Pencil, Trash2, Minus, Plus } from "lucide-react";
+import { Pencil, Trash2, Minus, Plus, Lock, LockOpen } from "lucide-react";
 import { getStaffDisplayName } from "@/lib/staffName";
 
-function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, side = null }) {
+function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, isLocked, side = null }) {
   const staffData = staffList.find((s) => s.name === name);
   const displayName = getStaffDisplayName(name, maskStaffNames);
   const nameColor = staffData?.color || undefined;
   return (
     <div
-      draggable={draggable && isAdmin}
-      onDragStart={draggable && isAdmin && onStaffDragStart ? (e) => onStaffDragStart(e, name, pos.id) : undefined}
+      draggable={draggable && isAdmin && !isLocked}
+      onDragStart={draggable && isAdmin && !isLocked && onStaffDragStart ? (e) => onStaffDragStart(e, name, pos.id) : undefined}
       onDragEnd={draggable && isAdmin ? onStaffDragEnd : undefined}
       className={["flex items-center justify-between gap-2 px-2 py-0.5 select-none",
-        draggable && isAdmin ? "cursor-move hover:bg-muted/50" : "",
+        isLocked ? "bg-amber-50/60 dark:bg-amber-900/20" : "",
+        draggable && isAdmin && !isLocked ? "cursor-move hover:bg-muted/50" : "",
         draggable && draggedStaff === name ? "opacity-50" : ""].join(" ")}
     >
       <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-1 gap-y-0.5">
+        {isLocked && <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />}
         <span className="text-xs font-medium" style={{ color: nameColor }}>{displayName}</span>
         {staffData?.note && <span className="text-[10px] text-muted-foreground">({staffData.note})</span>}
         {staffData?.costume_change && (
@@ -24,8 +26,17 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
           <span className="text-[10px] px-1 py-0.5 rounded bg-sky-100 border border-sky-300 text-sky-700 dark:bg-sky-900/40 dark:border-sky-700 dark:text-sky-300 font-medium">休憩</span>
         )}
       </div>
-      {isAdmin && (onStaffEdit || onStaffRemove) && (
+      {isAdmin && (
         <div className="flex items-center gap-0.5 shrink-0">
+          {onToggleLock && (
+            <button
+              onClick={() => onToggleLock(name)}
+              className={`p-1 rounded transition-colors ${isLocked ? "text-amber-500 hover:text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/40" : "text-muted-foreground hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20"}`}
+              title={isLocked ? "ロック解除" : "ロック（自動配置から除外）"}
+            >
+              {isLocked ? <Lock className="w-3 h-3" /> : <LockOpen className="w-3 h-3" />}
+            </button>
+          )}
           {onStaffEdit && staffData && (
             <button onClick={() => onStaffEdit(staffData)} className="p-1 rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors" title="スタッフ編集">
               <Pencil className="w-3 h-3" />
@@ -45,7 +56,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
 export default function PositionCard({
   pos, isAdmin, draggable = false, draggedStaff = null,
   onEdit, onDelete, onDragOver, onDrop, onStaffDragStart, onStaffDragEnd, onStaffRemove,
-  onStaffEdit, onDropSide,
+  onStaffEdit, onDropSide, onToggleLock, lockedNames = [],
   emptyLabel = "スタッフ未登録", staffList = [],
   requiredCount = 0, onRequiredCountChange, occupiedInSlot = [],
   maskStaffNames = false,
@@ -64,7 +75,7 @@ export default function PositionCard({
     else statusBadge = { label: `超過${Math.abs(diff)}名`, cls: "bg-red-100 border-red-300 text-red-800 dark:bg-red-900/40 dark:border-red-700 dark:text-red-300" };
   }
 
-  const commonRowProps = { pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove };
+  const commonRowProps = { pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock };
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-colors"
@@ -109,7 +120,7 @@ export default function PositionCard({
               >
                 <div className="px-2 py-1 text-[10px] font-bold text-muted-foreground bg-muted/30">{side.label}</div>
                 {side.names.length > 0 ? side.names.map((name, i) => (
-                  <StaffRow key={`${pos.id}-${side.key}-${name}-${i}`} name={name} {...commonRowProps} />
+                  <StaffRow key={`${pos.id}-${side.key}-${name}-${i}`} name={name} isLocked={lockedNames.includes(name)} {...commonRowProps} />
                 )) : (
                   <div className="px-2 py-2 text-[11px] text-muted-foreground">{emptyLabel}</div>
                 )}
@@ -117,7 +128,7 @@ export default function PositionCard({
             ))}
           </div>
         ) : staffNames.length > 0 ? staffNames.map((name, i) => (
-          <StaffRow key={draggable ? `${pos.id}-${name}` : i} name={name} {...commonRowProps} />
+          <StaffRow key={draggable ? `${pos.id}-${name}` : i} name={name} isLocked={lockedNames.includes(name)} {...commonRowProps} />
         )) : (
           <div className="px-2 py-0.5 text-[11px] text-muted-foreground">{emptyLabel}</div>
         )}

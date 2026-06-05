@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, ClipboardList, Plus, Download, Users, GripVertical, Trash2, Wand2 } from "lucide-react";
+import { AlertCircle, ClipboardList, Plus, Download, Users, GripVertical, Trash2, Wand2, Lock, LockOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PositionCard from "@/components/PositionCard";
 import PositionBulkAddModal from "@/components/PositionBulkAddModal";
@@ -16,6 +16,7 @@ import { unwrapFunctionResponse } from "@/lib/base44Response";
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { useOperationLog } from "@/hooks/useOperationLog";
+import { useLockedStaff } from "@/hooks/useLockedStaff";
 import {
   applyPositionSideMutation,
   applyPositionSideSettingsToPositions,
@@ -31,6 +32,7 @@ export default function StaffDragDropManager({ eventId }) {
   const queryClient = useQueryClient();
   const { canEdit, canManageSettings, role } = useUserRole();
   const { record } = useOperationLog(eventId);
+  const { lockedNames, isLocked, toggleLock, clearAllLocks } = useLockedStaff(eventId, event ?? null);
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -522,6 +524,8 @@ export default function StaffDragDropManager({ eventId }) {
                               slotPositions.filter((p) => p.id !== pos.id).flatMap((p) => p.staff_names || [])
                             )]}
                             maskStaffNames={shouldMaskStaffNames}
+                            onToggleLock={isAdmin ? toggleLock : undefined}
+                            lockedNames={lockedNames}
                           />
                         </div>
                       </div>
@@ -613,6 +617,18 @@ export default function StaffDragDropManager({ eventId }) {
                       </div>
                     )}
                     {isAdmin && (
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <button
+                          onClick={() => toggleLock(s.name)}
+                          className={`flex items-center gap-0.5 text-[11px] px-1.5 py-0.5 rounded border transition-colors ${isLocked(s.name) ? "bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-300" : "border-border text-muted-foreground hover:border-amber-300 hover:text-amber-600"}`}
+                          title={isLocked(s.name) ? "ロック解除" : "ロック（自動配置から除外）"}
+                        >
+                          {isLocked(s.name) ? <Lock className="w-2.5 h-2.5" /> : <LockOpen className="w-2.5 h-2.5" />}
+                          {isLocked(s.name) ? "固定中" : "固定"}
+                        </button>
+                      </div>
+                    )}
+                    {isAdmin && (
                       <div className="flex items-center gap-3 mt-0.5">
                         <label className="flex items-center gap-1 cursor-pointer select-none">
                           <input
@@ -688,6 +704,8 @@ export default function StaffDragDropManager({ eventId }) {
         <AutoAssignModal
           positions={positions}
           staffList={staffList}
+          lockedNames={lockedNames}
+          onClearLocks={clearAllLocks}
           onCancel={() => setShowAutoAssign(false)}
           onConfirm={async (plan) => {
             setShowAutoAssign(false);

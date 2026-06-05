@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Wand2, X, ChevronRight } from "lucide-react";
+import { AlertTriangle, Wand2, X, ChevronRight, Lock, LockOpen, ChevronDown } from "lucide-react";
 import { TIME_SLOTS, TIME_SLOT_STYLES } from "@/lib/constants";
 
 export function computeAutoAssign(positions, staffList) {
-  // 時間帯ごとに処理
-  const plan = {}; // { positionId: [staffName, ...] }
-  const warnings = []; // 不足ポジション名
+  const plan = {};
+  const warnings = [];
 
   TIME_SLOTS.forEach((slot) => {
     const slotPositions = positions
@@ -16,19 +15,16 @@ export function computeAutoAssign(positions, staffList) {
 
     if (slotPositions.length === 0) return;
 
-    // このスロットで既に配置済みのスタッフ
     const alreadyAssignedInSlot = new Set(
       slotPositions.flatMap((p) => p.staff_names || [])
     );
 
-    // このスロットで未配置のスタッフを抽出
     const unassignedInSlot = staffList.filter(
       (s) => !alreadyAssignedInSlot.has(s.name)
     );
 
     if (unassignedInSlot.length === 0) return;
 
-    // 未配置スロット数（全時間帯での未配置時間帯数）でソート（多い順 = 優先）
     const prioritized = [...unassignedInSlot].sort((a, b) => {
       const countUnassigned = (staff) =>
         TIME_SLOTS.filter(
@@ -39,9 +35,7 @@ export function computeAutoAssign(positions, staffList) {
       return countUnassigned(b) - countUnassigned(a);
     });
 
-    // 各ポジションへ割り当て
-    // plan[posId] に追加予定スタッフを蓄積
-    const slotPlan = {}; // posId -> [newStaff]
+    const slotPlan = {};
     const assignedThisRound = new Set();
 
     slotPositions.forEach((pos) => {
@@ -50,7 +44,6 @@ export function computeAutoAssign(positions, staffList) {
 
     prioritized.forEach((staff) => {
       if (assignedThisRound.has(staff.name)) return;
-      // required_count が 0 のポジションはスキップ
       for (const pos of slotPositions) {
         if ((pos.required_count ?? 0) === 0) continue;
         const currentCount = (pos.staff_names || []).length + (slotPlan[pos.id] || []).length;
@@ -62,14 +55,12 @@ export function computeAutoAssign(positions, staffList) {
       }
     });
 
-    // plan へマージ
     Object.entries(slotPlan).forEach(([posId, names]) => {
       if (names.length > 0) {
         plan[posId] = names;
       }
     });
 
-    // 不足チェック
     slotPositions.forEach((pos) => {
       if ((pos.required_count ?? 0) === 0) return;
       const totalAfter =
@@ -83,12 +74,15 @@ export function computeAutoAssign(positions, staffList) {
   return { plan, warnings };
 }
 
-export default function AutoAssignModal({ positions, staffList, onConfirm, onCancel }) {
-  const { plan, warnings } = computeAutoAssign(positions, staffList);
+export default function AutoAssignModal({ positions, staffList, lockedNames = [], onConfirm, onCancel, onClearLocks }) {
+  const [lockedSectionOpen, setLockedSectionOpen] = useState(false);
+
+  // ロック中スタッフを除外して計算
+  const freeStaffList = staffList.filter((s) => !lockedNames.includes(s.name));
+  const { plan, warnings } = computeAutoAssign(positions, freeStaffList);
 
   const totalAssignments = Object.values(plan).reduce((s, arr) => s + arr.length, 0);
 
-  // 表示用: 時間帯 -> [{posName, staffNames}]
   const displayBySlot = TIME_SLOTS.map((slot) => {
     const slotPositions = positions.filter((p) => (p.time_slot || "開場中") === slot);
     const items = slotPositions
@@ -96,6 +90,14 @@ export default function AutoAssignModal({ positions, staffList, onConfirm, onCan
       .filter((item) => item.newStaff.length > 0);
     return { slot, items };
   }).filter((s) => s.items.length > 0);
+
+  // ロック中スタッフのポジション情報
+  const lockedStaffInfo = lockedNames.map((name) => {
+    const assignedPositions = positions
+      .filter((p) => (p.staff_names || []).includes(name))
+      .map((p) => `${p.time_slot || "開場中"}：${p.name}`);
+    return { name, assignedPositions };
+  });
 
   return (
     <motion.div
@@ -127,27 +129,76 @@ export default function AutoAssignModal({ positions, staffList, onConfirm, onCan
           </button>
         </div>
 
-        {/* 警告バナー */}
-        {warnings.length > 0 && (
-          <div className="mx-4 mt-3 px-3 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 shrink-0">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-bold text-amber-800 dark:text-amber-300">一部ポジションで人数が不足しています</p>
-                <ul className="mt-1 space-y-0.5">
-                  {warnings.map((w, i) => (
-                    <li key={i} className="text-[11px] text-amber-700 dark:text-amber-400">
-                      {w.slot}：{w.posName}（{w.actual}/{w.required}名）
-                    </li>
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          {/* ロック中スタッフセクション */}
+          {lockedStaffInfo.length > 0 && (
+            <div className="rounded-xl border border-amber-300 dark:border-amber-700 overflow-hidden">
+              <button
+                className="w-full flex items-center justify-between px-3 py-2 bg-amber-50 dark:bg-amber-900/30 text-left"
+                onClick={() => setLockedSectionOpen((v) => !v)}
+              >
+                <div className="flex items-center gap-2">
+                  <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  <span className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                    固定済み（ロック中）{lockedStaffInfo.length}名 — 計算対象外
+                  </span>
+                </div>
+                <ChevronDown className={`w-3.5 h-3.5 text-amber-600 transition-transform ${lockedSectionOpen ? "rotate-180" : ""}`} />
+              </button>
+              {lockedSectionOpen && (
+                <div className="px-3 py-2 space-y-1 bg-amber-50/50 dark:bg-amber-900/10">
+                  {lockedStaffInfo.map(({ name, assignedPositions }) => (
+                    <div key={name} className="flex items-start gap-2 py-0.5">
+                      <Lock className="w-3 h-3 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="text-xs font-medium text-foreground">{name}</span>
+                        {assignedPositions.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 mt-0.5">
+                            {assignedPositions.map((pos) => (
+                              <span key={pos} className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300">
+                                {pos}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground ml-1">未配置</span>
+                        )}
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                  {onClearLocks && (
+                    <button
+                      onClick={onClearLocks}
+                      className="mt-1 flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-400 hover:underline"
+                    >
+                      <LockOpen className="w-3 h-3" />ロックを全解除
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 警告バナー */}
+          {warnings.length > 0 && (
+            <div className="px-3 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-bold text-amber-800 dark:text-amber-300">一部ポジションで人数が不足しています</p>
+                  <ul className="mt-1 space-y-0.5">
+                    {warnings.map((w, i) => (
+                      <li key={i} className="text-[11px] text-amber-700 dark:text-amber-400">
+                        {w.slot}：{w.posName}（{w.actual}/{w.required}名）
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* 割り当て一覧 */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          {/* 割り当て一覧 */}
           {totalAssignments === 0 ? (
             <div className="text-center py-8 text-sm text-muted-foreground">
               割り当て可能なスタッフがいません

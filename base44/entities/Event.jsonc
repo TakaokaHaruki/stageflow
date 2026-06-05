@@ -76,6 +76,14 @@
     "line_group_id": {
       "type": "string",
       "description": "LINE\u901a\u77e5\u5148\u30b0\u30eb\u30fc\u30d7ID"
+    },
+    "locked_staff_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "\u81ea\u52d5\u914d\u7f6e\u304b\u3089\u9664\u5916\u3059\u308b\u30ed\u30c3\u30af\u6e08\u307f\u30b9\u30bf\u30c3\u30d5\u540d\u30ea\u30b9\u30c8"
     }
   },
   "required": [
