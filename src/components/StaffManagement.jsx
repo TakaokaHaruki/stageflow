@@ -253,17 +253,21 @@ export default function StaffManagement({ eventId }) {
                   <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px] shrink-0">
                     {displayName.charAt(0)}
                   </div>
-                  <div className="flex-1 min-w-0 flex items-center gap-1 flex-wrap">
-                    <p className="font-medium text-xs" style={{ color: staff.color || undefined }}>{displayName}</p>
-                    {staff.note && <span className="text-[10px] text-muted-foreground">({staff.note})</span>}
-                    {staff.costume_change && <span className="text-[10px] px-1 rounded bg-purple-100 border border-purple-300 text-purple-700 dark:bg-purple-900/40 dark:border-purple-700 dark:text-purple-300 font-medium">着替</span>}
-                    {staff.break && <span className="text-[10px] px-1 rounded bg-sky-100 border border-sky-300 text-sky-700 dark:bg-sky-900/40 dark:border-sky-700 dark:text-sky-300 font-medium">休憩</span>}
-                    {unassigned && <span className="flex items-center gap-0.5 text-[10px] text-amber-700 dark:text-amber-300"><AlertCircle className="w-2.5 h-2.5" />未配置</span>}
-                    {assigned.map((a, i) =>
-                      <span key={i} className={`text-[10px] font-semibold px-1 rounded border ${TIME_SLOT_STYLES[a.slot]?.badge || "bg-slate-100 border-slate-200 text-slate-700"}`}>
-                        {a.slot}：{a.posName}
-                      </span>
-                    )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <p className="font-medium text-xs" style={{ color: staff.color || undefined }}>{displayName}</p>
+                      {staff.costume_change && <span className="text-[10px] px-1 rounded bg-purple-100 border border-purple-300 text-purple-700 dark:bg-purple-900/40 dark:border-purple-700 dark:text-purple-300 font-medium">着替</span>}
+                      {staff.break && <span className="text-[10px] px-1 rounded bg-sky-100 border border-sky-300 text-sky-700 dark:bg-sky-900/40 dark:border-sky-700 dark:text-sky-300 font-medium">休憩</span>}
+                    </div>
+                    {staff.note && <p className="text-[10px] text-muted-foreground">{staff.note}</p>}
+                    <div className="flex flex-wrap gap-0.5 mt-0.5">
+                      {unassigned && <span className="flex items-center gap-0.5 text-[10px] text-amber-700 dark:text-amber-300"><AlertCircle className="w-2.5 h-2.5" />未配置</span>}
+                      {assigned.map((a, i) =>
+                        <span key={i} className={`text-[10px] font-semibold px-1 rounded border ${TIME_SLOT_STYLES[a.slot]?.badge || "bg-slate-100 border-slate-200 text-slate-700"}`}>
+                          {a.slot}：{a.posName}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <button onClick={() => canUseEditTools && setEditingStaff(staff)} disabled={!canUseEditTools} className="p-1 rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none" title="編集">
                     <Pencil className="w-3 h-3" />
