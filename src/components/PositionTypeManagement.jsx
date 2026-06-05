@@ -169,10 +169,7 @@ export default function PositionTypeManagement({ eventId }) {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <h2 className="text-sm font-bold flex items-center gap-1.5 mb-0.5"><Settings className="w-4 h-4 text-primary" />管理設定</h2>
-        </div>
+      <div className="flex items-center justify-end mb-3">
         <button
           onClick={() => setIsDark(!isDark)}
           className="p-2 rounded-lg hover:bg-muted transition-colors shrink-0"
