@@ -1,0 +1,75 @@
+{
+  "name": "OperationLog",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "\u5bfe\u8c61\u30a4\u30d9\u30f3\u30c8ID"
+    },
+    "action_type": {
+      "type": "string",
+      "description": "\u64cd\u4f5c\u7a2e\u5225 (staff_add, staff_delete, staff_update, position_assign, position_unassign, position_add, position_delete, position_reorder, chief_update, feature_toggle, announcement_create, announcement_delete, preset_apply)",
+      "enum": [
+        "staff_add",
+        "staff_delete",
+        "staff_update",
+        "position_assign",
+        "position_unassign",
+        "position_add",
+        "position_delete",
+        "position_reorder",
+        "chief_update",
+        "feature_toggle",
+        "announcement_create",
+        "announcement_delete",
+        "preset_apply"
+      ]
+    },
+    "actor_name": {
+      "type": "string",
+      "description": "\u64cd\u4f5c\u8005\u540d"
+    },
+    "actor_email": {
+      "type": "string",
+      "description": "\u64cd\u4f5c\u8005\u30e1\u30fc\u30eb"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u64cd\u4f5c\u306e\u8aac\u660e\u6587"
+    },
+    "snapshot_before": {
+      "type": "object",
+      "description": "\u64cd\u4f5c\u524d\u306e\u30c7\u30fc\u30bf\u30b9\u30ca\u30c3\u30d7\u30b7\u30e7\u30c3\u30c8\uff08\u5fa9\u5143\u7528\uff09",
+      "default": {}
+    },
+    "snapshot_after": {
+      "type": "object",
+      "description": "\u64cd\u4f5c\u5f8c\u306e\u30c7\u30fc\u30bf\u30b9\u30ca\u30c3\u30d7\u30b7\u30e7\u30c3\u30c8",
+      "default": {}
+    },
+    "is_undone": {
+      "type": "boolean",
+      "description": "\u5fa9\u5143\u6e08\u307f\u30d5\u30e9\u30b0",
+      "default": false
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "\u5bfe\u8c61\u30a8\u30f3\u30c6\u30a3\u30c6\u30a3\u7a2e\u5225 (Staff, Position, Event, etc.)"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "\u5bfe\u8c61\u30a8\u30f3\u30c6\u30a3\u30c6\u30a3ID"
+    }
+  },
+  "required": [
+    "event_id",
+    "action_type",
+    "description"
+  ],
+  "rls": {
+    "create": false,
+    "read": true,
+    "update": false,
+    "delete": false
+  }
+}

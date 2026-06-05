@@ -15,6 +15,7 @@ import { unwrapFunctionResponse } from "@/lib/base44Response";
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { HiddenInEditMode, ModeLoadingPlaceholder, ModeVisibilityControls, useResolvedEventMode } from "@/components/ModeVisibilityControls";
+import { useOperationLog } from "@/hooks/useOperationLog";
 
 export default function StaffManagement({ eventId }) {
   const [name, setName] = useState("");
@@ -26,6 +27,7 @@ export default function StaffManagement({ eventId }) {
   const queryClient = useQueryClient();
   const { canEdit, canManageSettings, role } = useUserRole();
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
+  const { record } = useOperationLog(eventId);
 
 
   const { data: staffList = [], isLoading } = useQuery({
@@ -76,11 +78,19 @@ export default function StaffManagement({ eventId }) {
       queryClient.setQueryData(["staff", eventId], context?.previousStaff);
       toast.error("スタッフの追加に失敗しました");
     },
-    onSuccess: (createdStaff, __, context) => {
+    onSuccess: (createdStaff, variables, context) => {
       if (createdStaff?.id) {
         queryClient.setQueryData(["staff", eventId], (old = []) =>
           old.map((staff) => staff.id === context?.optimisticId ? createdStaff : staff)
         );
+        record({
+          action_type: "staff_add",
+          description: `スタッフ「${variables.name}」を追加しました`,
+          entity_type: "Staff",
+          entity_id: createdStaff.id,
+          snapshot_before: {},
+          snapshot_after: createdStaff,
+        });
       }
       queryClient.invalidateQueries({ queryKey: ["staff", eventId] });
     }
@@ -89,6 +99,16 @@ export default function StaffManagement({ eventId }) {
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
       const staffToDelete = staffList.find((s) => s.id === id);
+      if (staffToDelete) {
+        record({
+          action_type: "staff_delete",
+          description: `スタッフ「${staffToDelete.name}」を削除しました`,
+          entity_type: "Staff",
+          entity_id: id,
+          snapshot_before: { ...staffToDelete, event_id: eventId },
+          snapshot_after: {},
+        });
+      }
       await base44.functions.invoke("updateStaffRecord", { action: "delete", staffId: id });
       if (staffToDelete) {
         const affected = positions.filter((p) => (p.staff_names || []).includes(staffToDelete.name));
@@ -161,6 +181,7 @@ export default function StaffManagement({ eventId }) {
     },
     onSuccess: (updatedEvent, chief_staff_name) => {
       const savedChiefName = updatedEvent?.chief_staff_name ?? chief_staff_name;
+      const previousChief = event?.chief_staff_name || "";
       setLocalChiefName(savedChiefName);
       window.localStorage.setItem(`stageflow:event-chief:${eventId}`, savedChiefName);
       queryClient.setQueryData(["event", eventId], (old) => {
@@ -168,6 +189,14 @@ export default function StaffManagement({ eventId }) {
           return old.map((item) => item.id === (event?.id || eventId) ? { ...item, chief_staff_name: savedChiefName } : item);
         }
         return old ? { ...old, chief_staff_name: savedChiefName } : old;
+      });
+      record({
+        action_type: "chief_update",
+        description: `チーフを「${previousChief || "未設定"}」→「${savedChiefName || "未設定"}」に変更しました`,
+        entity_type: "Event",
+        entity_id: event?.id || eventId,
+        snapshot_before: { chief_staff_name: previousChief },
+        snapshot_after: { chief_staff_name: savedChiefName },
       });
       toast.success("チーフを保存しました");
     },

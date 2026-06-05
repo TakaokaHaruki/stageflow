@@ -1,0 +1,54 @@
+import { useCallback, useRef } from "react";
+import { base44 } from "@/api/base44Client";
+
+/**
+ * 操作ログ記録フック
+ * record(entry) で非同期にログ保存（失敗しても無視）
+ */
+export function useOperationLog(eventId) {
+  const actorRef = useRef(null);
+
+  // 操作者情報をキャッシュ
+  const getActor = useCallback(async () => {
+    if (actorRef.current) return actorRef.current;
+    try {
+      const user = await base44.auth.me();
+      actorRef.current = { name: user?.full_name || user?.email || "不明", email: user?.email || "" };
+    } catch {
+      actorRef.current = { name: "不明", email: "" };
+    }
+    return actorRef.current;
+  }, []);
+
+  /**
+   * @param {Object} entry
+   * @param {string} entry.action_type
+   * @param {string} entry.description
+   * @param {string} [entry.entity_type]
+   * @param {string} [entry.entity_id]
+   * @param {Object} [entry.snapshot_before]
+   * @param {Object} [entry.snapshot_after]
+   */
+  const record = useCallback(async (entry) => {
+    if (!eventId) return;
+    try {
+      const actor = await getActor();
+      await base44.entities.OperationLog.create({
+        event_id: eventId,
+        action_type: entry.action_type,
+        description: entry.description,
+        actor_name: actor.name,
+        actor_email: actor.email,
+        entity_type: entry.entity_type || "",
+        entity_id: entry.entity_id || "",
+        snapshot_before: entry.snapshot_before || {},
+        snapshot_after: entry.snapshot_after || {},
+        is_undone: false,
+      });
+    } catch {
+      // ログ保存失敗は無視
+    }
+  }, [eventId, getActor]);
+
+  return { record };
+}

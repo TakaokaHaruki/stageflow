@@ -1,5 +1,6 @@
 import { MessageCircle, MapPin, CheckSquare, Clock } from "lucide-react";
 import LineNotifySettings from "@/components/LineNotifySettings";
+import ActivityLogViewer from "@/components/ActivityLogViewer";
 
 export default function AdminSettings({
   eventId,
@@ -62,6 +63,9 @@ export default function AdminSettings({
 
       {/* LINE notify */}
       <LineNotifySettings eventId={eventId} event={event} />
+
+      {/* Operation log */}
+      <ActivityLogViewer eventId={eventId} />
     </div>
   );
 }
