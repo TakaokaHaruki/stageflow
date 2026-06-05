@@ -20,14 +20,8 @@ async function processEvents(req, events) {
   const token = Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN');
 
   for (const event of events) {
-    if (
-      event.type !== 'message' ||
-      event.message?.type !== 'text' ||
-      event.source?.type !== 'group'
-    ) continue;
-
-    const text = event.message.text?.trim();
-    if (text !== '登録') continue;
+    if (event.source?.type !== 'group') continue;
+    if (event.type !== 'message' && event.type !== 'postback') continue;
 
     const groupId = event.source.groupId;
     if (!groupId) continue;
