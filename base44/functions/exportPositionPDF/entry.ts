@@ -24,24 +24,24 @@ function generateHTML(event, positions, staff, type) {
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { 
         font-family: 'Noto Sans JP', 'Arial Unicode MS', sans-serif; 
-        padding: 1px 16px;
+        padding: 4px 22px;
         background: white;
         color: #000;
-        font-size: 14px;
+        font-size: 15px;
       }
-      .title-block { display: flex; align-items: center; gap: 12px; margin: 0 0 4px 0; }
-      .event-title { font-size: 21px; font-weight: bold; }
-      .event-info { font-size: 13px; color: #555; }
-      table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 0 0 3px 0; }
-      td, th { border: 1px solid #999; padding: 4px 4px; vertical-align: middle; text-align: left; line-height: 1.3; overflow: visible; }
+      .title-block { display: flex; align-items: center; gap: 12px; margin: 0 0 6px 0; }
+      .event-title { font-size: 23px; font-weight: bold; }
+      .event-info { font-size: 14px; color: #555; }
+      table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 0 0 4px 0; }
+      td, th { border: 1px solid #bbb; padding: 6px 8px; vertical-align: middle; text-align: left; line-height: 1.4; overflow: visible; }
       
       /* 時間帯セクションヘッダー（サーモン色） */
       tr.slot-header td { 
-        background: #f4a07a; 
+        background: #f2a482; 
         font-weight: bold; 
         text-align: left;
-        padding: 4px 6px;
-        font-size: 15.5px;
+        padding: 6px 8px;
+        font-size: 16px;
         line-height: 1.4;
         vertical-align: middle;
       }
@@ -51,16 +51,17 @@ function generateHTML(event, positions, staff, type) {
       
       /* カラムヘッダー行（グレー） */
       tr.col-header td { 
-        background: #c8c8c8; 
+        background: #cacaca; 
         font-weight: bold; 
         text-align: left;
-        font-size: 13px;
+        font-size: 14px;
+        padding: 6px 8px;
         vertical-align: middle;
       }
       
       /* ポジション名列（薄いベージュ） */
       td.pos-name { 
-        background: #f5f0e8; 
+        background: #f3ede2; 
         font-weight: bold; 
         text-align: left;
         white-space: nowrap;
@@ -69,7 +70,7 @@ function generateHTML(event, positions, staff, type) {
       
       /* 人数列 */
       td.count { 
-        background: #f5f0e8; 
+        background: #f3ede2; 
         text-align: center; 
         white-space: nowrap;
         font-weight: bold;
@@ -78,7 +79,7 @@ function generateHTML(event, positions, staff, type) {
       
       /* スタッフ名セル（薄い黄色） */
       td.staff-cell { 
-        background: #fffde7; 
+        background: #fffee8; 
         text-align: center;
         white-space: nowrap;
         vertical-align: middle;
@@ -109,16 +110,16 @@ function generateHTML(event, positions, staff, type) {
       tr.spacer td { 
         border: none; 
         background: white; 
-        height: 6px; 
+        height: 8px; 
         padding: 0;
       }
 
       /* タイムライン用 */
-      td.tl-name { background: #f5f0e8; font-weight: bold; text-align: left; min-width: 50px; }
-      td.tl-pos { background: #fffde7; text-align: center; min-width: 50px; }
+      td.tl-name { background: #f3ede2; font-weight: bold; text-align: left; min-width: 50px; }
+      td.tl-pos { background: #fffee8; text-align: center; min-width: 50px; }
       td.tl-empty { background: #fff; min-width: 50px; }
-      tr.tl-header td { background: #c8c8c8; font-weight: bold; text-align: center; }
-      tr.tl-slot-header td { background: #f4a07a; font-weight: bold; padding: 3px 6px; }
+      tr.tl-header td { background: #cacaca; font-weight: bold; text-align: center; padding: 6px 8px; }
+      tr.tl-slot-header td { background: #f2a482; font-weight: bold; padding: 6px 8px; }
     </style>
   `;
 
