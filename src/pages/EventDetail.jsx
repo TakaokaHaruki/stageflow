@@ -148,19 +148,21 @@ export default function EventDetail() {
             <ChevronLeft className="w-6 h-6" />
           </Link>
           <div className="min-w-0 flex-1">
-            <h1 className="font-bold text-sm leading-snug truncate">{event.name}</h1>
+            <div className="flex items-baseline gap-2 min-w-0">
+              <h1 className="font-bold text-sm leading-snug truncate shrink-0">{event.name}</h1>
+              {(event.time_priority || event.time_open || event.time_start || event.time_end) && (
+                <div className="text-xs text-muted-foreground flex flex-wrap gap-x-2 shrink-0">
+                  {event.time_priority && <span>先行 {event.time_priority}</span>}
+                  {event.time_open && <span>開場 {event.time_open}</span>}
+                  {event.time_start && <span>開演 {event.time_start}</span>}
+                  {event.time_end && <span>終演 {event.time_end}</span>}
+                </div>
+              )}
+            </div>
             {(event.date || event.venue) && (
               <div className="text-xs text-muted-foreground leading-snug mt-0.5">
                 {event.date && format(new Date(event.date), "M月d日（E）", { locale: ja })}
                 {event.venue && `　${event.venue}`}
-              </div>
-            )}
-            {(event.time_priority || event.time_open || event.time_start || event.time_end) && (
-              <div className="text-xs text-muted-foreground leading-snug mt-0.5 flex flex-wrap gap-x-2">
-                {event.time_priority && <span>先行 {event.time_priority}</span>}
-                {event.time_open && <span>開場 {event.time_open}</span>}
-                {event.time_start && <span>開演 {event.time_start}</span>}
-                {event.time_end && <span>終演 {event.time_end}</span>}
               </div>
             )}
           </div>
