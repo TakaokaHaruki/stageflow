@@ -27,6 +27,7 @@ import {
 import PresetSelector from "@/components/PresetSelector";
 import { HiddenInEditMode, ModeLoadingPlaceholder, ModeVisibilityControls, useResolvedEventMode } from "@/components/ModeVisibilityControls";
 import AutoAssignModal from "@/components/AutoAssignModal";
+import BulkDeleteDialog from "@/components/BulkDeleteDialog";
 
 export default function StaffDragDropManager({ eventId }) {
   const queryClient = useQueryClient();
@@ -209,8 +210,26 @@ export default function StaffDragDropManager({ eventId }) {
     };
   }, [draggedStaff, draggingPosId, canEdit, stopAutoScroll]);
 
-  // 一括削除: スロット内の全ポジションを削除
-  const handleBulkDelete = async (slot) => {
+  // 一括削除: スタッフのみクリア
+  const handleBulkClearStaff = async (slot) => {
+    const slotPositions = positions.filter((p) => (p.time_slot || "開場中") === slot);
+    await Promise.all(slotPositions.map((p) =>
+      base44.functions.invoke("updatePositionSide", {
+        action: "updatePositionStaff",
+        eventId,
+        positionId: p.id,
+        staff_names: [],
+        split_by_side: Boolean(p.split_by_side),
+        staff_names_kamite: [],
+        staff_names_shimote: [],
+      })
+    ));
+    queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+    setConfirmBulkDelete(null);
+  };
+
+  // 一括削除: ポジションごと全削除
+  const handleBulkDeletePositions = async (slot) => {
     const slotPositions = positions.filter((p) => (p.time_slot || "開場中") === slot);
     await Promise.all(slotPositions.map((p) => base44.entities.Position.delete(p.id)));
     queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
@@ -695,10 +714,11 @@ export default function StaffDragDropManager({ eventId }) {
           onCancel={() => setConfirmDelete(null)} />
       )}
       {confirmBulkDelete && (
-        <ConfirmDialog
-          message={`「${confirmBulkDelete}」のポジションを全て削除しますか？\n（${grouped[confirmBulkDelete]?.length}件のポジションが削除されます）`}
-          confirmLabel="一括削除"
-          onConfirm={() => handleBulkDelete(confirmBulkDelete)}
+        <BulkDeleteDialog
+          slot={confirmBulkDelete}
+          count={grouped[confirmBulkDelete]?.length ?? 0}
+          onClearStaff={() => handleBulkClearStaff(confirmBulkDelete)}
+          onDeletePositions={() => handleBulkDeletePositions(confirmBulkDelete)}
           onCancel={() => setConfirmBulkDelete(null)}
         />
       )}
