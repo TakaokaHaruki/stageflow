@@ -24,7 +24,7 @@ function generateHTML(event, positions, staff, type) {
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { 
         font-family: 'Noto Sans JP', 'Arial Unicode MS', sans-serif; 
-        padding: 4px 22px;
+        padding: 4px 6px;
         background: white;
         color: #000;
         font-size: 15px;
@@ -140,9 +140,8 @@ function generateHTML(event, positions, staff, type) {
   `;
 
   const timeSlots = ['開場中', '開演中', '終演後'];
-  // 最大スタッフ数（列数決定用）、最大10列に制限
-  const maxStaff = Math.max(...orderedPositions.map(p => (p.staff_names || []).length), 0);
-  const staffCols = Math.min(Math.max(maxStaff, 5), 10);
+  // 1行あたり最大10列固定
+  const staffCols = 10;
 
   if (type === 'staff') {
     content += `<table>`;
@@ -180,18 +179,26 @@ function generateHTML(event, positions, staff, type) {
         }
         prevRole = pos.role;
 
-        content += `<tr>
-          <td class="pos-name">${pos.name || pos.role}</td>
-          <td class="count">${count}</td>`;
-        
-        for (let i = 0; i < staffCols; i++) {
-          if (i < names.length) {
-            content += `<td class="staff-cell">${names[i]}</td>`;
+        // 10人ずつ行に分けて出力
+        const rows = Math.max(1, Math.ceil(names.length / staffCols));
+        for (let row = 0; row < rows; row++) {
+          const rowNames = names.slice(row * staffCols, (row + 1) * staffCols);
+          if (row === 0) {
+            content += `<tr>
+              <td class="pos-name" rowspan="${rows}">${pos.name || pos.role}</td>
+              <td class="count" rowspan="${rows}">${count}</td>`;
           } else {
-            content += `<td class="empty"></td>`;
+            content += `<tr>`;
           }
+          for (let i = 0; i < staffCols; i++) {
+            if (i < rowNames.length) {
+              content += `<td class="staff-cell">${rowNames[i]}</td>`;
+            } else {
+              content += `<td class="empty"></td>`;
+            }
+          }
+          content += `</tr>`;
         }
-        content += `</tr>`;
       });
     });
 
