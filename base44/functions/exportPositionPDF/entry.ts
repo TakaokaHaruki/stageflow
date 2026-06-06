@@ -40,9 +40,9 @@ function generateHTML(event, positions, staff, type) {
         background: #f4a07a; 
         font-weight: bold; 
         text-align: left;
-        padding: 2px 4px;
+        padding: 4px 6px;
         font-size: 15.5px;
-        line-height: 1.2;
+        line-height: 1.4;
         vertical-align: middle;
       }
       tr.slot-header td.count-cell {
@@ -98,6 +98,13 @@ function generateHTML(event, positions, staff, type) {
         vertical-align: middle;
       }
       
+      /* ポジション名・人数列の固定幅 */
+      td.pos-name, th.pos-name { width: 90px; min-width: 90px; }
+      td.count, th.count { width: 40px; min-width: 40px; }
+      /* スタッフ列は均等幅 */
+      td.staff-cell, td.empty, td.col-header-num { width: auto; }
+      table { table-layout: fixed; }
+
       /* 空白区切り行 */
       tr.spacer td { 
         border: none; 
@@ -154,9 +161,9 @@ function generateHTML(event, positions, staff, type) {
 
       // カラムヘッダー
       content += `<tr class="col-header">
-        <td>ポジション</td>
-        <td>人数</td>
-        ${Array(staffCols).fill('').map((_, i) => `<td>${i + 1}</td>`).join('')}
+        <td class="pos-name">ポジション</td>
+        <td class="count">人数</td>
+        ${Array(staffCols).fill('').map((_, i) => `<td style="width:auto">${i + 1}</td>`).join('')}
       </tr>`;
 
       // 各ポジション
