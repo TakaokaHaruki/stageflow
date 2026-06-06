@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
 
     const token = Deno.env.get('LINE_CHANNEL_ACCESS_TOKEN');
     const groupId = event.line_group_id;
-    const baseUrl = Deno.env.get('APP_BASE_URL') || '';
+    const baseUrl = (Deno.env.get('APP_BASE_URL') || '').replace(/\/$/, '');
 
     if (!token) {
       console.error('Missing LINE_CHANNEL_ACCESS_TOKEN');

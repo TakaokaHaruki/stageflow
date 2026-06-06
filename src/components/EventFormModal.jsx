@@ -17,6 +17,10 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     venue: event?.venue || "",
     description: event?.description || "",
     status: event?.status || "準備中",
+    time_priority: event?.time_priority || "",
+    time_open: event?.time_open || "",
+    time_start: event?.time_start || "",
+    time_end: event?.time_end || "",
   });
 
   const mutation = useMutation({
