@@ -64,7 +64,9 @@ export default function EventFormModal({ event, onClose, onSaved }) {
   const isTextChange = (prev, cur) =>
     prev.name !== cur.name || prev.venue !== cur.venue || prev.description !== cur.description;
   const isNonTextChange = (prev, cur) =>
-    prev.date !== cur.date || prev.status !== cur.status;
+    prev.date !== cur.date || prev.status !== cur.status ||
+    prev.time_priority !== cur.time_priority || prev.time_open !== cur.time_open ||
+    prev.time_start !== cur.time_start || prev.time_end !== cur.time_end;
 
   useEffect(() => {
     if (!event || !form.name) return;
@@ -144,6 +146,27 @@ export default function EventFormModal({ event, onClose, onSaved }) {
               ]}
               placeholder="ステータスを選択"
            />
+          </div>
+          <div>
+            <Label>時間設定</Label>
+            <div className="mt-1 grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">先行</Label>
+                <Input type="time" className="mt-0.5" value={form.time_priority} onChange={(e) => setForm({ ...form, time_priority: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">開場</Label>
+                <Input type="time" className="mt-0.5" value={form.time_open} onChange={(e) => setForm({ ...form, time_open: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">開演</Label>
+                <Input type="time" className="mt-0.5" value={form.time_start} onChange={(e) => setForm({ ...form, time_start: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">終演</Label>
+                <Input type="time" className="mt-0.5" value={form.time_end} onChange={(e) => setForm({ ...form, time_end: e.target.value })} />
+              </div>
+            </div>
           </div>
           <div>
             <Label>備考</Label>
