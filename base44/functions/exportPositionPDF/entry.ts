@@ -33,7 +33,7 @@ function generateHTML(event, positions, staff, type) {
       .event-title { font-size: 21px; font-weight: bold; }
       .event-info { font-size: 13px; color: #555; }
       table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 0 0 3px 0; }
-      td, th { border: 1px solid #999; padding: 2px 4px; vertical-align: middle; text-align: left; line-height: 1.2; height: 24px; overflow: visible; }
+      td, th { border: 1px solid #999; padding: 3px 4px; vertical-align: middle; text-align: left; line-height: 1.4; min-height: 22px; overflow: visible; }
       
       /* 時間帯セクションヘッダー（サーモン色） */
       tr.slot-header td { 
