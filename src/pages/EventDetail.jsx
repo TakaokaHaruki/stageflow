@@ -155,6 +155,14 @@ export default function EventDetail() {
                 {event.venue && `　${event.venue}`}
               </div>
             )}
+            {(event.time_priority || event.time_open || event.time_start || event.time_end) && (
+              <div className="text-xs text-muted-foreground leading-snug mt-0.5 flex flex-wrap gap-x-2">
+                {event.time_priority && <span>先行 {event.time_priority}</span>}
+                {event.time_open && <span>開場 {event.time_open}</span>}
+                {event.time_start && <span>開演 {event.time_start}</span>}
+                {event.time_end && <span>終演 {event.time_end}</span>}
+              </div>
+            )}
           </div>
           {currentUser ? (
             <div className="flex items-center gap-1.5 bg-muted rounded-md px-1.5 py-0.5 shrink-0">
