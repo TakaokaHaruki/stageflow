@@ -100,6 +100,33 @@
       },
       "default": [],
       "description": "\u81ea\u52d5\u914d\u7f6e\u304b\u3089\u9664\u5916\u3059\u308b\u30ed\u30c3\u30af\u6e08\u307f\u30b9\u30bf\u30c3\u30d5\u540d\u30ea\u30b9\u30c8"
+    },
+    "staff_management_mode": {
+      "type": "string",
+      "enum": [
+        "edit",
+        "public"
+      ],
+      "default": "edit",
+      "description": "\u30b9\u30bf\u30c3\u30d5\u7ba1\u7406\u306e\u516c\u958b\u30e2\u30fc\u30c9 (edit=\u7de8\u96c6\u4e2d/\u975e\u516c\u958b, public=\u95b2\u89a7\u516c\u958b)"
+    },
+    "assignment_mode": {
+      "type": "string",
+      "enum": [
+        "edit",
+        "public"
+      ],
+      "default": "edit",
+      "description": "\u914d\u7f6e\u8868\u306e\u516c\u958b\u30e2\u30fc\u30c9 (edit=\u7de8\u96c6\u4e2d/\u975e\u516c\u958b, public=\u95b2\u89a7\u516c\u958b)"
+    },
+    "venue_map_mode": {
+      "type": "string",
+      "enum": [
+        "edit",
+        "public"
+      ],
+      "default": "edit",
+      "description": "\u4f1a\u5834\u30de\u30c3\u30d7\u306e\u516c\u958b\u30e2\u30fc\u30c9 (edit=\u7de8\u96c6\u4e2d/\u975e\u516c\u958b, public=\u95b2\u89a7\u516c\u958b)"
     }
   },
   "required": [
