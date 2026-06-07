@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Download, FileText, Loader2, Map, MapPin, Move, Upload, X } from "lucide-react";
+import { AlertCircle, Download, FileText, Loader2, Map, MapPin, Move, Plus, Upload, X } from "lucide-react";
+import MapAreaFormModal from "@/components/MapAreaFormModal";
 import { useUserRole } from "@/hooks/useUserRole";
 import { HiddenInEditMode, ModeLoadingPlaceholder, ModeVisibilityControls, useResolvedEventMode } from "@/components/ModeVisibilityControls";
 import { getStaffDisplayName } from "@/lib/staffName";
@@ -285,6 +286,8 @@ export default function VenueMap({ eventId }) {
   const dragPinRef = useRef(null);
 
   const [slotFilter, setSlotFilter] = useState(TIME_SLOTS[0]);
+  const [showAreaForm, setShowAreaForm] = useState(false);
+  const [editingArea, setEditingArea] = useState(null);
   const [draggingPin, setDraggingPin] = useState(null);
   const [tooltip, setTooltip] = useState(null);
   const [touchDragging, setTouchDragging] = useState(null); // { pin, x, y } for active touch drag
@@ -297,6 +300,17 @@ export default function VenueMap({ eventId }) {
   const [localPdfUrl, setLocalPdfUrl] = useState("");
   const [localMapImageUrl, setLocalMapImageUrl] = useState("");
   const [imageLoadError, setImageLoadError] = useState(false);
+
+  const { data: mapAreas = [] } = useQuery({
+    queryKey: ["mapareas", eventId],
+    queryFn: () => base44.entities.MapArea.filter({ event_id: eventId }, "order"),
+    refetchInterval: LIVE_SYNC_INTERVAL,
+  });
+
+  const deleteArea = useMutation({
+    mutationFn: (id) => base44.entities.MapArea.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["mapareas", eventId] }),
+  });
 
   const { data: rawPositions = [] } = useQuery({
     queryKey: ["positions", eventId],
@@ -658,6 +672,20 @@ export default function VenueMap({ eventId }) {
     }
   };
 
+  // Area form modal
+  const areaFormModal = showAreaForm && (
+    <MapAreaFormModal
+      area={editingArea}
+      eventId={eventId}
+      onClose={() => { setShowAreaForm(false); setEditingArea(null); }}
+      onSaved={() => {
+        queryClient.invalidateQueries({ queryKey: ["mapareas", eventId] });
+        setShowAreaForm(false);
+        setEditingArea(null);
+      }}
+    />
+  );
+
   // Floating touch-drag ghost rendered at finger position (fixed overlay)
   const touchGhost = touchDragging && (
     <div
@@ -686,6 +714,7 @@ export default function VenueMap({ eventId }) {
 
   return (
     <div>
+      {areaFormModal}
       {touchGhost}
       <div className="flex flex-col gap-1.5 mb-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1 min-w-0">
@@ -730,6 +759,12 @@ export default function VenueMap({ eventId }) {
             {exportingPDF ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
             PDF出力
           </Button>
+          {canUseEditTools && (
+            <Button size="sm" variant="outline" onClick={() => { setEditingArea(null); setShowAreaForm(true); }} className="gap-1 h-8 text-xs px-2 shrink-0">
+              <Plus className="w-3 h-3" />
+              エリア追加
+            </Button>
+          )}
           {canUseEditTools && hasPDF && (
             <Button size="sm" variant="outline" onClick={handlePDFRemove} className="gap-1 h-8 text-xs px-2 shrink-0">
               <X className="w-3 h-3" />
@@ -847,6 +882,43 @@ export default function VenueMap({ eventId }) {
                   {pdfError}
                 </div>
               )}
+
+              {/* Map areas */}
+              {mapAreas.map((area) => (
+                <div
+                  key={area.id}
+                  className="absolute z-10 group"
+                  style={{
+                    left: `${area.x}%`,
+                    top: `${area.y}%`,
+                    width: `${area.width}%`,
+                    height: `${area.height}%`,
+                    backgroundColor: area.color || "#e2e8f0",
+                    borderRadius: area.type === "circle" ? "50%" : "6px",
+                    border: "1.5px solid rgba(0,0,0,0.12)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: 0.7,
+                  }}
+                >
+                  <span className="text-[9px] font-semibold text-slate-700 px-1 text-center leading-tight pointer-events-none select-none">{area.name}</span>
+                  {canUseEditTools && (
+                    <div className="absolute top-0.5 right-0.5 hidden group-hover:flex gap-0.5">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditingArea(area); setShowAreaForm(true); }}
+                        className="w-4 h-4 rounded bg-white/90 text-slate-600 hover:text-primary flex items-center justify-center text-[9px]"
+                        title="編集"
+                      >✎</button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); if (confirm(`「${area.name}」を削除しますか？`)) deleteArea.mutate(area.id); }}
+                        className="w-4 h-4 rounded bg-white/90 text-slate-600 hover:text-destructive flex items-center justify-center text-[9px]"
+                        title="削除"
+                      >×</button>
+                    </div>
+                  )}
+                </div>
+              ))}
 
               {pinsOnMap.map((pos) => {
                 const isActive = tooltip?.id === pos.id;
