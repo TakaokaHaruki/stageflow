@@ -35,7 +35,12 @@ export default function StaffManagement({ eventId }) {
       const res = await base44.functions.invoke("getStaffList", { eventId });
       return res?.data?.staff ?? [];
     },
-    refetchInterval: LIVE_SYNC_INTERVAL,
+    refetchInterval: (query) => {
+      // Suppress background refetch while a create mutation is in flight
+      // to prevent overwriting optimistic updates
+      if (query.state.fetchStatus === "fetching") return false;
+      return LIVE_SYNC_INTERVAL;
+    },
   });
 
   const { data: positions = [] } = useQuery({
@@ -84,6 +89,10 @@ export default function StaffManagement({ eventId }) {
           snapshot_before: {},
           snapshot_after: createdStaff,
         });
+        // Delay invalidation to avoid overwriting concurrent optimistic updates
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ["staff", eventId] });
+        }, 3000);
       } else {
         queryClient.invalidateQueries({ queryKey: ["staff", eventId] });
       }
