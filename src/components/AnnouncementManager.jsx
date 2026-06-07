@@ -636,7 +636,7 @@ export default function AnnouncementManager({ eventId }) {
   );
   const queryClient = useQueryClient();
   const prevIdsRef = useRef(new Set());
-  const { role } = useUserRole();
+  const { role, canEdit } = useUserRole();
   const { record } = useOperationLog(eventId);
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
 
@@ -747,9 +747,11 @@ export default function AnnouncementManager({ eventId }) {
               {notifPermission === "denied" ? "通知ブロック中" : "通知を有効にする"}
             </button>
           )}
-          <Button size="sm" onClick={() => setShowForm(true)} className="gap-1 h-8 text-xs px-2 shrink-0">
-            <Plus className="w-3 h-3" />新規作成
-          </Button>
+          {canEdit && (
+            <Button size="sm" onClick={() => setShowForm(true)} className="gap-1 h-8 text-xs px-2 shrink-0">
+              <Plus className="w-3 h-3" />新規作成
+            </Button>
+          )}
         </div>
       </div>
 
@@ -777,7 +779,7 @@ export default function AnnouncementManager({ eventId }) {
         </div>
       )}
 
-      {showForm && (
+      {showForm && canEdit && (
         <AnnouncementForm
           eventId={eventId}
           staffList={staffList}
