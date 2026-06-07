@@ -169,7 +169,7 @@ export default function StaffManagement({ eventId }) {
   const isEditMode = staffManagementMode === "edit";
   const hideForUser = !canEdit && staffManagementMode !== "public";
   const isVisibilityReady = Boolean(role) && isModeReady && Boolean(event);
-  const canUseEditTools = canEdit && isEditMode;
+  const canUseEditTools = canEdit;
 
   return (
     <div>

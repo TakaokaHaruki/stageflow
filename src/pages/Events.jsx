@@ -58,6 +58,7 @@ export default function Events() {
 
   const handleEdit = (e, event) => {
     e.preventDefault();
+    e.stopPropagation();
     setEditingEvent(event);
     setShowModal(true);
   };
@@ -76,6 +77,7 @@ export default function Events() {
 
   const handleDelete = (e, id, name) => {
     e.preventDefault();
+    e.stopPropagation();
     setConfirmDeleteEvent({ id, name });
   };
 
