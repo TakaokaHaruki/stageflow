@@ -31,7 +31,10 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
   const [uploading, setUploading] = useState(false);
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Announcement.create(data),
+    mutationFn: async (data) => {
+      const res = await base44.functions.invoke("updateAnnouncementRecord", { action: "create", data });
+      return res?.data?.announcement;
+    },
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: ["announcements", eventId] });
       await queryClient.cancelQueries({ queryKey: ["announcements-alert", eventId] });
@@ -60,6 +63,8 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
           old.map((item) => item.id === context?.optimisticId ? createdAnnouncement : item)
         );
         onRecord?.({ action_type: "announcement_create", description: `連絡事項「${data.title}」を作成しました`, entity_type: "Announcement", entity_id: createdAnnouncement.id });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["announcements", eventId] });
       }
       queryClient.invalidateQueries({ queryKey: ["announcements", eventId] });
       queryClient.invalidateQueries({ queryKey: ["announcements-alert", eventId] });
@@ -287,7 +292,10 @@ function AnnouncementEditForm({ ann, staffList, onClose, onSaved, maskStaffNames
   const [uploading, setUploading] = useState(false);
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Announcement.update(ann.id, data),
+    mutationFn: async (data) => {
+      const res = await base44.functions.invoke("updateAnnouncementRecord", { action: "update", announcementId: ann.id, data });
+      return res?.data?.announcement;
+    },
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: ["announcements", ann.event_id] });
       await queryClient.cancelQueries({ queryKey: ["announcements-alert", ann.event_id] });
@@ -456,9 +464,11 @@ function AnnouncementCard({ ann, staffList, onDelete, maskStaffNames = false }) 
   const unreadCount = Math.max(0, totalTargets - readCount);
 
   const readMutation = useMutation({
-    mutationFn: (name) => base44.entities.Announcement.update(ann.id, {
-      read_by: [...new Set([...(ann.read_by || []), name])],
-    }),
+    mutationFn: async (name) => {
+      const newReadBy = [...new Set([...(ann.read_by || []), name])];
+      const res = await base44.functions.invoke("updateAnnouncementRecord", { action: "mark_read", announcementId: ann.id, data: { read_by: newReadBy } });
+      return res?.data?.announcement;
+    },
     onMutate: async (name) => {
       await queryClient.cancelQueries({ queryKey: ["announcements", ann.event_id] });
       await queryClient.cancelQueries({ queryKey: ["announcements-alert", ann.event_id] });
@@ -710,7 +720,7 @@ export default function AnnouncementManager({ eventId }) {
   const deleteMutation = useMutation({
     mutationFn: async (ann) => {
       record({ action_type: "announcement_delete", description: `連絡事項「${ann.title}」を削除しました`, entity_type: "Announcement", entity_id: ann.id });
-      return base44.entities.Announcement.delete(ann.id);
+      await base44.functions.invoke("updateAnnouncementRecord", { action: "delete", announcementId: ann.id });
     },
     onMutate: async (ann) => {
       const id = ann.id;
