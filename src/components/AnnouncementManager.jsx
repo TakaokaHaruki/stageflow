@@ -188,16 +188,19 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
           {/* File attachment */}
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">ファイル添付</label>
-            <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileChange} />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border bg-muted hover:bg-muted/80 transition-colors text-muted-foreground"
-            >
+            <label className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border bg-muted hover:bg-muted/80 transition-colors text-muted-foreground cursor-pointer">
               <Paperclip className="w-3.5 h-3.5" />
               {uploading ? "アップロード中..." : "ファイルを選択"}
-            </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="sr-only"
+                data-testid="announcement-file-input"
+                disabled={uploading}
+                onChange={handleFileChange}
+              />
+            </label>
             {attachedFiles.length > 0 && (
               <div className="mt-1.5 space-y-1">
                 {attachedFiles.map((f, i) => (
@@ -380,11 +383,18 @@ function AnnouncementEditForm({ ann, staffList, onClose, onSaved, maskStaffNames
           </div>
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">ファイル添付</label>
-            <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileChange} />
-            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border bg-muted hover:bg-muted/80 transition-colors text-muted-foreground">
+            <label className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border bg-muted hover:bg-muted/80 transition-colors text-muted-foreground cursor-pointer">
               <Paperclip className="w-3.5 h-3.5" />{uploading ? "アップロード中..." : "ファイルを選択"}
-            </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="sr-only"
+                data-testid="announcement-file-input-edit"
+                disabled={uploading}
+                onChange={handleFileChange}
+              />
+            </label>
             {attachedFiles.length > 0 && (
               <div className="mt-1.5 space-y-1">
                 {attachedFiles.map((f, i) => (
