@@ -139,7 +139,7 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
                 return (
                   <button
                     key={p}
-                    onClick={() => setForm((prev) => ({ ...prev, priority: p, is_alert: p !== "通常" ? true : prev.is_alert }))}
+                    onClick={() => setForm((prev) => ({ ...prev, priority: p, is_alert: p !== "通常" ? true : false }))}
                     className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
                       form.priority === p ? s.badge + " ring-2 ring-offset-1 ring-current" : "bg-muted border-border text-muted-foreground"
                     }`}
