@@ -770,7 +770,7 @@ export default function AnnouncementManager({ eventId }) {
               通知を有効にする
             </button>
           )}
-          {canEdit && (
+          {role !== null && canEdit && (
             <Button size="sm" onClick={() => setShowForm(true)} className="gap-1 h-8 text-xs px-2 shrink-0">
               <Plus className="w-3 h-3" />新規作成
             </Button>
@@ -802,7 +802,7 @@ export default function AnnouncementManager({ eventId }) {
         </div>
       )}
 
-      {showForm && canEdit && (
+      {showForm && role !== null && canEdit && (
         <AnnouncementForm
           eventId={eventId}
           staffList={staffList}
