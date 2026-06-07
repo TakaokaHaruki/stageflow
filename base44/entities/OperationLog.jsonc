@@ -8,7 +8,7 @@
     },
     "action_type": {
       "type": "string",
-      "description": "\u64cd\u4f5c\u7a2e\u5225 (staff_add, staff_delete, staff_update, position_assign, position_unassign, position_add, position_delete, position_reorder, chief_update, feature_toggle, announcement_create, announcement_delete, preset_apply)",
+      "description": "\u64cd\u4f5c\u7a2e\u5225",
       "enum": [
         "staff_add",
         "staff_delete",
@@ -22,7 +22,11 @@
         "feature_toggle",
         "announcement_create",
         "announcement_delete",
-        "preset_apply"
+        "preset_apply",
+        "task_add",
+        "task_toggle",
+        "task_delete",
+        "event_update"
       ]
     },
     "actor_name": {

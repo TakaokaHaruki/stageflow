@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
+import { useOperationLog } from "@/hooks/useOperationLog";
 
 export default function TaskChecklist({ eventId }) {
   const queryClient = useQueryClient();
+  const { record } = useOperationLog(eventId);
   // 連絡事項・チェックリストは全ロールに編集権限を付与
   const canEdit = true;
 
@@ -51,19 +53,23 @@ export default function TaskChecklist({ eventId }) {
 
   const handleAdd = () => {
     if (!newTitle.trim()) return;
-    createMutation.mutate({
-      event_id: eventId,
-      title: newTitle.trim(),
-      note: newNote.trim(),
-      is_done: false,
-      order: tasks.length,
-    });
+    const title = newTitle.trim();
+    createMutation.mutate(
+      { event_id: eventId, title, note: newNote.trim(), is_done: false, order: tasks.length },
+      {
+        onSuccess: (created) => {
+          record({ action_type: "task_add", description: `タスク「${title}」を追加しました`, entity_type: "Task", entity_id: created?.id || "" });
+        },
+      }
+    );
     setNewTitle("");
     setNewNote("");
   };
 
   const handleToggle = (task) => {
-    updateMutation.mutate({ id: task.id, data: { is_done: !task.is_done } });
+    const newDone = !task.is_done;
+    updateMutation.mutate({ id: task.id, data: { is_done: newDone } });
+    record({ action_type: "task_toggle", description: `タスク「${task.title}」を${newDone ? "完了" : "未完了に戻し"}ました`, entity_type: "Task", entity_id: task.id });
   };
 
   const startEdit = (task) => {
@@ -183,7 +189,11 @@ export default function TaskChecklist({ eventId }) {
         <ConfirmDialog
           message={`「${confirmDelete.title}」を削除しますか？`}
           confirmLabel="削除"
-          onConfirm={() => { deleteMutation.mutate(confirmDelete.id); setConfirmDelete(null); }}
+          onConfirm={() => {
+            record({ action_type: "task_delete", description: `タスク「${confirmDelete.title}」を削除しました`, entity_type: "Task", entity_id: confirmDelete.id });
+            deleteMutation.mutate(confirmDelete.id);
+            setConfirmDelete(null);
+          }}
           onCancel={() => setConfirmDelete(null)}
         />
       )}

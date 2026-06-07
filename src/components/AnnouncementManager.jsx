@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { useUserRole } from "@/hooks/useUserRole";
 import { getStaffDisplayName } from "@/lib/staffName";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
+import { useOperationLog } from "@/hooks/useOperationLog";
 
 const PRIORITY_STYLES = {
   "通常": { badge: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700", icon: Bell },
@@ -18,7 +19,7 @@ const PRIORITY_STYLES = {
   "緊急": { badge: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-300 dark:border-red-700", icon: ShieldAlert },
 };
 
-function AnnouncementForm({ eventId, staffList, onClose, onSaved, maskStaffNames = false }) {
+function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, maskStaffNames = false }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
   const [form, setForm] = useState({
@@ -51,11 +52,12 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, maskStaffNames
       queryClient.setQueryData(["announcements", eventId], context?.previousAnnouncements);
       queryClient.setQueryData(["announcements-alert", eventId], context?.previousAlert);
     },
-    onSuccess: (createdAnnouncement, __, context) => {
+    onSuccess: (createdAnnouncement, data, context) => {
       if (createdAnnouncement?.id) {
         queryClient.setQueryData(["announcements", eventId], (old = []) =>
           old.map((item) => item.id === context?.optimisticId ? createdAnnouncement : item)
         );
+        onRecord?.({ action_type: "announcement_create", description: `連絡事項「${data.title}」を作成しました`, entity_type: "Announcement", entity_id: createdAnnouncement.id });
       }
       queryClient.invalidateQueries({ queryKey: ["announcements", eventId] });
       queryClient.invalidateQueries({ queryKey: ["announcements-alert", eventId] });
@@ -616,7 +618,7 @@ function AnnouncementCard({ ann, staffList, onDelete, maskStaffNames = false }) 
         <ConfirmDialog
           message="この連絡事項を削除しますか？"
           confirmLabel="削除"
-          onConfirm={() => { onDelete(ann.id); setShowDeleteConfirm(false); }}
+          onConfirm={() => { onDelete(ann); setShowDeleteConfirm(false); }}
           onCancel={() => setShowDeleteConfirm(false)}
         />
       )}
@@ -632,6 +634,7 @@ export default function AnnouncementManager({ eventId }) {
   const queryClient = useQueryClient();
   const prevIdsRef = useRef(new Set());
   const { role } = useUserRole();
+  const { record } = useOperationLog(eventId);
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
 
   // Request browser notification permission on mount
@@ -685,13 +688,17 @@ export default function AnnouncementManager({ eventId }) {
   }, [announcements]);
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Announcement.delete(id),
-    onMutate: async (id) => {
+    mutationFn: async (ann) => {
+      record({ action_type: "announcement_delete", description: `連絡事項「${ann.title}」を削除しました`, entity_type: "Announcement", entity_id: ann.id });
+      return base44.entities.Announcement.delete(ann.id);
+    },
+    onMutate: async (ann) => {
+      const id = ann.id;
       await queryClient.cancelQueries({ queryKey: ["announcements", eventId] });
       await queryClient.cancelQueries({ queryKey: ["announcements-alert", eventId] });
       const previousAnnouncements = queryClient.getQueryData(["announcements", eventId]);
       const previousAlert = queryClient.getQueryData(["announcements-alert", eventId]);
-      queryClient.setQueryData(["announcements", eventId], (old = []) => old.filter((item) => item.id !== id));
+      queryClient.setQueryData(["announcements", eventId], (old = []) => old.filter((item) => item.id !== ann.id));
       return { previousAnnouncements, previousAlert };
     },
     onError: (_, __, context) => {
@@ -761,7 +768,7 @@ export default function AnnouncementManager({ eventId }) {
               ann={ann}
               staffList={staffList}
               maskStaffNames={shouldMaskStaffNames}
-              onDelete={(id) => deleteMutation.mutate(id)}
+              onDelete={(ann) => deleteMutation.mutate(ann)}
             />
           ))}
         </div>
@@ -774,6 +781,7 @@ export default function AnnouncementManager({ eventId }) {
           maskStaffNames={shouldMaskStaffNames}
           onClose={() => setShowForm(false)}
           onSaved={() => setShowForm(false)}
+          onRecord={record}
         />
       )}
     </div>

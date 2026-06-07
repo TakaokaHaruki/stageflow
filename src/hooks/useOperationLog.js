@@ -9,14 +9,12 @@ import { getUserDisplayName } from "@/components/UserNameEditor";
 export function useOperationLog(eventId) {
   const actorRef = useRef(null);
 
-  // 操作者情報を取得（常に最新の表示名を使う）
+  // 操作者情報を取得（auth.me()のみ使用 - User.filterはRLS制限で他ユーザー取得不可）
   const getActor = useCallback(async () => {
     try {
       const user = await base44.auth.me();
-      // User エンティティから username（個別表示名）を含む最新情報を取得
-      const users = await base44.entities.User.filter({ id: user?.id });
-      const fullUser = users?.[0] || user;
-      actorRef.current = { name: getUserDisplayName(fullUser) || "不明", email: fullUser?.email || "" };
+      const displayName = getUserDisplayName(user) || user?.email?.split("@")[0] || "不明";
+      actorRef.current = { name: displayName, email: user?.email || "" };
     } catch {
       actorRef.current = { name: "不明", email: "" };
     }

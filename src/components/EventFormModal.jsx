@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { useOperationLog } from "@/hooks/useOperationLog";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { motion } from "framer-motion";
 
 export default function EventFormModal({ event, onClose, onSaved }) {
   const queryClient = useQueryClient();
+  const { record } = useOperationLog(event?.id);
   const [form, setForm] = useState({
     name: event?.name || "",
     date: event?.date || "",
@@ -77,9 +79,11 @@ export default function EventFormModal({ event, onClose, onSaved }) {
 
     const delay = nonTextChanged ? 0 : 500;
     const timer = setTimeout(() => {
+      const before = prevFormRef.current;
       mutation.mutate(form, {
         onSuccess: () => {
           toast.success("保存しました");
+          record({ action_type: "event_update", description: `イベント「${form.name}」を更新しました`, entity_type: "Event", entity_id: event.id, snapshot_before: before, snapshot_after: form });
           prevFormRef.current = form;
         }
       });
