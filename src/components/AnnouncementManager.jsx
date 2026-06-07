@@ -56,6 +56,7 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
       queryClient.setQueryData(["announcements", eventId], context?.previousAnnouncements);
       queryClient.setQueryData(["announcements-alert", eventId], context?.previousAlert);
       toast.error("送信に失敗しました: " + (err?.message || "権限がないか、エラーが発生しました"));
+      onSaved(); // close dialog even on error
     },
     onSuccess: (createdAnnouncement, data, context) => {
       if (createdAnnouncement?.id) {
