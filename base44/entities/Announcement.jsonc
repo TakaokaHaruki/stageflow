@@ -60,9 +60,31 @@
     "body"
   ],
   "rls": {
-    "create": false,
+    "create": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    },
     "read": true,
-    "update": false,
-    "delete": true
+    "update": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
   }
 }

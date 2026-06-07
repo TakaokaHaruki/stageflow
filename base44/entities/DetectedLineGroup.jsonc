@@ -21,9 +21,27 @@
     "group_name"
   ],
   "rls": {
-    "create": false,
-    "read": true,
-    "update": false,
-    "delete": true
+    "create": true,
+    "read": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    },
+    "update": true,
+    "delete": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    }
   }
 }

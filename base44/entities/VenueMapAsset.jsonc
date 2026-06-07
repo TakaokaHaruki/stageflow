@@ -24,9 +24,36 @@
     "event_id"
   ],
   "rls": {
-    "create": false,
+    "create": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    },
     "read": true,
-    "update": false,
-    "delete": false
+    "update": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    }
   }
 }
