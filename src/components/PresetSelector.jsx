@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { BookOpen, BookmarkPlus, ChevronDown, ChevronRight, ChevronUp, Zap } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -44,31 +45,38 @@ export default function PresetSelector({ eventId, compact = false, positions = [
   const applyMutation = useMutation({
     mutationFn: async (preset) => {
       const existing = await base44.entities.Position.filter({ event_id: eventId });
-      if (existing.length > 0) await Promise.all(existing.map((p) => base44.entities.Position.delete(p.id)));
+      if (existing.length > 0) {
+        for (const p of existing) await base44.entities.Position.delete(p.id);
+      }
       const slotMap = preset.slot_positions || {};
-      const creates = [];
+      let created = 0;
       for (const slot of TIME_SLOTS) {
         const ids = slotMap[slot] || [];
         for (let i = 0; i < ids.length; i++) {
           const pt = positionTypes.find((p) => p.id === ids[i]);
           if (pt) {
             const field = slotToField[slot];
-            creates.push(base44.entities.Position.create({
+            await base44.entities.Position.create({
               event_id: eventId, name: pt.name, color: pt.color || "#6366f1",
               time_slot: slot, staff_names: [],
               required_count: field ? (pt[field] ?? pt.required_count ?? 0) : 0,
               order: i,
-            }));
+            });
+            created++;
           }
         }
       }
-      await Promise.all(creates);
       await base44.entities.Event.update(eventId, { active_preset_id: preset.id });
+      return created;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      toast.success(`プリセットを適用しました（${created}ポジション）`);
       setOpen(false);
+    },
+    onError: (err) => {
+      toast.error("プリセットの適用に失敗しました: " + (err?.message || "エラーが発生しました"));
     },
   });
 
@@ -77,22 +85,29 @@ export default function PresetSelector({ eventId, compact = false, positions = [
     mutationFn: async ({ preset, slot }) => {
       const existing = await base44.entities.Position.filter({ event_id: eventId });
       const slotExisting = existing.filter((p) => (p.time_slot || "開場中") === slot);
-      if (slotExisting.length > 0) await Promise.all(slotExisting.map((p) => base44.entities.Position.delete(p.id)));
+      for (const p of slotExisting) await base44.entities.Position.delete(p.id);
       const ids = (preset.slot_positions || {})[slot] || [];
       const field = slotToField[slot];
-      await Promise.all(ids.map((id, i) => {
-        const pt = positionTypes.find((p) => p.id === id);
-        if (!pt) return Promise.resolve();
-        return base44.entities.Position.create({
+      let created = 0;
+      for (let i = 0; i < ids.length; i++) {
+        const pt = positionTypes.find((p) => p.id === ids[i]);
+        if (!pt) continue;
+        await base44.entities.Position.create({
           event_id: eventId, name: pt.name, color: pt.color || "#6366f1",
           time_slot: slot, staff_names: [],
           required_count: field ? (pt[field] ?? pt.required_count ?? 0) : 0,
           order: i,
         });
-      }));
+        created++;
+      }
+      return created;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+      toast.success(`${created}ポジションを適用しました`);
+    },
+    onError: (err) => {
+      toast.error("適用に失敗しました: " + (err?.message || "エラーが発生しました"));
     },
   });
 
