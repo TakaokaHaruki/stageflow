@@ -1,22 +1,22 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const TIME_SLOTS = ['開場中', '開演中', '終演後'];
 
-const getRequiredCountForSlot = (positionType: Record<string, any>, slot: string) => {
+const getRequiredCountForSlot = (positionType, slot) => {
   if (slot === TIME_SLOTS[0]) return positionType.required_count_before ?? positionType.required_count ?? 0;
   if (slot === TIME_SLOTS[1]) return positionType.required_count_during ?? positionType.required_count ?? 0;
   return positionType.required_count_after ?? positionType.required_count ?? 0;
 };
 
-const sortByOrder = (a: Record<string, any>, b: Record<string, any>) => (a.order ?? 0) - (b.order ?? 0);
+const sortByOrder = (a, b) => (a.order ?? 0) - (b.order ?? 0);
 const SIDE_TEMPLATE_PREFIX = '__position_side__';
 
-async function loadSideTemplate(base44: any, eventId: string) {
+async function loadSideTemplate(base44, eventId) {
   const name = `${SIDE_TEMPLATE_PREFIX}:${eventId}`;
-  let records = await base44.asServiceRole.entities.MapTemplate.filter({ name });
+  let records = await base44.entities.MapTemplate.filter({ name });
   if (!records?.length) {
-    const allRecords = await base44.asServiceRole.entities.MapTemplate.list();
-    records = allRecords?.filter((item: Record<string, any>) => item.name === name) || [];
+    const allRecords = await base44.entities.MapTemplate.list();
+    records = allRecords?.filter((item) => item.name === name) || [];
   }
   const record = records?.[0] || null;
   const data = record?.areas?.[0] || {};
@@ -30,7 +30,7 @@ async function loadSideTemplate(base44: any, eventId: string) {
   };
 }
 
-async function saveSideTemplate(base44: any, eventId: string, template: Record<string, any>) {
+async function saveSideTemplate(base44, eventId, template) {
   const { record, ...data } = template;
   const payload = {
     name: `${SIDE_TEMPLATE_PREFIX}:${eventId}`,
@@ -41,8 +41,8 @@ async function saveSideTemplate(base44: any, eventId: string, template: Record<s
     }],
   };
   return record?.id
-    ? await base44.asServiceRole.entities.MapTemplate.update(record.id, payload)
-    : await base44.asServiceRole.entities.MapTemplate.create(payload);
+    ? await base44.entities.MapTemplate.update(record.id, payload)
+    : await base44.entities.MapTemplate.create(payload);
 }
 
 Deno.serve(async (req) => {
@@ -63,10 +63,9 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'setDebugEnabled') {
-      const event = await base44.asServiceRole.entities.Event.update(eventId, {
+      const event = await base44.entities.Event.update(eventId, {
         debug_enabled: Boolean(body.debug_enabled),
       });
-
       return Response.json({ event });
     }
 
@@ -75,10 +74,10 @@ Deno.serve(async (req) => {
     }
 
     const [event, staffList, positionTypes, existingPositions, sideTemplate] = await Promise.all([
-      base44.asServiceRole.entities.Event.get(eventId),
-      base44.asServiceRole.entities.Staff.filter({ event_id: eventId }),
-      base44.asServiceRole.entities.PositionType.list(),
-      base44.asServiceRole.entities.Position.filter({ event_id: eventId }),
+      base44.entities.Event.get(eventId),
+      base44.entities.Staff.filter({ event_id: eventId }),
+      base44.entities.PositionType.list(),
+      base44.entities.Position.filter({ event_id: eventId }),
       loadSideTemplate(base44, eventId),
     ]);
 
@@ -86,7 +85,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'デバッグ機能がOFFです' }, { status: 400 });
     }
 
-    const activeStaff = staffList.filter((staff: Record<string, any>) => staff.name);
+    const activeStaff = staffList.filter((staff) => staff.name);
     const sortedPositionTypes = [...positionTypes].sort(sortByOrder);
 
     if (sortedPositionTypes.length === 0) {
@@ -102,18 +101,16 @@ Deno.serve(async (req) => {
     let assigned = 0;
     const nextSideData = {
       ...sideTemplate.data,
-      positions: {
-        ...sideTemplate.data.positions,
-      },
+      positions: { ...sideTemplate.data.positions },
     };
 
     for (const slot of TIME_SLOTS) {
-      const assignedInSlot = new Set<string>();
+      const assignedInSlot = new Set();
 
       for (const [index, positionType] of sortedPositionTypes.entries()) {
         const requiredCount = getRequiredCountForSlot(positionType, slot);
         const assignCount = Math.min(activeStaff.length, Math.max(1, requiredCount));
-        const staffNames: string[] = [];
+        const staffNames = [];
 
         for (let i = 0; i < assignCount; i += 1) {
           let staff = activeStaff[cursor % activeStaff.length];
@@ -132,7 +129,7 @@ Deno.serve(async (req) => {
           }
         }
 
-        const existing = existingPositions.find((position: Record<string, any>) =>
+        const existing = existingPositions.find((position) =>
           (position.time_slot || TIME_SLOTS[0]) === slot && position.name === positionType.name
         );
 
@@ -150,10 +147,10 @@ Deno.serve(async (req) => {
 
         let savedPosition = existing;
         if (existing) {
-          savedPosition = await base44.asServiceRole.entities.Position.update(existing.id, payload);
+          savedPosition = await base44.entities.Position.update(existing.id, payload);
           updated += 1;
         } else {
-          savedPosition = await base44.asServiceRole.entities.Position.create({
+          savedPosition = await base44.entities.Position.create({
             event_id: eventId,
             notes: '',
             ...payload,

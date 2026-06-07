@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 function compareByConfiguredOrder(a, b) {
   const parsedOrderA = Number(a?.order);
@@ -283,9 +283,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'eventId required' }, { status: 400 });
     }
 
-    const event = await base44.asServiceRole.entities.Event.get(eventId);
-    const positions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
-    const staff = await base44.asServiceRole.entities.Staff.filter({ event_id: eventId });
+    const event = await base44.entities.Event.get(eventId);
+    const positions = await base44.entities.Position.filter({ event_id: eventId });
+    const staff = await base44.entities.Staff.filter({ event_id: eventId });
 
     const html = generateHTML(event, positions, staff, type);
 
