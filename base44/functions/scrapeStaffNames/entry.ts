@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
@@ -27,11 +27,11 @@ Deno.serve(async (req) => {
 
     // If selectedNames provided, this is the "confirm & save" phase
     if (selectedNames) {
-      const existingStaff = await base44.asServiceRole.entities.Staff.filter({ event_id: eventId });
+      const existingStaff = await base44.entities.Staff.filter({ event_id: eventId });
       const existingNames = new Set(existingStaff.map((s) => s.name));
       const newNames = selectedNames.filter((name) => !existingNames.has(name));
       for (const name of newNames) {
-        await base44.asServiceRole.entities.Staff.create({ event_id: eventId, name });
+        await base44.entities.Staff.create({ event_id: eventId, name });
       }
       return Response.json({
         found: selectedNames.length,

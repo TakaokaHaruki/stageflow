@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const FALLBACK_TEMPLATE_PREFIX = '__venue_map_asset__';
 
@@ -21,14 +21,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'eventId is required' }, { status: 400 });
     }
 
-    const data = {
-      map_pdf_url,
-      map_image_url,
-    };
+    const data = { map_pdf_url, map_image_url };
     let event = null;
-    const persistenceErrors: string[] = [];
+    const persistenceErrors = [];
     try {
-      event = await base44.asServiceRole.entities.Event.update(eventId, data);
+      event = await base44.entities.Event.update(eventId, data);
     } catch (eventError) {
       console.warn('Event venue map field update failed:', eventError.message);
       persistenceErrors.push(`Event: ${eventError.message}`);
@@ -43,10 +40,10 @@ Deno.serve(async (req) => {
 
     try {
       const fallbackName = `${FALLBACK_TEMPLATE_PREFIX}:${eventId}`;
-      let existingFallbacks = await base44.asServiceRole.entities.MapTemplate.filter({ name: fallbackName });
+      let existingFallbacks = await base44.entities.MapTemplate.filter({ name: fallbackName });
       if (!existingFallbacks?.length) {
-        const allFallbacks = await base44.asServiceRole.entities.MapTemplate.list();
-        existingFallbacks = allFallbacks?.filter((item: Record<string, any>) => item.name === fallbackName) || [];
+        const allFallbacks = await base44.entities.MapTemplate.list();
+        existingFallbacks = allFallbacks?.filter((item) => item.name === fallbackName) || [];
       }
       const fallbackPayload = {
         name: fallbackName,
@@ -54,8 +51,8 @@ Deno.serve(async (req) => {
         areas: [assetPayload],
       };
       fallback = existingFallbacks?.[0]
-        ? await base44.asServiceRole.entities.MapTemplate.update(existingFallbacks[0].id, fallbackPayload)
-        : await base44.asServiceRole.entities.MapTemplate.create(fallbackPayload);
+        ? await base44.entities.MapTemplate.update(existingFallbacks[0].id, fallbackPayload)
+        : await base44.entities.MapTemplate.create(fallbackPayload);
     } catch (fallbackError) {
       console.warn('Venue map fallback update failed:', fallbackError.message);
       persistenceErrors.push(`MapTemplate fallback: ${fallbackError.message}`);
@@ -69,20 +66,10 @@ Deno.serve(async (req) => {
     }
 
     return Response.json({
-      event: {
-        ...(event || {}),
-        id: eventId,
-        map_pdf_url,
-        map_image_url,
-      },
-      asset: {
-        ...assetPayload,
-      },
+      event: { ...(event || {}), id: eventId, map_pdf_url, map_image_url },
+      asset: { ...assetPayload },
       fallback: fallback || null,
-      persisted: {
-        event: Boolean(event),
-        fallback: Boolean(fallback),
-      },
+      persisted: { event: Boolean(event), fallback: Boolean(fallback) },
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

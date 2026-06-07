@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const FALLBACK_TEMPLATE_PREFIX = '__venue_map_asset__';
 
@@ -15,17 +15,17 @@ Deno.serve(async (req) => {
     let fallbackAsset = null;
 
     try {
-      event = await base44.asServiceRole.entities.Event.get(eventId);
+      event = await base44.entities.Event.get(eventId);
     } catch (eventError) {
       console.warn('Event venue map read failed:', eventError.message);
     }
 
     try {
       const fallbackName = `${FALLBACK_TEMPLATE_PREFIX}:${eventId}`;
-      let fallbacks = await base44.asServiceRole.entities.MapTemplate.filter({ name: fallbackName });
+      let fallbacks = await base44.entities.MapTemplate.filter({ name: fallbackName });
       if (!fallbacks?.length) {
-        const allFallbacks = await base44.asServiceRole.entities.MapTemplate.list();
-        fallbacks = allFallbacks?.filter((item: Record<string, any>) => item.name === fallbackName) || [];
+        const allFallbacks = await base44.entities.MapTemplate.list();
+        fallbacks = allFallbacks?.filter((item) => item.name === fallbackName) || [];
       }
       fallbackAsset = fallbacks?.[0]?.areas?.[0] || null;
     } catch (fallbackError) {

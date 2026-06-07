@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'eventId is required' }, { status: 400 });
     }
 
-    const positions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
+    const positions = await base44.entities.Position.filter({ event_id: eventId });
     return Response.json({ positions: positions || [] });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

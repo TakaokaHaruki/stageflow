@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     }
 
     const nextChiefName = chief_staff_name || '';
-    const event = await base44.asServiceRole.entities.Event.update(eventId, {
+    const event = await base44.entities.Event.update(eventId, {
       chief_staff_name: nextChiefName,
     });
 

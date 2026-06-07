@@ -1,17 +1,17 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-const unique = (items: string[] = []) => [...new Set(items.filter(Boolean))];
+const unique = (items = []) => [...new Set(items.filter(Boolean))];
 const SIDE_TEMPLATE_PREFIX = '__position_side__';
 
-async function loadSideTemplate(base44: any, eventId: string) {
+async function loadSideTemplate(base44, eventId) {
   const name = `${SIDE_TEMPLATE_PREFIX}:${eventId}`;
-  let records = await base44.asServiceRole.entities.MapTemplate.filter({ name });
+  let records = await base44.entities.MapTemplate.filter({ name });
   if (!records?.length) {
-    const allRecords = await base44.asServiceRole.entities.MapTemplate.list();
-    records = allRecords?.filter((item: Record<string, any>) => item.name === name) || [];
+    const allRecords = await base44.entities.MapTemplate.list();
+    records = allRecords?.filter((item) => item.name === name) || [];
   }
   const record = records
-    ?.sort((a: Record<string, any>, b: Record<string, any>) => {
+    ?.sort((a, b) => {
       const aDate = new Date(a.updated_date || a.created_date || 0).getTime();
       const bDate = new Date(b.updated_date || b.created_date || 0).getTime();
       return bDate - aDate;
@@ -28,7 +28,7 @@ async function loadSideTemplate(base44: any, eventId: string) {
   };
 }
 
-async function saveSideTemplate(base44: any, eventId: string, template: Record<string, any>) {
+async function saveSideTemplate(base44, eventId, template) {
   const { record, ...data } = template;
   const payload = {
     name: `${SIDE_TEMPLATE_PREFIX}:${eventId}`,
@@ -39,8 +39,8 @@ async function saveSideTemplate(base44: any, eventId: string, template: Record<s
     }],
   };
   return record?.id
-    ? await base44.asServiceRole.entities.MapTemplate.update(record.id, payload)
-    : await base44.asServiceRole.entities.MapTemplate.create(payload);
+    ? await base44.entities.MapTemplate.update(record.id, payload)
+    : await base44.entities.MapTemplate.create(payload);
 }
 
 Deno.serve(async (req) => {
@@ -71,12 +71,12 @@ Deno.serve(async (req) => {
 
       const splitBySide = Boolean(split_by_side);
       const [positionType, positions, sideTemplate] = await Promise.all([
-        base44.asServiceRole.entities.PositionType.get(positionTypeId),
-        base44.asServiceRole.entities.Position.filter({ event_id: eventId }),
+        base44.entities.PositionType.get(positionTypeId),
+        base44.entities.Position.filter({ event_id: eventId }),
         loadSideTemplate(base44, eventId),
       ]);
 
-      const matchingPositions = positions.filter((position: Record<string, any>) => position.name === positionTypeName);
+      const matchingPositions = positions.filter((position) => position.name === positionTypeName);
       const updatedPositions = [];
       const nextSideData = {
         ...sideTemplate.data,
@@ -91,21 +91,19 @@ Deno.serve(async (req) => {
 
       for (const position of matchingPositions) {
         const existingSide = nextSideData.positions[position.id] || {};
-        let kamite: string[];
-        let shimote: string[];
-        let staffNames: string[];
+        let kamite;
+        let shimote;
+        let staffNames;
         if (splitBySide) {
-          // ON: 既存のstaff_namesを上手に移動
           kamite = unique(position.staff_names || []);
           shimote = [];
           staffNames = kamite;
         } else {
-          // OFF: kamite+shimoteをマージしてstaff_namesに戻す
           kamite = [];
           shimote = [];
           staffNames = unique([...(existingSide.staff_names_kamite || []), ...(existingSide.staff_names_shimote || [])]);
         }
-        const updated = await base44.asServiceRole.entities.Position.update(position.id, { staff_names: staffNames });
+        const updated = await base44.entities.Position.update(position.id, { staff_names: staffNames });
         nextSideData.positions[position.id] = {
           ...existingSide,
           split_by_side: splitBySide,
@@ -136,18 +134,9 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'positionId is required' }, { status: 400 });
       }
       const allowedFields = [
-        'name',
-        'time_slot',
-        'notes',
-        'color',
-        'map_x',
-        'map_y',
-        'map_x_kamite',
-        'map_y_kamite',
-        'map_x_shimote',
-        'map_y_shimote',
-        'required_count',
-        'order',
+        'name', 'time_slot', 'notes', 'color',
+        'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote',
+        'required_count', 'order',
       ];
       const extraFields = Object.fromEntries(
         allowedFields
@@ -155,7 +144,7 @@ Deno.serve(async (req) => {
           .map((field) => [field, body[field]])
       );
       const [currentPosition, sideTemplate] = await Promise.all([
-        base44.asServiceRole.entities.Position.get(positionId),
+        base44.entities.Position.get(positionId),
         loadSideTemplate(base44, eventId),
       ]);
       const existingSide = sideTemplate.data.positions[positionId] || {};
@@ -184,7 +173,7 @@ Deno.serve(async (req) => {
           },
         },
       };
-      const position = await base44.asServiceRole.entities.Position.update(positionId, {
+      const position = await base44.entities.Position.update(positionId, {
         ...extraFields,
         staff_names: staffNames,
       });

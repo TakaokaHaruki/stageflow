@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 // Syncs Staff records from Position.staff_names data
 Deno.serve(async (req) => {
@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     }
 
     // Get all positions for this event
-    const positions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
+    const positions = await base44.entities.Position.filter({ event_id: eventId });
 
     // Collect unique staff names from positions
     const staffNamesSet = new Set();
@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     }
 
     // Get existing staff records
-    const existingStaff = await base44.asServiceRole.entities.Staff.filter({ event_id: eventId });
+    const existingStaff = await base44.entities.Staff.filter({ event_id: eventId });
     const existingNames = new Set(existingStaff.map(s => s.name));
 
     // Create missing staff records
@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     const created = [];
 
     for (const name of toCreate) {
-      const staff = await base44.asServiceRole.entities.Staff.create({ event_id: eventId, name });
+      const staff = await base44.entities.Staff.create({ event_id: eventId, name });
       created.push(staff);
     }
 
