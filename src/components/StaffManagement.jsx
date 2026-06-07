@@ -84,8 +84,9 @@ export default function StaffManagement({ eventId }) {
           snapshot_before: {},
           snapshot_after: createdStaff,
         });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["staff", eventId] });
       }
-      queryClient.invalidateQueries({ queryKey: ["staff", eventId] });
     }
   });
 
