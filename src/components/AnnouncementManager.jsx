@@ -266,7 +266,7 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
           <Button
             className="flex-1 gap-1"
             data-testid="announcement-submit-button"
-            disabled={!form.title.trim() || createMutation.isPending}
+            disabled={!form.title.trim() || createMutation.isPending || uploading}
             onClick={handleSubmit}
           >
             <Send className="w-3.5 h-3.5" />送信

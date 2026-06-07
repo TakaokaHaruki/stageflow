@@ -25,18 +25,33 @@
   "rls": {
     "create": {
       "user_condition": {
-        "role": "admin"
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
       }
     },
-    "read": null,
+    "read": true,
     "update": {
       "user_condition": {
-        "role": "admin"
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
       }
     },
     "delete": {
       "user_condition": {
-        "role": "admin"
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
       }
     }
   }
