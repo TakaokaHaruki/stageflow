@@ -232,7 +232,9 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
             </div>
             {!allStaff && (
               <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-muted rounded-lg border border-border">
-                {staffList.map((s) => (
+                {staffList.length === 0 ? (
+                  <p className="text-xs text-muted-foreground w-full text-center py-2">スタッフが登録されていません</p>
+                ) : staffList.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => toggleStaff(s.name)}
@@ -403,7 +405,9 @@ function AnnouncementEditForm({ ann, staffList, onClose, onSaved, maskStaffNames
             </div>
             {!allStaff && (
               <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-muted rounded-lg border border-border">
-                {staffList.map((s) => (
+                {staffList.length === 0 ? (
+                  <p className="text-xs text-muted-foreground w-full text-center py-2">スタッフが登録されていません</p>
+                ) : staffList.map((s) => (
                   <button key={s.id} onClick={() => toggleStaff(s.name)}
                     className={`text-xs px-2 py-1 rounded-full border transition-all ${form.target_staff.includes(s.name) ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground"}`}>
                     {getStaffDisplayName(s.name, maskStaffNames)}
@@ -731,20 +735,16 @@ export default function AnnouncementManager({ eventId }) {
           )}
         </div>
         <div className="flex items-center gap-1.5 justify-end flex-wrap sm:flex-nowrap sm:ml-auto">
-          {notifPermission !== "granted" && (
+          {notifPermission === "default" && (
             <button
               onClick={() => {
-                if (typeof Notification !== "undefined" && Notification.permission === "default") {
+                if (typeof Notification !== "undefined") {
                   Notification.requestPermission().then((p) => setNotifPermission(p));
                 }
               }}
-              className={`h-8 shrink-0 whitespace-nowrap text-[11px] px-2 rounded-lg border font-medium transition-colors flex items-center ${
-                notifPermission === "denied"
-                  ? "bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-700 dark:text-red-300 cursor-not-allowed"
-                  : "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900/50"
-              }`}
+              className="h-8 shrink-0 whitespace-nowrap text-[11px] px-2 rounded-lg border font-medium transition-colors flex items-center bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900/50"
             >
-              {notifPermission === "denied" ? "通知ブロック中" : "通知を有効にする"}
+              通知を有効にする
             </button>
           )}
           {canEdit && (
