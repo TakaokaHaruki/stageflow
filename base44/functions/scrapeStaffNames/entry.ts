@@ -7,6 +7,9 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    if (!['admin', 'chief'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const { url, eventId, selectedNames } = await req.json();
     if (!url || !eventId) {
@@ -27,11 +30,11 @@ Deno.serve(async (req) => {
 
     // If selectedNames provided, this is the "confirm & save" phase
     if (selectedNames) {
-      const existingStaff = await base44.entities.Staff.filter({ event_id: eventId });
+      const existingStaff = await base44.asServiceRole.entities.Staff.filter({ event_id: eventId });
       const existingNames = new Set(existingStaff.map((s) => s.name));
       const newNames = selectedNames.filter((name) => !existingNames.has(name));
       for (const name of newNames) {
-        await base44.entities.Staff.create({ event_id: eventId, name });
+        await base44.asServiceRole.entities.Staff.create({ event_id: eventId, name });
       }
       return Response.json({
         found: selectedNames.length,
@@ -43,28 +46,19 @@ Deno.serve(async (req) => {
 
     // Parse phase: extract staff list with type and memo info
     const staffList = [];
-
-    // Match each TDBox row
     const rowRegex = /<tr[^>]*class="TDBox"[^>]*>([\s\S]*?)<\/tr>/gi;
     let rowMatch;
     while ((rowMatch = rowRegex.exec(html)) !== null) {
       const rowHtml = rowMatch[1];
-
-      // Extract name
       const nameMatch = /<span[^>]*class="[^"]*onamae[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml);
       if (!nameMatch) continue;
       const name = nameMatch[1].replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').trim();
       if (!name || name === '(氏名なし)') continue;
 
-      // Extract type
       const typeMatch = /<span[^>]*class="[^"]*type[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml);
       const type = typeMatch ? typeMatch[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() : '';
-
-      // Extract memo value
       const memoMatch = /class="memo_i"[^>]*value="([^"]*)"/i.exec(rowHtml);
       const memo = memoMatch ? memoMatch[1].trim() : '';
-
-      // Default unchecked if type includes "物販" or memo is "帰宅"
       const defaultChecked = !type.includes('物販') && memo !== '帰宅';
 
       staffList.push({ name, type, memo, defaultChecked });

@@ -5,9 +5,9 @@ const SIDE_TEMPLATE_PREFIX = '__position_side__';
 
 async function loadSideTemplate(base44, eventId) {
   const name = `${SIDE_TEMPLATE_PREFIX}:${eventId}`;
-  let records = await base44.entities.MapTemplate.filter({ name });
+  let records = await base44.asServiceRole.entities.MapTemplate.filter({ name });
   if (!records?.length) {
-    const allRecords = await base44.entities.MapTemplate.list();
+    const allRecords = await base44.asServiceRole.entities.MapTemplate.list();
     records = allRecords?.filter((item) => item.name === name) || [];
   }
   const record = records
@@ -39,8 +39,8 @@ async function saveSideTemplate(base44, eventId, template) {
     }],
   };
   return record?.id
-    ? await base44.entities.MapTemplate.update(record.id, payload)
-    : await base44.entities.MapTemplate.create(payload);
+    ? await base44.asServiceRole.entities.MapTemplate.update(record.id, payload)
+    : await base44.asServiceRole.entities.MapTemplate.create(payload);
 }
 
 Deno.serve(async (req) => {
@@ -71,8 +71,8 @@ Deno.serve(async (req) => {
 
       const splitBySide = Boolean(split_by_side);
       const [positionType, positions, sideTemplate] = await Promise.all([
-        base44.entities.PositionType.get(positionTypeId),
-        base44.entities.Position.filter({ event_id: eventId }),
+        base44.asServiceRole.entities.PositionType.get(positionTypeId),
+        base44.asServiceRole.entities.Position.filter({ event_id: eventId }),
         loadSideTemplate(base44, eventId),
       ]);
 
@@ -84,16 +84,12 @@ Deno.serve(async (req) => {
           ...sideTemplate.data.position_types,
           [positionTypeName]: splitBySide,
         },
-        positions: {
-          ...sideTemplate.data.positions,
-        },
+        positions: { ...sideTemplate.data.positions },
       };
 
       for (const position of matchingPositions) {
         const existingSide = nextSideData.positions[position.id] || {};
-        let kamite;
-        let shimote;
-        let staffNames;
+        let kamite, shimote, staffNames;
         if (splitBySide) {
           kamite = unique(position.staff_names || []);
           shimote = [];
@@ -103,7 +99,7 @@ Deno.serve(async (req) => {
           shimote = [];
           staffNames = unique([...(existingSide.staff_names_kamite || []), ...(existingSide.staff_names_shimote || [])]);
         }
-        const updated = await base44.entities.Position.update(position.id, { staff_names: staffNames });
+        const updated = await base44.asServiceRole.entities.Position.update(position.id, { staff_names: staffNames });
         nextSideData.positions[position.id] = {
           ...existingSide,
           split_by_side: splitBySide,
@@ -144,7 +140,7 @@ Deno.serve(async (req) => {
           .map((field) => [field, body[field]])
       );
       const [currentPosition, sideTemplate] = await Promise.all([
-        base44.entities.Position.get(positionId),
+        base44.asServiceRole.entities.Position.get(positionId),
         loadSideTemplate(base44, eventId),
       ]);
       const existingSide = sideTemplate.data.positions[positionId] || {};
@@ -173,7 +169,7 @@ Deno.serve(async (req) => {
           },
         },
       };
-      const position = await base44.entities.Position.update(positionId, {
+      const position = await base44.asServiceRole.entities.Position.update(positionId, {
         ...extraFields,
         staff_names: staffNames,
       });

@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-const ALLOWED_FIELDS = new Set(['staff_management_mode', 'assignment_mode', 'venue_map_mode']);
-const ALLOWED_MODES = new Set(['public', 'edit']);
+const ALLOWED_FIELDS = ['staff_management_mode', 'assignment_mode', 'venue_map_mode'];
+const ALLOWED_MODES = ['edit', 'public'];
 
 Deno.serve(async (req) => {
   try {
@@ -15,20 +15,18 @@ Deno.serve(async (req) => {
     }
 
     const { eventId, field, mode } = await req.json();
-    if (!eventId) {
-      return Response.json({ error: 'eventId is required' }, { status: 400 });
+    if (!eventId || !field || !mode) {
+      return Response.json({ error: 'eventId, field, and mode are required' }, { status: 400 });
     }
-    if (!ALLOWED_FIELDS.has(field) || !ALLOWED_MODES.has(mode)) {
-      return Response.json({ error: 'invalid mode update' }, { status: 400 });
+    if (!ALLOWED_FIELDS.includes(field)) {
+      return Response.json({ error: `Invalid field: ${field}` }, { status: 400 });
+    }
+    if (!ALLOWED_MODES.includes(mode)) {
+      return Response.json({ error: `Invalid mode: ${mode}` }, { status: 400 });
     }
 
-    const event = await base44.entities.Event.update(eventId, {
-      [field]: mode,
-    });
-
-    return Response.json({
-      event: { ...(event || {}), id: eventId, [field]: mode },
-    });
+    const event = await base44.asServiceRole.entities.Event.update(eventId, { [field]: mode });
+    return Response.json({ event });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

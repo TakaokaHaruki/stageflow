@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'eventId is required' }, { status: 400 });
     }
 
-    const staff = await base44.entities.Staff.filter({ event_id: eventId });
+    const staff = await base44.asServiceRole.entities.Staff.filter({ event_id: eventId });
     return Response.json({ staff: staff || [] });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

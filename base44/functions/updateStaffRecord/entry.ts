@@ -1,12 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-// Handles staff CRUD operations (create, update, delete) via service role
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!['admin', 'chief'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { action, staffId, data } = await req.json();
@@ -15,7 +17,7 @@ Deno.serve(async (req) => {
       if (!data?.event_id || !data?.name) {
         return Response.json({ error: 'event_id and name are required' }, { status: 400 });
       }
-      const staff = await base44.entities.Staff.create(data);
+      const staff = await base44.asServiceRole.entities.Staff.create(data);
       return Response.json({ staff });
     }
 
@@ -23,7 +25,7 @@ Deno.serve(async (req) => {
       if (!staffId || !data) {
         return Response.json({ error: 'staffId and data are required' }, { status: 400 });
       }
-      const staff = await base44.entities.Staff.update(staffId, data);
+      const staff = await base44.asServiceRole.entities.Staff.update(staffId, data);
       return Response.json({ staff });
     }
 
@@ -31,7 +33,7 @@ Deno.serve(async (req) => {
       if (!staffId) {
         return Response.json({ error: 'staffId is required' }, { status: 400 });
       }
-      await base44.entities.Staff.delete(staffId);
+      await base44.asServiceRole.entities.Staff.delete(staffId);
       return Response.json({ success: true });
     }
 

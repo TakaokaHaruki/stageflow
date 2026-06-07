@@ -7,6 +7,9 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    if (!['admin', 'chief'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const { eventId, chief_staff_name } = await req.json();
     if (!eventId) {
@@ -14,7 +17,7 @@ Deno.serve(async (req) => {
     }
 
     const nextChiefName = chief_staff_name || '';
-    const event = await base44.entities.Event.update(eventId, {
+    const event = await base44.asServiceRole.entities.Event.update(eventId, {
       chief_staff_name: nextChiefName,
     });
 

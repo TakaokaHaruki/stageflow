@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-// Handles Announcement CRUD operations via service role
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -9,26 +8,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Only admin and chief can create/update/delete announcements
-    const canEdit = user.role === 'admin' || user.role === 'chief';
-
     const { action, announcementId, data } = await req.json();
+    const isPrivileged = ['admin', 'chief'].includes(user.role);
 
     if (action === 'create') {
-      if (!canEdit) return Response.json({ error: 'Forbidden' }, { status: 403 });
-      if (!data?.event_id || !data?.title) {
-        return Response.json({ error: 'event_id and title are required' }, { status: 400 });
+      if (!isPrivileged) return Response.json({ error: 'Forbidden' }, { status: 403 });
+      if (!data?.event_id || !data?.title || !data?.body) {
+        return Response.json({ error: 'event_id, title, and body are required' }, { status: 400 });
       }
-      const announcement = await base44.entities.Announcement.create(data);
+      const announcement = await base44.asServiceRole.entities.Announcement.create(data);
       return Response.json({ announcement });
     }
 
     if (action === 'update') {
-      if (!canEdit) return Response.json({ error: 'Forbidden' }, { status: 403 });
+      if (!isPrivileged) return Response.json({ error: 'Forbidden' }, { status: 403 });
       if (!announcementId || !data) {
         return Response.json({ error: 'announcementId and data are required' }, { status: 400 });
       }
-      const announcement = await base44.entities.Announcement.update(announcementId, data);
+      const announcement = await base44.asServiceRole.entities.Announcement.update(announcementId, data);
       return Response.json({ announcement });
     }
 
@@ -37,16 +34,16 @@ Deno.serve(async (req) => {
       if (!announcementId) {
         return Response.json({ error: 'announcementId is required' }, { status: 400 });
       }
-      await base44.entities.Announcement.delete(announcementId);
+      await base44.asServiceRole.entities.Announcement.delete(announcementId);
       return Response.json({ success: true });
     }
 
-    // read_by update - any authenticated user can mark as read
-    if (action === 'mark_read') {
+    // Allow any authenticated user to update read_by
+    if (action === 'markRead') {
       if (!announcementId || !data?.read_by) {
         return Response.json({ error: 'announcementId and read_by are required' }, { status: 400 });
       }
-      const announcement = await base44.entities.Announcement.update(announcementId, { read_by: data.read_by });
+      const announcement = await base44.asServiceRole.entities.Announcement.update(announcementId, { read_by: data.read_by });
       return Response.json({ announcement });
     }
 
