@@ -601,22 +601,7 @@ function AnnouncementCard({ ann, staffList, onDelete, maskStaffNames = false }) 
               })}
             </div>
           ) : (
-            <div className="flex gap-2">
-              <input
-                className="flex-1 border border-input rounded-lg px-2 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="名前を入力"
-                value={confirmName}
-                onChange={(e) => setConfirmName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleConfirm()}
-              />
-              <button
-                onClick={handleConfirm}
-                disabled={!confirmName.trim() || readMutation.isPending}
-                className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-700 disabled:opacity-50 transition-colors"
-              >
-                {readMutation.isPending ? "..." : "確認"}
-              </button>
-            </div>
+            <p className="text-xs text-muted-foreground py-2 text-center">スタッフが登録されていません。スタッフ管理タブからスタッフを追加してください。</p>
           )}
         </div>
       )}
@@ -753,9 +738,10 @@ export default function AnnouncementManager({ eventId }) {
           <h2 className="text-sm font-bold flex items-center gap-1.5">
             <Megaphone className="w-4 h-4 text-primary" />連絡事項
           </h2>
-          {urgentCount > 0 && (
-            <div className="text-xs font-medium text-amber-700 dark:text-amber-300 mt-0.5">{urgentCount}件未読あり</div>
-          )}
+          <div className="text-xs text-muted-foreground mt-0.5">
+            対象スタッフ：{staffList.length}名
+            {urgentCount > 0 && <span className="ml-2 font-medium text-amber-700 dark:text-amber-300">・{urgentCount}件未読あり</span>}
+          </div>
         </div>
         <div className="flex items-center gap-1.5 justify-end flex-wrap sm:flex-nowrap sm:ml-auto">
           {notifPermission === "default" && (
