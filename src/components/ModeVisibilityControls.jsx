@@ -38,7 +38,7 @@ export function useResolvedEventMode(eventId, field, eventMode, options = {}) {
 
   return {
     mode: resolvedMode,
-    isReady: isLoaded || eventMode === "edit" || eventMode === "public",
+    isReady: isLoaded,
   };
 }
 
