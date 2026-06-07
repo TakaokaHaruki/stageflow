@@ -33,16 +33,7 @@
         "role": "admin"
       }
     },
-    "read": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chief"
-          ]
-        }
-      }
-    },
+    "read": true,
     "update": {
       "user_condition": {
         "role": "admin"

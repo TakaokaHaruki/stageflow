@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Bell, Plus, Trash2, Users, CheckCircle2, Clock, AlertTriangle,
@@ -48,9 +49,10 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
       }
       return { previousAnnouncements, previousAlert, optimisticId };
     },
-    onError: (_, __, context) => {
+    onError: (err, _, context) => {
       queryClient.setQueryData(["announcements", eventId], context?.previousAnnouncements);
       queryClient.setQueryData(["announcements-alert", eventId], context?.previousAlert);
+      toast.error("送信に失敗しました: " + (err?.message || "権限がないか、エラーが発生しました"));
     },
     onSuccess: (createdAnnouncement, data, context) => {
       if (createdAnnouncement?.id) {
@@ -61,6 +63,7 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
       }
       queryClient.invalidateQueries({ queryKey: ["announcements", eventId] });
       queryClient.invalidateQueries({ queryKey: ["announcements-alert", eventId] });
+      toast.success("連絡事項を送信しました");
       onSaved();
     },
   });
