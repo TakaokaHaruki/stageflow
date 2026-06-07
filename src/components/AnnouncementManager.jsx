@@ -152,6 +152,7 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
             <input
               className="w-full border border-input rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="例：入場ゲート変更のお知らせ"
+              data-testid="announcement-title-input"
               value={form.title}
               onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
             />
@@ -164,6 +165,7 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
               className="w-full border border-input rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none"
               placeholder="詳細内容を入力..."
               rows={3}
+              data-testid="announcement-body-input"
               value={form.body}
               onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
             />
@@ -258,6 +260,7 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
           <Button variant="outline" className="flex-1" onClick={onClose}>キャンセル</Button>
           <Button
             className="flex-1 gap-1"
+            data-testid="announcement-submit-button"
             disabled={!form.title.trim() || createMutation.isPending}
             onClick={handleSubmit}
           >
