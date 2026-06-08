@@ -25,8 +25,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: `Invalid mode: ${mode}` }, { status: 400 });
     }
 
-    // Use service role to bypass RLS (role check already performed above)
-    const event = await base44.asServiceRole.entities.Event.update(eventId, { [field]: mode });
+    // Event RLS is update:true, so use user-scoped update directly
+    const event = await base44.entities.Event.update(eventId, { [field]: mode });
     return Response.json({ event });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

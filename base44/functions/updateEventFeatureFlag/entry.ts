@@ -14,14 +14,15 @@ Deno.serve(async (req) => {
     }
 
     const { eventId, field, value } = await req.json();
-    if (!eventId || !field || value === undefined) {
-      return Response.json({ error: 'eventId, field, and value are required' }, { status: 400 });
+    if (!eventId || !field) {
+      return Response.json({ error: 'eventId and field are required' }, { status: 400 });
     }
     if (!ALLOWED_FIELDS.includes(field)) {
       return Response.json({ error: `Invalid field: ${field}` }, { status: 400 });
     }
 
-    const event = await base44.asServiceRole.entities.Event.update(eventId, { [field]: value });
+    // Event RLS is update:true, so use user-scoped update directly
+    const event = await base44.entities.Event.update(eventId, { [field]: value ?? null });
     return Response.json({ event });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
