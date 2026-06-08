@@ -39,10 +39,8 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Show landing page instead of auto-redirecting
-      return null;
     }
+    // auth_required: fall through to render routes (Landing/Login/etc. handle unauthenticated state)
   }
 
   // Render the main app
