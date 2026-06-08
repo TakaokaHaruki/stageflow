@@ -8,10 +8,7 @@ const ALLOWED_FIELDS = [
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // Get user from request headers directly (Base44 injects user info)
-    const userInfoHeader = req.headers.get("x-base44-user");
-    const user = userInfoHeader ? JSON.parse(userInfoHeader) : null;
+    const user = await base44.auth.me();
     
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
