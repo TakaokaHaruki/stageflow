@@ -11,6 +11,10 @@ import { ThemeProvider } from '@/lib/ThemeProvider';
 import Landing from "./pages/Landing";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const pageVariants = {
   initial: { opacity: 0, x: "100%" },
@@ -54,6 +58,10 @@ const AuthenticatedApp = () => {
       >
         <Routes location={location}>
           <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/events" element={<Events />} />
           <Route path="/events/:eventId" element={<EventDetail />} />
           <Route path="*" element={<PageNotFound />} />
