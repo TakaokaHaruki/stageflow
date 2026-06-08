@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Users } from "lucide-react";
+import { toast } from "sonner";
+import { Users, Trash2, Pencil, Check, X } from "lucide-react";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const ROLE_OPTIONS = [
   { value: "admin", label: "管理者" },
@@ -19,7 +21,10 @@ const ROLE_STYLE = {
 
 export default function UserRoleManager() {
   const queryClient = useQueryClient();
-  const [editingId, setEditingId] = useState(null);
+  const [editingRoleId, setEditingRoleId] = useState(null);
+  const [editingNameId, setEditingNameId] = useState(null);
+  const [editingName, setEditingName] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["users-all"],
@@ -36,12 +41,63 @@ export default function UserRoleManager() {
       );
       return { prev };
     },
-    onError: (_, __, ctx) => queryClient.setQueryData(["users-all"], ctx?.prev),
+    onError: (_, __, ctx) => {
+      queryClient.setQueryData(["users-all"], ctx?.prev);
+      toast.error("ロールの変更に失敗しました");
+    },
+    onSuccess: () => toast.success("ロールを変更しました"),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["users-all"] });
-      setEditingId(null);
+      setEditingRoleId(null);
     },
   });
+
+  const updateNameMutation = useMutation({
+    mutationFn: ({ userId, full_name }) => base44.auth.updateMe({ full_name }),
+    onMutate: async ({ userId, full_name }) => {
+      await queryClient.cancelQueries({ queryKey: ["users-all"] });
+      const prev = queryClient.getQueryData(["users-all"]);
+      queryClient.setQueryData(["users-all"], (old = []) =>
+        old.map((u) => (u.id === userId ? { ...u, full_name } : u))
+      );
+      return { prev };
+    },
+    onError: (_, __, ctx) => {
+      queryClient.setQueryData(["users-all"], ctx?.prev);
+      toast.error("名前の変更に失敗しました");
+    },
+    onSuccess: () => toast.success("名前を変更しました"),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["users-all"] });
+      setEditingNameId(null);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (userId) => base44.entities.User.delete(userId),
+    onMutate: async (userId) => {
+      await queryClient.cancelQueries({ queryKey: ["users-all"] });
+      const prev = queryClient.getQueryData(["users-all"]);
+      queryClient.setQueryData(["users-all"], (old = []) => old.filter((u) => u.id !== userId));
+      return { prev };
+    },
+    onError: (_, __, ctx) => {
+      queryClient.setQueryData(["users-all"], ctx?.prev);
+      toast.error("ユーザーの削除に失敗しました");
+    },
+    onSuccess: () => toast.success("ユーザーを削除しました"),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["users-all"] }),
+  });
+
+  const startEditName = (u) => {
+    setEditingNameId(u.id);
+    setEditingName(u.full_name || "");
+  };
+
+  const saveEditName = (u) => {
+    if (!editingName.trim()) return;
+    updateNameMutation.mutate({ userId: u.id, full_name: editingName.trim() });
+  };
 
   if (isLoading) return (
     <div className="flex justify-center py-4">
@@ -49,26 +105,63 @@ export default function UserRoleManager() {
     </div>
   );
 
+  const confirmDeleteUser = users.find((u) => u.id === confirmDeleteId);
+
   return (
     <div>
       <div className="flex items-center gap-1.5 mb-2">
         <Users className="w-3.5 h-3.5 text-primary" />
         <h3 className="text-xs font-bold">ユーザー管理</h3>
+        <span className="text-[10px] text-muted-foreground">（{users.length}名）</span>
       </div>
       <div className="border border-border rounded-lg overflow-hidden divide-y divide-border">
         {users.map((u) => (
-          <div key={u.id} className="bg-card px-2.5 py-2 flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-xs font-medium truncate">{u.full_name || u.email}</p>
-              {u.full_name && <p className="text-[10px] text-muted-foreground truncate">{u.email}</p>}
+          <div key={u.id} className="bg-card px-2.5 py-2 flex items-center gap-2">
+            {/* Name */}
+            <div className="flex-1 min-w-0">
+              {editingNameId === u.id ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    autoFocus
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") saveEditName(u);
+                      if (e.key === "Escape") setEditingNameId(null);
+                    }}
+                    className="flex-1 text-xs border border-input rounded px-1.5 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                  />
+                  <button onClick={() => saveEditName(u)} className="p-0.5 text-green-600 hover:text-green-700">
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => setEditingNameId(null)} className="p-0.5 text-muted-foreground hover:text-foreground">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 group">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">{u.full_name || u.email}</p>
+                    {u.full_name && <p className="text-[10px] text-muted-foreground truncate">{u.email}</p>}
+                  </div>
+                  <button
+                    onClick={() => startEditName(u)}
+                    className="opacity-0 group-hover:opacity-100 p-0.5 text-muted-foreground hover:text-primary transition-all shrink-0"
+                  >
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
             </div>
-            {editingId === u.id ? (
+
+            {/* Role */}
+            {editingRoleId === u.id ? (
               <select
                 autoFocus
                 defaultValue={u.role || "user"}
-                onBlur={() => setEditingId(null)}
+                onBlur={() => setEditingRoleId(null)}
                 onChange={(e) => updateRoleMutation.mutate({ userId: u.id, role: e.target.value })}
-                className="text-xs border border-input rounded px-1.5 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                className="text-xs border border-input rounded px-1.5 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring shrink-0"
               >
                 {ROLE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -76,15 +169,34 @@ export default function UserRoleManager() {
               </select>
             ) : (
               <button
-                onClick={() => setEditingId(u.id)}
+                onClick={() => setEditingRoleId(u.id)}
                 className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${ROLE_STYLE[u.role] || ROLE_STYLE.user}`}
               >
                 {ROLE_OPTIONS.find((r) => r.value === u.role)?.label || "ユーザー"}
               </button>
             )}
+
+            {/* Delete */}
+            <button
+              onClick={() => setConfirmDeleteId(u.id)}
+              className="p-1 text-muted-foreground hover:text-destructive transition-colors shrink-0"
+              title="削除"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
           </div>
         ))}
       </div>
+
+      {confirmDeleteId && confirmDeleteUser && (
+        <ConfirmDialog
+          message={`「${confirmDeleteUser.full_name || confirmDeleteUser.email}」を削除しますか？\nこの操作は取り消せません。`}
+          confirmLabel="削除"
+          confirmVariant="destructive"
+          onConfirm={() => { deleteMutation.mutate(confirmDeleteId); setConfirmDeleteId(null); }}
+          onCancel={() => setConfirmDeleteId(null)}
+        />
+      )}
     </div>
   );
 }

@@ -11,12 +11,12 @@ const ALL_TABS = [
   { id: "settings", label: "管理設定", icon: Settings },
 ];
 
-export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset, showTimeline = false, showMap = false, showTasks = true, isPrivileged = true }) {
+export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset, showTimeline = false, showMap = false, showTasks = true, isPrivileged = true, isAdmin = false }) {
   const TABS = ALL_TABS.filter((t) => {
     if (t.id === "timeline" && !showTimeline) return false;
     if (t.id === "map" && !showMap) return false;
     if (t.id === "tasks" && !showTasks) return false;
-    if (!isPrivileged && t.id === "admin") return false;
+    if (t.id === "admin" && !isAdmin) return false;
     if (!isPrivileged && t.id === "settings") return false;
     return true;
   });

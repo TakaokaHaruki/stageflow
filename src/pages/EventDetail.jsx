@@ -127,7 +127,7 @@ export default function EventDetail() {
     ...(canShowTimeline ? [{ id: "timeline", label: "タイムライン", icon: Clock }] : []),
     { id: "notice", label: "連絡事項", icon: Bell },
     ...(canShowTasks ? [{ id: "tasks", label: "チェックリスト", icon: CheckSquare }] : []),
-    ...(isPrivileged ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
+    ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ];
 
@@ -266,6 +266,7 @@ export default function EventDetail() {
           showMap={canShowMap}
           showTasks={canShowTasks}
           isPrivileged={isPrivileged}
+          isAdmin={isAdmin}
         />
       </div>
     </div>

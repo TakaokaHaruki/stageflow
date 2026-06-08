@@ -6,7 +6,8 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn, ArrowLeft, Globe, Lock } from "lucide-react";
+import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn, ArrowLeft, Globe, Lock, ShieldCheck } from "lucide-react";
+import AdminUserModal from "@/components/AdminUserModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion } from "framer-motion";
 import EventFormModal from "@/components/EventFormModal";
@@ -25,6 +26,7 @@ const statusColor = {
 export default function Events() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const queryClient = useQueryClient();
@@ -150,10 +152,18 @@ export default function Events() {
         </div>
         {/* Row 2: New button + Account */}
         <div className="flex items-center justify-between gap-1.5">
-          <Button onClick={() => {setEditingEvent(null);setShowModal(true);}} className="gap-1 select-none" size="sm" disabled={!canEdit}>
-            <Plus className="w-3.5 h-3.5" />
-            新規
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <Button onClick={() => {setEditingEvent(null);setShowModal(true);}} className="gap-1 select-none" size="sm" disabled={!canEdit}>
+              <Plus className="w-3.5 h-3.5" />
+              新規
+            </Button>
+            {role === "admin" && (
+              <Button onClick={() => setShowAdminModal(true)} variant="outline" size="sm" className="gap-1 select-none">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                管理者設定
+              </Button>
+            )}
+          </div>
           {isGuest ? (
             <Button size="sm" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}>
               <LogIn className="w-3 h-3" />ログイン
@@ -296,6 +306,8 @@ export default function Events() {
         onCancel={() => setConfirmDeleteAccount(false)} />
 
       }
+
+      {showAdminModal && <AdminUserModal onClose={() => setShowAdminModal(false)} />}
 
       {showModal &&
       <EventFormModal
