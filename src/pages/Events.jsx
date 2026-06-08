@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { Button } from "@/components/ui/button";
-import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn } from "lucide-react";
+import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn, ArrowLeft, Globe, Lock } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion } from "framer-motion";
 import EventFormModal from "@/components/EventFormModal";
@@ -46,6 +46,47 @@ export default function Events() {
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
+
+  const canManageVisibility = role === "admin" || role === "chief";
+
+  const isEventPublic = (event) =>
+    event.staff_management_mode === "public" ||
+    event.assignment_mode === "public" ||
+    event.venue_map_mode === "public";
+
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: async ({ eventId, makePublic }) => {
+      const mode = makePublic ? "public" : "edit";
+      await Promise.all([
+        base44.functions.invoke("updateEventMode", { event_id: eventId, field: "staff_management_mode", mode }),
+        base44.functions.invoke("updateEventMode", { event_id: eventId, field: "assignment_mode", mode }),
+        base44.functions.invoke("updateEventMode", { event_id: eventId, field: "venue_map_mode", mode }),
+      ]);
+    },
+    onMutate: async ({ eventId, makePublic }) => {
+      await queryClient.cancelQueries({ queryKey: ["events"] });
+      const previousEvents = queryClient.getQueryData(["events"]);
+      const mode = makePublic ? "public" : "edit";
+      queryClient.setQueryData(["events"], (old = []) =>
+        old.map((e) =>
+          e.id === eventId
+            ? { ...e, staff_management_mode: mode, assignment_mode: mode, venue_map_mode: mode }
+            : e
+        )
+      );
+      return { previousEvents };
+    },
+    onError: (_, __, context) => {
+      queryClient.setQueryData(["events"], context?.previousEvents);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["events"] }),
+  });
+
+  const handleToggleVisibility = (e, event) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleVisibilityMutation.mutate({ eventId: event.id, makePublic: !isEventPublic(event) });
+  };
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Event.delete(id),
@@ -98,8 +139,11 @@ export default function Events() {
       <UserRestrictionBanner role={role} />
       {/* Header */}
       <div className="mb-2">
-        {/* Row 1: Title */}
-        <div className="mb-1">
+        {/* Row 1: Title + Home button */}
+        <div className="mb-1 flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
+            <ArrowLeft className="w-3.5 h-3.5" />ホーム
+          </Link>
           <h1 className="text-base font-bold text-foreground tracking-tight">イベント一覧</h1>
           <p className="text-muted-foreground text-xs">A-CAST社員の方、各チーフの方はログインボタンより会員登録を行い、システム管理者へその旨お伝えください。
             </p>
@@ -194,6 +238,19 @@ export default function Events() {
                     </div>
                   </div>
                   <div className="flex items-center gap-0.5 shrink-0">
+                    {/* Guest visibility toggle */}
+                    <button
+                      onClick={(e) => handleToggleVisibility(e, event)}
+                      disabled={!canManageVisibility}
+                      className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[11px] font-medium transition-colors select-none
+                        ${isEventPublic(event)
+                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                          : "bg-slate-100 text-slate-500 hover:bg-slate-200"}
+                        disabled:pointer-events-none disabled:opacity-50`}
+                    >
+                      {isEventPublic(event) ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+                      {isEventPublic(event) ? "公開中" : "非公開"}
+                    </button>
                     <button
                   onClick={(e) => handleEdit(e, event)}
                   disabled={!canEdit}
