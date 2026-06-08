@@ -9,13 +9,14 @@ import PositionPresetManager from "@/components/PositionPresetManager";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useTheme } from "@/lib/ThemeProvider";
 import { toast } from "sonner";
-import { unwrapFunctionResponse } from "@/lib/base44Response";
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import {
   applyPositionSideSettingsToTypes,
   loadPositionSideSettings,
   rememberPositionSideSettings,
+  getPositionSideTemplateName,
+  normalizePositionSideSettings,
 } from "@/lib/positionSideSettings";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
@@ -87,13 +88,11 @@ export default function PositionTypeManagement({ eventId }) {
     });
   };
 
-  const handleToggleSplitBySide = (positionType, splitBySide) => {
+  const handleToggleSplitBySide = async (positionType, splitBySide) => {
     const matchingPositions = (queryClient.getQueryData(["positions", eventId]) || [])
       .filter((position) => position.name === positionType.name);
     const matchingPositionIds = new Set(matchingPositions.map((p) => p.id));
 
-    // ONにする場合: 既存のstaff_namesを上手に移動
-    // OFFにする場合: kamite+shimoteをマージしてstaff_namesに戻す
     const positionMigrationMap = Object.fromEntries(
       matchingPositions.map((position) => {
         if (splitBySide) {
@@ -114,13 +113,15 @@ export default function PositionTypeManagement({ eventId }) {
       })
     );
 
-    queryClient.setQueryData(["positionSideSettings", eventId], (old) => ({
+    // 楽観的UI更新
+    const prevSideSettings = queryClient.getQueryData(["positionSideSettings", eventId]);
+    const nextSideSettings = {
       position_types: {
-        ...(old?.position_types || {}),
+        ...(prevSideSettings?.position_types || {}),
         [positionType.name]: splitBySide,
       },
       positions: Object.fromEntries(
-        Object.entries(old?.positions || {}).map(([positionId, data]) => [
+        Object.entries(prevSideSettings?.positions || {}).map(([positionId, data]) => [
           positionId,
           matchingPositionIds.has(positionId) && positionMigrationMap[positionId]
             ? { ...data, ...positionMigrationMap[positionId] }
@@ -128,37 +129,54 @@ export default function PositionTypeManagement({ eventId }) {
         ])
       ),
       updated_at: new Date().toISOString(),
-    }));
+    };
+    queryClient.setQueryData(["positionSideSettings", eventId], nextSideSettings);
     queryClient.setQueryData(["positions", eventId], (old = []) =>
       old.map((position) => position.name === positionType.name
         ? { ...position, ...(positionMigrationMap[position.id] || {}) }
         : position)
     );
-    base44.functions.invoke("updatePositionSide", {
-      action: "setSplitBySide",
-      eventId,
-      positionTypeId: positionType.id,
-      positionTypeName: positionType.name,
-      split_by_side: splitBySide,
-    })
-      .then((response) => {
-        const payload = unwrapFunctionResponse(response);
-        if (payload?.error) throw new Error(payload.error);
-        return payload;
-      })
-      .then((payload) => {
-        if (payload?.sideSettings) {
-          queryClient.setQueryData(["positionSideSettings", eventId], rememberPositionSideSettings(eventId, payload.sideSettings));
-        }
-        queryClient.invalidateQueries({ queryKey: ["positionTypes"] });
-        queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
-      })
-      .catch(() => {
-        queryClient.invalidateQueries({ queryKey: ["positionTypes"] });
-        queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
-        queryClient.invalidateQueries({ queryKey: ["positionSideSettings", eventId] });
-        toast.error("\u4e0a\u624b\u30fb\u4e0b\u624b\u8a2d\u5b9a\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f");
+
+    try {
+      // 1. バックエンド経由で Position を更新（chief ロールでも RLS が通る）
+      await base44.functions.invoke("updatePositionSide", {
+        action: "setSplitBySide",
+        eventId,
+        positionTypeId: positionType.id,
+        positionTypeName: positionType.name,
+        split_by_side: splitBySide,
       });
+
+      // 2. MapTemplate（side settings）をフロントから直接保存（chief ロールは MapTemplate の update/create RLS で許可済み）
+      const templateName = getPositionSideTemplateName(eventId);
+      const existingTemplates = await base44.entities.MapTemplate.filter({ name: templateName });
+      const existing = existingTemplates?.sort((a, b) =>
+        new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0)
+      )[0] || null;
+
+      const templatePayload = {
+        name: templateName,
+        description: 'StageFlow position side settings',
+        areas: [{ ...nextSideSettings, updated_at: new Date().toISOString() }],
+      };
+      if (existing?.id) {
+        await base44.entities.MapTemplate.update(existing.id, templatePayload);
+      } else {
+        await base44.entities.MapTemplate.create(templatePayload);
+      }
+
+      rememberPositionSideSettings(eventId, nextSideSettings);
+      queryClient.invalidateQueries({ queryKey: ["positionTypes"] });
+      queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+    } catch (err) {
+      console.error("上手/下手設定の保存に失敗しました", err);
+      // ロールバック
+      queryClient.setQueryData(["positionSideSettings", eventId], prevSideSettings);
+      queryClient.invalidateQueries({ queryKey: ["positionTypes"] });
+      queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["positionSideSettings", eventId] });
+      toast.error("上手/下手設定の保存に失敗しました");
+    }
   };
 
   const handleKeyDown = (e) => {
