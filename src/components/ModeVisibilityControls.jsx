@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Eye, Pencil, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
-import { unwrapFunctionResponse } from "@/lib/base44Response";
 
 const modeEventName = "stageflow:event-mode-change";
 const normalizeMode = (mode) => (mode === "public" || mode === "edit" ? mode : "edit");
@@ -53,14 +52,7 @@ export function ModeVisibilityControls({ eventId, field, mode = "edit", canManag
 
   const updateMode = useMutation({
     mutationFn: async (nextMode) => {
-      const response = await base44.functions.invoke("updateEventMode", {
-        eventId,
-        field,
-        mode: nextMode,
-      });
-      const payload = unwrapFunctionResponse(response);
-      if (payload?.error) throw new Error(payload.error);
-      return payload?.event;
+      return await base44.entities.Event.update(eventId, { [field]: nextMode });
     },
     onMutate: async (nextMode) => {
       rememberMode(eventId, field, nextMode);
@@ -85,7 +77,7 @@ export function ModeVisibilityControls({ eventId, field, mode = "edit", canManag
       toast.error("モードの保存に失敗しました");
     },
     onSuccess: (updatedEvent, nextMode) => {
-      const savedMode = updatedEvent?.[field] || nextMode;
+      const savedMode = updatedEvent?.[field] ?? nextMode;
       rememberMode(eventId, field, savedMode);
       queryClient.setQueryData(["event", eventId], (old) => {
         if (Array.isArray(old)) {

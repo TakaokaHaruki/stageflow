@@ -151,23 +151,7 @@
       ]
     },
     "read": true,
-    "update": {
-      "$or": [
-        {
-          "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": {
-              "$in": [
-                "admin",
-                "chief"
-              ]
-            }
-          }
-        }
-      ]
-    },
+    "update": true,
     "delete": {
       "user_condition": {
         "role": "admin"

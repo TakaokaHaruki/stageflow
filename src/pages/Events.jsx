@@ -61,11 +61,11 @@ export default function Events() {
   const toggleVisibilityMutation = useMutation({
     mutationFn: async ({ eventId, makePublic }) => {
       const mode = makePublic ? "public" : "edit";
-      await Promise.all([
-        base44.functions.invoke("updateEventMode", { eventId, field: "staff_management_mode", mode }),
-        base44.functions.invoke("updateEventMode", { eventId, field: "assignment_mode", mode }),
-        base44.functions.invoke("updateEventMode", { eventId, field: "venue_map_mode", mode }),
-      ]);
+      await base44.entities.Event.update(eventId, {
+        staff_management_mode: mode,
+        assignment_mode: mode,
+        venue_map_mode: mode,
+      });
     },
     onMutate: async ({ eventId, makePublic }) => {
       await queryClient.cancelQueries({ queryKey: ["events"] });
