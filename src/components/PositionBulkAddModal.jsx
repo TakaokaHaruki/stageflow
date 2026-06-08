@@ -66,25 +66,30 @@ export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開�
       .map((id) => positionTypes.find((pt) => pt.id === id))
       .filter(Boolean);
 
-    await Promise.all(
-      targets.map((pt, idx) =>
-        base44.entities.Position.create({
-          event_id: eventId,
-          name: pt.name,
-          time_slot: timeSlot,
-          staff_names: [],
-          notes: "",
-          color: pt.color || "#6366f1",
-          required_count: getRequiredCount(pt),
-          order: startOrder + idx,
-        })
-      )
-    );
+    const positions = targets.map((pt, idx) => ({
+      name: pt.name,
+      time_slot: timeSlot,
+      staff_names: [],
+      notes: "",
+      color: pt.color || "#6366f1",
+      required_count: getRequiredCount(pt),
+      order: startOrder + idx,
+    }));
 
-    queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
-    toast.success(`${targets.length}件のポジションを追加しました`);
-    onSaved();
-    onClose();
+    try {
+      await base44.functions.invoke("updatePositionSide", {
+        action: "createPositions",
+        eventId,
+        positions,
+      });
+      queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+      toast.success(`${targets.length}件のポジションを追加しました`);
+      onSaved();
+      onClose();
+    } catch (err) {
+      console.error("ポジションの追加に失敗しました", err);
+      toast.error("ポジションの追加に失敗しました");
+    }
   };
 
   return (

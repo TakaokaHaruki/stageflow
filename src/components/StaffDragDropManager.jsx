@@ -231,14 +231,19 @@ export default function StaffDragDropManager({ eventId }) {
   // 一括削除: ポジションごと全削除
   const handleBulkDeletePositions = async (slot) => {
     const slotPositions = positions.filter((p) => (p.time_slot || "開場中") === slot);
-    await Promise.all(slotPositions.map((p) => base44.entities.Position.delete(p.id)));
+    await base44.functions.invoke("updatePositionSide", {
+      action: "deletePositions",
+      positionIds: slotPositions.map((p) => p.id),
+    });
     queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
     setConfirmBulkDelete(null);
   };
 
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Position.delete(id),
+    mutationFn: async (id) => {
+      await base44.functions.invoke("updatePositionSide", { action: "deletePosition", positionId: id });
+    },
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["positions", eventId] });
       const prev = queryClient.getQueryData(["positions", eventId]);
@@ -394,7 +399,8 @@ export default function StaffDragDropManager({ eventId }) {
     const reordered = [...slotPositions];
     const [moved] = reordered.splice(fromIdx, 1);
     reordered.splice(toIdx, 0, moved);
-    reordered.forEach((pos, idx) => { base44.entities.Position.update(pos.id, { order: idx }); });
+    const updates = reordered.map((pos, idx) => ({ positionId: pos.id, data: { order: idx } }));
+    Promise.all(updates.map((u) => base44.functions.invoke("updatePositionSide", { action: "updatePositionFields", ...u })));
     queryClient.setQueryData(["positions", eventId], (old) => {
       const others = old.filter((p) => (p.time_slot || "開場中") !== slot);
       return [...others, ...reordered.map((pos, idx) => ({ ...pos, order: idx }))];
@@ -538,7 +544,11 @@ export default function StaffDragDropManager({ eventId }) {
                               queryClient.setQueryData(["positions", eventId], (old) =>
                                 old.map((p) => p.id === pos.id ? { ...p, required_count: v } : p)
                               );
-                              base44.entities.Position.update(pos.id, { required_count: v });
+                              base44.functions.invoke("updatePositionSide", {
+                                action: "updatePositionFields",
+                                positionId: pos.id,
+                                data: { required_count: v },
+                              });
                             }}
                             occupiedInSlot={[...new Set(
                               slotPositions.filter((p) => p.id !== pos.id).flatMap((p) => p.staff_names || [])

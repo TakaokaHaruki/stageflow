@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const unique = (items = []) => [...new Set(items.filter(Boolean))];
+const ALLOWED_UPDATE_FIELDS = ['order', 'required_count', 'notes', 'color', 'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote'];
 
 Deno.serve(async (req) => {
   try {
@@ -15,10 +16,67 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const { action, eventId } = body;
-    if (!eventId) {
+    // eventId は create アクションでのみ必須（delete/update は positionId で特定）
+    if (!eventId && ['createPosition', 'createPositions'].includes(action)) {
       return Response.json({ error: 'eventId is required' }, { status: 400 });
     }
 
+    // 新規：単一 Position 作成
+    if (action === 'createPosition') {
+      const { position } = body;
+      if (!position || !position.name || !position.time_slot) {
+        return Response.json({ error: 'position with name and time_slot is required' }, { status: 400 });
+      }
+      const created = await base44.entities.Position.create({ ...position, event_id: eventId });
+      return Response.json({ position: created });
+    }
+
+    // 新規：複数 Position 並行作成
+    if (action === 'createPositions') {
+      const { positions } = body;
+      if (!Array.isArray(positions) || positions.length === 0) {
+        return Response.json({ error: 'positions array is required' }, { status: 400 });
+      }
+      const created = await Promise.all(
+        positions.map((p) => base44.entities.Position.create({ ...p, event_id: eventId }))
+      );
+      return Response.json({ positions: created });
+    }
+
+    // 新規：単一 Position 削除
+    if (action === 'deletePosition') {
+      const { positionId } = body;
+      if (!positionId) {
+        return Response.json({ error: 'positionId is required' }, { status: 400 });
+      }
+      await base44.entities.Position.delete(positionId);
+      return Response.json({ ok: true });
+    }
+
+    // 新規：複数 Position 並行削除
+    if (action === 'deletePositions') {
+      const { positionIds } = body;
+      if (!Array.isArray(positionIds) || positionIds.length === 0) {
+        return Response.json({ error: 'positionIds array is required' }, { status: 400 });
+      }
+      await Promise.all(positionIds.map((id) => base44.entities.Position.delete(id)));
+      return Response.json({ ok: true });
+    }
+
+    // 新規：Position フィールド更新（order, required_count など）
+    if (action === 'updatePositionFields') {
+      const { positionId, data } = body;
+      if (!positionId || !data) {
+        return Response.json({ error: 'positionId and data are required' }, { status: 400 });
+      }
+      const filteredData = Object.fromEntries(
+        Object.entries(data).filter(([key]) => ALLOWED_UPDATE_FIELDS.includes(key))
+      );
+      const updated = await base44.entities.Position.update(positionId, filteredData);
+      return Response.json({ position: updated });
+    }
+
+    // 既存：split_by_side トグル
     if (action === 'setSplitBySide') {
       const { positionTypeId, positionTypeName, split_by_side, sideSettings } = body;
       if (!positionTypeId || !positionTypeName) {
@@ -48,7 +106,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      // MapTemplate (side settings) を保存 - 既存のみ更新（新規 create は chief RLS で弾かれるためフロントで処理）
+      // MapTemplate (side settings) を保存 - 既存のみ更新
       if (sideSettings) {
         const templateName = `side_settings_${eventId}`;
         const existingTemplates = await base44.entities.MapTemplate.filter({ name: templateName });
@@ -64,12 +122,12 @@ Deno.serve(async (req) => {
           };
           await base44.entities.MapTemplate.update(existing.id, templatePayload);
         }
-        // 新規作成はフロント（PositionTypeManagement）で実行（chief は MapTemplate create が RLS で許可されている）
       }
 
       return Response.json({ positions: updatedPositions });
     }
 
+    // 既存：Position スタッフ更新
     if (action === 'updatePositionStaff') {
       const { positionId } = body;
       if (!positionId) {

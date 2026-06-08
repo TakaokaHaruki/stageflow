@@ -46,28 +46,39 @@ export default function PresetSelector({ eventId, compact = false, positions = [
     mutationFn: async (preset) => {
       const existing = await base44.entities.Position.filter({ event_id: eventId });
       if (existing.length > 0) {
-        for (const p of existing) await base44.entities.Position.delete(p.id);
+        await base44.functions.invoke("updatePositionSide", {
+          action: "deletePositions",
+          positionIds: existing.map((p) => p.id),
+        });
       }
       const slotMap = preset.slot_positions || {};
-      let created = 0;
+      const positions = [];
       for (const slot of TIME_SLOTS) {
         const ids = slotMap[slot] || [];
+        const field = slotToField[slot];
         for (let i = 0; i < ids.length; i++) {
           const pt = positionTypes.find((p) => p.id === ids[i]);
           if (pt) {
-            const field = slotToField[slot];
-            await base44.entities.Position.create({
-              event_id: eventId, name: pt.name, color: pt.color || "#6366f1",
-              time_slot: slot, staff_names: [],
+            positions.push({
+              name: pt.name,
+              color: pt.color || "#6366f1",
+              time_slot: slot,
+              staff_names: [],
               required_count: field ? (pt[field] ?? pt.required_count ?? 0) : 0,
               order: i,
             });
-            created++;
           }
         }
       }
+      if (positions.length > 0) {
+        await base44.functions.invoke("updatePositionSide", {
+          action: "createPositions",
+          eventId,
+          positions,
+        });
+      }
       await base44.entities.Event.update(eventId, { active_preset_id: preset.id });
-      return created;
+      return positions.length;
     },
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
@@ -85,22 +96,35 @@ export default function PresetSelector({ eventId, compact = false, positions = [
     mutationFn: async ({ preset, slot }) => {
       const existing = await base44.entities.Position.filter({ event_id: eventId });
       const slotExisting = existing.filter((p) => (p.time_slot || "開場中") === slot);
-      for (const p of slotExisting) await base44.entities.Position.delete(p.id);
+      if (slotExisting.length > 0) {
+        await base44.functions.invoke("updatePositionSide", {
+          action: "deletePositions",
+          positionIds: slotExisting.map((p) => p.id),
+        });
+      }
       const ids = (preset.slot_positions || {})[slot] || [];
       const field = slotToField[slot];
-      let created = 0;
+      const positions = [];
       for (let i = 0; i < ids.length; i++) {
         const pt = positionTypes.find((p) => p.id === ids[i]);
         if (!pt) continue;
-        await base44.entities.Position.create({
-          event_id: eventId, name: pt.name, color: pt.color || "#6366f1",
-          time_slot: slot, staff_names: [],
+        positions.push({
+          name: pt.name,
+          color: pt.color || "#6366f1",
+          time_slot: slot,
+          staff_names: [],
           required_count: field ? (pt[field] ?? pt.required_count ?? 0) : 0,
           order: i,
         });
-        created++;
       }
-      return created;
+      if (positions.length > 0) {
+        await base44.functions.invoke("updatePositionSide", {
+          action: "createPositions",
+          eventId,
+          positions,
+        });
+      }
+      return positions.length;
     },
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });

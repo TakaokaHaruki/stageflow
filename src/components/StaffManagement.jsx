@@ -117,9 +117,15 @@ export default function StaffManagement({ eventId }) {
         const affected = positions.filter((p) => (p.staff_names || []).includes(staffToDelete.name));
         await Promise.all(
           affected.map((p) =>
-          base44.entities.Position.update(p.id, {
-            staff_names: p.staff_names.filter((n) => n !== staffToDelete.name)
-          })
+            base44.functions.invoke("updatePositionSide", {
+              action: "updatePositionStaff",
+              eventId,
+              positionId: p.id,
+              staff_names: p.staff_names.filter((n) => n !== staffToDelete.name),
+              split_by_side: Boolean(p.split_by_side),
+              staff_names_kamite: (p.staff_names_kamite || []).filter((n) => n !== staffToDelete.name),
+              staff_names_shimote: (p.staff_names_shimote || []).filter((n) => n !== staffToDelete.name),
+            })
           )
         );
       }
