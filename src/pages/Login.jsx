@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import PendingApproval from "@/components/PendingApproval";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +16,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   useEffect(() => {
     base44.auth.isAuthenticated().then((authed) => {
@@ -28,13 +30,20 @@ export default function Login() {
     setIsLoading(true);
     try {
       await base44.auth.login(email, password);
-      window.location.href = "/events";
+      const user = await base44.auth.me();
+      if (!user.role) {
+        setPendingApproval(true);
+      } else {
+        navigate("/events");
+      }
     } catch (err) {
       setError(err.message || "ログインに失敗しました。メールアドレスまたはパスワードをご確認ください。");
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (pendingApproval) return <PendingApproval />;
 
   return (
     <div className="h-screen bg-background flex flex-col items-center justify-center px-6">

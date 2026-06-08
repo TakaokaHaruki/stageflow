@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn, ArrowLeft, Globe, Lock } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion } from "framer-motion";
@@ -22,6 +23,7 @@ const statusColor = {
 };
 
 export default function Events() {
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -153,7 +155,7 @@ export default function Events() {
             新規
           </Button>
           {isGuest ? (
-            <Button size="sm" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { localStorage.removeItem("guest_mode"); window.location.href = "/login"; }}>
+            <Button size="sm" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}>
               <LogIn className="w-3 h-3" />ログイン
             </Button>
           ) : currentUser ? (
