@@ -4,7 +4,7 @@
   "properties": {
     "event_id": {
       "type": "string",
-      "description": "\u30a4\u30d9\u30f3\u30c8ID"
+      "description": "\u30a4\u30d9\u30f3\u30c8 ID"
     },
     "name": {
       "type": "string",
@@ -28,7 +28,7 @@
     },
     "color": {
       "type": "string",
-      "description": "\u8868\u793a\u6587\u5b57\u8272\uff08\u4f8b: #ff0000\uff09"
+      "description": "\u8868\u793a\u6587\u5b57\u8272\uff08\u4f8b\uff1a#ff0000\uff09"
     },
     "costume_change": {
       "type": "boolean",
@@ -55,35 +55,56 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chief"
-          ]
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "chief"
+              ]
+            }
+          }
         }
-      }
+      ]
     },
     "read": true,
     "update": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chief"
-          ]
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "chief"
+              ]
+            }
+          }
         }
-      }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chief"
-          ]
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "chief"
+              ]
+            }
+          }
         }
-      }
+      ]
     }
   }
 }

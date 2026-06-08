@@ -4,11 +4,11 @@
   "properties": {
     "event_id": {
       "type": "string",
-      "description": "\u30a4\u30d9\u30f3\u30c8ID"
+      "description": "\u30a4\u30d9\u30f3\u30c8 ID"
     },
     "name": {
       "type": "string",
-      "description": "\u30dd\u30b8\u30b7\u30e7\u30f3\u540d\uff08\u4f8b\uff1a\u53d7\u4ed8A\u3001\u8a98\u5c0eB\uff09"
+      "description": "\u30dd\u30b8\u30b7\u30e7\u30f3\u540d\uff08\u4f8b\uff1a\u53d7\u4ed8 A\u3001\u8a98\u5c0e B\uff09"
     },
     "time_slot": {
       "type": "string",
@@ -55,27 +55,27 @@
     },
     "map_x": {
       "type": "number",
-      "description": "\u30de\u30c3\u30d7\u4e0a\u306eX\u5ea7\u6a19\uff08%\uff09"
+      "description": "\u30de\u30c3\u30d7\u4e0a\u306e X \u5ea7\u6a19\uff08%\uff09"
     },
     "map_y": {
       "type": "number",
-      "description": "\u30de\u30c3\u30d7\u4e0a\u306eY\u5ea7\u6a19\uff08%\uff09"
+      "description": "\u30de\u30c3\u30d7\u4e0a\u306e Y \u5ea7\u6a19\uff08%\uff09"
     },
     "map_x_kamite": {
       "type": "number",
-      "description": "\u4e0a\u624b\u30d4\u30f3\u306eX\u5ea7\u6a19\uff08%\uff09"
+      "description": "\u4e0a\u624b\u30d4\u30f3\u306e X \u5ea7\u6a19\uff08%\uff09"
     },
     "map_y_kamite": {
       "type": "number",
-      "description": "\u4e0a\u624b\u30d4\u30f3\u306eY\u5ea7\u6a19\uff08%\uff09"
+      "description": "\u4e0a\u624b\u30d4\u30f3\u306e Y \u5ea7\u6a19\uff08%\uff09"
     },
     "map_x_shimote": {
       "type": "number",
-      "description": "\u4e0b\u624b\u30d4\u30f3\u306eX\u5ea7\u6a19\uff08%\uff09"
+      "description": "\u4e0b\u624b\u30d4\u30f3\u306e X \u5ea7\u6a19\uff08%\uff09"
     },
     "map_y_shimote": {
       "type": "number",
-      "description": "\u4e0b\u624b\u30d4\u30f3\u306eY\u5ea7\u6a19\uff08%\uff09"
+      "description": "\u4e0b\u624b\u30d4\u30f3\u306e Y \u5ea7\u6a19\uff08%\uff09"
     },
     "color": {
       "type": "string",
@@ -118,24 +118,38 @@
     },
     "read": true,
     "update": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chief"
-          ]
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "chief"
+              ]
+            }
+          }
         }
-      }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chief"
-          ]
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "chief"
+              ]
+            }
+          }
         }
-      }
+      ]
     }
   }
 }
