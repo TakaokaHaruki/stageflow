@@ -139,14 +139,14 @@ export default function Events() {
       <UserRestrictionBanner role={role} />
       {/* Header */}
       <div className="mb-2">
-        {/* Row 1: Title + Home button */}
-        <div className="mb-1 flex items-center gap-2">
-          <Link to="/" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
-            <ArrowLeft className="w-3.5 h-3.5" />ホーム
-          </Link>
+        {/* Row 1: Title */}
+        <div className="mb-1">
           <h1 className="text-base font-bold text-foreground tracking-tight">イベント一覧</h1>
           <p className="text-muted-foreground text-xs">A-CAST社員の方、各チーフの方はログインボタンより会員登録を行い、システム管理者へその旨お伝えください。
             </p>
+          <Link to="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mt-0.5">
+            <ArrowLeft className="w-3 h-3" />ホームに戻る
+          </Link>
         </div>
         {/* Row 2: New button + Account */}
         <div className="flex items-center justify-between gap-1.5">
