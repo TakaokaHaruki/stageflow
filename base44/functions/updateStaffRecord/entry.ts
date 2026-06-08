@@ -11,7 +11,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { action, staffId, data } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { action, staffId, data } = body;
 
     if (action === 'create') {
       if (!data?.event_id || !data?.name) {
