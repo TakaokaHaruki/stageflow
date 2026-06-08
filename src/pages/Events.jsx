@@ -58,9 +58,9 @@ export default function Events() {
     mutationFn: async ({ eventId, makePublic }) => {
       const mode = makePublic ? "public" : "edit";
       await Promise.all([
-        base44.functions.invoke("updateEventMode", { event_id: eventId, field: "staff_management_mode", mode }),
-        base44.functions.invoke("updateEventMode", { event_id: eventId, field: "assignment_mode", mode }),
-        base44.functions.invoke("updateEventMode", { event_id: eventId, field: "venue_map_mode", mode }),
+        base44.functions.invoke("updateEventMode", { eventId, field: "staff_management_mode", mode }),
+        base44.functions.invoke("updateEventMode", { eventId, field: "assignment_mode", mode }),
+        base44.functions.invoke("updateEventMode", { eventId, field: "venue_map_mode", mode }),
       ]);
     },
     onMutate: async ({ eventId, makePublic }) => {
