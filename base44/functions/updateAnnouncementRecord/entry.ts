@@ -14,8 +14,8 @@ Deno.serve(async (req) => {
 
     if (action === 'create') {
       if (!isPrivileged) return Response.json({ error: 'Forbidden' }, { status: 403 });
-      if (!data?.event_id || !data?.title || !data?.body) {
-        return Response.json({ error: 'event_id, title, and body are required' }, { status: 400 });
+      if (!data?.event_id || !data?.title) {
+        return Response.json({ error: 'event_id and title are required' }, { status: 400 });
       }
       const announcement = await base44.asServiceRole.entities.Announcement.create(data);
       return Response.json({ announcement });

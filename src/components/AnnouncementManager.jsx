@@ -4,13 +4,12 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
-  Bell, Plus, Trash2, Users, CheckCircle2, Clock, AlertTriangle,
-  ShieldAlert, Send, X, Eye, ChevronDown, ChevronUp, Megaphone, Paperclip, FileText, Pencil
+  Bell, Plus, Trash2, AlertTriangle,
+  ShieldAlert, Send, X, ChevronDown, ChevronUp, Megaphone, Paperclip, FileText, Pencil
 } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion } from "framer-motion";
 import { useUserRole } from "@/hooks/useUserRole";
-import { getStaffDisplayName } from "@/lib/staffName";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { useOperationLog } from "@/hooks/useOperationLog";
 
@@ -20,13 +19,12 @@ const PRIORITY_STYLES = {
   "緊急": { badge: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-300 dark:border-red-700", icon: ShieldAlert },
 };
 
-function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, maskStaffNames = false }) {
+function AnnouncementForm({ eventId, onClose, onSaved, onRecord }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
   const [form, setForm] = useState({
     title: "", body: "", priority: "通常", target_staff: [], is_alert: false,
   });
-  const [allStaff, setAllStaff] = useState(true);
   const [attachedFiles, setAttachedFiles] = useState([]); // [{name, url}]
   const [uploading, setUploading] = useState(false);
 
@@ -74,15 +72,6 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
     },
   });
 
-  const toggleStaff = (name) => {
-    setForm((prev) => ({
-      ...prev,
-      target_staff: prev.target_staff.includes(name)
-        ? prev.target_staff.filter((n) => n !== name)
-        : [...prev.target_staff, name],
-    }));
-  };
-
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -103,7 +92,7 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
     createMutation.mutate({
       ...form,
       event_id: eventId,
-      target_staff: allStaff ? [] : form.target_staff,
+      target_staff: [],
       read_by: [],
       file_urls: attachedFiles.map((f) => f.url),
     });
@@ -224,43 +213,6 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
             )}
           </div>
 
-          {/* Target staff */}
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">送信対象</label>
-            <div className="flex gap-2 mb-2">
-              <button
-                onClick={() => setAllStaff(true)}
-                className={`text-xs px-3 py-1 rounded-lg border ${allStaff ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-muted-foreground"}`}
-              >
-                全スタッフ
-              </button>
-              <button
-                onClick={() => setAllStaff(false)}
-                className={`text-xs px-3 py-1 rounded-lg border ${!allStaff ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-muted-foreground"}`}
-              >
-                個別指定
-              </button>
-            </div>
-            {!allStaff && (
-              <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-muted rounded-lg border border-border">
-                {staffList.length === 0 ? (
-                  <p className="text-xs text-muted-foreground w-full text-center py-2">スタッフが登録されていません</p>
-                ) : staffList.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => toggleStaff(s.name)}
-                    className={`text-xs px-2 py-1 rounded-full border transition-all ${
-                      form.target_staff.includes(s.name)
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-card border-border text-foreground"
-                    }`}
-                  >
-                    {getStaffDisplayName(s.name, maskStaffNames)}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
         <div className="px-3 py-2 border-t border-border flex gap-2">
           <Button variant="outline" className="flex-1" onClick={onClose}>キャンセル</Button>
@@ -278,17 +230,15 @@ function AnnouncementForm({ eventId, staffList, onClose, onSaved, onRecord, mask
   );
 }
 
-function AnnouncementEditForm({ ann, staffList, onClose, onSaved, maskStaffNames = false }) {
+function AnnouncementEditForm({ ann, onClose, onSaved }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
   const [form, setForm] = useState({
     title: ann.title,
     body: ann.body || "",
     priority: ann.priority || "通常",
-    target_staff: ann.target_staff || [],
     is_alert: ann.is_alert || false,
   });
-  const [allStaff, setAllStaff] = useState((ann.target_staff || []).length === 0);
   const [attachedFiles, setAttachedFiles] = useState((ann.file_urls || []).map((url) => ({ name: url.split("/").pop().split("?")[0], url })));
   const [uploading, setUploading] = useState(false);
 
@@ -318,13 +268,6 @@ function AnnouncementEditForm({ ann, staffList, onClose, onSaved, maskStaffNames
     },
   });
 
-  const toggleStaff = (name) => {
-    setForm((prev) => ({
-      ...prev,
-      target_staff: prev.target_staff.includes(name) ? prev.target_staff.filter((n) => n !== name) : [...prev.target_staff, name],
-    }));
-  };
-
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -342,7 +285,7 @@ function AnnouncementEditForm({ ann, staffList, onClose, onSaved, maskStaffNames
     if (!form.title.trim()) return;
     updateMutation.mutate({
       ...form,
-      target_staff: allStaff ? [] : form.target_staff,
+      target_staff: [],
       file_urls: attachedFiles.map((f) => f.url),
     });
   };
@@ -419,25 +362,6 @@ function AnnouncementEditForm({ ann, staffList, onClose, onSaved, maskStaffNames
               </div>
             )}
           </div>
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">送信対象</label>
-            <div className="flex gap-2 mb-2">
-              <button onClick={() => setAllStaff(true)} className={`text-xs px-3 py-1 rounded-lg border ${allStaff ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-muted-foreground"}`}>全スタッフ</button>
-              <button onClick={() => setAllStaff(false)} className={`text-xs px-3 py-1 rounded-lg border ${!allStaff ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-muted-foreground"}`}>個別指定</button>
-            </div>
-            {!allStaff && (
-              <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-muted rounded-lg border border-border">
-                {staffList.length === 0 ? (
-                  <p className="text-xs text-muted-foreground w-full text-center py-2">スタッフが登録されていません</p>
-                ) : staffList.map((s) => (
-                  <button key={s.id} onClick={() => toggleStaff(s.name)}
-                    className={`text-xs px-2 py-1 rounded-full border transition-all ${form.target_staff.includes(s.name) ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground"}`}>
-                    {getStaffDisplayName(s.name, maskStaffNames)}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
         <div className="px-3 py-2 border-t border-border flex gap-2">
           <Button variant="outline" className="flex-1" onClick={onClose}>キャンセル</Button>
@@ -450,61 +374,13 @@ function AnnouncementEditForm({ ann, staffList, onClose, onSaved, maskStaffNames
   );
 }
 
-function AnnouncementCard({ ann, staffList, onDelete, maskStaffNames = false }) {
+function AnnouncementCard({ ann, onDelete }) {
   const [expanded, setExpanded] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [confirmName, setConfirmName] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const queryClient = useQueryClient();
 
   const style = PRIORITY_STYLES[ann.priority] || PRIORITY_STYLES["通常"];
   const Icon = style.icon;
-  const totalTargets = ann.target_staff?.length > 0 ? ann.target_staff.length : staffList.length;
-  const readCount = (ann.read_by || []).length;
-  const unreadCount = Math.max(0, totalTargets - readCount);
-
-  const readMutation = useMutation({
-    mutationFn: async (name) => {
-      const newReadBy = [...new Set([...(ann.read_by || []), name])];
-      const res = await base44.functions.invoke("updateAnnouncementRecord", { action: "mark_read", announcementId: ann.id, data: { read_by: newReadBy } });
-      return res?.data?.announcement;
-    },
-    onMutate: async (name) => {
-      await queryClient.cancelQueries({ queryKey: ["announcements", ann.event_id] });
-      await queryClient.cancelQueries({ queryKey: ["announcements-alert", ann.event_id] });
-      const previousAnnouncements = queryClient.getQueryData(["announcements", ann.event_id]);
-      const previousAlert = queryClient.getQueryData(["announcements-alert", ann.event_id]);
-      queryClient.setQueryData(["announcements", ann.event_id], (old = []) =>
-        old.map((item) => item.id === ann.id
-          ? { ...item, read_by: [...new Set([...(item.read_by || []), name])] }
-          : item
-        )
-      );
-      return { previousAnnouncements, previousAlert };
-    },
-    onError: (_, __, context) => {
-      queryClient.setQueryData(["announcements", ann.event_id], context?.previousAnnouncements);
-      queryClient.setQueryData(["announcements-alert", ann.event_id], context?.previousAlert);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["announcements", ann.event_id] });
-      queryClient.invalidateQueries({ queryKey: ["announcements-alert", ann.event_id] });
-      setShowConfirm(false);
-      setConfirmName("");
-    },
-  });
-
-  const handleConfirm = () => {
-    const name = confirmName.trim();
-    if (!name) return;
-    if ((ann.read_by || []).includes(name)) {
-      setShowConfirm(false);
-      setConfirmName("");
-      return;
-    }
-    readMutation.mutate(name);
-  };
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -534,29 +410,9 @@ function AnnouncementCard({ ann, staffList, onDelete, maskStaffNames = false }) 
               })}
             </div>
           )}
-          <div className="flex items-center gap-3 mt-1.5">
-            <span className="flex items-center gap-1 text-[10px] text-green-700 dark:text-green-400">
-              <CheckCircle2 className="w-3 h-3" />{readCount}名既読
-            </span>
-            {unreadCount > 0 && (
-              <span className="flex items-center gap-1 text-[10px] text-amber-700 dark:text-amber-400">
-                <Clock className="w-3 h-3" />{unreadCount}名未読
-              </span>
-            )}
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <Users className="w-3 h-3" />
-              {ann.target_staff?.length > 0 ? `${ann.target_staff.length}名指定` : "全員"}
-            </span>
-          </div>
+
         </div>
         <div className="flex gap-1 shrink-0">
-          <button
-            onClick={() => setShowConfirm(!showConfirm)}
-            className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700 dark:hover:bg-green-900/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            title="確認を行う"
-          >
-            <CheckCircle2 className="w-3 h-3" />確認を行う
-          </button>
           <button onClick={() => setShowEdit(true)} className="p-1 rounded hover:bg-primary/10 hover:text-primary text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" title="編集">
             <Pencil className="w-3.5 h-3.5" />
           </button>
@@ -571,61 +427,9 @@ function AnnouncementCard({ ann, staffList, onDelete, maskStaffNames = false }) 
         </div>
       </div>
 
-      {/* Confirm read panel */}
-      {showConfirm && (
-      <div className="px-3 pb-3 border-t border-border/60 pt-2.5 bg-green-50/50 dark:bg-green-900/20">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-semibold text-green-800 dark:text-green-300">自分の名前をタップして確認済みにする</p>
-            <button onClick={() => setShowConfirm(false)} className="p-1 rounded hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="パネルを閉じる">
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          {staffList.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {staffList.map((s) => {
-                const alreadyRead = (ann.read_by || []).includes(s.name);
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => !alreadyRead && readMutation.mutate(s.name)}
-                    disabled={alreadyRead || readMutation.isPending}
-                    className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-all ${
-                      alreadyRead
-                        ? "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700 cursor-default"
-                        : "bg-card border-border text-foreground hover:bg-green-50 hover:border-green-300 hover:text-green-700 dark:hover:bg-green-900/30 dark:hover:text-green-300"
-                    }`}
-                  >
-                    {alreadyRead && <CheckCircle2 className="w-3 h-3" />}
-                    {getStaffDisplayName(s.name, maskStaffNames)}
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground py-2 text-center">スタッフが登録されていません。スタッフ管理タブからスタッフを追加してください。</p>
-          )}
-        </div>
-      )}
-
-      {/* Read by detail */}
-      {expanded && (ann.read_by || []).length > 0 && (
-        <div className="px-3 pb-2.5 border-t border-border/60 pt-2">
-          <p className="text-[10px] font-semibold text-muted-foreground mb-1 flex items-center gap-1">
-            <Eye className="w-3 h-3" />既読者
-          </p>
-          <div className="flex flex-wrap gap-1">
-            {ann.read_by.map((name) => (
-              <span key={name} className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700">{getStaffDisplayName(name, maskStaffNames)}</span>
-            ))}
-          </div>
-        </div>
-      )}
-
       {showEdit && (
         <AnnouncementEditForm
           ann={ann}
-          staffList={staffList}
-          maskStaffNames={maskStaffNames}
           onClose={() => setShowEdit(false)}
           onSaved={() => setShowEdit(false)}
         />
@@ -644,36 +448,10 @@ function AnnouncementCard({ ann, staffList, onDelete, maskStaffNames = false }) 
 
 export default function AnnouncementManager({ eventId }) {
   const [showForm, setShowForm] = useState(false);
-  const [notifPermission, setNotifPermission] = useState(
-    typeof Notification !== "undefined" ? Notification.permission : "denied"
-  );
   const queryClient = useQueryClient();
   const prevIdsRef = useRef(new Set());
   const { role, canEdit } = useUserRole();
   const { record } = useOperationLog(eventId);
-  const shouldMaskStaffNames = role !== "admin" && role !== "chief";
-
-  // Request browser notification permission on mount
-  useEffect(() => {
-    if (typeof Notification !== "undefined") {
-      if (Notification.permission === "default") {
-        Notification.requestPermission().then((p) => {
-          setNotifPermission(p);
-        });
-      } else {
-        setNotifPermission(Notification.permission);
-      }
-    }
-  }, []);
-
-  const { data: staffList = [] } = useQuery({
-    queryKey: ["staff", eventId],
-    queryFn: async () => {
-      const res = await base44.functions.invoke("getStaffList", { eventId });
-      return res?.data?.staff ?? [];
-    },
-    refetchInterval: LIVE_SYNC_INTERVAL,
-  });
 
   const { data: announcements = [], isLoading } = useQuery({
     queryKey: ["announcements", eventId],
@@ -709,7 +487,6 @@ export default function AnnouncementManager({ eventId }) {
       await base44.functions.invoke("updateAnnouncementRecord", { action: "delete", announcementId: ann.id });
     },
     onMutate: async (ann) => {
-      const id = ann.id;
       await queryClient.cancelQueries({ queryKey: ["announcements", eventId] });
       await queryClient.cancelQueries({ queryKey: ["announcements-alert", eventId] });
       const previousAnnouncements = queryClient.getQueryData(["announcements", eventId]);
@@ -727,42 +504,17 @@ export default function AnnouncementManager({ eventId }) {
     },
   });
 
-  const urgentCount = announcements.filter((a) => {
-    const total = a.target_staff?.length > 0 ? a.target_staff.length : staffList.length;
-    return (a.read_by || []).length < total;
-  }).length;
-
   return (
     <div>
-      <div className="flex flex-col gap-1.5 mb-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-bold flex items-center gap-1.5">
-            <Megaphone className="w-4 h-4 text-primary" />連絡事項
-          </h2>
-          <div className="text-xs text-muted-foreground mt-0.5">
-            対象スタッフ：{staffList.length}名
-            {urgentCount > 0 && <span className="ml-2 font-medium text-amber-700 dark:text-amber-300">・{urgentCount}件未読あり</span>}
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 justify-end flex-wrap sm:flex-nowrap sm:ml-auto">
-          {notifPermission === "default" && (
-            <button
-              onClick={() => {
-                if (typeof Notification !== "undefined") {
-                  Notification.requestPermission().then((p) => setNotifPermission(p));
-                }
-              }}
-              className="h-8 shrink-0 whitespace-nowrap text-[11px] px-2 rounded-lg border font-medium transition-colors flex items-center bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900/50"
-            >
-              通知を有効にする
-            </button>
-          )}
-          {role !== null && canEdit && (
-            <Button size="sm" onClick={() => setShowForm(true)} className="gap-1 h-8 text-xs px-2 shrink-0">
-              <Plus className="w-3 h-3" />新規作成
-            </Button>
-          )}
-        </div>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-sm font-bold flex items-center gap-1.5">
+          <Megaphone className="w-4 h-4 text-primary" />連絡事項
+        </h2>
+        {role !== null && canEdit && (
+          <Button size="sm" onClick={() => setShowForm(true)} className="gap-1 h-8 text-xs px-2">
+            <Plus className="w-3 h-3" />新規作成
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -773,7 +525,7 @@ export default function AnnouncementManager({ eventId }) {
         <div className="text-center py-14 text-muted-foreground">
           <Bell className="w-10 h-10 mx-auto mb-2 opacity-20" />
           <p className="text-sm font-medium">連絡事項はありません</p>
-          <p className="text-xs mt-1">「新規作成」でスタッフに連絡を送信できます</p>
+          <p className="text-xs mt-1">「新規作成」で連絡通知を追加できます</p>
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -781,8 +533,6 @@ export default function AnnouncementManager({ eventId }) {
             <AnnouncementCard
               key={ann.id}
               ann={ann}
-              staffList={staffList}
-              maskStaffNames={shouldMaskStaffNames}
               onDelete={(ann) => deleteMutation.mutate(ann)}
             />
           ))}
@@ -792,8 +542,6 @@ export default function AnnouncementManager({ eventId }) {
       {showForm && role !== null && canEdit && (
         <AnnouncementForm
           eventId={eventId}
-          staffList={staffList}
-          maskStaffNames={shouldMaskStaffNames}
           onClose={() => setShowForm(false)}
           onSaved={() => setShowForm(false)}
           onRecord={record}
