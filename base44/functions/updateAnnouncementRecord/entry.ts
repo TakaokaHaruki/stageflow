@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
       if (!data?.event_id || !data?.title || !data?.body) {
         return Response.json({ error: 'event_id, title, and body are required' }, { status: 400 });
       }
-      const announcement = await base44.entities.Announcement.create(data);
+      const announcement = await base44.asServiceRole.entities.Announcement.create(data);
       return Response.json({ announcement });
     }
 
@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       if (!announcementId || !data) {
         return Response.json({ error: 'announcementId and data are required' }, { status: 400 });
       }
-      const announcement = await base44.entities.Announcement.update(announcementId, data);
+      const announcement = await base44.asServiceRole.entities.Announcement.update(announcementId, data);
       return Response.json({ announcement });
     }
 
@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
       if (!announcementId) {
         return Response.json({ error: 'announcementId is required' }, { status: 400 });
       }
-      await base44.entities.Announcement.delete(announcementId);
+      await base44.asServiceRole.entities.Announcement.delete(announcementId);
       return Response.json({ success: true });
     }
 
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
       if (!announcementId || !data?.read_by) {
         return Response.json({ error: 'announcementId and read_by are required' }, { status: 400 });
       }
-      const announcement = await base44.entities.Announcement.update(announcementId, { read_by: data.read_by });
+      const announcement = await base44.asServiceRole.entities.Announcement.update(announcementId, { read_by: data.read_by });
       return Response.json({ announcement });
     }
 

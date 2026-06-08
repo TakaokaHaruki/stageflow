@@ -21,8 +21,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: `Invalid field: ${field}` }, { status: 400 });
     }
 
-    // Event RLS is update:true, so use user-scoped update directly
-    const event = await base44.entities.Event.update(eventId, { [field]: value ?? null });
+    const event = await base44.asServiceRole.entities.Event.update(eventId, { [field]: value ?? null });
     return Response.json({ event });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

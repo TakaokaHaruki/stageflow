@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
       if (!position || !position.name || !position.time_slot) {
         return Response.json({ error: 'position with name and time_slot is required' }, { status: 400 });
       }
-      const created = await base44.entities.Position.create({ ...position, event_id: eventId });
+      const created = await base44.asServiceRole.entities.Position.create({ ...position, event_id: eventId });
       return Response.json({ position: created });
     }
 
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'positions array is required' }, { status: 400 });
       }
       const created = await Promise.all(
-        positions.map((p) => base44.entities.Position.create({ ...p, event_id: eventId }))
+        positions.map((p) => base44.asServiceRole.entities.Position.create({ ...p, event_id: eventId }))
       );
       return Response.json({ positions: created });
     }
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       if (!positionId) {
         return Response.json({ error: 'positionId is required' }, { status: 400 });
       }
-      await base44.entities.Position.delete(positionId);
+      await base44.asServiceRole.entities.Position.delete(positionId);
       return Response.json({ ok: true });
     }
 
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
       if (!Array.isArray(positionIds) || positionIds.length === 0) {
         return Response.json({ error: 'positionIds array is required' }, { status: 400 });
       }
-      await Promise.all(positionIds.map((id) => base44.entities.Position.delete(id)));
+      await Promise.all(positionIds.map((id) => base44.asServiceRole.entities.Position.delete(id)));
       return Response.json({ ok: true });
     }
 
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
       const filteredData = Object.fromEntries(
         Object.entries(data).filter(([key]) => ALLOWED_UPDATE_FIELDS.includes(key))
       );
-      const updated = await base44.entities.Position.update(positionId, filteredData);
+      const updated = await base44.asServiceRole.entities.Position.update(positionId, filteredData);
       return Response.json({ position: updated });
     }
 
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       }
 
       const splitBySide = Boolean(split_by_side);
-      const positions = await base44.entities.Position.filter({ event_id: eventId });
+      const positions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
       const matchingPositions = positions.filter((p) => p.name === positionTypeName);
 
       const updatedPositions = [];
@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
           const shimote = position.staff_names_shimote || [];
           staffNames = unique([...kamite, ...shimote]);
         }
-        const updated = await base44.entities.Position.update(position.id, { staff_names: staffNames });
+        const updated = await base44.asServiceRole.entities.Position.update(position.id, { staff_names: staffNames });
         updatedPositions.push({
           ...(updated || position),
           id: position.id,
@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
       // MapTemplate (side settings) を保存 - 既存のみ更新
       if (sideSettings) {
         const templateName = `side_settings_${eventId}`;
-        const existingTemplates = await base44.entities.MapTemplate.filter({ name: templateName });
+        const existingTemplates = await base44.asServiceRole.entities.MapTemplate.filter({ name: templateName });
         const existing = existingTemplates?.sort((a, b) =>
           new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0)
         )[0] || null;
@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
             description: 'StageFlow position side settings',
             areas: [{ ...sideSettings, updated_at: new Date().toISOString() }],
           };
-          await base44.entities.MapTemplate.update(existing.id, templatePayload);
+          await base44.asServiceRole.entities.MapTemplate.update(existing.id, templatePayload);
         }
       }
 
@@ -158,11 +158,11 @@ Deno.serve(async (req) => {
       } else if (Object.prototype.hasOwnProperty.call(body, 'staff_names')) {
         staffNames = unique(body.staff_names);
       } else {
-        const current = await base44.entities.Position.get(positionId);
+        const current = await base44.asServiceRole.entities.Position.get(positionId);
         staffNames = unique(current?.staff_names || []);
       }
 
-      const position = await base44.entities.Position.update(positionId, {
+      const position = await base44.asServiceRole.entities.Position.update(positionId, {
         ...extraFields,
         staff_names: staffNames,
       });
