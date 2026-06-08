@@ -1,7 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-const ALLOWED_FIELDS = ['staff_management_mode', 'assignment_mode', 'venue_map_mode'];
-const ALLOWED_MODES = ['edit', 'public'];
+const ALLOWED_FIELDS = ['show_timeline', 'show_map', 'show_tasks', 'line_notify_enabled', 'line_group_id', 'active_preset_id'];
 
 Deno.serve(async (req) => {
   try {
@@ -14,19 +13,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { eventId, field, mode } = await req.json();
-    if (!eventId || !field || !mode) {
-      return Response.json({ error: 'eventId, field, and mode are required' }, { status: 400 });
+    const { eventId, field, value } = await req.json();
+    if (!eventId || !field || value === undefined) {
+      return Response.json({ error: 'eventId, field, and value are required' }, { status: 400 });
     }
     if (!ALLOWED_FIELDS.includes(field)) {
       return Response.json({ error: `Invalid field: ${field}` }, { status: 400 });
     }
-    if (!ALLOWED_MODES.includes(mode)) {
-      return Response.json({ error: `Invalid mode: ${mode}` }, { status: 400 });
-    }
 
-    // Use service role to bypass RLS (role check already performed above)
-    const event = await base44.asServiceRole.entities.Event.update(eventId, { [field]: mode });
+    const event = await base44.asServiceRole.entities.Event.update(eventId, { [field]: value });
     return Response.json({ event });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

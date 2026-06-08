@@ -89,7 +89,7 @@ function PresetCard({ preset, eventId, event, onDelete, isAdmin, positionTypes }
   const isActive = event?.active_preset_id === preset.id;
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.PositionPreset.update(preset.id, data),
+    mutationFn: (data) => base44.functions.invoke("updatePositionPresetRecord", { action: "update", id: preset.id, data }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["positionPresets"] }); setEditing(false); },
   });
 
@@ -116,7 +116,7 @@ function PresetCard({ preset, eventId, event, onDelete, isAdmin, positionTypes }
         }
       }
       await Promise.all(creates);
-      await base44.entities.Event.update(eventId, { active_preset_id: preset.id });
+      await base44.functions.invoke("updateEventFeatureFlag", { eventId, field: "active_preset_id", value: preset.id });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
@@ -125,7 +125,7 @@ function PresetCard({ preset, eventId, event, onDelete, isAdmin, positionTypes }
   });
 
   const clearMutation = useMutation({
-    mutationFn: async () => { await base44.entities.Event.update(eventId, { active_preset_id: null }); },
+    mutationFn: async () => { await base44.functions.invoke("updateEventFeatureFlag", { eventId, field: "active_preset_id", value: null }); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["event", eventId] }); },
   });
 
@@ -225,7 +225,7 @@ export default function PositionPresetManager({ eventId }) {
   const { data: event } = useQuery({ queryKey: ["event", eventId], queryFn: () => loadEventById(eventId), refetchInterval: LIVE_SYNC_INTERVAL });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.PositionPreset.create(data),
+    mutationFn: (data) => base44.functions.invoke("updatePositionPresetRecord", { action: "create", data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["positionPresets"] });
       setCreating(false); setPresetName(""); setPresetDesc("");
@@ -234,7 +234,7 @@ export default function PositionPresetManager({ eventId }) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.PositionPreset.delete(id),
+    mutationFn: (id) => base44.functions.invoke("updatePositionPresetRecord", { action: "delete", id }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["positionPresets"] }),
   });
 

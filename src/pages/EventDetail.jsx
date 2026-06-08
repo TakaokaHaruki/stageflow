@@ -52,17 +52,17 @@ export default function EventDetail() {
 
   const handleToggleTimeline = (val) => {
     setShowTimeline(val);
-    base44.entities.Event.update(eventId, { show_timeline: val }).catch(() => {});
+    base44.functions.invoke("updateEventFeatureFlag", { eventId, field: "show_timeline", value: val }).catch(() => {});
     if (!val && tab === "timeline") setTab("staff");
   };
   const handleToggleMap = (val) => {
     setShowMap(val);
-    base44.entities.Event.update(eventId, { show_map: val }).catch(() => {});
+    base44.functions.invoke("updateEventFeatureFlag", { eventId, field: "show_map", value: val }).catch(() => {});
     if (!val && tab === "map") setTab("staff");
   };
   const handleToggleTasks = (val) => {
     setShowTasks(val);
-    base44.entities.Event.update(eventId, { show_tasks: val }).catch(() => {});
+    base44.functions.invoke("updateEventFeatureFlag", { eventId, field: "show_tasks", value: val }).catch(() => {});
     if (!val && tab === "tasks") setTab("staff");
   };
 

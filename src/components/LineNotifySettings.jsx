@@ -95,11 +95,10 @@ export default function LineNotifySettings({ eventId, event }) {
   };
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      base44.entities.Event.update(event.id, {
-        line_notify_enabled: enabled,
-        line_group_id: enabled ? groupId.trim() : "",
-      }),
+    mutationFn: async () => {
+      await base44.functions.invoke("updateEventFeatureFlag", { eventId: event.id, field: "line_notify_enabled", value: enabled });
+      await base44.functions.invoke("updateEventFeatureFlag", { eventId: event.id, field: "line_group_id", value: enabled ? groupId.trim() : "" });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });
       toast.success("LINE通知設定を保存しました");

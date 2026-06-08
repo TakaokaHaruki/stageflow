@@ -66,7 +66,7 @@ export default function PresetSelector({ eventId, compact = false, positions = [
           }
         }
       }
-      await base44.entities.Event.update(eventId, { active_preset_id: preset.id });
+      await base44.functions.invoke("updateEventFeatureFlag", { eventId, field: "active_preset_id", value: preset.id });
       return created;
     },
     onSuccess: (created) => {
@@ -112,7 +112,7 @@ export default function PresetSelector({ eventId, compact = false, positions = [
   });
 
   const clearMutation = useMutation({
-    mutationFn: () => base44.entities.Event.update(eventId, { active_preset_id: null }),
+    mutationFn: () => base44.functions.invoke("updateEventFeatureFlag", { eventId, field: "active_preset_id", value: null }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["event", eventId] }),
   });
 

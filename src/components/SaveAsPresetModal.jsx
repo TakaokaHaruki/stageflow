@@ -41,11 +41,9 @@ export default function SaveAsPresetModal({ positions, positionTypes, onClose })
   const saveMutation = useMutation({
     mutationFn: async () => {
       const slot_positions = buildSlotPositions();
-      return base44.entities.PositionPreset.create({
-        name: name.trim(),
-        description: description.trim() || undefined,
-        slot_positions,
-        positions: [],
+      return base44.functions.invoke("updatePositionPresetRecord", {
+        action: "create",
+        data: { name: name.trim(), description: description.trim() || undefined, slot_positions, positions: [] },
       });
     },
     onSuccess: () => {

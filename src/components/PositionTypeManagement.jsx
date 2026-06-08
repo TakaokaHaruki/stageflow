@@ -57,7 +57,7 @@ export default function PositionTypeManagement({ eventId }) {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.PositionType.create(data),
+    mutationFn: (data) => base44.functions.invoke("updatePositionTypeRecord", { action: "create", data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["positionTypes"] });
       setName("");
@@ -66,7 +66,7 @@ export default function PositionTypeManagement({ eventId }) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.PositionType.delete(id),
+    mutationFn: (id) => base44.functions.invoke("updatePositionTypeRecord", { action: "delete", id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["positionTypes"] });
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
@@ -176,7 +176,7 @@ export default function PositionTypeManagement({ eventId }) {
     const reordered = [...positionTypes];
     const [moved] = reordered.splice(fromIdx, 1);
     reordered.splice(toIdx, 0, moved);
-    reordered.forEach((pt, idx) => { base44.entities.PositionType.update(pt.id, { order: idx }); });
+    base44.functions.invoke("updatePositionTypeRecord", { action: "reorder", updates: reordered.map((pt, idx) => ({ id: pt.id, order: idx })) });
     queryClient.setQueryData(["positionTypes"], reordered.map((pt, idx) => ({ ...pt, order: idx })));
     setDraggingId(null); setDragOverId(null);
   };

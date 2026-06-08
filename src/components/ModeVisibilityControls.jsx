@@ -53,19 +53,14 @@ export function ModeVisibilityControls({ eventId, field, mode = "edit", canManag
 
   const updateMode = useMutation({
     mutationFn: async (nextMode) => {
-      try {
-        const response = await base44.functions.invoke("updateEventMode", {
-          eventId,
-          field,
-          mode: nextMode,
-        });
-        const payload = unwrapFunctionResponse(response);
-        if (payload?.error) throw new Error(payload.error);
-        return payload?.event;
-      } catch {
-        const event = await base44.entities.Event.update(eventId, { [field]: nextMode });
-        return { ...(event || {}), id: eventId, [field]: nextMode };
-      }
+      const response = await base44.functions.invoke("updateEventMode", {
+        eventId,
+        field,
+        mode: nextMode,
+      });
+      const payload = unwrapFunctionResponse(response);
+      if (payload?.error) throw new Error(payload.error);
+      return payload?.event;
     },
     onMutate: async (nextMode) => {
       rememberMode(eventId, field, nextMode);

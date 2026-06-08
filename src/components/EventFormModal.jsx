@@ -26,10 +26,13 @@ export default function EventFormModal({ event, onClose, onSaved }) {
   });
 
   const mutation = useMutation({
-    mutationFn: (data) =>
-      event
-        ? base44.entities.Event.update(event.id, data)
-        : base44.entities.Event.create(data),
+    mutationFn: async (data) => {
+      if (event) {
+        const res = await base44.functions.invoke("updateEventRecord", { eventId: event.id, data });
+        return res?.data?.event ?? null;
+      }
+      return base44.entities.Event.create(data);
+    },
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: ["events"] });
       if (event) await queryClient.cancelQueries({ queryKey: ["event", event.id] });
