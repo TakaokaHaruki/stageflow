@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     let event = null;
     const persistenceErrors = [];
     try {
-      event = await base44.entities.Event.update(eventId, data);
+      event = await base44.asServiceRole.entities.Event.update(eventId, data);
     } catch (eventError) {
       console.warn('Event venue map field update failed:', eventError.message);
       persistenceErrors.push(`Event: ${eventError.message}`);
@@ -40,9 +40,9 @@ Deno.serve(async (req) => {
 
     try {
       const fallbackName = `${FALLBACK_TEMPLATE_PREFIX}:${eventId}`;
-      let existingFallbacks = await base44.entities.MapTemplate.filter({ name: fallbackName });
+      let existingFallbacks = await base44.asServiceRole.entities.MapTemplate.filter({ name: fallbackName });
       if (!existingFallbacks?.length) {
-        const allFallbacks = await base44.entities.MapTemplate.list();
+        const allFallbacks = await base44.asServiceRole.entities.MapTemplate.list();
         existingFallbacks = allFallbacks?.filter((item) => item.name === fallbackName) || [];
       }
       const fallbackPayload = {
@@ -51,8 +51,8 @@ Deno.serve(async (req) => {
         areas: [assetPayload],
       };
       fallback = existingFallbacks?.[0]
-        ? await base44.entities.MapTemplate.update(existingFallbacks[0].id, fallbackPayload)
-        : await base44.entities.MapTemplate.create(fallbackPayload);
+        ? await base44.asServiceRole.entities.MapTemplate.update(existingFallbacks[0].id, fallbackPayload)
+        : await base44.asServiceRole.entities.MapTemplate.create(fallbackPayload);
     } catch (fallbackError) {
       console.warn('Venue map fallback update failed:', fallbackError.message);
       persistenceErrors.push(`MapTemplate fallback: ${fallbackError.message}`);
