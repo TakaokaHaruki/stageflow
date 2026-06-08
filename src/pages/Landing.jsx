@@ -8,12 +8,7 @@ import { motion } from "framer-motion";
 export default function Landing() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Already logged in → skip to events
-    base44.auth.isAuthenticated().then((authed) => {
-      if (authed) navigate("/events", { replace: true });
-    });
-  }, [navigate]);
+  // No auto-redirect for authenticated users on Landing page
 
   const handleGuest = () => {
     localStorage.setItem("guest_mode", "true");
