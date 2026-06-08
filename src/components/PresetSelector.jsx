@@ -44,7 +44,8 @@ export default function PresetSelector({ eventId, compact = false, positions = [
   // 全時間帯一括適用
   const applyMutation = useMutation({
     mutationFn: async (preset) => {
-      const existing = await base44.entities.Position.filter({ event_id: eventId });
+      const response = await base44.functions.invoke("getPositionList", { eventId });
+      const existing = response.positions || [];
       if (existing.length > 0) {
         await base44.functions.invoke("updatePositionSide", {
           action: "deletePositions",
@@ -94,7 +95,8 @@ export default function PresetSelector({ eventId, compact = false, positions = [
   // 時間帯別個別適用（確認なし・即反映）
   const applySlotMutation = useMutation({
     mutationFn: async ({ preset, slot }) => {
-      const existing = await base44.entities.Position.filter({ event_id: eventId });
+      const response = await base44.functions.invoke("getPositionList", { eventId });
+      const existing = response.positions || [];
       const slotExisting = existing.filter((p) => (p.time_slot || "開場中") === slot);
       if (slotExisting.length > 0) {
         await base44.functions.invoke("updatePositionSide", {

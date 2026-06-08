@@ -102,7 +102,28 @@ export default function StaffDragDropManager({ eventId }) {
         if (payload?.error) throw new Error(payload.error);
         return payload;
       }
-      return base44.entities.Position.update(positionId, data);
+      // staff 系フィールドを含まない更新は updatePositionFields アクションを使用
+      const staffFields = ['staff_names', 'staff_names_kamite', 'staff_names_shimote', 'split_by_side'];
+      const hasStaffFields = Object.keys(data).some((key) => staffFields.includes(key));
+      if (hasStaffFields) {
+        const response = await base44.functions.invoke("updatePositionSide", {
+          action: "updatePositionStaff",
+          eventId,
+          positionId,
+          ...data,
+        });
+        const payload = unwrapFunctionResponse(response);
+        if (payload?.error) throw new Error(payload.error);
+        return payload;
+      }
+      const response = await base44.functions.invoke("updatePositionSide", {
+        action: "updatePositionFields",
+        positionId,
+        data,
+      });
+      const payload = unwrapFunctionResponse(response);
+      if (payload?.error) throw new Error(payload.error);
+      return payload;
     },
     onMutate: async ({ positionId, data }) => {
       await queryClient.cancelQueries({ queryKey: ["positions", eventId] });

@@ -88,22 +88,18 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
         if (payload?.error) throw new Error(payload.error);
         return payload;
       }
-      const created = await base44.entities.Position.create({
-        ...positionFields,
-        staff_names: data.staff_names || [],
+      const response = await base44.functions.invoke("updatePositionSide", {
+        action: "createPosition",
+        eventId,
+        position: {
+          ...positionFields,
+          staff_names: data.staff_names || [],
+        },
+        ...data,
       });
-      if (split_by_side || staff_names_kamite?.length || staff_names_shimote?.length) {
-        const response = await base44.functions.invoke("updatePositionSide", {
-          action: "updatePositionStaff",
-          eventId,
-          positionId: created.id,
-          ...data,
-        });
-        const payload = unwrapFunctionResponse(response);
-        if (payload?.error) throw new Error(payload.error);
-        return payload;
-      }
-      return { position: created };
+      const payload = unwrapFunctionResponse(response);
+      if (payload?.error) throw new Error(payload.error);
+      return payload;
     },
     onSuccess: (result) => {
       if (result?.sideSettings) {
