@@ -30,7 +30,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+    <div className="h-screen bg-background flex flex-col items-center justify-center px-6">
       <motion.div
         className="flex flex-col items-center text-center max-w-sm w-full"
         initial={{ opacity: 0, y: 24 }}
