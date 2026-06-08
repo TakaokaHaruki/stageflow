@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { LogIn, Eye } from "lucide-react";
@@ -22,7 +22,7 @@ export default function Landing() {
 
   const handleLogin = () => {
     localStorage.removeItem("guest_mode");
-    base44.auth.redirectToLogin(`${window.location.origin}/events`);
+    navigate("/login");
   };
 
   return (

@@ -111,7 +111,7 @@ export default function Events() {
             新規
           </Button>
           {isGuest ? (
-            <Button size="sm" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { localStorage.removeItem("guest_mode"); base44.auth.redirectToLogin(`${window.location.origin}/events`); }}>
+            <Button size="sm" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { localStorage.removeItem("guest_mode"); window.location.href = "/login"; }}>
               <LogIn className="w-3 h-3" />ログイン
             </Button>
           ) : currentUser ? (
@@ -140,7 +140,7 @@ export default function Events() {
               </div>
             </div>
           ) : (
-            <Button size="sm" variant="outline" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => base44.auth.redirectToLogin(window.location.href)}>
+            <Button size="sm" variant="outline" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { window.location.href = "/login"; }}>
               <LogIn className="w-3 h-3" />ログイン
             </Button>
           )}
