@@ -31,35 +31,35 @@
     },
     "time_priority": {
       "type": "string",
-      "description": "\u5148\u884c\u6642\u9593 (HH:MM\u5f62\u5f0f)"
+      "description": "\u5148\u884c\u6642\u9593 (HH:MM \u5f62\u5f0f)"
     },
     "time_open": {
       "type": "string",
-      "description": "\u958b\u5834\u6642\u9593 (HH:MM\u5f62\u5f0f)"
+      "description": "\u958b\u5834\u6642\u9593 (HH:MM \u5f62\u5f0f)"
     },
     "time_start": {
       "type": "string",
-      "description": "\u958b\u6f14\u6642\u9593 (HH:MM\u5f62\u5f0f)"
+      "description": "\u958b\u6f14\u6642\u9593 (HH:MM \u5f62\u5f0f)"
     },
     "time_end": {
       "type": "string",
-      "description": "\u7d42\u6f14\u6642\u9593 (HH:MM\u5f62\u5f0f)"
+      "description": "\u7d42\u6f14\u6642\u9593 (HH:MM \u5f62\u5f0f)"
     },
     "map_image_url": {
       "type": "string",
-      "description": "\u4f1a\u5834\u30de\u30c3\u30d7\u80cc\u666f\u753b\u50cfURL"
+      "description": "\u4f1a\u5834\u30de\u30c3\u30d7\u80cc\u666f\u753b\u50cf URL"
     },
     "map_pdf_url": {
       "type": "string",
-      "description": "\u4f1a\u5834\u30de\u30c3\u30d7PDF URL"
+      "description": "\u4f1a\u5834\u30de\u30c3\u30d7 PDF URL"
     },
     "active_preset_id": {
       "type": "string",
-      "description": "\u9069\u7528\u4e2d\u306e\u30dd\u30b8\u30b7\u30e7\u30f3\u30d7\u30ea\u30bb\u30c3\u30c8ID"
+      "description": "\u9069\u7528\u4e2d\u306e\u30dd\u30b8\u30b7\u30e7\u30f3\u30d7\u30ea\u30bb\u30c3\u30c8 ID"
     },
     "scrape_url": {
       "type": "string",
-      "description": "\u70b9\u547c\u8868\u53d6\u5f97URL\uff08\u6700\u5f8c\u306b\u4f7f\u7528\u3057\u305fURL\uff09"
+      "description": "\u70b9\u547c\u8868\u53d6\u5f97 URL\uff08\u6700\u5f8c\u306b\u4f7f\u7528\u3057\u305f URL\uff09"
     },
     "scrape_url_history": {
       "type": "array",
@@ -67,12 +67,7 @@
         "type": "string"
       },
       "default": [],
-      "description": "\u70b9\u547c\u8868\u53d6\u5f97URL\u306e\u5c65\u6b74\u30ea\u30b9\u30c8"
-    },
-    "show_timeline": {
-      "type": "boolean",
-      "default": false,
-      "description": "\u30bf\u30a4\u30e0\u30e9\u30a4\u30f3\u6a5f\u80fd\u306e\u8868\u793a\u30d5\u30e9\u30b0"
+      "description": "\u70b9\u547c\u8868\u53d6\u5f97 URL \u306e\u5c65\u6b74\u30ea\u30b9\u30c8"
     },
     "show_map": {
       "type": "boolean",
@@ -83,15 +78,6 @@
       "type": "boolean",
       "default": true,
       "description": "\u30c1\u30a7\u30c3\u30af\u30ea\u30b9\u30c8\u6a5f\u80fd\u306e\u8868\u793a\u30d5\u30e9\u30b0"
-    },
-    "line_notify_enabled": {
-      "type": "boolean",
-      "default": false,
-      "description": "LINE\u901a\u77e5\u306e\u6709\u52b9\u30d5\u30e9\u30b0"
-    },
-    "line_group_id": {
-      "type": "string",
-      "description": "LINE\u901a\u77e5\u5148\u30b0\u30eb\u30fc\u30d7ID"
     },
     "locked_staff_names": {
       "type": "array",
@@ -108,7 +94,7 @@
         "public"
       ],
       "default": "edit",
-      "description": "\u30b9\u30bf\u30c3\u30d5\u7ba1\u7406\u306e\u516c\u958b\u30e2\u30fc\u30c9 (edit=\u7de8\u96c6\u4e2d/\u975e\u516c\u958b, public=\u95b2\u89a7\u516c\u958b)"
+      "description": "\u30b9\u30bf\u30c3\u30d5\u7ba1\u7406\u306e\u516c\u958b\u30e2\u30fc\u30c9 (edit=\u7de8\u96c6\u4e2d/\u975e\u516c\u958b\uff0cpublic=\u95b2\u89a7\u516c\u958b)"
     },
     "assignment_mode": {
       "type": "string",
@@ -117,7 +103,7 @@
         "public"
       ],
       "default": "edit",
-      "description": "\u914d\u7f6e\u8868\u306e\u516c\u958b\u30e2\u30fc\u30c9 (edit=\u7de8\u96c6\u4e2d/\u975e\u516c\u958b, public=\u95b2\u89a7\u516c\u958b)"
+      "description": "\u914d\u7f6e\u8868\u306e\u516c\u958b\u30e2\u30fc\u30c9 (edit=\u7de8\u96c6\u4e2d/\u975e\u516c\u958b\uff0cpublic=\u95b2\u89a7\u516c\u958b)"
     },
     "venue_map_mode": {
       "type": "string",
@@ -126,36 +112,10 @@
         "public"
       ],
       "default": "edit",
-      "description": "\u4f1a\u5834\u30de\u30c3\u30d7\u306e\u516c\u958b\u30e2\u30fc\u30c9 (edit=\u7de8\u96c6\u4e2d/\u975e\u516c\u958b, public=\u95b2\u89a7\u516c\u958b)"
+      "description": "\u4f1a\u5834\u30de\u30c3\u30d7\u306e\u516c\u958b\u30e2\u30fc\u30c9 (edit=\u7de8\u96c6\u4e2d/\u975e\u516c\u958b\uff0cpublic=\u95b2\u89a7\u516c\u958b)"
     }
   },
   "required": [
     "name"
-  ],
-  "rls": {
-    "create": {
-      "$or": [
-        {
-          "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": {
-              "$in": [
-                "admin",
-                "chief"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    "read": true,
-    "update": true,
-    "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
-    }
-  }
+  ]
 }

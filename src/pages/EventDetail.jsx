@@ -3,13 +3,12 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, User, LogOut, Users, ClipboardList, MapPin, Clock, Bell, Settings, CheckSquare, LogIn, ShieldCheck } from "lucide-react";
+import { ChevronLeft, User, LogOut, Users, ClipboardList, MapPin, Bell, Settings, CheckSquare, LogIn, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import VenueMap from "@/components/VenueMap";
 import StaffManagement from "@/components/StaffManagement";
 import PositionTypeManagement from "@/components/PositionTypeManagement";
 import AdminSettings from "@/components/AdminSettings";
-import StaffTimeline from "@/components/StaffTimeline";
 import AnnouncementManager from "@/components/AnnouncementManager";
 import TaskChecklist from "@/components/TaskChecklist";
 import AnnouncementAlert from "@/components/AnnouncementAlert";
@@ -41,20 +40,13 @@ export default function EventDetail() {
   const [currentUser, setCurrentUser] = useState(null);
 
   // Feature toggles (persisted in Event entity on server)
-  const [showTimeline, setShowTimeline] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [showTasks, setShowTasks] = useState(true);
   const [featureFlagsLoaded, setFeatureFlagsLoaded] = useState(false);
 
-  const canShowTimeline = Boolean(role) && showTimeline && role !== "user";
   const canShowMap = Boolean(role) && showMap;
   const canShowTasks = Boolean(role) && showTasks;
 
-  const handleToggleTimeline = (val) => {
-    setShowTimeline(val);
-    base44.functions.invoke("updateEventFeatureFlag", { eventId, field: "show_timeline", value: val }).catch(() => {});
-    if (!val && tab === "timeline") setTab("staff");
-  };
   const handleToggleMap = (val) => {
     setShowMap(val);
     base44.functions.invoke("updateEventFeatureFlag", { eventId, field: "show_map", value: val }).catch(() => {});
@@ -77,10 +69,9 @@ export default function EventDetail() {
   // イベントデータからfeature flagsを初期化（初回のみ）
   useEffect(() => {
     if (!featureFlagsLoaded) return;
-    if (role && !canShowTimeline && tab === "timeline") setTab("staff", { replace: true, reset: true });
     if (role && !canShowMap && tab === "map") setTab("staff", { replace: true, reset: true });
     if (role && !canShowTasks && tab === "tasks") setTab("staff", { replace: true, reset: true });
-  }, [role, canShowTimeline, canShowMap, canShowTasks, tab, setTab, featureFlagsLoaded]);
+  }, [role, canShowMap, canShowTasks, tab, setTab, featureFlagsLoaded]);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
@@ -92,7 +83,6 @@ export default function EventDetail() {
     base44.entities.Event.filter({ id: eventId }).then((events) => {
       const ev = events?.[0];
       if (!ev) return;
-      setShowTimeline(ev.show_timeline ?? false);
       setShowMap(ev.show_map ?? false);
       setShowTasks(ev.show_tasks !== false); // デフォルトtrue
       setFeatureFlagsLoaded(true);
@@ -124,7 +114,6 @@ export default function EventDetail() {
     { id: "staff", label: "スタッフ管理", icon: Users },
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
     ...(canShowMap ? [{ id: "map", label: "会場マップ", icon: MapPin }] : []),
-    ...(canShowTimeline ? [{ id: "timeline", label: "タイムライン", icon: Clock }] : []),
     { id: "notice", label: "連絡事項", icon: Bell },
     ...(canShowTasks ? [{ id: "tasks", label: "チェックリスト", icon: CheckSquare }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
@@ -235,8 +224,6 @@ export default function EventDetail() {
               <AdminSettings
                 eventId={eventId}
                 event={event}
-                showTimeline={showTimeline}
-                onToggleTimeline={handleToggleTimeline}
                 showMap={showMap}
                 onToggleMap={handleToggleMap}
                 showTasks={showTasks}
@@ -249,7 +236,7 @@ export default function EventDetail() {
                 <VenueMap eventId={eventId} />
               </ErrorBoundary>
             )}
-            {tab === "timeline" && canShowTimeline && <StaffTimeline eventId={eventId} />}
+
             {tab === "notice" && <AnnouncementManager eventId={eventId} />}
             {tab === "tasks" && canShowTasks && <TaskChecklist eventId={eventId} />}
           </motion.div>
@@ -262,7 +249,6 @@ export default function EventDetail() {
           activeTab={tab}
           onTabChange={handleTabChange}
           onActiveTabReset={handleActiveTabReset}
-          showTimeline={canShowTimeline}
           showMap={canShowMap}
           showTasks={canShowTasks}
           isPrivileged={isPrivileged}

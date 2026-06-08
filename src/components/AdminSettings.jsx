@@ -1,13 +1,10 @@
-import { MessageCircle, MapPin, CheckSquare, Clock } from "lucide-react";
-import LineNotifySettings from "@/components/LineNotifySettings";
+import { MapPin, CheckSquare } from "lucide-react";
 import ActivityLogViewer from "@/components/ActivityLogViewer";
 import UserRoleManager from "@/components/UserRoleManager";
 
 export default function AdminSettings({
   eventId,
   event,
-  showTimeline,
-  onToggleTimeline,
   showMap,
   onToggleMap,
   showTasks,
@@ -27,13 +24,6 @@ export default function AdminSettings({
       desc: "チェックリストタブを表示します",
       value: showTasks,
       onToggle: onToggleTasks,
-    },
-    {
-      icon: Clock,
-      label: "タイムライン機能",
-      desc: "スタッフの時間軸表示を有効にします（管理者・チーフのみ）",
-      value: showTimeline,
-      onToggle: onToggleTimeline,
     },
   ];
 
@@ -61,9 +51,6 @@ export default function AdminSettings({
           </div>
         ))}
       </div>
-
-      {/* LINE notify */}
-      <LineNotifySettings eventId={eventId} event={event} />
 
       {/* User role management */}
       <div className="mb-2">
