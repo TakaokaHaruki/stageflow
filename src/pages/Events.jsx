@@ -26,13 +26,18 @@ export default function Events() {
   const [editingEvent, setEditingEvent] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const queryClient = useQueryClient();
-  const { canEdit, role } = useUserRole();
+  const { canEdit, role, isGuest } = useUserRole();
 
-  const { data: events = [], isLoading, refetch } = useQuery({
+  const { data: allEvents = [], isLoading, refetch } = useQuery({
     queryKey: ["events"],
     queryFn: () => base44.entities.Event.list("-created_date"),
     refetchInterval: LIVE_SYNC_INTERVAL
   });
+
+  // Guests see only publicly visible events
+  const events = isGuest
+    ? allEvents.filter((e) => e.assignment_mode === "public" || e.staff_management_mode === "public")
+    : allEvents;
 
   const { isPulling, pullDistance } = usePullToRefresh(async () => {
     await refetch();
@@ -105,7 +110,12 @@ export default function Events() {
             <Plus className="w-3.5 h-3.5" />
             新規
           </Button>
-          {currentUser ? <div className="flex items-center gap-1.5 bg-muted rounded-md px-1.5 py-0.5 min-w-0 group">
+          {isGuest ? (
+            <Button size="sm" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { localStorage.removeItem("guest_mode"); base44.auth.redirectToLogin(`${window.location.origin}/events`); }}>
+              <LogIn className="w-3 h-3" />ログイン
+            </Button>
+          ) : currentUser ? (
+            <div className="flex items-center gap-1.5 bg-muted rounded-md px-1.5 py-0.5 min-w-0 group">
               <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                 <User className="w-3 h-3 text-primary" />
               </div>
@@ -119,21 +129,21 @@ export default function Events() {
                   onClick={() => setConfirmDeleteAccount(true)}
                   className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none"
                   title="アカウント削除">
-                <Trash2 className="w-3 h-3" />
+                  <Trash2 className="w-3 h-3" />
                 </button>
                 <button
                   onClick={() => base44.auth.logout()}
                   className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none"
                   title="ログアウト">
-                  
                   <LogOut className="w-3 h-3" />
                 </button>
               </div>
-            </div> :
+            </div>
+          ) : (
             <Button size="sm" variant="outline" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => base44.auth.redirectToLogin(window.location.href)}>
-                <LogIn className="w-3 h-3" />ログイン
-              </Button>
-            }
+              <LogIn className="w-3 h-3" />ログイン
+            </Button>
+          )}
         </div>
       </div>
 

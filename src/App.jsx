@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { ThemeProvider } from '@/lib/ThemeProvider';
 // Add page imports here
+import Landing from "./pages/Landing";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 
@@ -35,8 +36,7 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
+      // Show landing page instead of auto-redirecting
       return null;
     }
   }
@@ -53,7 +53,8 @@ const AuthenticatedApp = () => {
         className="min-h-screen"
       >
         <Routes location={location}>
-          <Route path="/" element={<Events />} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/events" element={<Events />} />
           <Route path="/events/:eventId" element={<EventDetail />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
