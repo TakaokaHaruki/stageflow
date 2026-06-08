@@ -7,31 +7,30 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!['admin', 'chief'].includes(user.role)) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
     const { action, id, data, updates } = await req.json();
 
     if (action === 'create') {
-      const record = await base44.asServiceRole.entities.PositionType.create(data);
+      const record = await base44.entities.PositionType.create(data);
       return Response.json({ record });
     }
 
     if (action === 'update') {
-      const record = await base44.asServiceRole.entities.PositionType.update(id, data);
+      const record = await base44.entities.PositionType.update(id, data);
       return Response.json({ record });
     }
 
     if (action === 'delete') {
-      await base44.asServiceRole.entities.PositionType.delete(id);
+      await base44.entities.PositionType.delete(id);
       return Response.json({ ok: true });
     }
 
     if (action === 'reorder') {
-      // updates: [{id, order}]
       await Promise.all(updates.map(({ id: ptId, order }) =>
-        base44.asServiceRole.entities.PositionType.update(ptId, { order })
+        base44.entities.PositionType.update(ptId, { order })
       ));
       return Response.json({ ok: true });
     }

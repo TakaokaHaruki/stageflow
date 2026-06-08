@@ -7,24 +7,24 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!['admin', 'chief'].includes(user.role)) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
     const { action, id, data } = await req.json();
 
     if (action === 'create') {
-      const record = await base44.asServiceRole.entities.PositionPreset.create(data);
+      const record = await base44.entities.PositionPreset.create(data);
       return Response.json({ record });
     }
 
     if (action === 'update') {
-      const record = await base44.asServiceRole.entities.PositionPreset.update(id, data);
+      const record = await base44.entities.PositionPreset.update(id, data);
       return Response.json({ record });
     }
 
     if (action === 'delete') {
-      await base44.asServiceRole.entities.PositionPreset.delete(id);
+      await base44.entities.PositionPreset.delete(id);
       return Response.json({ ok: true });
     }
 
