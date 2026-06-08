@@ -1,6 +1,7 @@
 import { MessageCircle, MapPin, CheckSquare, Clock } from "lucide-react";
 import LineNotifySettings from "@/components/LineNotifySettings";
 import ActivityLogViewer from "@/components/ActivityLogViewer";
+import UserRoleManager from "@/components/UserRoleManager";
 
 export default function AdminSettings({
   eventId,
@@ -63,6 +64,11 @@ export default function AdminSettings({
 
       {/* LINE notify */}
       <LineNotifySettings eventId={eventId} event={event} />
+
+      {/* User role management */}
+      <div className="mb-2">
+        <UserRoleManager />
+      </div>
 
       {/* Operation log */}
       <ActivityLogViewer eventId={eventId} />

@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import PendingApproval from '@/components/PendingApproval';
 import { ThemeProvider } from '@/lib/ThemeProvider';
 // Add page imports here
 import Landing from "./pages/Landing";
@@ -23,7 +24,7 @@ const pageVariants = {
 };
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
   const location = useLocation();
 
   // Show loading spinner while checking app public settings or auth
@@ -41,6 +42,11 @@ const AuthenticatedApp = () => {
       return <UserNotRegisteredError />;
     }
     // auth_required: fall through to render routes (Landing/Login/etc. handle unauthenticated state)
+  }
+
+  // Unapproved users see the pending approval screen
+  if (user?.role === 'unapproved') {
+    return <PendingApproval />;
   }
 
   // Render the main app
