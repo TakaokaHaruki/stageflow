@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
       if (!data?.event_id || !data?.name) {
         return Response.json({ error: 'event_id and name are required' }, { status: 400 });
       }
-      const staff = await base44.entities.Staff.create(data);
+      const staff = await base44.asServiceRole.entities.Staff.create(data);
       return Response.json({ staff });
     }
 
@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
       if (!staffId || !data) {
         return Response.json({ error: 'staffId and data are required' }, { status: 400 });
       }
-      const staff = await base44.entities.Staff.update(staffId, data);
+      const staff = await base44.asServiceRole.entities.Staff.update(staffId, data);
       return Response.json({ staff });
     }
 
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       if (!staffId) {
         return Response.json({ error: 'staffId is required' }, { status: 400 });
       }
-      await base44.entities.Staff.delete(staffId);
+      await base44.asServiceRole.entities.Staff.delete(staffId);
       return Response.json({ success: true });
     }
 
