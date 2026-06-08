@@ -3,17 +3,13 @@ import { Users, Map, Megaphone, ClipboardList, Settings, CheckSquare, ShieldChec
 const ALL_TABS = [
   { id: "staff", label: "スタッフ", icon: Users },
   { id: "dragdrop", label: "配置表", icon: ClipboardList },
-  { id: "map", label: "マップ", icon: Map },
   { id: "notice", label: "連絡事項", icon: Megaphone },
-  { id: "tasks", label: "チェックリスト", icon: CheckSquare },
   { id: "admin", label: "管理者設定", icon: ShieldCheck },
   { id: "settings", label: "管理設定", icon: Settings },
 ];
 
-export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset, showMap = false, showTasks = true, isPrivileged = true, isAdmin = false }) {
+export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset, isPrivileged = true, isAdmin = false }) {
   const TABS = ALL_TABS.filter((t) => {
-    if (t.id === "map" && !showMap) return false;
-    if (t.id === "tasks" && !showTasks) return false;
     if (t.id === "admin" && !isAdmin) return false;
     if (!isPrivileged && t.id === "settings") return false;
     return true;

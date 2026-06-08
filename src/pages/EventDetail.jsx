@@ -113,9 +113,7 @@ export default function EventDetail() {
   const desktopTabs = [
     { id: "staff", label: "スタッフ管理", icon: Users },
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
-    ...(canShowMap ? [{ id: "map", label: "会場マップ", icon: MapPin }] : []),
     { id: "notice", label: "連絡事項", icon: Bell },
-    ...(canShowTasks ? [{ id: "tasks", label: "チェックリスト", icon: CheckSquare }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ];
@@ -224,10 +222,6 @@ export default function EventDetail() {
               <AdminSettings
                 eventId={eventId}
                 event={event}
-                showMap={showMap}
-                onToggleMap={handleToggleMap}
-                showTasks={showTasks}
-                onToggleTasks={handleToggleTasks}
               />
             )}
             {tab === "settings" && <PositionTypeManagement eventId={eventId} />}
