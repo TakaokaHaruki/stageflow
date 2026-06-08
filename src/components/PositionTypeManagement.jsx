@@ -138,32 +138,15 @@ export default function PositionTypeManagement({ eventId }) {
     );
 
     try {
-      // 1. バックエンド経由で Position を更新（chief ロールでも RLS が通る）
+      // バックエンド経由で Position と MapTemplate を一括保存（chief ロールでも RLS が通る）
       await base44.functions.invoke("updatePositionSide", {
         action: "setSplitBySide",
         eventId,
         positionTypeId: positionType.id,
         positionTypeName: positionType.name,
         split_by_side: splitBySide,
+        sideSettings: nextSideSettings,
       });
-
-      // 2. MapTemplate（side settings）をフロントから直接保存（chief ロールは MapTemplate の update/create RLS で許可済み）
-      const templateName = getPositionSideTemplateName(eventId);
-      const existingTemplates = await base44.entities.MapTemplate.filter({ name: templateName });
-      const existing = existingTemplates?.sort((a, b) =>
-        new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0)
-      )[0] || null;
-
-      const templatePayload = {
-        name: templateName,
-        description: 'StageFlow position side settings',
-        areas: [{ ...nextSideSettings, updated_at: new Date().toISOString() }],
-      };
-      if (existing?.id) {
-        await base44.entities.MapTemplate.update(existing.id, templatePayload);
-      } else {
-        await base44.entities.MapTemplate.create(templatePayload);
-      }
 
       rememberPositionSideSettings(eventId, nextSideSettings);
       queryClient.invalidateQueries({ queryKey: ["positionTypes"] });

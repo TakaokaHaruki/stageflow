@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'setSplitBySide') {
-      const { positionTypeId, positionTypeName, split_by_side } = body;
+      const { positionTypeId, positionTypeName, split_by_side, sideSettings } = body;
       if (!positionTypeId || !positionTypeName) {
         return Response.json({ error: 'positionTypeId and positionTypeName are required' }, { status: 400 });
       }
@@ -46,6 +46,25 @@ Deno.serve(async (req) => {
           split_by_side: splitBySide,
           staff_names: staffNames,
         });
+      }
+
+      // MapTemplate (side settings) を保存 - 既存のみ更新（新規 create は chief RLS で弾かれるためフロントで処理）
+      if (sideSettings) {
+        const templateName = `side_settings_${eventId}`;
+        const existingTemplates = await base44.entities.MapTemplate.filter({ name: templateName });
+        const existing = existingTemplates?.sort((a, b) =>
+          new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0)
+        )[0] || null;
+
+        if (existing?.id) {
+          const templatePayload = {
+            name: templateName,
+            description: 'StageFlow position side settings',
+            areas: [{ ...sideSettings, updated_at: new Date().toISOString() }],
+          };
+          await base44.entities.MapTemplate.update(existing.id, templatePayload);
+        }
+        // 新規作成はフロント（PositionTypeManagement）で実行（chief は MapTemplate create が RLS で許可されている）
       }
 
       return Response.json({ positions: updatedPositions });

@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
       Object.entries(data).filter(([key]) => ALLOWED_FIELDS.includes(key))
     );
 
-    const event = await base44.asServiceRole.entities.Event.update(eventId, safeData);
+    const event = await base44.entities.Event.update(eventId, safeData);
     return Response.json({ event });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
