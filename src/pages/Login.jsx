@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LogIn, Eye, EyeOff } from "lucide-react";
+import { LogIn, Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -41,7 +41,7 @@ export default function Login() {
         </div>
 
         <h1 className="text-2xl font-bold text-foreground mb-1 tracking-tight">ログイン</h1>
-        <p className="text-sm text-muted-foreground mb-8">A-CASTイベント管理システム</p>
+        <p className="text-sm text-muted-foreground mb-8">ACコンサート管理システム</p>
 
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
           <div className="text-left">
@@ -98,6 +98,11 @@ export default function Login() {
             <Link to="/register" className="text-primary hover:underline">新規登録</Link>
           </span>
         </div>
+
+        <Link to="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mt-5 transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+          トップへ戻る
+        </Link>
       </motion.div>
     </div>
   );

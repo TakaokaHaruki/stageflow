@@ -38,9 +38,9 @@ export default function Landing() {
           <span className="text-2xl font-black text-primary tracking-tighter">AC</span>
         </div>
 
-        <h1 className="text-2xl font-bold text-foreground mb-1 tracking-tight">A-CASTイベント管理</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-1 tracking-tight">ACコンサート管理</h1>
         <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-          スタッフ配置・アナウンス・タスク管理を<br />一元化するイベント運営システム
+          スタッフ配置・アナウンス・タスク管理を<br />一元化するコンサート運営システム
         </p>
 
         <div className="flex flex-col gap-3 w-full">
