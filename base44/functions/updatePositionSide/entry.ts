@@ -16,8 +16,8 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const { action, eventId } = body;
-    // eventId は create アクションでのみ必須（delete/update は positionId で特定）
-    if (!eventId && ['createPosition', 'createPositions'].includes(action)) {
+    // eventId 必須アクション：create, setSplitBySide（event_id で検索するため）
+    if (!eventId && ['createPosition', 'createPositions', 'setSplitBySide'].includes(action)) {
       return Response.json({ error: 'eventId is required' }, { status: 400 });
     }
 
