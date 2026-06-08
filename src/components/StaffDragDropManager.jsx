@@ -365,8 +365,10 @@ export default function StaffDragDropManager({ eventId }) {
       return pt?.id;
     }).filter(Boolean);
     if (newSlotIds.length > 0) {
-      base44.entities.PositionPreset.update(event.active_preset_id, {
-        slot_positions: { ...currentSlotPositions, [slot]: newSlotIds },
+      base44.functions.invoke("updatePositionPresetRecord", {
+        action: "update",
+        id: event.active_preset_id,
+        data: { slot_positions: { ...currentSlotPositions, [slot]: newSlotIds } },
       });
       queryClient.setQueryData(["positionPresets"], (old) =>
         (old || []).map((p) =>
