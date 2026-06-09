@@ -1,13 +1,14 @@
 import { Toaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PendingApproval from '@/components/PendingApproval';
 import { ThemeProvider } from '@/lib/ThemeProvider';
+import ProtectedRoute from '@/components/ProtectedRoute';
 // Add page imports here
 import Landing from "./pages/Landing";
 import StaffPortal from "./pages/StaffPortal";
@@ -62,14 +63,20 @@ const AuthenticatedApp = () => {
         className="min-h-screen"
       >
         <Routes location={location}>
-          <Route path="/" element={<StaffPortal />} />
-          <Route path="/home" element={<Landing />} />
+          {/* Public auth routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/events/:eventId" element={<EventDetail />} />
+          
+          {/* Protected app routes */}
+          <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+            <Route path="/" element={<StaffPortal />} />
+            <Route path="/home" element={<Landing />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/events/:eventId" element={<EventDetail />} />
+          </Route>
+          
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>
