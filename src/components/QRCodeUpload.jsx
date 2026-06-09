@@ -103,7 +103,6 @@ export default function QRCodeUpload({ onQRRead, loading, error }) {
         <input
           type="file"
           accept="image/*"
-          capture="environment"
           onChange={(e) => handleFileSelect(e.target.files[0])}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           disabled={loading}
