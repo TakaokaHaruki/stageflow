@@ -4,8 +4,9 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle } from "lucide-react";
+import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard } from "lucide-react";
 import CrewlyLogo from "@/components/CrewlyLogo";
+import QRCodeUpload from "@/components/QRCodeUpload";
 
 const STORAGE_KEY = "crewly_acast_id";
 
@@ -26,6 +27,8 @@ export default function StaffPortal() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [qrError, setQrError] = useState("");
+  const [showTextInput, setShowTextInput] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
@@ -100,6 +103,16 @@ export default function StaffPortal() {
     e.preventDefault();
     if (!inputId.trim()) return;
     authenticate(inputId.trim());
+  };
+
+  const handleQRRead = async (qrData) => {
+    setQrError("");
+    const extractedId = qrData.trim();
+    if (!extractedId) {
+      setQrError("QR コードから ID を読み取れませんでした");
+      return;
+    }
+    await authenticate(extractedId);
   };
 
   const handleLogout = () => {
