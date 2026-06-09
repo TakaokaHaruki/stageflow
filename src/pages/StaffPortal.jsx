@@ -116,11 +116,15 @@ export default function StaffPortal() {
     if (!pendingAuthData) return;
     
     setStaffName(pendingAuthData.staffName);
-    setPositions(pendingAuthData.positions);
-    setEvents(pendingAuthData.events);
     localStorage.setItem(STORAGE_KEY, pendingAuthData.acastId);
     setAcastId(pendingAuthData.acastId);
     setPendingAuthData(null);
+    setShowComplianceModal(false);
+  };
+
+  const handleCancelModal = () => {
+    setPendingAuthData(null);
+    setShowConfirmation(false);
     setShowComplianceModal(false);
   };
 
@@ -190,6 +194,7 @@ export default function StaffPortal() {
             <StaffConfirmationModal
               staffName={pendingAuthData.staffName}
               onConfirm={handleShowCompliance}
+              onClose={handleCancelModal}
             />
           )}
         </AnimatePresence>
@@ -200,6 +205,7 @@ export default function StaffPortal() {
               staffName={pendingAuthData.staffName}
               onConfirm={handleConfirmAgreement}
               onBack={handleBackToConfirmation}
+              onClose={handleCancelModal}
             />
           )}
         </AnimatePresence>

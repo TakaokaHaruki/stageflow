@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Smartphone, Clock, CheckCircle } from "lucide-react";
+import { AlertCircle, Smartphone, Clock, CheckCircle, X } from "lucide-react";
 
-export default function StaffConfirmationModal({ staffName, onConfirm }) {
+export default function StaffConfirmationModal({ staffName, onConfirm, onClose }) {
   return (
     <motion.div
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
@@ -18,7 +18,10 @@ export default function StaffConfirmationModal({ staffName, onConfirm }) {
       >
         <div className="flex items-center gap-2 mb-4">
           <AlertCircle className="w-5 h-5 text-primary" />
-          <h2 className="text-base font-bold">スタッフ注意事項</h2>
+          <h2 className="text-base font-bold flex-1">スタッフ注意事項</h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
         <p className="text-sm text-muted-foreground mb-4">
