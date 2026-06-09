@@ -51,7 +51,7 @@ export default function StaffPortal() {
       // Find staff with this acast_id
       const allStaff = await base44.entities.Staff.filter({ acast_id: id });
       if (!allStaff || allStaff.length === 0) {
-        setError("AキャストIDが見つかりませんでした。");
+        setError("A キャスト ID が見つかりませんでした。");
         setLoading(false);
         setInitialized(true);
         return;
@@ -165,39 +165,67 @@ export default function StaffPortal() {
           </div>
 
           <div className="bg-card border border-border rounded-2xl shadow-lg p-6">
-            <h1 className="text-base font-bold mb-1">AキャストIDを入力</h1>
-            <p className="text-xs text-muted-foreground mb-4">あなたのAキャストIDを入力してください</p>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <Input
-                value={inputId}
-                onChange={(e) => setInputId(e.target.value)}
-                placeholder="例：AC-12345"
-                className="text-center text-base tracking-widest"
-                autoFocus
-                autoComplete="off"
-                autoCapitalize="off"
-              />
-              <AnimatePresence>
-                {error && (
-                  <motion.p
-                    className="flex items-center gap-1.5 text-xs text-destructive"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                  >
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    {error}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-              <Button type="submit" className="w-full gap-2" disabled={!inputId.trim() || loading}>
-                {loading ? (
-                  <><RefreshCw className="w-4 h-4 animate-spin" />確認中...</>
-                ) : (
-                  <><LogIn className="w-4 h-4" />確認する</>
-                )}
-              </Button>
-            </form>
+            <h1 className="text-base font-bold mb-1">スタッフログイン</h1>
+            <p className="text-xs text-muted-foreground mb-4">A キャスト ID の QR コードをアップロード</p>
+            
+            <QRCodeUpload
+              onQRRead={handleQRRead}
+              loading={loading}
+              error={qrError}
+            />
+
+            <AnimatePresence>
+              {error && !qrError && (
+                <motion.p
+                  className="flex items-center gap-1.5 text-xs text-destructive justify-center mt-3"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {error}
+                </motion.p>
+              )}
+            </AnimatePresence>
+
+            <div className="mt-4">
+              <button
+                onClick={() => setShowTextInput(!showTextInput)}
+                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 mx-auto transition-colors"
+              >
+                <Keyboard className="w-3.5 h-3.5" />
+                {showTextInput ? "QR コードでログイン" : "ID を直接入力する場合はこちら"}
+              </button>
+            </div>
+
+            <AnimatePresence>
+              {showTextInput && (
+                <motion.form
+                  onSubmit={handleSubmit}
+                  className="space-y-3 mt-4 pt-4 border-t border-border"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <Input
+                    value={inputId}
+                    onChange={(e) => setInputId(e.target.value)}
+                    placeholder="例：AC-12345"
+                    className="text-center text-base tracking-widest"
+                    autoFocus
+                    autoComplete="off"
+                    autoCapitalize="off"
+                  />
+                  <Button type="submit" className="w-full gap-2" disabled={!inputId.trim() || loading}>
+                    {loading ? (
+                      <><RefreshCw className="w-4 h-4 animate-spin" />確認中...</>
+                    ) : (
+                      <><LogIn className="w-4 h-4" />確認する</>
+                    )}
+                  </Button>
+                </motion.form>
+              )}
+            </AnimatePresence>
           </div>
 
 
