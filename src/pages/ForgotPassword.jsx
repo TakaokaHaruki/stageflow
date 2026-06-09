@@ -18,7 +18,7 @@ export default function ForgotPassword() {
     setError("");
     setIsLoading(true);
     try {
-      await base44.auth.forgotPassword(email);
+      await base44.auth.resetPasswordRequest(email);
       setSent(true);
     } catch (err) {
       setError(err.message || "送信に失敗しました。メールアドレスをご確認ください。");

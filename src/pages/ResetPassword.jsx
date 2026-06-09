@@ -30,7 +30,7 @@ export default function ResetPassword() {
     }
     setIsLoading(true);
     try {
-      await base44.auth.resetPassword(token, password);
+      await base44.auth.resetPassword({ resetToken: token, newPassword: password });
       setDone(true);
     } catch (err) {
       setError(err.message || "パスワードの再設定に失敗しました。リンクの有効期限が切れている可能性があります。");
