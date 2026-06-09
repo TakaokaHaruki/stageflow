@@ -42,8 +42,12 @@ export default function Register() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
-          <span className="text-2xl font-black text-primary tracking-tighter">Cr</span>
+        <div className="flex flex-col items-center mb-5">
+          <svg width="56" height="56" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="26" height="26" rx="7" fill="hsl(230 65% 45%)" />
+            <path d="M 18.2 8.3 A 6.5 6.5 0 1 0 18.2 17.7" stroke="white" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+            <circle cx="18.2" cy="17.7" r="1.6" fill="hsl(195 80% 65%)" />
+          </svg>
         </div>
 
         <h1 className="text-2xl font-bold text-foreground mb-1 tracking-tight">新規登録</h1>
