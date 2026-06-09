@@ -138,18 +138,12 @@ export default function Events() {
           <div className="w-6 h-6 border-3 border-primary/30 border-t-primary rounded-full animate-spin" style={{ opacity: pullDistance / 100 }} />
         </div>
       }
-      <div className="max-w-5xl mx-auto px-2 py-2 pb-16 sm:pb-2">
-      <UserRestrictionBanner role={role} />
-      {/* Header */}
-      <div className="mb-2">
-        {/* Row 1: Title */}
-        <div className="mb-1 flex items-center gap-2">
-          <CrewlyLogo />
-          <h1 className="text-base font-bold text-foreground tracking-tight ml-1">イベント一覧</h1>
-        </div>
-        {/* Row 2: New button + Account */}
-        <div className="flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-1.5">
+      {/* Sticky Header */}
+      <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
+        <div className="max-w-5xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
+          <CrewlyLogo className="mr-1" />
+          <h1 className="text-base font-bold text-foreground tracking-tight flex-1 min-w-0 truncate">イベント一覧</h1>
+          <div className="flex items-center gap-1.5 shrink-0">
             <Button onClick={() => {setEditingEvent(null);setShowModal(true);}} className="gap-1 select-none" size="sm" disabled={!canEdit}>
               <Plus className="w-3.5 h-3.5" />
               新規
@@ -160,43 +154,46 @@ export default function Events() {
                 管理者設定
               </Button>
             )}
+            {isGuest ? (
+              <Button size="sm" className="gap-1 h-7 text-xs px-2" onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}>
+                <LogIn className="w-3 h-3" />ログイン
+              </Button>
+            ) : currentUser ? (
+              <div className="flex items-center gap-1.5 bg-muted rounded-md px-1.5 py-0.5 group">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                  <User className="w-3 h-3 text-primary" />
+                </div>
+                <div className="text-right hidden sm:block">
+                  <div className="text-xs font-medium leading-none truncate">{getUserDisplayName(currentUser)}</div>
+                  {getUserDisplayName(currentUser) !== currentUser.email && <div className="text-[11px] text-muted-foreground leading-none mt-0.5 truncate">{currentUser.email}</div>}
+                </div>
+                <div className="flex gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
+                  <button
+                    onClick={() => setConfirmDeleteAccount(true)}
+                    className="flex items-center justify-center w-9 h-9 rounded text-muted-foreground hover:text-destructive transition-colors select-none"
+                    title="アカウント削除">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => base44.auth.logout()}
+                    className="flex items-center justify-center w-9 h-9 rounded text-muted-foreground hover:text-destructive transition-colors select-none"
+                    title="ログアウト">
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <Button size="sm" variant="outline" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { window.location.href = "/login"; }}>
+                <LogIn className="w-3 h-3" />ログイン
+              </Button>
+            )}
           </div>
-          {isGuest ? (
-            <Button size="sm" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}>
-              <LogIn className="w-3 h-3" />ログイン
-            </Button>
-          ) : currentUser ? (
-            <div className="flex items-center gap-1.5 bg-muted rounded-md px-1.5 py-0.5 min-w-0 group">
-              <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                <User className="w-3 h-3 text-primary" />
-              </div>
-              <div className="text-right min-w-0">
-                <div className="text-xs font-medium leading-none truncate">{getUserDisplayName(currentUser)}</div>
-                {getUserDisplayName(currentUser) !== currentUser.email && <div className="text-[11px] text-muted-foreground leading-none mt-0.5 truncate">{currentUser.email}</div>}
-              </div>
-              <div className="ml-1 flex gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
-                <button
-                  onClick={() => setConfirmDeleteAccount(true)}
-                  className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none"
-                  title="アカウント削除">
-                  <Trash2 className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => base44.auth.logout()}
-                  className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none"
-                  title="ログアウト">
-                  <LogOut className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <Button size="sm" variant="outline" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { window.location.href = "/login"; }}>
-              <LogIn className="w-3 h-3" />ログイン
-            </Button>
-          )}
         </div>
       </div>
+
+      <div className="max-w-5xl mx-auto px-2 py-2 pb-16 sm:pb-2">
+      <UserRestrictionBanner role={role} />
 
         {isLoading ?
         <div className="flex justify-center py-20">
@@ -279,7 +276,7 @@ export default function Events() {
           )}
           </motion.div>
         }
-      </div>
+      </div>{/* end max-w container */}
 
       {confirmDeleteEvent &&
       <ConfirmDialog
