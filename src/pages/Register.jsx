@@ -21,7 +21,8 @@ export default function Register() {
     setError("");
     setIsLoading(true);
     try {
-      await base44.auth.register(email, password, fullName);
+      await base44.auth.register({ email, password, full_name: fullName });
+      await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = "/events";
     } catch (err) {
       setError(err.message || "登録に失敗しました。入力内容をご確認ください。");
