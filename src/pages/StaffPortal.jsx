@@ -264,7 +264,7 @@ export default function StaffPortal() {
                   <Input
                     value={inputId}
                     onChange={(e) => setInputId(e.target.value)}
-                    placeholder="例：A-CAST-12345"
+                    placeholder="例：acast staff id"
                     className="text-center text-base tracking-widest"
                     autoFocus
                     autoComplete="off"
