@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ const TIME_SLOT_LABELS = {
 const SLOT_ORDER = ["開場中", "開演中", "終演後"];
 
 export default function StaffPortal() {
+  const navigate = useNavigate();
   const [acastId, setAcastId] = useState("");
   const [inputId, setInputId] = useState("");
   const [staffName, setStaffName] = useState(null);
@@ -26,6 +27,8 @@ export default function StaffPortal() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [initialized, setInitialized] = useState(false);
+  const clickCountRef = useRef(0);
+  const resetTimerRef = useRef(null);
 
   // Restore saved ID on mount
   useEffect(() => {
@@ -109,6 +112,20 @@ export default function StaffPortal() {
     setError("");
   };
 
+  const handleLogoClick = () => {
+    clickCountRef.current += 1;
+    if (clickCountRef.current === 5) {
+      clickCountRef.current = 0;
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+      navigate("/home");
+    } else {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = setTimeout(() => {
+        clickCountRef.current = 0;
+      }, 2000);
+    }
+  };
+
   if (!initialized) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -128,7 +145,9 @@ export default function StaffPortal() {
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="flex flex-col items-center mb-8">
-            <CrewlyLogo />
+            <div onClick={handleLogoClick} className="cursor-pointer">
+              <CrewlyLogo />
+            </div>
             <p className="mt-3 text-sm text-muted-foreground">スタッフポータル</p>
           </div>
 
@@ -168,10 +187,7 @@ export default function StaffPortal() {
             </form>
           </div>
 
-          <p className="text-center text-xs text-muted-foreground mt-6">
-            管理者の方は{" "}
-            <Link to="/home" className="text-primary underline underline-offset-2">こちら</Link>
-          </p>
+
         </motion.div>
       </div>
     );
