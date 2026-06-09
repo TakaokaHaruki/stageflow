@@ -1,9 +1,10 @@
-import { Users, Map, Megaphone, ClipboardList, Settings, CheckSquare, ShieldCheck } from "lucide-react";
+import { Users, Map, Megaphone, ClipboardList, Settings, CheckSquare, ShieldCheck, Paperclip } from "lucide-react";
 
 const ALL_TABS = [
   { id: "staff", label: "スタッフ", icon: Users },
   { id: "dragdrop", label: "配置表", icon: ClipboardList },
   { id: "notice", label: "連絡事項", icon: Megaphone },
+  { id: "files", label: "ファイル", icon: Paperclip },
   { id: "admin", label: "管理者設定", icon: ShieldCheck },
   { id: "settings", label: "管理設定", icon: Settings },
 ];

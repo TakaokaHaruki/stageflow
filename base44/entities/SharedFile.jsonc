@@ -1,0 +1,67 @@
+{
+  "name": "SharedFile",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "\u30a4\u30d9\u30f3\u30c8ID"
+    },
+    "title": {
+      "type": "string",
+      "description": "\u30d5\u30a1\u30a4\u30eb\u30bf\u30a4\u30c8\u30eb"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u8aac\u660e"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9\u3055\u308c\u305f\u30d5\u30a1\u30a4\u30eb\u306eURL"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "\u5143\u306e\u30d5\u30a1\u30a4\u30eb\u540d"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "roles",
+        "staff_names"
+      ],
+      "default": "public",
+      "description": "\u516c\u958b\u7bc4\u56f2\u7a2e\u5225"
+    },
+    "allowed_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "\u30ed\u30fc\u30eb\u6307\u5b9a\u6642\u306e\u5bfe\u8c61\u30ed\u30fc\u30eb"
+    },
+    "allowed_staff_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "\u30b9\u30bf\u30c3\u30d5\u540d\u6307\u5b9a\u6642\u306e\u5bfe\u8c61\u540d\u30ea\u30b9\u30c8"
+    }
+  },
+  "required": [
+    "event_id",
+    "title",
+    "file_url"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
