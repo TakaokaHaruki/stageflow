@@ -96,8 +96,8 @@ export default function EventDetail() {
       {/* Top bar */}
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
-          <CrewlyLogo className="mr-1 hidden sm:flex" />
           <BackButton to="/events" label="イベント一覧へ戻る" />
+          <CrewlyLogo className="mr-1 hidden sm:flex" />
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-2 min-w-0">
               <h1 className="font-bold text-sm leading-snug truncate shrink-0">{event.name}</h1>
