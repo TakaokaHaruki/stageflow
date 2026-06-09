@@ -105,6 +105,20 @@
   }
 }
 
+/* Fix date/time input native UI */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  display: block;
+  opacity: 0.5;
+  cursor: pointer;
+  filter: invert(0.5);
+}
+
 @supports (padding: max(0px)) {
   .safe-area-bottom {
     padding-bottom: max(env(safe-area-inset-bottom), 0.25rem);

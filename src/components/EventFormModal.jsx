@@ -122,7 +122,7 @@ export default function EventFormModal({ event, onClose, onSaved }) {
           <div>
             <Label>開催日</Label>
             <Input
-              className="mt-1"
+              className="mt-1 w-full"
               type="date"
               value={form.date}
               min="2000-01-01"
@@ -161,19 +161,19 @@ export default function EventFormModal({ event, onClose, onSaved }) {
             <div className="mt-1 grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-xs text-muted-foreground">先行</Label>
-                <Input type="time" className="mt-0.5" value={form.time_priority} onChange={(e) => setForm({ ...form, time_priority: e.target.value })} />
+                <Input type="time" className="mt-0.5 w-full" value={form.time_priority} onChange={(e) => setForm({ ...form, time_priority: e.target.value })} />
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">開場</Label>
-                <Input type="time" className="mt-0.5" value={form.time_open} onChange={(e) => setForm({ ...form, time_open: e.target.value })} />
+                <Input type="time" className="mt-0.5 w-full" value={form.time_open} onChange={(e) => setForm({ ...form, time_open: e.target.value })} />
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">開演</Label>
-                <Input type="time" className="mt-0.5" value={form.time_start} onChange={(e) => setForm({ ...form, time_start: e.target.value })} />
+                <Input type="time" className="mt-0.5 w-full" value={form.time_start} onChange={(e) => setForm({ ...form, time_start: e.target.value })} />
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">終演</Label>
-                <Input type="time" className="mt-0.5" value={form.time_end} onChange={(e) => setForm({ ...form, time_end: e.target.value })} />
+                <Input type="time" className="mt-0.5 w-full" value={form.time_end} onChange={(e) => setForm({ ...form, time_end: e.target.value })} />
               </div>
             </div>
           </div>
