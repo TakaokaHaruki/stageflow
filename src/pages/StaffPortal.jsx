@@ -8,6 +8,7 @@ import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard } from "
 import CrewlyLogo from "@/components/CrewlyLogo";
 import QRCodeUpload from "@/components/QRCodeUpload";
 import StaffConfirmationModal from "@/components/StaffConfirmationModal";
+import ComplianceAgreementModal from "@/components/ComplianceAgreementModal";
 
 const STORAGE_KEY = "crewly_acast_id";
 
@@ -33,6 +34,7 @@ export default function StaffPortal() {
   const [initialized, setInitialized] = useState(false);
   const [pendingAuthData, setPendingAuthData] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showComplianceModal, setShowComplianceModal] = useState(false);
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
 
@@ -105,6 +107,11 @@ export default function StaffPortal() {
     }
   };
 
+  const handleShowCompliance = () => {
+    setShowConfirmation(false);
+    setShowComplianceModal(true);
+  };
+
   const handleConfirmAgreement = () => {
     if (!pendingAuthData) return;
     
@@ -114,7 +121,12 @@ export default function StaffPortal() {
     localStorage.setItem(STORAGE_KEY, pendingAuthData.acastId);
     setAcastId(pendingAuthData.acastId);
     setPendingAuthData(null);
-    setShowConfirmation(false);
+    setShowComplianceModal(false);
+  };
+
+  const handleBackToConfirmation = () => {
+    setShowComplianceModal(false);
+    setShowConfirmation(true);
   };
 
   const handleSubmit = (e) => {
@@ -177,7 +189,17 @@ export default function StaffPortal() {
           {showConfirmation && pendingAuthData && (
             <StaffConfirmationModal
               staffName={pendingAuthData.staffName}
+              onConfirm={handleShowCompliance}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showComplianceModal && pendingAuthData && (
+            <ComplianceAgreementModal
+              staffName={pendingAuthData.staffName}
               onConfirm={handleConfirmAgreement}
+              onBack={handleBackToConfirmation}
             />
           )}
         </AnimatePresence>
