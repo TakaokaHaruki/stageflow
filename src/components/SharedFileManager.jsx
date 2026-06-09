@@ -30,6 +30,7 @@ function getUserLabel(u) {
 function isFileVisible(file, currentUser) {
   if (file.visibility === "public") return true;
   if (!currentUser) return false;
+  if (file.created_by_id === currentUser.id) return true;
   if (file.visibility === "roles") {
     return (file.allowed_roles || []).includes(currentUser.role);
   }
@@ -302,10 +303,11 @@ export default function SharedFileManager({ eventId }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [openPanelId, setOpenPanelId] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {});
+    base44.auth.me().then(setCurrentUser).catch(() => {}).finally(() => setUserLoading(false));
   }, []);
 
   const { data: files = [], isLoading } = useQuery({
@@ -377,7 +379,7 @@ export default function SharedFileManager({ eventId }) {
         )}
       </div>
 
-      {isLoading ? (
+      {(isLoading || userLoading) ? (
         <div className="flex justify-center py-10">
           <div className="w-6 h-6 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
         </div>
