@@ -9,6 +9,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PendingApproval from '@/components/PendingApproval';
 import { ThemeProvider } from '@/lib/ThemeProvider';
 // Add page imports here
+import Landing from "./pages/Landing";
 import StaffPortal from "./pages/StaffPortal";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
@@ -62,6 +63,7 @@ const AuthenticatedApp = () => {
       >
         <Routes location={location}>
           <Route path="/" element={<StaffPortal />} />
+          <Route path="/home" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

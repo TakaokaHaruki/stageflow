@@ -169,7 +169,7 @@ export default function StaffPortal() {
 
           <p className="text-center text-xs text-muted-foreground mt-6">
             管理者の方は{" "}
-            <a href="/events" className="text-primary underline underline-offset-2">こちら</a>
+            <a href="/home" className="text-primary underline underline-offset-2">こちら</a>
           </p>
         </motion.div>
       </div>
