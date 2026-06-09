@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard } from "lucide-react";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import QRCodeUpload from "@/components/QRCodeUpload";
+import StaffConfirmationModal from "@/components/StaffConfirmationModal";
 
 const STORAGE_KEY = "crewly_acast_id";
 
@@ -30,6 +31,8 @@ export default function StaffPortal() {
   const [qrError, setQrError] = useState("");
   const [showTextInput, setShowTextInput] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [pendingAuthData, setPendingAuthData] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
 
@@ -58,7 +61,6 @@ export default function StaffPortal() {
       }
 
       const staff = allStaff[0];
-      setStaffName(staff.name);
 
       // Get today's events (status === '開催中' AND date === today)
       const allEvents = await base44.entities.Event.list("-date", 50);
@@ -71,8 +73,6 @@ export default function StaffPortal() {
         if (!b.date) return -1;
         return new Date(a.date) - new Date(b.date);
       });
-
-      setEvents(activeEvents);
 
       // Get positions for all active events where staff is assigned
       const allPositions = [];
@@ -89,15 +89,32 @@ export default function StaffPortal() {
         }
       }
 
-      setPositions(allPositions);
-      localStorage.setItem(STORAGE_KEY, id);
-      setAcastId(id);
+      // Store auth data temporarily and show confirmation modal
+      setPendingAuthData({
+        staffName: staff.name,
+        positions: allPositions,
+        events: activeEvents,
+        acastId: id
+      });
+      setShowConfirmation(true);
     } catch (e) {
       setError("データの取得に失敗しました。");
     } finally {
       setLoading(false);
       setInitialized(true);
     }
+  };
+
+  const handleConfirmAgreement = () => {
+    if (!pendingAuthData) return;
+    
+    setStaffName(pendingAuthData.staffName);
+    setPositions(pendingAuthData.positions);
+    setEvents(pendingAuthData.events);
+    localStorage.setItem(STORAGE_KEY, pendingAuthData.acastId);
+    setAcastId(pendingAuthData.acastId);
+    setPendingAuthData(null);
+    setShowConfirmation(false);
   };
 
   const handleSubmit = (e) => {
@@ -155,8 +172,18 @@ export default function StaffPortal() {
   // Login screen
   if (!staffName) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
-        <motion.div
+      <>
+        <AnimatePresence>
+          {showConfirmation && pendingAuthData && (
+            <StaffConfirmationModal
+              staffName={pendingAuthData.staffName}
+              onConfirm={handleConfirmAgreement}
+            />
+          )}
+        </AnimatePresence>
+
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+          <motion.div
           className="w-full max-w-sm"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -232,10 +259,9 @@ export default function StaffPortal() {
               )}
             </AnimatePresence>
           </div>
-
-
         </motion.div>
       </div>
+      </>
     );
   }
 
