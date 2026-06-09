@@ -2,7 +2,7 @@ import { base44 } from "@/api/base44Client";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 
 export const EVENT_MODE_REFETCH_INTERVAL = LIVE_SYNC_INTERVAL;
-export const EVENT_MODE_FIELDS = ["staff_management_mode", "assignment_mode", "venue_map_mode"];
+export const EVENT_MODE_FIELDS = ["staff_management_mode", "assignment_mode"];
 
 export async function loadEventById(eventId) {
   let event = null;

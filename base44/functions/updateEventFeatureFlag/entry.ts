@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-const ALLOWED_FIELDS = ['show_timeline', 'show_map', 'show_tasks', 'line_notify_enabled', 'line_group_id', 'active_preset_id'];
+const ALLOWED_FIELDS = ['line_notify_enabled', 'line_group_id', 'active_preset_id'];
 
 Deno.serve(async (req) => {
   try {

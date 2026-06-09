@@ -55,8 +55,7 @@ export default function Events() {
 
   const isEventPublic = (event) =>
     event.staff_management_mode === "public" ||
-    event.assignment_mode === "public" ||
-    event.venue_map_mode === "public";
+    event.assignment_mode === "public";
 
   const toggleVisibilityMutation = useMutation({
     mutationFn: async ({ eventId, makePublic }) => {
@@ -64,7 +63,6 @@ export default function Events() {
       await base44.entities.Event.update(eventId, {
         staff_management_mode: mode,
         assignment_mode: mode,
-        venue_map_mode: mode,
       });
     },
     onMutate: async ({ eventId, makePublic }) => {
@@ -74,7 +72,7 @@ export default function Events() {
       queryClient.setQueryData(["events"], (old = []) =>
         old.map((e) =>
           e.id === eventId
-            ? { ...e, staff_management_mode: mode, assignment_mode: mode, venue_map_mode: mode }
+            ? { ...e, staff_management_mode: mode, assignment_mode: mode }
             : e
         )
       );
