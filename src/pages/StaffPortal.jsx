@@ -51,7 +51,7 @@ export default function StaffPortal() {
       // Find staff with this acast_id
       const allStaff = await base44.entities.Staff.filter({ acast_id: id });
       if (!allStaff || allStaff.length === 0) {
-        setError("A キャスト ID が見つかりませんでした。");
+        setError("A-CAST ID が見つかりませんでした。");
         setLoading(false);
         setInitialized(true);
         return;
@@ -171,7 +171,7 @@ export default function StaffPortal() {
 
           <div className="bg-card border border-border rounded-2xl shadow-lg p-6">
             <h1 className="text-base font-bold mb-1">スタッフログイン</h1>
-            <p className="text-xs text-muted-foreground mb-4">A キャスト ID の QR コードをアップロード</p>
+            <p className="text-xs text-muted-foreground mb-4">A-CAST ID の QR コードをアップロード</p>
             
             <QRCodeUpload
               onQRRead={handleQRRead}
@@ -215,7 +215,7 @@ export default function StaffPortal() {
                   <Input
                     value={inputId}
                     onChange={(e) => setInputId(e.target.value)}
-                    placeholder="例：AC-12345"
+                    placeholder="例：A-CAST-12345"
                     className="text-center text-base tracking-widest"
                     autoFocus
                     autoComplete="off"
