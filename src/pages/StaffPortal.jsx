@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -169,7 +170,7 @@ export default function StaffPortal() {
 
           <p className="text-center text-xs text-muted-foreground mt-6">
             管理者の方は{" "}
-            <a href="/home" className="text-primary underline underline-offset-2">こちら</a>
+            <Link to="/home" className="text-primary underline underline-offset-2">こちら</Link>
           </p>
         </motion.div>
       </div>
