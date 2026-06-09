@@ -182,10 +182,10 @@ export default function StaffManagement({ eventId }) {
   });
 
   const { mode: staffManagementMode, isReady: isModeReady } = useResolvedEventMode(eventId, "staff_management_mode", event?.staff_management_mode);
-  const isEditMode = staffManagementMode === "edit";
-  const hideForUser = !canEdit && staffManagementMode !== "public";
+  const isPublicMode = staffManagementMode === "public";
+  const hideForUser = !isPublicMode && !canEdit;
   const isVisibilityReady = Boolean(role) && isModeReady;
-  const canUseEditTools = canEdit;
+  const canUseEditTools = canEdit && !isPublicMode;
 
   return (
     <div>
