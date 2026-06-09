@@ -152,7 +152,7 @@ export default function QRCodeUpload({ onQRRead, loading, error }) {
                 QR コード画像をアップロード
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                クリックまたはドラッグ＆ドロップ
+                クリックまたはタップ
               </p>
             </motion.div>
           )}
