@@ -35,7 +35,7 @@ export default function QRCodeUpload({ onQRRead, loading, error }) {
       if (code) {
         onQRRead(code.data);
       } else {
-        throw new Error("QR コードが検出されませんでした");
+        onQRRead(null);
       }
     } catch (err) {
       setPreviewUrl(null);

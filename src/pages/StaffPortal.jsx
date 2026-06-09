@@ -107,6 +107,10 @@ export default function StaffPortal() {
 
   const handleQRRead = async (qrData) => {
     setQrError("");
+    if (!qrData) {
+      setQrError("QR コードが検出されませんでした。画像に QR コードが含まれていることを確認してください。");
+      return;
+    }
     const extractedId = qrData.trim();
     if (!extractedId) {
       setQrError("QR コードから ID を読み取れませんでした");
