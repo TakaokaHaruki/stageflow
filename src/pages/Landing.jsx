@@ -59,7 +59,7 @@ export default function Landing() {
         </div>
 
         <p className="text-xs text-muted-foreground mt-6 leading-relaxed">
-          スタッフ・チーフの方はログインしてご利用ください
+          A-CAST社員の方・チーフの方はログインしてご利用ください
         </p>
       </motion.div>
     </div>
