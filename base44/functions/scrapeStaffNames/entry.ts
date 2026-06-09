@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { url, eventId, selectedNames } = await req.json();
+    const { url, eventId, selectedNames, selectedStaff } = await req.json();
     if (!url || !eventId) {
       return Response.json({ error: 'urlとeventIdは必須です' }, { status: 400 });
     }
@@ -28,19 +28,34 @@ Deno.serve(async (req) => {
 
     const html = await response.text();
 
-    // If selectedNames provided, this is the "confirm & save" phase
-    if (selectedNames) {
+    // If selectedStaff or selectedNames provided, this is the "confirm & save" phase
+    if ((selectedStaff && Array.isArray(selectedStaff)) || (selectedNames && Array.isArray(selectedNames))) {
+      // Support legacy selectedNames format (backward compatibility)
+      const staffToSave = selectedStaff || (selectedNames || []).map(name => ({ name, acast_id: null }));
       const existingStaff = await base44.asServiceRole.entities.Staff.filter({ event_id: eventId });
       const existingNames = new Set(existingStaff.map((s) => s.name));
-      const newNames = selectedNames.filter((name) => !existingNames.has(name));
-      for (const name of newNames) {
-        await base44.asServiceRole.entities.Staff.create({ event_id: eventId, name });
+      const addedStaff = [];
+      for (const staff of staffToSave) {
+        if (!existingNames.has(staff.name)) {
+          await base44.asServiceRole.entities.Staff.create({ 
+            event_id: eventId, 
+            name: staff.name,
+            acast_id: staff.acast_id || null
+          });
+          addedStaff.push(staff.name);
+        } else {
+          // 同名スタッフが既に存在する場合、acast_id が未設定なら更新
+          const existing = existingStaff.find((s) => s.name === staff.name);
+          if (existing && staff.acast_id && !existing.acast_id) {
+            await base44.asServiceRole.entities.Staff.update(existing.id, { acast_id: staff.acast_id });
+          }
+        }
       }
       return Response.json({
-        found: selectedNames.length,
-        added: newNames.length,
-        skipped: selectedNames.length - newNames.length,
-        names: newNames,
+        found: staffToSave.length,
+        added: addedStaff.length,
+        skipped: staffToSave.length - addedStaff.length,
+        names: addedStaff,
       });
     }
 
@@ -55,13 +70,17 @@ Deno.serve(async (req) => {
       const name = nameMatch[1].replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').trim();
       if (!name || name === '(氏名なし)') continue;
 
+      // Extract staff ID from <span class="staffId"><span class="search">...</span></span>
+      const idMatch = /<span[^>]*class="[^"]*staffId[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml);
+      const acast_id = idMatch ? idMatch[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() : '';
+
       const typeMatch = /<span[^>]*class="[^"]*type[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml);
       const type = typeMatch ? typeMatch[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() : '';
       const memoMatch = /class="memo_i"[^>]*value="([^"]*)"/i.exec(rowHtml);
       const memo = memoMatch ? memoMatch[1].trim() : '';
       const defaultChecked = !type.includes('物販') && memo !== '帰宅';
 
-      staffList.push({ name, type, memo, defaultChecked });
+      staffList.push({ name, acast_id, type, memo, defaultChecked });
     }
 
     if (staffList.length === 0) {

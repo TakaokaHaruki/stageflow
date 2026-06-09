@@ -80,12 +80,15 @@ export default function StaffScrapeModal({ eventId, onClose }) {
   };
 
   const handleSave = async () => {
-    const selectedNames = staffList.filter((_, i) => checked[i]).map((s) => s.name);
-    if (selectedNames.length === 0) { setError("スタッフが選択されていません"); return; }
+    const selectedStaff = staffList.filter((_, i) => checked[i]).map((s) => ({
+      name: s.name,
+      acast_id: s.acast_id || null
+    }));
+    if (selectedStaff.length === 0) { setError("スタッフが選択されていません"); return; }
     setLoading(true);
     setError(null);
     try {
-      const res = await base44.functions.invoke("scrapeStaffNames", { url: url.trim(), eventId, selectedNames });
+      const res = await base44.functions.invoke("scrapeStaffNames", { url: url.trim(), eventId, selectedStaff });
       const data = unwrapFunctionResponse(res);
       if (data.error) {
         setError(data.error);
