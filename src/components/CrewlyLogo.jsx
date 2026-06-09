@@ -4,7 +4,7 @@ export default function CrewlyLogo({ className = "" }) {
   return (
     <Link
       to="/"
-      className={`flex items-center gap-2 select-none shrink-0 group ${className}`}
+      className={`flex items-center gap-1 select-none shrink-0 group ${className}`}
       aria-label="Crewly トップへ"
     >
       {/* SVG mark: "C" with a pin dot at the tail */}
