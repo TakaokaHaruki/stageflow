@@ -35,6 +35,16 @@ export default function EventDetail() {
   const { eventId } = useParams();
   const [tab, setTab] = useTabNavigation("staff");
   const [tabResetKey, setTabResetKey] = useState(0);
+  const [currentTime, setCurrentTime] = useState(() =>
+    new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const { isAdmin, isChief, canEdit, canManageSettings, role } = useUserRole();
   const isPrivileged = isAdmin || isChief;
@@ -97,7 +107,10 @@ export default function EventDetail() {
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
           <BackButton to="/events" label="イベント一覧へ戻る" />
-          <CrewlyLogo className="mr-1 hidden sm:flex" />
+          <div className="hidden sm:flex flex-col items-start mr-1">
+            <CrewlyLogo />
+            <span className="text-[10px] text-muted-foreground leading-none mt-0.5 pl-0.5">{currentTime}</span>
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-2 min-w-0">
               <h1 className="font-bold text-sm leading-snug truncate shrink-0">{event.name}</h1>
@@ -114,6 +127,7 @@ export default function EventDetail() {
               <div className="text-xs text-muted-foreground leading-snug mt-0.5">
                 {event.date && format(new Date(event.date), "M月d日（E）", { locale: ja })}
                 {event.venue && `　${event.venue}`}
+                <span className="sm:hidden ml-2">{currentTime}</span>
               </div>
             )}
           </div>

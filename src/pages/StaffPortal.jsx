@@ -164,6 +164,10 @@ export default function StaffPortal() {
     setEvents([]);
     setInputId("");
     setError("");
+    setQrError("");
+    setPendingAuthData(null);
+    setShowConfirmation(false);
+    setShowComplianceModal(false);
   };
 
   const handleLogoClick = () => {

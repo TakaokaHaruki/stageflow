@@ -64,7 +64,7 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     try {
-      await base44.auth.loginWithProvider("google", "/");
+      await base44.auth.loginWithProvider("google", "/events");
     } catch (err) {
       setError(err.message || "Google ログインに失敗しました。");
     }
