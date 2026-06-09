@@ -64,11 +64,14 @@ export default function StaffPortal() {
 
       const staff = allStaff[0];
 
-      // Get today's events (status === '開催中' AND date === today)
+      // Get today's events (public assignment_mode or staff_management_mode AND date === today JST)
       const allEvents = await base44.entities.Event.list("-date", 50);
-      const today = new Date().toISOString().split("T")[0];
+      const now = new Date();
+      const jstOffset = 9 * 60;
+      const jstDate = new Date(now.getTime() + jstOffset * 60000);
+      const today = jstDate.toISOString().split("T")[0];
       const activeEvents = allEvents.filter(
-        (e) => e.status === "開催中" && e.date === today
+        (e) => (e.assignment_mode === "public" || e.staff_management_mode === "public") && e.date === today
       ).sort((a, b) => {
         if (!a.date && !b.date) return 0;
         if (!a.date) return 1;
@@ -361,7 +364,7 @@ export default function StaffPortal() {
                 {event.date && (
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    {new Date(event.date).toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "short" })}
+                    {new Date(event.date).toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "short", timeZone: "Asia/Tokyo" })}
                   </span>
                 )}
                 {event.venue && (
