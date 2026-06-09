@@ -42,7 +42,7 @@ export function ResponsiveSelect({
       <>
         <button
           onClick={() => setIsOpen(true)}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none"
+          className="w-full h-8 flex items-center justify-between px-2.5 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring select-none"
         >
           <span className={value ? "text-foreground" : "text-muted-foreground"}>
             {options.find((opt) => opt.value === value)?.label || placeholder}
@@ -88,7 +88,7 @@ export function ResponsiveSelect({
 
   return (
     <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className="select-none">
+      <SelectTrigger className="h-8 select-none">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

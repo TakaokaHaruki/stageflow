@@ -143,16 +143,18 @@ export default function EventFormModal({ event, onClose, onSaved }) {
           </div>
           <div>
             <Label>ステータス</Label>
-            <ResponsiveSelect
-              value={form.status}
-              onValueChange={(v) => setForm({ ...form, status: v })}
-              options={[
-                { value: "準備中", label: "準備中" },
-                { value: "開催中", label: "開催中" },
-                { value: "終了", label: "終了" },
-              ]}
-              placeholder="ステータスを選択"
-           />
+            <div className="mt-1">
+              <ResponsiveSelect
+                value={form.status}
+                onValueChange={(v) => setForm({ ...form, status: v })}
+                options={[
+                  { value: "準備中", label: "準備中" },
+                  { value: "開催中", label: "開催中" },
+                  { value: "終了", label: "終了" },
+                ]}
+                placeholder="ステータスを選択"
+              />
+            </div>
           </div>
           <div>
             <Label>時間設定</Label>
