@@ -94,10 +94,10 @@ export default function StaffPortal() {
       // Store auth data temporarily and show confirmation modal
       setPendingAuthData({
         staffName: staff.name,
-        positions: allPositions,
-        events: activeEvents,
         acastId: id
       });
+      setPositions(allPositions);
+      setEvents(activeEvents);
       setShowConfirmation(true);
     } catch (e) {
       setError("データの取得に失敗しました。");
