@@ -4,7 +4,6 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, Settings, Moon, Sun, GripVertical } from "lucide-react";
-import MapTemplateManagement from "@/components/MapTemplateManagement";
 import PositionPresetManager from "@/components/PositionPresetManager";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useTheme } from "@/lib/ThemeProvider";
@@ -278,7 +277,6 @@ export default function PositionTypeManagement({ eventId }) {
 
       <div className="border-t border-border my-3" />
       <PositionPresetManager eventId={eventId} />
-      <MapTemplateManagement eventId={eventId} />
     </div>
   );
 }
