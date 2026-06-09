@@ -7,6 +7,7 @@ import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn, ArrowLeft, Globe, Lock, ShieldCheck } from "lucide-react";
+import CrewlyLogo from "@/components/CrewlyLogo";
 import AdminUserModal from "@/components/AdminUserModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion } from "framer-motion";
@@ -142,11 +143,9 @@ export default function Events() {
       {/* Header */}
       <div className="mb-2">
         {/* Row 1: Title */}
-        <div className="mb-1">
+        <div className="mb-1 flex items-center gap-2">
+          <CrewlyLogo />
           <h1 className="text-base font-bold text-foreground tracking-tight">イベント一覧</h1>
-          <Link to="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mt-0.5">
-            <ArrowLeft className="w-3 h-3" />ホームに戻る
-          </Link>
         </div>
         {/* Row 2: New button + Account */}
         <div className="flex items-center justify-between gap-1.5">

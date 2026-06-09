@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { UserPlus, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import CrewlyLogo from "@/components/CrewlyLogo";
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
@@ -31,6 +32,10 @@ export default function Register() {
 
   return (
     <div className="h-screen bg-background flex flex-col items-center justify-center px-6">
+      {/* Fixed top bar with logo */}
+      <div className="fixed top-0 left-0 right-0 h-12 flex items-center px-4 border-b border-border bg-background/80 backdrop-blur-md z-50 safe-area-top">
+        <CrewlyLogo />
+      </div>
       <motion.div
         className="flex flex-col items-center text-center max-w-sm w-full"
         initial={{ opacity: 0, y: 24 }}

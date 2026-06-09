@@ -21,6 +21,7 @@ import { ja } from "date-fns/locale";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useTabNavigation } from "@/hooks/useTabNavigation";
 import { EVENT_MODE_REFETCH_INTERVAL, loadEventById } from "@/lib/eventLoader";
+import CrewlyLogo from "@/components/CrewlyLogo";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -92,6 +93,7 @@ export default function EventDetail() {
       {/* Top bar */}
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
+          <CrewlyLogo className="mr-1 hidden sm:flex" />
           <Link to="/events" className="relative z-[100] flex items-center justify-center w-11 h-11 rounded-lg hover:bg-muted transition-colors shrink-0" aria-label="戻る">
             <ChevronLeft className="w-6 h-6" />
           </Link>
