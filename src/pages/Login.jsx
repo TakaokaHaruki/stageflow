@@ -31,7 +31,7 @@ export default function Login() {
     setError("");
     setIsLoading(true);
     try {
-      await base44.auth.login(email, password);
+      await base44.auth.loginViaEmailPassword(email, password);
       const user = await base44.auth.me();
       if (!user.role) {
         setPendingApproval(true);
