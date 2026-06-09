@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
       const existingStaff = await base44.asServiceRole.entities.Staff.filter({ event_id: eventId });
       const existingNames = new Set(existingStaff.map((s) => s.name));
       const addedStaff = [];
+      // 並列処理で保存（削除済みスタッフも新規として追加される）
       for (const staff of staffToSave) {
         if (!existingNames.has(staff.name)) {
           await base44.asServiceRole.entities.Staff.create({ 

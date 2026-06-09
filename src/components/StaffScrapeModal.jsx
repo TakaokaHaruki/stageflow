@@ -39,8 +39,9 @@ export default function StaffScrapeModal({ eventId, onClose }) {
     setResult(null);
 
     try {
-      const existingRes = await base44.functions.invoke("getStaffList", { eventId });
-      const fetchedExistingNames = new Set((existingRes?.data?.staff ?? []).map((s) => s.name));
+      // キャッシュを使わず最新のスタッフ一覧を取得
+      const existingStaff = await base44.entities.Staff.filter({ event_id: eventId });
+      const fetchedExistingNames = new Set((existingStaff || []).map((s) => s.name));
       setExistingNames(fetchedExistingNames);
 
       const nextHistory = [targetUrl, ...urlHistory.filter((u) => u !== targetUrl)].slice(0, 10);
