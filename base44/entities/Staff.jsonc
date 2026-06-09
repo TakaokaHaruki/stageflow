@@ -10,6 +10,10 @@
       "type": "string",
       "description": "\u30b9\u30bf\u30c3\u30d5\u540d"
     },
+    "acast_id": {
+      "type": "string",
+      "description": "A\u30ad\u30e3\u30b9\u30c8ID\uff08\u30b9\u30bf\u30c3\u30d5\u30dd\u30fc\u30bf\u30eb\u8a8d\u8a3c\u7528\uff09"
+    },
     "note": {
       "type": "string",
       "description": "\u5099\u8003\uff08\u5171\u901a\uff09"
@@ -32,7 +36,7 @@
     },
     "costume_change": {
       "type": "boolean",
-      "description": "\u7740\u66ff\u30d5\u30e9\u30b0",
+      "description": "\u7740\u66ff\u3048\u30d5\u30e9\u30b0",
       "default": false
     },
     "break": {

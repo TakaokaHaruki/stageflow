@@ -23,6 +23,7 @@ const PRESET_COLORS = [
 
 export default function StaffEditModal({ staff, onClose, onSaved }) {
   const [localName, setLocalName] = useState(staff.name);
+  const [localAcastId, setLocalAcastId] = useState(staff.acast_id || "");
   const [localNote, setLocalNote] = useState(staff.note || "");
   const [localNoteBefore, setLocalNoteBefore] = useState(staff.note_before || "");
   const [localNoteDuring, setLocalNoteDuring] = useState(staff.note_during || "");
@@ -32,7 +33,7 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
   const [skillInput, setSkillInput] = useState("");
   const [noteTab, setNoteTab] = useState("all");
   const prevDataRef = useRef({
-    name: staff.name, note: staff.note || "",
+    name: staff.name, acast_id: staff.acast_id || "", note: staff.note || "",
     note_before: staff.note_before || "", note_during: staff.note_during || "", note_after: staff.note_after || "",
     color: staff.color || "", skills: staff.skills || []
   });
@@ -87,13 +88,13 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
     const prev = prevDataRef.current;
     const skillsChanged = JSON.stringify(localSkills) !== JSON.stringify(prev.skills);
     if (
-      localName === prev.name && localNote === prev.note &&
+      localName === prev.name && localAcastId === prev.acast_id && localNote === prev.note &&
       localNoteBefore === prev.note_before && localNoteDuring === prev.note_during && localNoteAfter === prev.note_after &&
       localColor === prev.color && !skillsChanged
     ) return;
     const timer = setTimeout(() => {
       const nextData = {
-        name: localName.trim(), note: localNote.trim(),
+        name: localName.trim(), acast_id: localAcastId.trim(), note: localNote.trim(),
         note_before: localNoteBefore.trim(), note_during: localNoteDuring.trim(), note_after: localNoteAfter.trim(),
         color: localColor, skills: localSkills
       };
@@ -105,7 +106,7 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
       });
     }, 500);
     return () => clearTimeout(timer);
-  }, [localName, localNote, localNoteBefore, localNoteDuring, localNoteAfter, localColor, localSkills]);
+  }, [localName, localAcastId, localNote, localNoteBefore, localNoteDuring, localNoteAfter, localColor, localSkills]);
 
   return (
     <motion.div
@@ -131,6 +132,10 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
           <div>
             <label className="text-xs font-medium text-muted-foreground">スタッフ名</label>
             <Input value={localName} onChange={(e) => setLocalName(e.target.value)} className="mt-1" style={{ color: localColor || undefined }} />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">AキャストID</label>
+            <Input value={localAcastId} onChange={(e) => setLocalAcastId(e.target.value)} className="mt-1" placeholder="例：AC-12345" />
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground">備考</label>

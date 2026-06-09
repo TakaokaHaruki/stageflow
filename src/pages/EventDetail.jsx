@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Paperclip } from "lucide-react";
+import { ChevronLeft, User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Paperclip, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
 import PositionTypeManagement from "@/components/PositionTypeManagement";
@@ -12,6 +12,7 @@ import AnnouncementManager from "@/components/AnnouncementManager";
 import AnnouncementAlert from "@/components/AnnouncementAlert";
 import StaffDragDropManager from "@/components/StaffDragDropManager";
 import SharedFileManager from "@/components/SharedFileManager";
+import PositionNotesEditor from "@/components/PositionNotesEditor";
 import BottomTabBar from "@/components/BottomTabBar";
 import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
@@ -76,6 +77,7 @@ export default function EventDetail() {
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
     { id: "notice", label: "連絡事項", icon: Bell },
     { id: "files", label: "ファイル共有", icon: Paperclip },
+    ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ];
@@ -190,6 +192,7 @@ export default function EventDetail() {
             {tab === "settings" && <PositionTypeManagement eventId={eventId} />}
             {tab === "notice" && <AnnouncementManager eventId={eventId} />}
             {tab === "files" && <SharedFileManager eventId={eventId} />}
+            {tab === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
           </motion.div>
         </AnimatePresence>
       </div>

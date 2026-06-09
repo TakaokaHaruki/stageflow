@@ -9,7 +9,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PendingApproval from '@/components/PendingApproval';
 import { ThemeProvider } from '@/lib/ThemeProvider';
 // Add page imports here
-import Landing from "./pages/Landing";
+import StaffPortal from "./pages/StaffPortal";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import Login from "./pages/Login";
@@ -61,7 +61,7 @@ const AuthenticatedApp = () => {
         className="min-h-screen"
       >
         <Routes location={location}>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<StaffPortal />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
