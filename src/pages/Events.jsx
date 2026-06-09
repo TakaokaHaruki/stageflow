@@ -145,7 +145,7 @@ export default function Events() {
         {/* Row 1: Title */}
         <div className="mb-1 flex items-center gap-2">
           <CrewlyLogo />
-          <h1 className="text-base font-bold text-foreground tracking-tight">イベント一覧</h1>
+          <h1 className="text-base font-bold text-foreground tracking-tight ml-1">イベント一覧</h1>
         </div>
         {/* Row 2: New button + Account */}
         <div className="flex items-center justify-between gap-1.5">
@@ -210,7 +210,7 @@ export default function Events() {
           </div> :
 
         <motion.div
-          className="grid gap-2"
+          className="grid gap-2 pb-6"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.25 }}>
