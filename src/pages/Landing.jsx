@@ -30,10 +30,10 @@ export default function Landing() {
       >
         {/* Logo / Icon */}
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
-          <span className="text-2xl font-black text-primary tracking-tighter">AC</span>
+          <span className="text-2xl font-black text-primary tracking-tighter">Cr</span>
         </div>
 
-        <h1 className="text-2xl font-bold text-foreground mb-1 tracking-tight">ACコンサート管理</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-1 tracking-tight">Crewly</h1>
         <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
           スタッフ配置・アナウンス・タスク管理を<br />一元化するコンサート運営システム
         </p>

@@ -54,11 +54,11 @@ export default function Login() {
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
-          <span className="text-2xl font-black text-primary tracking-tighter">AC</span>
+          <span className="text-2xl font-black text-primary tracking-tighter">Cr</span>
         </div>
 
         <h1 className="text-2xl font-bold text-foreground mb-1 tracking-tight">ログイン</h1>
-        <p className="text-sm text-muted-foreground mb-8">ACコンサート管理システム</p>
+        <p className="text-sm text-muted-foreground mb-8">Crewly - コンサート運営システム</p>
 
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
           <div className="text-left">
