@@ -60,10 +60,11 @@ export default function StaffPortal() {
       const staff = allStaff[0];
       setStaffName(staff.name);
 
-      // Get active events (準備中 or 開催中)
+      // Get today's events (status === '開催中' AND date === today)
       const allEvents = await base44.entities.Event.list("-date", 50);
+      const today = new Date().toISOString().split("T")[0];
       const activeEvents = allEvents.filter(
-        (e) => e.status === "準備中" || e.status === "開催中"
+        (e) => e.status === "開催中" && e.date === today
       ).sort((a, b) => {
         if (!a.date && !b.date) return 0;
         if (!a.date) return 1;
@@ -286,8 +287,7 @@ export default function StaffPortal() {
             animate={{ opacity: 1 }}
           >
             <MapPin className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-sm font-medium text-muted-foreground">現在担当するポジションがありません</p>
-            <p className="text-xs text-muted-foreground mt-1">開催中・準備中のイベントへの配置をご確認ください</p>
+            <p className="text-sm font-medium text-muted-foreground">登録されているデータがありません</p>
             <Button variant="outline" size="sm" className="mt-4 gap-1.5" onClick={() => authenticate(acastId)}>
               <RefreshCw className="w-3.5 h-3.5" />再読み込み
             </Button>
