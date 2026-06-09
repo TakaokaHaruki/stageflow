@@ -29,21 +29,9 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
   const location = useLocation();
 
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    }
-    // auth_required: fall through to render routes (Landing/Login/etc. handle unauthenticated state)
+  // Handle authentication errors (only for user_not_registered)
+  if (authError?.type === 'user_not_registered') {
+    return <UserNotRegisteredError />;
   }
 
   // Unapproved users see the pending approval screen
@@ -69,10 +57,12 @@ const AuthenticatedApp = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           
-          {/* Protected app routes */}
+          {/* Public pages - accessible without login */}
+          <Route path="/" element={<StaffPortal />} />
+          <Route path="/home" element={<Landing />} />
+          
+          {/* Protected app routes - require login */}
           <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-            <Route path="/" element={<StaffPortal />} />
-            <Route path="/home" element={<Landing />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:eventId" element={<EventDetail />} />
           </Route>
