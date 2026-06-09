@@ -6,7 +6,8 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn, ArrowLeft, Globe, Lock, ShieldCheck } from "lucide-react";
+import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn, Globe, Lock, ShieldCheck } from "lucide-react";
+import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import AdminUserModal from "@/components/AdminUserModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -141,11 +142,7 @@ export default function Events() {
       {/* Sticky Header */}
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-5xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
-          {isGuest && (
-            <Link to="/home" className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-muted transition-colors shrink-0 text-muted-foreground hover:text-foreground" aria-label="ホームへ戻る">
-              <ArrowLeft className="w-4 h-4" />
-            </Link>
-          )}
+          {isGuest && <BackButton to="/home" label="ホームへ戻る" />}
           <CrewlyLogo className="mr-1" />
           <h1 className="text-base font-bold text-foreground tracking-tight flex-1 min-w-0 truncate">イベント一覧</h1>
           <div className="flex items-center gap-1.5 shrink-0">

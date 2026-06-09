@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Paperclip, FileText } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Paperclip, FileText } from "lucide-react";
+import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
 import PositionTypeManagement from "@/components/PositionTypeManagement";
@@ -96,9 +97,7 @@ export default function EventDetail() {
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
           <CrewlyLogo className="mr-1 hidden sm:flex" />
-          <Link to="/events" className="relative z-[100] flex items-center justify-center w-11 h-11 rounded-lg hover:bg-muted transition-colors shrink-0" aria-label="戻る">
-            <ChevronLeft className="w-6 h-6" />
-          </Link>
+          <BackButton to="/events" label="イベント一覧へ戻る" />
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-2 min-w-0">
               <h1 className="font-bold text-sm leading-snug truncate shrink-0">{event.name}</h1>
