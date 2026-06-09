@@ -141,14 +141,21 @@ export default function Events() {
       {/* Sticky Header */}
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-5xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
+          {isGuest && (
+            <Link to="/home" className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-muted transition-colors shrink-0 text-muted-foreground hover:text-foreground" aria-label="ホームへ戻る">
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+          )}
           <CrewlyLogo className="mr-1" />
           <h1 className="text-base font-bold text-foreground tracking-tight flex-1 min-w-0 truncate">イベント一覧</h1>
           <div className="flex items-center gap-1.5 shrink-0">
-            <Button onClick={() => {setEditingEvent(null);setShowModal(true);}} className="gap-1 select-none" size="sm" disabled={!canEdit}>
-              <Plus className="w-3.5 h-3.5" />
-              新規
-            </Button>
-            {role === "admin" && (
+            {!isGuest && (
+              <Button onClick={() => {setEditingEvent(null);setShowModal(true);}} className="gap-1 select-none" size="sm" disabled={!canEdit}>
+                <Plus className="w-3.5 h-3.5" />
+                新規
+              </Button>
+            )}
+            {!isGuest && role === "admin" && (
               <Button onClick={() => setShowAdminModal(true)} variant="outline" size="sm" className="gap-1 select-none">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 管理者設定
@@ -242,33 +249,34 @@ export default function Events() {
                     </div>
                   </div>
                   <div className="flex items-center gap-0.5 shrink-0">
-                    {/* Guest visibility toggle */}
-                    <button
-                      onClick={(e) => handleToggleVisibility(e, event)}
-                      disabled={!canManageVisibility}
-                      className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[11px] font-medium transition-colors select-none
-                        ${isEventPublic(event)
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-slate-100 text-slate-500 hover:bg-slate-200"}
-                        disabled:pointer-events-none disabled:opacity-50`}
-                    >
-                      {isEventPublic(event) ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
-                      {isEventPublic(event) ? "公開中" : "非公開"}
-                    </button>
-                    <button
-                  onClick={(e) => handleEdit(e, event)}
-                  disabled={!canEdit}
-                  className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none">
-                  
-                       <Pencil className="w-3 h-3" />
-                     </button>
-                     <button
-                  onClick={(e) => handleDelete(e, event.id, event.name)}
-                  disabled={!canEdit}
-                  className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none">
-                  
-                       <Trash2 className="w-3 h-3" />
-                     </button>
+                    {!isGuest && (
+                      <>
+                        <button
+                          onClick={(e) => handleToggleVisibility(e, event)}
+                          disabled={!canManageVisibility}
+                          className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[11px] font-medium transition-colors select-none
+                            ${isEventPublic(event)
+                              ? "bg-green-100 text-green-700 hover:bg-green-200"
+                              : "bg-slate-100 text-slate-500 hover:bg-slate-200"}
+                            disabled:pointer-events-none disabled:opacity-50`}
+                        >
+                          {isEventPublic(event) ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+                          {isEventPublic(event) ? "公開中" : "非公開"}
+                        </button>
+                        <button
+                          onClick={(e) => handleEdit(e, event)}
+                          disabled={!canEdit}
+                          className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none">
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => handleDelete(e, event.id, event.name)}
+                          disabled={!canEdit}
+                          className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none">
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </>
+                    )}
                     <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
                 </div>

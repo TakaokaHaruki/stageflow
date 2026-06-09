@@ -125,7 +125,7 @@ export default function Login() {
           </span>
         </div>
 
-        <Link to="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mt-5 transition-colors">
+        <Link to="/home" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mt-5 transition-colors">
           <ArrowLeft className="w-4 h-4" />
           トップへ戻る
         </Link>
