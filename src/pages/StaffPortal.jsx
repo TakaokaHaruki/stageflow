@@ -213,7 +213,7 @@ export default function StaffPortal() {
         >
           <div className="flex flex-col items-center mb-8">
             <div onClick={handleLogoClick} className="cursor-pointer">
-              <CrewlyLogo />
+              <CrewlyLogo className="scale-75" />
             </div>
             <p className="mt-3 text-sm text-muted-foreground">スタッフポータル</p>
           </div>
@@ -303,7 +303,7 @@ export default function StaffPortal() {
       <div className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <div>
-            <CrewlyLogo />
+            <CrewlyLogo className="scale-75" />
           </div>
           <div className="flex items-center gap-2">
             <div className="text-right">
