@@ -169,7 +169,7 @@ export default function EventDetail() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-3 sm:px-5 py-1.5 pb-16 sm:pb-8">
+      <div className="max-w-6xl mx-auto px-1.5 py-1.5 pb-16 sm:pb-8">
         <UserRestrictionBanner role={role} />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
