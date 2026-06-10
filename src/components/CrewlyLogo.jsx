@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 
-export default function CrewlyLogo({ className = "" }) {
+export default function CrewlyLogo({ className = "", disableLink = false }) {
+  const Wrapper = disableLink ? "div" : Link;
+  const wrapperProps = disableLink
+    ? { className: `flex items-center gap-1 select-none shrink-0 group ${className}` }
+    : { to: "/", className: `flex items-center gap-1 select-none shrink-0 group ${className}`, "aria-label": "Crewly トップへ" };
   return (
-    <Link
-      to="/"
-      className={`flex items-center gap-1 select-none shrink-0 group ${className}`}
-      aria-label="Crewly トップへ"
-    >
+    <Wrapper {...wrapperProps}>
       {/* SVG mark: "C" with a pin dot at the tail */}
       <svg
         width="26"
@@ -37,6 +37,6 @@ export default function CrewlyLogo({ className = "" }) {
       <span className="text-[14px] font-black tracking-tight leading-none text-foreground group-hover:opacity-80 transition-opacity">
         Crew<span className="text-primary">ly</span>
       </span>
-    </Link>
+    </Wrapper>
   );
 }

@@ -23,9 +23,8 @@ export default function EventScreenSaver({ event, onExit }) {
   const [currentTime, setCurrentTime] = useState(formatCurrentTime);
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const wakeLockRef = useRef(null);
-  const logoTapCountRef = useRef(0);
-  const logoTapResetTimerRef = useRef(null);
-  const isExitingRef = useRef(false);
+  const tapCountRef = useRef(0);
+  const tapResetTimerRef = useRef(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => setCurrentTime(formatCurrentTime()), 1_000);
@@ -60,7 +59,7 @@ export default function EventScreenSaver({ event, onExit }) {
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  useEffect(() => () => window.clearTimeout(logoTapResetTimerRef.current), []);
+  useEffect(() => () => window.clearTimeout(tapResetTimerRef.current), []);
 
   const toggleFullscreen = async () => {
     try {
@@ -76,31 +75,24 @@ export default function EventScreenSaver({ event, onExit }) {
 
   const visibleTimes = EVENT_TIMES.filter(({ key }) => event[key]);
 
-  const handleLogoPointerDown = async (pointerEvent) => {
-    if (isExitingRef.current) return;
+  const handleLogoTap = () => {
+    tapCountRef.current += 1;
+    if (tapResetTimerRef.current) window.clearTimeout(tapResetTimerRef.current);
 
-    pointerEvent.preventDefault();
-    pointerEvent.stopPropagation();
-
-    logoTapCountRef.current += 1;
-    window.clearTimeout(logoTapResetTimerRef.current);
-
-    if (logoTapCountRef.current >= 5) {
-      isExitingRef.current = true;
-      logoTapCountRef.current = 0;
-      window.clearTimeout(logoTapResetTimerRef.current);
+    if (tapCountRef.current >= 5) {
+      tapCountRef.current = 0;
       try {
-        if (document.fullscreenElement) await document.exitFullscreen();
+        if (document.fullscreenElement) document.exitFullscreen();
       } catch {
-        // Continue returning to the event even if fullscreen exit is blocked.
+        // ignore
       }
       onExit();
       return;
     }
 
-    logoTapResetTimerRef.current = window.setTimeout(() => {
-      logoTapCountRef.current = 0;
-    }, 5_000);
+    tapResetTimerRef.current = window.setTimeout(() => {
+      tapCountRef.current = 0;
+    }, 2_000);
   };
 
   return (
@@ -120,10 +112,9 @@ export default function EventScreenSaver({ event, onExit }) {
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-1 flex-col items-center justify-center gap-8 px-4 py-16 sm:gap-12">
         <div
           className="flex h-20 touch-none select-none items-center justify-center sm:h-24 cursor-pointer"
-          onPointerDown={handleLogoPointerDown}
-          onClick={(e) => e.preventDefault()}
+          onClick={handleLogoTap}
         >
-          <CrewlyLogo className="scale-[2.8] sm:scale-[3.6]" />
+          <CrewlyLogo disableLink className="scale-[2.8] sm:scale-[3.6]" />
         </div>
 
         <div className="text-center">
