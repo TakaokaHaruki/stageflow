@@ -163,27 +163,24 @@ export default function Events() {
                 <LogIn className="w-3 h-3" />ログイン
               </Button>
             ) : currentUser ? (
-              <div className="flex items-center gap-1.5 bg-muted rounded-md px-1.5 py-0.5 group">
-                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+              <div className="flex h-7 max-w-44 items-center gap-1 rounded-md bg-muted px-1">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20">
                   <User className="w-3 h-3 text-primary" />
                 </div>
-                <div className="text-right hidden sm:block">
-                  <div className="text-xs font-medium leading-none truncate">{getUserDisplayName(currentUser)}</div>
-                  {getUserDisplayName(currentUser) !== currentUser.email && <div className="text-[11px] text-muted-foreground leading-none mt-0.5 truncate">{currentUser.email}</div>}
-                </div>
-                <div className="flex gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
+                <div className="flex shrink-0 gap-0.5">
                   <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
                   <button
                     onClick={() => setConfirmDeleteAccount(true)}
-                    className="flex items-center justify-center w-9 h-9 rounded text-muted-foreground hover:text-destructive transition-colors select-none"
+                    className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive select-none"
                     title="アカウント削除">
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-3 w-3" />
                   </button>
                   <button
                     onClick={() => base44.auth.logout()}
-                    className="flex items-center justify-center w-9 h-9 rounded text-muted-foreground hover:text-destructive transition-colors select-none"
+                    className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive select-none"
                     title="ログアウト">
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="h-3 w-3" />
                   </button>
                 </div>
               </div>

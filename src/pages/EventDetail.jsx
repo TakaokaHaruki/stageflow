@@ -37,6 +37,7 @@ export default function EventDetail() {
   const { eventId } = useParams();
   const [tab, setTab] = useTabNavigation("staff");
   const [tabResetKey, setTabResetKey] = useState(0);
+  const [showScreenSaver, setShowScreenSaver] = useState(false);
   const [currentTime, setCurrentTime] = useState(() =>
     new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit' })
   );
@@ -90,7 +91,6 @@ export default function EventDetail() {
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
     { id: "notice", label: "連絡事項", icon: Bell },
     { id: "files", label: "ファイル共有", icon: Paperclip },
-    { id: "screensaver", label: "スクリーンセーバー", icon: Monitor },
     ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
@@ -134,23 +134,29 @@ export default function EventDetail() {
               </div>
             )}
           </div>
+          <button
+            type="button"
+            onClick={() => setShowScreenSaver(true)}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="スクリーンセーバー"
+            aria-label="スクリーンセーバーを表示"
+          >
+            <Monitor className="h-3.5 w-3.5" />
+          </button>
           {currentUser ? (
-            <div className="flex items-center gap-1.5 bg-muted rounded-md px-1.5 py-0.5 shrink-0">
-              <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+            <div className="flex h-7 max-w-36 shrink-0 items-center gap-1 rounded-md bg-muted px-1">
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20">
                 <User className="w-3 h-3 text-primary" />
               </div>
-              <div className="text-right hidden sm:block">
-                <div className="text-xs font-medium leading-none">{getUserDisplayName(currentUser)}</div>
-                {getUserDisplayName(currentUser) !== currentUser.email && <div className="text-[11px] text-muted-foreground leading-none mt-0.5">{currentUser.email}</div>}
-              </div>
+              <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
               <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
               <button
                 onClick={() => base44.auth.logout()}
-                className="ml-1 flex items-center justify-center w-9 h-9 rounded text-muted-foreground hover:text-destructive transition-colors"
+                className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive"
                 title="ログアウト"
                 aria-label="ログアウト"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="h-3 w-3" />
               </button>
             </div>
           ) : (
@@ -213,8 +219,8 @@ export default function EventDetail() {
         </AnimatePresence>
       </div>
 
-      {tab === "screensaver" && (
-        <EventScreenSaver event={event} onExit={() => setTab("staff", { replace: true, reset: true })} />
+      {showScreenSaver && (
+        <EventScreenSaver event={event} onExit={() => setShowScreenSaver(false)} />
       )}
 
       {/* Bottom Tab Navigation - Mobile Only */}
