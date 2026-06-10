@@ -80,12 +80,12 @@ export default function EventScreenSaver({ event, onExit }) {
   const visibleTimes = EVENT_TIMES.filter(({ key }) => event[key]);
 
   return (
-    <section className="fixed inset-0 z-[70] flex min-h-screen flex-col overflow-y-auto bg-slate-950 text-white safe-area-top safe-area-bottom">
+    <section className="fixed inset-0 z-[70] flex min-h-screen flex-col overflow-y-auto bg-background text-foreground safe-area-top safe-area-bottom">
       <div className="absolute right-3 top-3 z-10 flex gap-2">
         <button
           type="button"
           onClick={toggleFullscreen}
-          className="flex h-10 w-10 items-center justify-center rounded-md border border-white/15 bg-white/5 text-white/70 backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white"
+          className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-md transition-colors hover:bg-muted hover:text-foreground"
           aria-label={isFullscreen ? "全画面表示を終了" : "全画面表示"}
           title={isFullscreen ? "全画面表示を終了" : "全画面表示"}
         >
@@ -94,7 +94,7 @@ export default function EventScreenSaver({ event, onExit }) {
         <button
           type="button"
           onClick={onExit}
-          className="flex h-10 w-10 items-center justify-center rounded-md border border-white/15 bg-white/5 text-white/70 backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white"
+          className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-md transition-colors hover:bg-muted hover:text-foreground"
           aria-label="スクリーンセーバーを終了"
           title="スクリーンセーバーを終了"
         >
@@ -103,10 +103,10 @@ export default function EventScreenSaver({ event, onExit }) {
       </div>
 
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-1 flex-col items-center justify-center gap-8 px-4 py-16 sm:gap-12">
-        <CrewlyLogo className="pointer-events-none scale-[2.2] [&_span]:!text-white sm:scale-[3]" />
+        <CrewlyLogo />
 
         <div className="text-center">
-          <div className="mb-1 text-xs font-medium text-white/50 sm:text-sm">現在時刻</div>
+          <div className="mb-1 text-xs font-medium text-muted-foreground sm:text-sm">現在時刻</div>
           <time
             className="font-mono text-6xl font-bold tabular-nums tracking-normal sm:text-8xl lg:text-9xl"
             dateTime={currentTime}
@@ -118,15 +118,15 @@ export default function EventScreenSaver({ event, onExit }) {
         {visibleTimes.length > 0 && (
           <div className="grid w-full max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">
             {visibleTimes.map(({ key, endKey, label }) => (
-              <div key={key} className="flex min-h-24 items-center justify-center rounded-md border border-white/15 bg-white/5 px-2 py-4 sm:min-h-32">
-                <EventTimeDisplay
-                  eventDate={event.date}
-                  eventTime={event[key]}
-                  endTime={event[endKey]}
-                  label={label}
-                  className="flex flex-col items-center gap-1 text-xl font-semibold text-white sm:text-2xl [&_time]:text-3xl [&_time]:font-bold [&_time]:tabular-nums sm:[&_time]:text-4xl"
-                />
-              </div>
+              <EventTimeDisplay
+                key={key}
+                eventDate={event.date}
+                eventTime={event[key]}
+                endTime={event[endKey]}
+                label={label}
+                region
+                className="flex min-h-24 w-full flex-col items-center justify-center gap-1 rounded-md border border-border bg-card px-2 py-4 text-xl font-semibold sm:min-h-32 sm:text-2xl [&_time]:text-3xl [&_time]:font-bold [&_time]:tabular-nums sm:[&_time]:text-4xl"
+              />
             ))}
           </div>
         )}

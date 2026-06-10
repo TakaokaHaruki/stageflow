@@ -35,7 +35,13 @@ const PHASE_CLASSES = {
   green:  "animate-pulse rounded bg-green-200 px-1 font-semibold text-green-900 ring-1 ring-green-500 motion-reduce:animate-none dark:bg-green-500/30 dark:text-green-100",
 };
 
-export default function EventTimeDisplay({ eventDate, eventTime, endTime, label, className = "" }) {
+const REGION_PHASE_CLASSES = {
+  yellow: "animate-pulse !border-amber-500 !bg-amber-200 !text-amber-950 ring-2 ring-amber-500 motion-reduce:animate-none dark:!bg-amber-500/30 dark:!text-amber-100",
+  red:    "animate-pulse !border-red-500 !bg-red-200 !text-red-900 ring-2 ring-red-500 motion-reduce:animate-none dark:!bg-red-500/30 dark:!text-red-100",
+  green:  "animate-pulse !border-green-500 !bg-green-200 !text-green-900 ring-2 ring-green-500 motion-reduce:animate-none dark:!bg-green-500/30 dark:!text-green-100",
+};
+
+export default function EventTimeDisplay({ eventDate, eventTime, endTime, label, className = "", region = false }) {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -44,7 +50,7 @@ export default function EventTimeDisplay({ eventDate, eventTime, endTime, label,
   }, []);
 
   const phase = getBlinkPhase(eventDate, eventTime, endTime, now);
-  const phaseClass = phase ? PHASE_CLASSES[phase] : "";
+  const phaseClass = phase ? (region ? REGION_PHASE_CLASSES[phase] : PHASE_CLASSES[phase]) : "";
 
   const ariaLabel = phase
     ? `${label} ${eventTime}${phase === "yellow" ? " まもなくです" : phase === "red" ? " 直前です" : phase === "green" ? " 開始中" : ""}`
