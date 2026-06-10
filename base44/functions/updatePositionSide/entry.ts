@@ -107,21 +107,14 @@ Deno.serve(async (req) => {
         });
       }
 
-      // MapTemplate (side settings) を保存 - 既存のみ更新
+      // PositionSideSettings に保存 (upsert)
       if (sideSettings) {
-        const templateName = `side_settings_${eventId}`;
-        const existingTemplates = await base44.asServiceRole.entities.MapTemplate.filter({ name: templateName });
-        const existing = existingTemplates?.sort((a, b) =>
-          new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0)
-        )[0] || null;
-
+        const existing = (await base44.asServiceRole.entities.PositionSideSettings.filter({ event_id: eventId }))[0];
+        const payload = { ...sideSettings, event_id: eventId, updated_at: new Date().toISOString() };
         if (existing?.id) {
-          const templatePayload = {
-            name: templateName,
-            description: 'StageFlow position side settings',
-            areas: [{ ...sideSettings, updated_at: new Date().toISOString() }],
-          };
-          await base44.asServiceRole.entities.MapTemplate.update(existing.id, templatePayload);
+          await base44.asServiceRole.entities.PositionSideSettings.update(existing.id, payload);
+        } else {
+          await base44.asServiceRole.entities.PositionSideSettings.create(payload);
         }
       }
 

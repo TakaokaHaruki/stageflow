@@ -1,12 +1,6 @@
 import { appParams } from "@/lib/app-params";
 
-export const POSITION_SIDE_TEMPLATE_PREFIX = "__position_side__";
-
 const positionSideCache = new Map();
-
-export function getPositionSideTemplateName(eventId) {
-  return `${POSITION_SIDE_TEMPLATE_PREFIX}:${eventId}`;
-}
 
 function getPositionSideCacheKey(eventId) {
   return `stageflow:position_side:${eventId}`;
@@ -39,7 +33,7 @@ function readCachedPositionSideSettings(eventId) {
       return settings;
     }
   } catch {
-    // Ignore corrupt local cache and fall back to server data.
+    // Ignore corrupt local cache.
   }
   return normalizePositionSideSettings();
 }
@@ -58,47 +52,50 @@ export function rememberPositionSideSettings(eventId, settings) {
   return normalized;
 }
 
-function getNewestTemplate(records, name) {
-  return (records || [])
-    .filter((item) => item.name === name)
-    .sort((a, b) => {
-      const aDate = new Date(a.updated_date || a.created_date || 0).getTime();
-      const bDate = new Date(b.updated_date || b.created_date || 0).getTime();
-      return bDate - aDate;
-    })[0] || null;
-}
-
-async function loadPositionSideSettingsFromRest(eventId) {
+// Migrate legacy MapTemplate "__position_side__:eventId" record into PositionSideSettings once.
+async function migrateFromMapTemplate(base44, eventId) {
   if (!appParams.appId) return null;
-  const response = await fetch(`/api/apps/${appParams.appId}/entities/MapTemplate`);
-  if (!response.ok) throw new Error(`MapTemplate request failed: ${response.status}`);
-  const records = await response.json();
-  return getNewestTemplate(records, getPositionSideTemplateName(eventId));
+  try {
+    const legacyName = `__position_side__:${eventId}`;
+    const response = await fetch(`/api/apps/${appParams.appId}/entities/MapTemplate`);
+    if (!response.ok) return null;
+    const records = await response.json();
+    const legacy = (records || [])
+      .filter((r) => r.name === legacyName)
+      .sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0))[0];
+    if (!legacy) return null;
+    const settings = normalizePositionSideSettings(legacy?.areas?.[0]);
+    if (!hasPositionSideSettings(settings)) return null;
+    // Save into new entity
+    const payload = { ...settings, event_id: eventId, updated_at: new Date().toISOString() };
+    await base44.entities.PositionSideSettings.create(payload);
+    return settings;
+  } catch {
+    return null;
+  }
 }
 
 export async function loadPositionSideSettings(base44, eventId) {
-  const name = getPositionSideTemplateName(eventId);
   try {
-    const restRecord = await loadPositionSideSettingsFromRest(eventId);
-    if (restRecord) return rememberPositionSideSettings(eventId, restRecord?.areas?.[0]);
+    const records = await base44.entities.PositionSideSettings.filter({ event_id: eventId });
+    const record = (records || []).sort((a, b) =>
+      new Date(b.updated_at || b.updated_date || 0) - new Date(a.updated_at || a.updated_date || 0)
+    )[0];
+    if (record && hasPositionSideSettings(normalizePositionSideSettings(record))) {
+      return rememberPositionSideSettings(eventId, record);
+    }
   } catch (error) {
-    console.warn("Position side settings REST read failed; trying SDK.", error);
+    console.warn("PositionSideSettings SDK read failed; trying migration.", error);
   }
 
+  // Transparent one-time migration from legacy MapTemplate storage
   try {
-    const [filteredResult, listResult] = await Promise.allSettled([
-      base44.entities.MapTemplate.filter({ name }),
-      base44.entities.MapTemplate.list(),
-    ]);
-    const fromFilter = filteredResult.status === "fulfilled" ? getNewestTemplate(filteredResult.value, name) : null;
-    const fromList = listResult.status === "fulfilled"
-      ? getNewestTemplate(listResult.value, name)
-      : null;
-    const record = fromFilter || fromList;
-    if (record) return rememberPositionSideSettings(eventId, record?.areas?.[0]);
-  } catch (error) {
-    console.warn("Position side settings SDK read failed; using cached settings.", error);
+    const migrated = await migrateFromMapTemplate(base44, eventId);
+    if (migrated) return rememberPositionSideSettings(eventId, migrated);
+  } catch {
+    // Fall through to cache
   }
+
   return readCachedPositionSideSettings(eventId);
 }
 

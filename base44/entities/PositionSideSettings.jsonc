@@ -1,0 +1,61 @@
+{
+  "name": "PositionSideSettings",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "\u30a4\u30d9\u30f3\u30c8 ID"
+    },
+    "position_types": {
+      "type": "object",
+      "description": "PositionType\u540d\u2192split_by_side boolean\u306e\u30de\u30c3\u30d7",
+      "default": {}
+    },
+    "positions": {
+      "type": "object",
+      "description": "positionId\u2192{split_by_side, staff_names_kamite, staff_names_shimote}\u306e\u30de\u30c3\u30d7",
+      "default": {}
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u66f4\u65b0\u65e5\u6642"
+    }
+  },
+  "required": [
+    "event_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    }
+  }
+}

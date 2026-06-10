@@ -14,7 +14,6 @@ import {
   applyPositionSideSettingsToTypes,
   loadPositionSideSettings,
   rememberPositionSideSettings,
-  getPositionSideTemplateName,
   normalizePositionSideSettings,
 } from "@/lib/positionSideSettings";
 import ConfirmDialog from "@/components/ConfirmDialog";
