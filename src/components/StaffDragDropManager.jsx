@@ -28,6 +28,7 @@ import PresetSelector from "@/components/PresetSelector";
 import { HiddenInEditMode, ModeLoadingPlaceholder, ModeVisibilityControls, useResolvedEventMode } from "@/components/ModeVisibilityControls";
 import AutoAssignModal from "@/components/AutoAssignModal";
 import BulkDeleteDialog from "@/components/BulkDeleteDialog";
+import SectionHeader from "@/components/SectionHeader";
 
 export default function StaffDragDropManager({ eventId }) {
   const queryClient = useQueryClient();
@@ -453,12 +454,11 @@ export default function StaffDragDropManager({ eventId }) {
 
   return (
     <div>
-      <div className="flex flex-col gap-1.5 mb-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-bold flex items-center gap-1.5"><ClipboardList className="w-4 h-4 text-primary" />配置表</h2>
-
-        </div>
-        <div className="flex items-center gap-1.5 justify-end flex-wrap sm:flex-nowrap sm:ml-auto">
+      <SectionHeader
+        icon={ClipboardList}
+        title="配置表"
+        actions={(
+          <>
           <ModeVisibilityControls
             eventId={eventId}
             field="assignment_mode"
@@ -475,8 +475,9 @@ export default function StaffDragDropManager({ eventId }) {
           <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 shrink-0" onClick={handleExportPDF} disabled={!isVisibilityReady || hideForUser || exportingPDF || positions.length === 0}>
             <Download className="w-3 h-3" />{exportingPDF ? '...' : 'PDF'}
           </Button>
-        </div>
-      </div>
+          </>
+        )}
+      />
 
       {!isVisibilityReady ? (
         <ModeLoadingPlaceholder />

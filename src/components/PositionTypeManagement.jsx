@@ -15,6 +15,7 @@ import {
   rememberPositionSideSettings,
 } from "@/lib/positionSideSettings";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import SectionHeader from "@/components/SectionHeader";
 
 const PRESET_COLORS = [
   "#6366f1", "#3b82f6", "#10b981", "#f59e0b",
@@ -182,10 +183,11 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
       {section === "positions" && (
       <>
       {/* Position type section */}
-      <div className="mb-1">
-        <h3 className="text-xs font-bold flex items-center gap-1.5 mb-1.5"><Settings className="w-3.5 h-3.5 text-primary" />ポジション設定</h3>
-        <p className="text-[10px] text-muted-foreground mb-2">プリセット適用時に使用されるポジション一覧です。</p>
-      </div>
+      <SectionHeader
+        icon={Settings}
+        title="ポジション設定"
+        subtitle="プリセット適用時に使用されるポジション一覧です。"
+      />
 
       {/* Add form */}
       <div className="bg-card border border-border rounded-xl p-2.5 mb-2">

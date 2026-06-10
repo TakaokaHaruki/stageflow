@@ -9,6 +9,7 @@ import { ja } from "date-fns/locale";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
+import SectionHeader from "@/components/SectionHeader";
 
 const ROLE_OPTIONS = [
   { value: "admin", label: "管理者" },
@@ -349,16 +350,15 @@ export default function SharedFileManager({ eventId }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-sm font-bold flex items-center gap-1.5">
-          <Paperclip className="w-4 h-4 text-primary" />ファイル共有
-        </h2>
-        {currentUser && (
+      <SectionHeader
+        icon={Paperclip}
+        title="ファイル共有"
+        actions={currentUser && (
           <Button size="sm" className="gap-1 h-8 text-xs px-2" onClick={() => setShowForm(true)}>
             <Plus className="w-3 h-3" />追加
           </Button>
         )}
-      </div>
+      />
 
       {/* Search */}
       <div className="relative mb-2">

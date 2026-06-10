@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { Users, Trash2, Pencil, Check, X } from "lucide-react";
+import { Trash2, Pencil, Check, X } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
 const ROLE_OPTIONS = [
@@ -109,11 +109,7 @@ export default function UserRoleManager() {
 
   return (
     <div>
-      <div className="flex items-center gap-1.5 mb-2">
-        <Users className="w-3.5 h-3.5 text-primary" />
-        <h3 className="text-xs font-bold">ユーザー管理</h3>
-        <span className="text-[10px] text-muted-foreground">（{users.length}名）</span>
-      </div>
+      <div className="mb-2 text-xs text-muted-foreground">{users.length}名</div>
       <div className="border border-border rounded-lg overflow-hidden divide-y divide-border">
         {users.map((u) => (
           <div key={u.id} className="bg-card px-2.5 py-2 flex items-center gap-2">

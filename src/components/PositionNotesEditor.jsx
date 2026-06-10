@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { FileText } from "lucide-react";
+import SectionHeader from "@/components/SectionHeader";
 
 const SLOT_ORDER = ["開場中", "開演中", "終演後"];
 const SLOT_COLORS = {
@@ -68,26 +69,42 @@ export default function PositionNotesEditor({ eventId }) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <div className="w-6 h-6 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div>
+        <SectionHeader
+          icon={FileText}
+          title="ポジション説明"
+          subtitle="各ポジションの説明テキストを入力してください。スタッフポータルで担当スタッフに表示されます。"
+        />
+        <div className="flex justify-center py-12">
+          <div className="w-6 h-6 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
+        </div>
       </div>
     );
   }
 
   if (positions.length === 0) {
     return (
-      <div className="text-center py-12">
-        <FileText className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground">ポジションがまだ登録されていません</p>
+      <div>
+        <SectionHeader
+          icon={FileText}
+          title="ポジション説明"
+          subtitle="各ポジションの説明テキストを入力してください。スタッフポータルで担当スタッフに表示されます。"
+        />
+        <div className="text-center py-12">
+          <FileText className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">ポジションがまだ登録されていません</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-2 space-y-4">
-      <p className="text-xs text-muted-foreground px-1">
-        各ポジションの説明テキストを入力してください。スタッフポータルで担当スタッフに表示されます。
-      </p>
+    <div className="space-y-4">
+      <SectionHeader
+        icon={FileText}
+        title="ポジション説明"
+        subtitle="各ポジションの説明テキストを入力してください。スタッフポータルで担当スタッフに表示されます。"
+      />
       {SLOT_ORDER.map((slot) => {
         const slotPositions = positions.filter((p) => p.time_slot === slot);
         if (slotPositions.length === 0) return null;

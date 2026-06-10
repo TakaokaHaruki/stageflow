@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
@@ -16,6 +16,7 @@ import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { HiddenInEditMode, ModeLoadingPlaceholder, ModeVisibilityControls, useResolvedEventMode } from "@/components/ModeVisibilityControls";
 import { useOperationLog } from "@/hooks/useOperationLog";
+import SectionHeader from "@/components/SectionHeader";
 
 export default function StaffManagement({ eventId }) {
   const [name, setName] = useState("");
@@ -189,14 +190,12 @@ export default function StaffManagement({ eventId }) {
 
   return (
     <div>
-      <div className="flex flex-col gap-1.5 mb-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-bold flex items-center gap-1.5"><UserCog className="w-4 h-4 text-primary" />スタッフ管理</h2>
-          {isVisibilityReady && !hideForUser && (
-            <div className="text-xs font-medium text-foreground mt-0.5">登録スタッフ数：{staffList.length}名</div>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5 justify-end flex-wrap sm:flex-nowrap sm:ml-auto">
+      <SectionHeader
+        icon={UserCog}
+        title="スタッフ管理"
+        subtitle={isVisibilityReady && !hideForUser ? `登録スタッフ数：${staffList.length}名` : null}
+        actions={(
+          <>
           <ModeVisibilityControls
             eventId={eventId}
             field="staff_management_mode"
@@ -213,8 +212,9 @@ export default function StaffManagement({ eventId }) {
           >
             <Download className="w-3 h-3" />点呼表から取得
           </Button>
-        </div>
-      </div>
+          </>
+        )}
+      />
 
       {!isVisibilityReady ? (
         <ModeLoadingPlaceholder />

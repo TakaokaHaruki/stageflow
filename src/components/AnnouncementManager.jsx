@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { useUserRole } from "@/hooks/useUserRole";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { useOperationLog } from "@/hooks/useOperationLog";
+import SectionHeader from "@/components/SectionHeader";
 
 const PRIORITY_STYLES = {
   "通常": { badge: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700", icon: Bell },
@@ -506,16 +507,15 @@ export default function AnnouncementManager({ eventId }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-sm font-bold flex items-center gap-1.5">
-          <Megaphone className="w-4 h-4 text-primary" />連絡事項
-        </h2>
-        {role !== null && canEdit && (
+      <SectionHeader
+        icon={Megaphone}
+        title="連絡事項"
+        actions={role !== null && canEdit && (
           <Button size="sm" onClick={() => setShowForm(true)} className="gap-1 h-8 text-xs px-2">
             <Plus className="w-3 h-3" />新規作成
           </Button>
         )}
-      </div>
+      />
 
       {isLoading ? (
         <div className="flex justify-center py-10">

@@ -10,6 +10,7 @@ import { TIME_SLOTS, TIME_SLOT_STYLES } from "@/lib/constants";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
+import SectionHeader from "@/components/SectionHeader";
 
 function SlotPositionSelector({ slot, selectedIds, positionTypes, onChange }) {
   const style = TIME_SLOT_STYLES[slot];
@@ -239,15 +240,16 @@ export default function PositionPresetManager({ eventId }) {
   });
 
   return (
-    <div className="mt-3">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-bold flex items-center gap-1.5"><BookOpen className="w-4 h-4 text-primary" />ポジションプリセット</h2>
-        {isAdmin && !creating && (
-          <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => setCreating(true)}>
+    <div>
+      <SectionHeader
+        icon={BookOpen}
+        title="ポジションプリセット"
+        actions={isAdmin && !creating && (
+          <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2" onClick={() => setCreating(true)}>
             <Plus className="w-3.5 h-3.5" />新規プリセット
           </Button>
         )}
-      </div>
+      />
 
       {creating && (
         <div className="bg-card border border-border rounded-xl p-3 mb-3">
