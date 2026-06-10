@@ -145,19 +145,27 @@ export default function Events() {
         <div className="max-w-5xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
           {isGuest && <BackButton to="/home" label="ホームへ戻る" />}
           <CrewlyLogo className="mr-1" />
-          <h1 className="text-base font-bold text-foreground tracking-tight flex-1 min-w-0 truncate">イベント一覧</h1>
+          <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">イベント一覧</h1>
+          {!isGuest && (
+            <Button onClick={() => {setEditingEvent(null);setShowModal(true);}} className="h-7 shrink-0 gap-1 px-2 text-xs select-none" size="sm" disabled={!canEdit}>
+              <Plus className="w-3.5 h-3.5" />
+              新規
+            </Button>
+          )}
+          <div className="min-w-0 flex-1" />
           <div className="flex items-center gap-1.5 shrink-0">
             <ThemeToggle />
-            {!isGuest && (
-              <Button onClick={() => {setEditingEvent(null);setShowModal(true);}} className="gap-1 select-none" size="sm" disabled={!canEdit}>
-                <Plus className="w-3.5 h-3.5" />
-                新規
-              </Button>
-            )}
             {!isGuest && role === "admin" && (
-              <Button onClick={() => setShowAdminModal(true)} variant="outline" size="sm" className="gap-1 select-none">
+              <Button
+                onClick={() => setShowAdminModal(true)}
+                variant="outline"
+                size="sm"
+                className="h-7 w-7 gap-1 px-0 select-none sm:w-auto sm:px-3"
+                title="管理者設定"
+                aria-label="管理者設定"
+              >
                 <ShieldCheck className="w-3.5 h-3.5" />
-                管理者設定
+                <span className="hidden sm:inline">管理者設定</span>
               </Button>
             )}
             {isGuest ? (

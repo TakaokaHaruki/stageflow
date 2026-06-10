@@ -27,6 +27,7 @@ import CrewlyLogo from "@/components/CrewlyLogo";
 import EventTimeDisplay from "@/components/EventTimeDisplay";
 import EventScreenSaver from "@/components/EventScreenSaver";
 import ThemeToggle from "@/components/ThemeToggle";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -39,6 +40,7 @@ export default function EventDetail() {
   const [tab, setTab] = useTabNavigation("staff");
   const [tabResetKey, setTabResetKey] = useState(0);
   const [showScreenSaver, setShowScreenSaver] = useState(false);
+  const [confirmScreenSaver, setConfirmScreenSaver] = useState(false);
   const [adminSection, setAdminSection] = useState("users");
   const [settingsSection, setSettingsSection] = useState("positions");
   const [currentTime, setCurrentTime] = useState(() =>
@@ -170,7 +172,7 @@ export default function EventDetail() {
           </div>
           <button
             type="button"
-            onClick={() => setShowScreenSaver(true)}
+            onClick={() => setConfirmScreenSaver(true)}
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             title="スクリーンセーバー"
             aria-label="スクリーンセーバーを表示"
@@ -293,6 +295,19 @@ export default function EventDetail() {
 
       {showScreenSaver && (
         <EventScreenSaver event={event} onExit={() => setShowScreenSaver(false)} />
+      )}
+
+      {confirmScreenSaver && (
+        <ConfirmDialog
+          message="スクリーンセーバーを有効にしますか？"
+          confirmLabel="有効にする"
+          confirmVariant="default"
+          onCancel={() => setConfirmScreenSaver(false)}
+          onConfirm={() => {
+            setConfirmScreenSaver(false);
+            setShowScreenSaver(true);
+          }}
+        />
       )}
 
       {/* Bottom Tab Navigation - Mobile Only */}
