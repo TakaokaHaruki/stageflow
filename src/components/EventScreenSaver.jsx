@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Maximize2, Minimize2, X } from "lucide-react";
+import { Maximize2, Minimize2 } from "lucide-react";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import EventTimeDisplay from "@/components/EventTimeDisplay";
 
@@ -23,6 +23,8 @@ export default function EventScreenSaver({ event, onExit }) {
   const [currentTime, setCurrentTime] = useState(formatCurrentTime);
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const wakeLockRef = useRef(null);
+  const logoTapCountRef = useRef(0);
+  const logoTapResetTimerRef = useRef(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => setCurrentTime(formatCurrentTime()), 1_000);
@@ -57,13 +59,7 @@ export default function EventScreenSaver({ event, onExit }) {
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape" && !document.fullscreenElement) onExit();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onExit]);
+  useEffect(() => () => window.clearTimeout(logoTapResetTimerRef.current), []);
 
   const toggleFullscreen = async () => {
     try {
@@ -79,6 +75,24 @@ export default function EventScreenSaver({ event, onExit }) {
 
   const visibleTimes = EVENT_TIMES.filter(({ key }) => event[key]);
 
+  const handleLogoTap = (tapEvent) => {
+    tapEvent.preventDefault();
+    tapEvent.stopPropagation();
+
+    logoTapCountRef.current += 1;
+    window.clearTimeout(logoTapResetTimerRef.current);
+
+    if (logoTapCountRef.current >= 5) {
+      logoTapCountRef.current = 0;
+      onExit();
+      return;
+    }
+
+    logoTapResetTimerRef.current = window.setTimeout(() => {
+      logoTapCountRef.current = 0;
+    }, 3_000);
+  };
+
   return (
     <section className="fixed inset-0 z-[70] flex min-h-screen flex-col overflow-y-auto bg-background text-foreground safe-area-top safe-area-bottom">
       <div className="absolute right-3 top-3 z-10 flex gap-2">
@@ -91,19 +105,12 @@ export default function EventScreenSaver({ event, onExit }) {
         >
           {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
         </button>
-        <button
-          type="button"
-          onClick={onExit}
-          className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-md transition-colors hover:bg-muted hover:text-foreground"
-          aria-label="スクリーンセーバーを終了"
-          title="スクリーンセーバーを終了"
-        >
-          <X className="h-5 w-5" />
-        </button>
       </div>
 
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-1 flex-col items-center justify-center gap-8 px-4 py-16 sm:gap-12">
-        <CrewlyLogo />
+        <div className="flex h-20 touch-manipulation select-none items-center justify-center sm:h-24" onClick={handleLogoTap}>
+          <CrewlyLogo className="pointer-events-none scale-[2.8] sm:scale-[3.6]" />
+        </div>
 
         <div className="text-center">
           <div className="mb-1 text-xs font-medium text-muted-foreground sm:text-sm">現在時刻</div>
