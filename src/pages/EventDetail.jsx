@@ -243,15 +243,15 @@ export default function EventDetail() {
         {isManagementTab && (
         <div className="block border-t border-border/70 bg-muted/40">
           <div className="max-w-6xl mx-auto px-3">
-            <div className="flex gap-1.5 overflow-x-auto py-1.5 scrollbar-hide">
+            <div className="flex gap-4 overflow-x-auto scrollbar-hide">
               {activeManagementChildren.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   onClick={() => selectManagementChild(id)}
-                  className={`flex shrink-0 select-none items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none ${
+                  className={`flex shrink-0 select-none items-center gap-1.5 whitespace-nowrap border-b-2 py-2 text-xs font-semibold transition-colors focus-visible:outline-none ${
                     activeManagementChild === id
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-card hover:text-foreground"
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
                   aria-current={activeManagementChild === id ? "page" : undefined}
                 >
