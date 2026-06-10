@@ -26,6 +26,7 @@ import { EVENT_MODE_REFETCH_INTERVAL, loadEventById } from "@/lib/eventLoader";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import EventTimeDisplay from "@/components/EventTimeDisplay";
 import EventScreenSaver from "@/components/EventScreenSaver";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -143,6 +144,7 @@ export default function EventDetail() {
           >
             <Monitor className="h-3.5 w-3.5" />
           </button>
+          <ThemeToggle />
           {currentUser ? (
             <div className="flex h-7 max-w-36 shrink-0 items-center gap-1 rounded-md bg-muted px-1">
               <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20">

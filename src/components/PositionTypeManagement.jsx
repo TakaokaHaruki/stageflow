@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Settings, Moon, Sun, GripVertical } from "lucide-react";
+import { Plus, Trash2, Settings, GripVertical } from "lucide-react";
 import PositionPresetManager from "@/components/PositionPresetManager";
 import { useUserRole } from "@/hooks/useUserRole";
-import { useTheme } from "@/lib/ThemeProvider";
 import { toast } from "sonner";
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
@@ -14,7 +13,6 @@ import {
   applyPositionSideSettingsToTypes,
   loadPositionSideSettings,
   rememberPositionSideSettings,
-  normalizePositionSideSettings,
 } from "@/lib/positionSideSettings";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
@@ -31,7 +29,6 @@ export default function PositionTypeManagement({ eventId }) {
   const [dragOverId, setDragOverId] = useState(null);
   const queryClient = useQueryClient();
   const { canEdit: isAdmin } = useUserRole();
-  const { isDark, setIsDark } = useTheme();
 
   const { data: rawPositionTypes = [], isLoading } = useQuery({
     queryKey: ["positionTypes"],
@@ -182,17 +179,6 @@ export default function PositionTypeManagement({ eventId }) {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-end mb-3">
-        <button
-          onClick={() => setIsDark(!isDark)}
-          className="p-2 rounded-lg hover:bg-muted transition-colors shrink-0"
-          aria-label={isDark ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
-        >
-          {isDark ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-slate-600" />}
-        </button>
-      </div>
-
       {/* Position type section */}
       <div className="mb-1">
         <h3 className="text-xs font-bold flex items-center gap-1.5 mb-1.5"><Settings className="w-3.5 h-3.5 text-primary" />ポジション設定</h3>

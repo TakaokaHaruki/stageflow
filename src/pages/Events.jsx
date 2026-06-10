@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn, Globe, Lock, ShieldCheck } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
+import ThemeToggle from "@/components/ThemeToggle";
 import AdminUserModal from "@/components/AdminUserModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion } from "framer-motion";
@@ -146,6 +147,7 @@ export default function Events() {
           <CrewlyLogo className="mr-1" />
           <h1 className="text-base font-bold text-foreground tracking-tight flex-1 min-w-0 truncate">イベント一覧</h1>
           <div className="flex items-center gap-1.5 shrink-0">
+            <ThemeToggle />
             {!isGuest && (
               <Button onClick={() => {setEditingEvent(null);setShowModal(true);}} className="gap-1 select-none" size="sm" disabled={!canEdit}>
                 <Plus className="w-3.5 h-3.5" />
