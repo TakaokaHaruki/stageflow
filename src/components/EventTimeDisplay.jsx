@@ -1,39 +1,59 @@
 import { useEffect, useState } from "react";
 
-const ALERT_BEFORE_MS = 30 * 60 * 1000;
-const ALERT_AFTER_MS = 5 * 60 * 1000;
+function getBlinkPhase(eventDate, eventTime, endTime, now) {
+  if (!eventDate || !eventTime) return null;
 
-function isNearEventTime(eventDate, eventTime, now) {
-  if (!eventDate || !eventTime) return false;
+  const normalizedStart = String(eventTime).match(/\d{1,2}:\d{2}/)?.[0];
+  if (!normalizedStart) return null;
 
-  const normalizedTime = String(eventTime).match(/\d{1,2}:\d{2}/)?.[0];
-  if (!normalizedTime) return false;
+  const startMs = new Date(`${eventDate}T${normalizedStart}:00+09:00`).getTime();
+  if (Number.isNaN(startMs)) return null;
 
-  const target = new Date(`${eventDate}T${normalizedTime}:00+09:00`);
-  if (Number.isNaN(target.getTime())) return false;
+  const endMs = (() => {
+    if (endTime) {
+      const normalizedEnd = String(endTime).match(/\d{1,2}:\d{2}/)?.[0];
+      if (normalizedEnd) {
+        const t = new Date(`${eventDate}T${normalizedEnd}:00+09:00`).getTime();
+        if (!Number.isNaN(t)) return t;
+      }
+    }
+    return startMs + 60 * 60 * 1000; // fallback: start + 60min
+  })();
 
-  const difference = target.getTime() - now;
-  return difference <= ALERT_BEFORE_MS && difference >= -ALERT_AFTER_MS;
+  const diff = startMs - now;
+
+  if (diff > 30 * 60 * 1000) return null;           // > 30min before: no blink
+  if (diff > 5 * 60 * 1000) return "yellow";         // 30min ~ 5min before
+  if (diff > 0) return "red";                        // 5min ~ start
+  if (now < endMs) return "green";                   // start ~ end
+  return null;
 }
 
-export default function EventTimeDisplay({ eventDate, eventTime, label, className = "" }) {
+const PHASE_CLASSES = {
+  yellow: "animate-pulse rounded bg-amber-200 px-1 font-semibold text-amber-950 ring-1 ring-amber-500 motion-reduce:animate-none dark:bg-amber-500/30 dark:text-amber-100",
+  red:    "animate-pulse rounded bg-red-200 px-1 font-semibold text-red-900 ring-1 ring-red-500 motion-reduce:animate-none dark:bg-red-500/30 dark:text-red-100",
+  green:  "animate-pulse rounded bg-green-200 px-1 font-semibold text-green-900 ring-1 ring-green-500 motion-reduce:animate-none dark:bg-green-500/30 dark:text-green-100",
+};
+
+export default function EventTimeDisplay({ eventDate, eventTime, endTime, label, className = "" }) {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 15_000);
+    const timer = window.setInterval(() => setNow(Date.now()), 1_000);
     return () => window.clearInterval(timer);
   }, []);
 
-  const isNear = isNearEventTime(eventDate, eventTime, now);
+  const phase = getBlinkPhase(eventDate, eventTime, endTime, now);
+  const phaseClass = phase ? PHASE_CLASSES[phase] : "";
+
+  const ariaLabel = phase
+    ? `${label} ${eventTime}${phase === "yellow" ? " まもなくです" : phase === "red" ? " 直前です" : phase === "green" ? " 開始中" : ""}`
+    : `${label} ${eventTime}`;
 
   return (
     <span
-      className={`${className} ${
-        isNear
-          ? "animate-pulse rounded bg-amber-200 px-1 font-semibold text-amber-950 ring-1 ring-amber-500 motion-reduce:animate-none dark:bg-amber-500/30 dark:text-amber-100"
-          : ""
-      }`}
-      aria-label={`${label} ${eventTime}${isNear ? " まもなくです" : ""}`}
+      className={`${className} ${phaseClass}`}
+      aria-label={ariaLabel}
     >
       {label} <time dateTime={`${eventDate || ""}T${eventTime}`}>{eventTime}</time>
     </span>

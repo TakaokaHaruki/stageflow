@@ -20,9 +20,13 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     description: event?.description || "",
     status: event?.status || "準備中",
     time_priority: event?.time_priority || "",
+    time_priority_end: event?.time_priority_end || "",
     time_open: event?.time_open || "",
+    time_open_end: event?.time_open_end || "",
     time_start: event?.time_start || "",
+    time_start_end: event?.time_start_end || "",
     time_end: event?.time_end || "",
+    time_end_end: event?.time_end_end || "",
   });
 
   const mutation = useMutation({
@@ -70,8 +74,10 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     prev.name !== cur.name || prev.venue !== cur.venue || prev.description !== cur.description;
   const isNonTextChange = (prev, cur) =>
     prev.date !== cur.date || prev.status !== cur.status ||
-    prev.time_priority !== cur.time_priority || prev.time_open !== cur.time_open ||
-    prev.time_start !== cur.time_start || prev.time_end !== cur.time_end;
+    prev.time_priority !== cur.time_priority || prev.time_priority_end !== cur.time_priority_end ||
+    prev.time_open !== cur.time_open || prev.time_open_end !== cur.time_open_end ||
+    prev.time_start !== cur.time_start || prev.time_start_end !== cur.time_start_end ||
+    prev.time_end !== cur.time_end || prev.time_end_end !== cur.time_end_end;
 
   useEffect(() => {
     if (!event || !form.name) return;
@@ -158,22 +164,36 @@ export default function EventFormModal({ event, onClose, onSaved }) {
           </div>
           <div>
             <Label>時間設定</Label>
-            <div className="mt-1 grid grid-cols-2 gap-2">
-              <div>
+            <div className="mt-1 space-y-2">
+              {/* Header row */}
+              <div className="grid grid-cols-[4rem_1fr_1fr] gap-2 items-center">
+                <div />
+                <Label className="text-xs text-muted-foreground text-center">開始</Label>
+                <Label className="text-xs text-muted-foreground text-center">終了</Label>
+              </div>
+              {/* 先行 */}
+              <div className="grid grid-cols-[4rem_1fr_1fr] gap-2 items-center">
                 <Label className="text-xs text-muted-foreground">先行</Label>
-                <Input type="time" className="mt-0.5 w-full" value={form.time_priority} onChange={(e) => setForm({ ...form, time_priority: e.target.value })} />
+                <Input type="time" className="w-full" value={form.time_priority} onChange={(e) => setForm({ ...form, time_priority: e.target.value })} />
+                <Input type="time" className="w-full" value={form.time_priority_end} onChange={(e) => setForm({ ...form, time_priority_end: e.target.value })} />
               </div>
-              <div>
+              {/* 開場 */}
+              <div className="grid grid-cols-[4rem_1fr_1fr] gap-2 items-center">
                 <Label className="text-xs text-muted-foreground">開場</Label>
-                <Input type="time" className="mt-0.5 w-full" value={form.time_open} onChange={(e) => setForm({ ...form, time_open: e.target.value })} />
+                <Input type="time" className="w-full" value={form.time_open} onChange={(e) => setForm({ ...form, time_open: e.target.value })} />
+                <Input type="time" className="w-full" value={form.time_open_end} onChange={(e) => setForm({ ...form, time_open_end: e.target.value })} />
               </div>
-              <div>
+              {/* 開演 */}
+              <div className="grid grid-cols-[4rem_1fr_1fr] gap-2 items-center">
                 <Label className="text-xs text-muted-foreground">開演</Label>
-                <Input type="time" className="mt-0.5 w-full" value={form.time_start} onChange={(e) => setForm({ ...form, time_start: e.target.value })} />
+                <Input type="time" className="w-full" value={form.time_start} onChange={(e) => setForm({ ...form, time_start: e.target.value })} />
+                <Input type="time" className="w-full" value={form.time_start_end} onChange={(e) => setForm({ ...form, time_start_end: e.target.value })} />
               </div>
-              <div>
+              {/* 終演 */}
+              <div className="grid grid-cols-[4rem_1fr_1fr] gap-2 items-center">
                 <Label className="text-xs text-muted-foreground">終演</Label>
-                <Input type="time" className="mt-0.5 w-full" value={form.time_end} onChange={(e) => setForm({ ...form, time_end: e.target.value })} />
+                <Input type="time" className="w-full" value={form.time_end} onChange={(e) => setForm({ ...form, time_end: e.target.value })} />
+                <Input type="time" className="w-full" value={form.time_end_end} onChange={(e) => setForm({ ...form, time_end_end: e.target.value })} />
               </div>
             </div>
           </div>
