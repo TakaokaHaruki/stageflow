@@ -21,7 +21,7 @@ const PRESET_COLORS = [
   "#ef4444", "#8b5cf6", "#06b6d4", "#f97316",
 ];
 
-export default function PositionTypeManagement({ eventId }) {
+export default function PositionTypeManagement({ eventId, section = "positions" }) {
   const [name, setName] = useState("");
   const [color, setColor] = useState(PRESET_COLORS[0]);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -179,6 +179,8 @@ export default function PositionTypeManagement({ eventId }) {
 
   return (
     <div>
+      {section === "positions" && (
+      <>
       {/* Position type section */}
       <div className="mb-1">
         <h3 className="text-xs font-bold flex items-center gap-1.5 mb-1.5"><Settings className="w-3.5 h-3.5 text-primary" />ポジション設定</h3>
@@ -260,8 +262,9 @@ export default function PositionTypeManagement({ eventId }) {
           onCancel={() => setConfirmDelete(null)} />
       )}
 
-      <div className="border-t border-border my-3" />
-      <PositionPresetManager eventId={eventId} />
+      </>
+      )}
+      {section === "presets" && <PositionPresetManager eventId={eventId} />}
     </div>
   );
 }

@@ -39,6 +39,8 @@ export default function EventDetail() {
   const [tab, setTab] = useTabNavigation("staff");
   const [tabResetKey, setTabResetKey] = useState(0);
   const [showScreenSaver, setShowScreenSaver] = useState(false);
+  const [adminSection, setAdminSection] = useState("users");
+  const [settingsSection, setSettingsSection] = useState("positions");
   const [currentTime, setCurrentTime] = useState(() =>
     new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit' })
   );
@@ -97,9 +99,31 @@ export default function EventDetail() {
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ];
 
-  const managementTabs = desktopTabs.filter(({ id }) => id === "settings" || id === "admin");
+  const managementTabs = desktopTabs
+    .filter(({ id }) => id === "settings" || id === "admin")
+    .map((item) => ({
+      ...item,
+      label: item.id === "admin" ? "管理者設定" : "管理設定",
+    }));
   const primaryTabs = desktopTabs.filter(({ id }) => id !== "settings" && id !== "admin");
   const isManagementTab = managementTabs.some(({ id }) => id === tab);
+  const activeManagementChildren = tab === "admin"
+    ? [
+        { id: "users", label: "ユーザー管理", icon: Users },
+        { id: "logs", label: "操作ログ", icon: FileText },
+      ]
+    : tab === "settings"
+      ? [
+          { id: "positions", label: "ポジション設定", icon: Settings },
+          { id: "presets", label: "ポジションプリセット", icon: ClipboardList },
+        ]
+      : [];
+  const activeManagementChild = tab === "admin" ? adminSection : settingsSection;
+
+  const selectManagementChild = (childId) => {
+    if (tab === "admin") setAdminSection(childId);
+    if (tab === "settings") setSettingsSection(childId);
+  };
 
   const selectTab = (childId) => {
     if (tab === childId) handleActiveTabReset();
@@ -196,41 +220,40 @@ export default function EventDetail() {
                     {label}
                   </button>
               ))}
-              {managementTabs.length > 0 && (
+              {managementTabs.map(({ id, label, icon: Icon }) => (
                 <button
-                  onClick={() => {
-                    if (!isManagementTab) selectTab(managementTabs[0].id);
-                  }}
+                  key={id}
+                  onClick={() => selectTab(id)}
                   className={`flex shrink-0 select-none items-center gap-1.5 whitespace-nowrap border-b-2 py-2 text-xs font-semibold transition-colors focus-visible:outline-none ${
-                    isManagementTab
+                    tab === id
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
-                  aria-current={isManagementTab ? "page" : undefined}
+                  aria-current={tab === id ? "page" : undefined}
                 >
-                  <Settings className="h-3.5 w-3.5" />
-                  管理
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
                 </button>
-              )}
+              ))}
             </div>
           </div>
         </div>
 
         {/* Child tab bar */}
         {isManagementTab && (
-        <div className="hidden sm:block border-t border-border/70 bg-muted/40">
+        <div className="block border-t border-border/70 bg-muted/40">
           <div className="max-w-6xl mx-auto px-3">
             <div className="flex gap-1.5 overflow-x-auto py-1.5 scrollbar-hide">
-              {managementTabs.map(({ id, label, icon: Icon }) => (
+              {activeManagementChildren.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
-                  onClick={() => selectTab(id)}
+                  onClick={() => selectManagementChild(id)}
                   className={`flex shrink-0 select-none items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none ${
-                    tab === id
+                    activeManagementChild === id
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-card hover:text-foreground"
                   }`}
-                  aria-current={tab === id ? "page" : undefined}
+                  aria-current={activeManagementChild === id ? "page" : undefined}
                 >
                   <Icon className="h-3.5 w-3.5" />
                   {label}
@@ -246,7 +269,7 @@ export default function EventDetail() {
         <UserRestrictionBanner role={role} />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={`${tab}-${tabResetKey}`}
+            key={`${tab}-${activeManagementChild || "main"}-${tabResetKey}`}
             variants={tabVariants}
             initial="initial"
             animate="animate"
@@ -257,10 +280,10 @@ export default function EventDetail() {
             {tab === "admin" && (
               <AdminSettings
                 eventId={eventId}
-                event={event}
+                section={adminSection}
               />
             )}
-            {tab === "settings" && <PositionTypeManagement eventId={eventId} />}
+            {tab === "settings" && <PositionTypeManagement eventId={eventId} section={settingsSection} />}
             {tab === "notice" && <AnnouncementManager eventId={eventId} />}
             {tab === "files" && <SharedFileManager eventId={eventId} />}
             {tab === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
