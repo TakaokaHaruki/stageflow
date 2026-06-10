@@ -103,16 +103,6 @@ export default function StaffManagement({ eventId }) {
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
       const staffToDelete = staffList.find((s) => s.id === id);
-      if (staffToDelete) {
-        record({
-          action_type: "staff_delete",
-          description: `スタッフ「${staffToDelete.name}」を削除しました`,
-          entity_type: "Staff",
-          entity_id: id,
-          snapshot_before: { ...staffToDelete, event_id: eventId },
-          snapshot_after: {},
-        });
-      }
       await base44.functions.invoke("updateStaffRecord", { action: "delete", staffId: id });
       if (staffToDelete) {
         const affected = positions.filter((p) => (p.staff_names || []).includes(staffToDelete.name));
@@ -136,7 +126,7 @@ export default function StaffManagement({ eventId }) {
       await queryClient.cancelQueries({ queryKey: ["positions", eventId] });
       const previousStaff = queryClient.getQueryData(["staff", eventId]);
       const previousPositions = queryClient.getQueryData(["positions", eventId]);
-      const staffToDelete = staffList.find((s) => s.id === id);
+      const staffToDelete = (previousStaff || staffList).find((s) => s.id === id);
       queryClient.setQueryData(["staff", eventId], (old = []) => old.filter((staff) => staff.id !== id));
       if (staffToDelete) {
         queryClient.setQueryData(["positions", eventId], (old = []) =>
@@ -146,14 +136,25 @@ export default function StaffManagement({ eventId }) {
           }))
         );
       }
-      return { previousStaff, previousPositions };
+      return { previousStaff, previousPositions, staffToDelete };
     },
     onError: (_, __, context) => {
       queryClient.setQueryData(["staff", eventId], context?.previousStaff);
       queryClient.setQueryData(["positions", eventId], context?.previousPositions);
       toast.error("スタッフの削除に失敗しました");
     },
-    onSuccess: () => {
+    onSuccess: (_, id, context) => {
+      const staffToDelete = context?.staffToDelete;
+      if (staffToDelete) {
+        record({
+          action_type: "staff_delete",
+          description: `スタッフ「${staffToDelete.name}」を削除しました`,
+          entity_type: "Staff",
+          entity_id: id,
+          snapshot_before: { ...staffToDelete, event_id: eventId },
+          snapshot_after: {},
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["staff", eventId] });
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
     }

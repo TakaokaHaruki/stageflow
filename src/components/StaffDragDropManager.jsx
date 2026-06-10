@@ -86,7 +86,7 @@ export default function StaffDragDropManager({ eventId }) {
 
   const updatePositionMutation = useMutation({
     scope: { id: `position-side-${eventId}` },
-    mutationFn: async ({ positionId, data }) => {
+    mutationFn: async ({ positionId, data, _logEntry: _ignored }) => {
       if (
         Object.prototype.hasOwnProperty.call(data, "staff_names") ||
         Object.prototype.hasOwnProperty.call(data, "staff_names_kamite") ||
@@ -126,7 +126,7 @@ export default function StaffDragDropManager({ eventId }) {
       if (payload?.error) throw new Error(payload.error);
       return payload;
     },
-    onMutate: async ({ positionId, data }) => {
+    onMutate: async ({ positionId, data, _logEntry }) => {
       await queryClient.cancelQueries({ queryKey: ["positions", eventId] });
       await queryClient.cancelQueries({ queryKey: ["positionSideSettings", eventId] });
       const previousPositions = queryClient.getQueryData(["positions", eventId]);
@@ -143,15 +143,18 @@ export default function StaffDragDropManager({ eventId }) {
           applyPositionSideMutation(old, positionId, data)
         );
       }
-      return { previousPositions, previousSideSettings };
+      return { previousPositions, previousSideSettings, _logEntry };
     },
     onError: (err, newData, context) => {
       queryClient.setQueryData(["positions", eventId], context?.previousPositions);
       queryClient.setQueryData(["positionSideSettings", eventId], context?.previousSideSettings);
     },
-    onSuccess: (result) => {
+    onSuccess: (result, _vars, context) => {
       if (result?.sideSettings) {
         queryClient.setQueryData(["positionSideSettings", eventId], rememberPositionSideSettings(eventId, result.sideSettings));
+      }
+      if (context?._logEntry) {
+        record(context._logEntry);
       }
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
     },
@@ -309,24 +312,19 @@ export default function StaffDragDropManager({ eventId }) {
     const nextStaffNames = position.split_by_side
       ? [...new Set([...nextKamite, ...nextShimote])]
       : [...new Set([...currentStaffNames, staffName])];
-    record({
-      action_type: "position_assign",
-      description: `「${staffName}」を「${position.name}」(${slot})に配置しました`,
-      entity_type: "Position",
-      entity_id: positionId,
-      snapshot_before: {
-        staff_names: currentStaffNames,
-        staff_names_kamite: kamite,
-        staff_names_shimote: shimote,
-        split_by_side: position.split_by_side || false,
-      },
-      snapshot_after: { staff_names: nextStaffNames },
-    });
     updatePositionMutation.mutate({
       positionId,
       data: {
         staff_names: nextStaffNames,
         ...(position.split_by_side ? { split_by_side: true, staff_names_kamite: nextKamite, staff_names_shimote: nextShimote } : {}),
+      },
+      _logEntry: {
+        action_type: "position_assign",
+        description: `「${staffName}」を「${position.name}」(${slot})に配置しました`,
+        entity_type: "Position",
+        entity_id: positionId,
+        snapshot_before: { staff_names: currentStaffNames, staff_names_kamite: kamite, staff_names_shimote: shimote, split_by_side: position.split_by_side || false },
+        snapshot_after: { staff_names: nextStaffNames },
       },
     });
   }, [positions, updatePositionMutation, record]);
@@ -352,21 +350,6 @@ export default function StaffDragDropManager({ eventId }) {
     const position = positions.find((p) => p.id === positionId);
     if (!position) return;
     const slot = position.time_slot || "開場中";
-    record({
-      action_type: "position_unassign",
-      description: `「${staffName}」を「${position.name}」(${slot})から解除しました`,
-      entity_type: "Position",
-      entity_id: positionId,
-      snapshot_before: {
-        staff_names: position.staff_names || [],
-        staff_names_kamite: position.staff_names_kamite || [],
-        staff_names_shimote: position.staff_names_shimote || [],
-        split_by_side: position.split_by_side || false,
-      },
-      snapshot_after: {
-        staff_names: (position.staff_names || []).filter((n) => n !== staffName),
-      },
-    });
     updatePositionMutation.mutate({
       positionId,
       data: {
@@ -374,6 +357,14 @@ export default function StaffDragDropManager({ eventId }) {
         split_by_side: Boolean(position.split_by_side),
         staff_names_kamite: (position.staff_names_kamite || []).filter((n) => n !== staffName),
         staff_names_shimote: (position.staff_names_shimote || []).filter((n) => n !== staffName),
+      },
+      _logEntry: {
+        action_type: "position_unassign",
+        description: `「${staffName}」を「${position.name}」(${slot})から解除しました`,
+        entity_type: "Position",
+        entity_id: positionId,
+        snapshot_before: { staff_names: position.staff_names || [], staff_names_kamite: position.staff_names_kamite || [], staff_names_shimote: position.staff_names_shimote || [], split_by_side: position.split_by_side || false },
+        snapshot_after: { staff_names: (position.staff_names || []).filter((n) => n !== staffName) },
       },
     });
   };
