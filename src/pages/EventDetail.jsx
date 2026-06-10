@@ -14,7 +14,6 @@ import AnnouncementAlert from "@/components/AnnouncementAlert";
 import StaffDragDropManager from "@/components/StaffDragDropManager";
 import SharedFileManager from "@/components/SharedFileManager";
 import PositionNotesEditor from "@/components/PositionNotesEditor";
-import BottomTabBar from "@/components/BottomTabBar";
 import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
@@ -96,6 +95,44 @@ export default function EventDetail() {
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ];
 
+  const navigationGroups = [
+    {
+      id: "operations",
+      label: "運営",
+      icon: ClipboardList,
+      items: [
+        { id: "staff", label: "スタッフ管理", icon: Users },
+        { id: "dragdrop", label: "配置表", icon: ClipboardList },
+        ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
+      ],
+    },
+    {
+      id: "sharing",
+      label: "情報共有",
+      icon: Bell,
+      items: [
+        { id: "notice", label: "連絡事項", icon: Bell },
+        { id: "files", label: "ファイル共有", icon: Paperclip },
+      ],
+    },
+    {
+      id: "management",
+      label: "管理",
+      icon: Settings,
+      items: [
+        ...(isPrivileged ? [{ id: "settings", label: "ポジション設定", icon: Settings }] : []),
+        ...(isAdmin ? [{ id: "admin", label: "管理・設定", icon: ShieldCheck }] : []),
+      ],
+    },
+  ].filter((group) => group.items.length > 0);
+
+  const activeGroup = navigationGroups.find((group) => group.items.some((item) => item.id === tab)) || navigationGroups[0];
+
+  const selectNavigationItem = (itemId) => {
+    if (tab === itemId) handleActiveTabReset();
+    handleTabChange(itemId, tab === itemId ? { replace: true, reset: true } : undefined);
+  };
+
   return (
     <div className="min-h-screen bg-background relative scrollbar-hide">
       {isPulling && (
@@ -166,23 +203,22 @@ export default function EventDetail() {
           )}
         </div>
 
-        {/* Desktop tab bar */}
-        <div className="hidden sm:block border-t border-border bg-card/80 backdrop-blur-md">
+        {/* Parent navigation */}
+        <div className="border-t border-border bg-card/80 backdrop-blur-md">
           <div className="max-w-6xl mx-auto px-3">
             <div className="flex gap-3 overflow-x-auto scrollbar-hide">
-              {desktopTabs.map(({ id, label, icon: Icon }) => (
+              {navigationGroups.map(({ id, label, icon: Icon, items }) => (
                 <button
                   key={id}
                   onClick={() => {
-                    if (tab === id) handleActiveTabReset();
-                    handleTabChange(id, tab === id ? { replace: true, reset: true } : undefined);
+                    if (!items.some((item) => item.id === tab)) selectNavigationItem(items[0].id);
                   }}
                   className={`flex items-center gap-1.5 py-2 text-xs font-medium border-b-2 whitespace-nowrap transition-colors focus-visible:outline-none select-none shrink-0 ${
-                    tab === id
+                    activeGroup?.id === id
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
-                  aria-current={tab === id ? "page" : undefined}
+                  aria-current={activeGroup?.id === id ? "page" : undefined}
                 >
                   <Icon className="w-3.5 h-3.5" />
                   {label}
@@ -193,16 +229,58 @@ export default function EventDetail() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-1.5 py-1.5 pb-16 sm:pb-8">
-        <UserRestrictionBanner role={role} />
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={`${tab}-${tabResetKey}`}
-            variants={tabVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
+      <div className="max-w-6xl mx-auto px-1.5 py-1.5 pb-8">
+        <div className="flex items-start gap-2">
+          <aside className="hidden w-44 shrink-0 sm:block">
+            <div className="sticky top-24 overflow-hidden rounded-md border border-border bg-card">
+              <div className="border-b border-border px-2.5 py-2 text-xs font-semibold text-muted-foreground">
+                {activeGroup?.label}
+              </div>
+              <nav className="p-1" aria-label={`${activeGroup?.label}メニュー`}>
+                {activeGroup?.items.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => selectNavigationItem(id)}
+                    className={`flex w-full items-center gap-2 rounded px-2 py-2 text-left text-xs font-medium transition-colors ${
+                      tab === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                    aria-current={tab === id ? "page" : undefined}
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{label}</span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+          </aside>
+
+          <main className="min-w-0 flex-1">
+            <div className="mb-1 flex gap-1 overflow-x-auto rounded-md border border-border bg-card p-1 scrollbar-hide sm:hidden">
+              {activeGroup?.items.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => selectNavigationItem(id)}
+                  className={`flex shrink-0 items-center gap-1 rounded px-2 py-1.5 text-xs font-medium transition-colors ${
+                    tab === id ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <UserRestrictionBanner role={role} />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={`${tab}-${tabResetKey}`}
+                variants={tabVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
             {tab === "staff" && <StaffManagement eventId={eventId} />}
             {tab === "dragdrop" && <StaffDragDropManager eventId={eventId} />}
             {tab === "admin" && (
@@ -215,24 +293,16 @@ export default function EventDetail() {
             {tab === "notice" && <AnnouncementManager eventId={eventId} />}
             {tab === "files" && <SharedFileManager eventId={eventId} />}
             {tab === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
-          </motion.div>
-        </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        </div>
       </div>
 
       {showScreenSaver && (
         <EventScreenSaver event={event} onExit={() => setShowScreenSaver(false)} />
       )}
 
-      {/* Bottom Tab Navigation - Mobile Only */}
-      <div className="sm:hidden">
-        <BottomTabBar
-          activeTab={tab}
-          onTabChange={handleTabChange}
-          onActiveTabReset={handleActiveTabReset}
-          isPrivileged={isPrivileged}
-          isAdmin={isAdmin}
-        />
-      </div>
     </div>
   );
 }
