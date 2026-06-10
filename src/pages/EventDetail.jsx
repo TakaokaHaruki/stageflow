@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Paperclip, FileText } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Paperclip, FileText, Monitor } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -25,6 +25,7 @@ import { useTabNavigation } from "@/hooks/useTabNavigation";
 import { EVENT_MODE_REFETCH_INTERVAL, loadEventById } from "@/lib/eventLoader";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import EventTimeDisplay from "@/components/EventTimeDisplay";
+import EventScreenSaver from "@/components/EventScreenSaver";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -89,6 +90,7 @@ export default function EventDetail() {
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
     { id: "notice", label: "連絡事項", icon: Bell },
     { id: "files", label: "ファイル共有", icon: Paperclip },
+    { id: "screensaver", label: "スクリーンセーバー", icon: Monitor },
     ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
@@ -210,6 +212,10 @@ export default function EventDetail() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {tab === "screensaver" && (
+        <EventScreenSaver event={event} onExit={() => setTab("staff", { replace: true, reset: true })} />
+      )}
 
       {/* Bottom Tab Navigation - Mobile Only */}
       <div className="sm:hidden">
