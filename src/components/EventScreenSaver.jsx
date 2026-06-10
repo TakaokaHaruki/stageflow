@@ -77,7 +77,7 @@ export default function EventScreenSaver({ event, onExit }) {
   const visibleTimes = EVENT_TIMES.filter(({ key }) => event[key]);
 
   const handleLogoPointerDown = async (pointerEvent) => {
-    if (pointerEvent.button !== 0 || isExitingRef.current) return;
+    if (isExitingRef.current) return;
 
     pointerEvent.preventDefault();
     pointerEvent.stopPropagation();
@@ -119,10 +119,11 @@ export default function EventScreenSaver({ event, onExit }) {
 
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-1 flex-col items-center justify-center gap-8 px-4 py-16 sm:gap-12">
         <div
-          className="flex h-20 touch-none select-none items-center justify-center sm:h-24"
+          className="flex h-20 touch-none select-none items-center justify-center sm:h-24 cursor-pointer"
           onPointerDown={handleLogoPointerDown}
+          onClick={(e) => e.preventDefault()}
         >
-          <CrewlyLogo className="pointer-events-none scale-[2.8] sm:scale-[3.6]" />
+          <CrewlyLogo className="scale-[2.8] sm:scale-[3.6]" />
         </div>
 
         <div className="text-center">
