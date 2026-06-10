@@ -25,6 +25,7 @@ export default function EventScreenSaver({ event, onExit }) {
   const wakeLockRef = useRef(null);
   const logoTapCountRef = useRef(0);
   const logoTapResetTimerRef = useRef(null);
+  const isExitingRef = useRef(false);
 
   useEffect(() => {
     const timer = window.setInterval(() => setCurrentTime(formatCurrentTime()), 1_000);
@@ -75,22 +76,31 @@ export default function EventScreenSaver({ event, onExit }) {
 
   const visibleTimes = EVENT_TIMES.filter(({ key }) => event[key]);
 
-  const handleLogoTap = (tapEvent) => {
-    tapEvent.preventDefault();
-    tapEvent.stopPropagation();
+  const handleLogoPointerDown = async (pointerEvent) => {
+    if (pointerEvent.button !== 0 || isExitingRef.current) return;
+
+    pointerEvent.preventDefault();
+    pointerEvent.stopPropagation();
 
     logoTapCountRef.current += 1;
     window.clearTimeout(logoTapResetTimerRef.current);
 
     if (logoTapCountRef.current >= 5) {
+      isExitingRef.current = true;
       logoTapCountRef.current = 0;
+      window.clearTimeout(logoTapResetTimerRef.current);
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+      } catch {
+        // Continue returning to the event even if fullscreen exit is blocked.
+      }
       onExit();
       return;
     }
 
     logoTapResetTimerRef.current = window.setTimeout(() => {
       logoTapCountRef.current = 0;
-    }, 3_000);
+    }, 5_000);
   };
 
   return (
@@ -108,7 +118,10 @@ export default function EventScreenSaver({ event, onExit }) {
       </div>
 
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-1 flex-col items-center justify-center gap-8 px-4 py-16 sm:gap-12">
-        <div className="flex h-20 touch-manipulation select-none items-center justify-center sm:h-24" onClick={handleLogoTap}>
+        <div
+          className="flex h-20 touch-none select-none items-center justify-center sm:h-24"
+          onPointerDown={handleLogoPointerDown}
+        >
           <CrewlyLogo className="pointer-events-none scale-[2.8] sm:scale-[3.6]" />
         </div>
 
