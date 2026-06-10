@@ -24,6 +24,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useTabNavigation } from "@/hooks/useTabNavigation";
 import { EVENT_MODE_REFETCH_INTERVAL, loadEventById } from "@/lib/eventLoader";
 import CrewlyLogo from "@/components/CrewlyLogo";
+import EventTimeDisplay from "@/components/EventTimeDisplay";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -116,10 +117,10 @@ export default function EventDetail() {
               <h1 className="font-bold text-sm leading-snug truncate shrink-0">{event.name}</h1>
               {(event.time_priority || event.time_open || event.time_start || event.time_end) && (
                 <div className="text-xs text-muted-foreground flex flex-wrap gap-x-2 shrink-0">
-                  {event.time_priority && <span>先行 {event.time_priority}</span>}
-                  {event.time_open && <span>開場 {event.time_open}</span>}
-                  {event.time_start && <span>開演 {event.time_start}</span>}
-                  {event.time_end && <span>終演 {event.time_end}</span>}
+                  {event.time_priority && <EventTimeDisplay eventDate={event.date} eventTime={event.time_priority} label="先行" />}
+                  {event.time_open && <EventTimeDisplay eventDate={event.date} eventTime={event.time_open} label="開場" />}
+                  {event.time_start && <EventTimeDisplay eventDate={event.date} eventTime={event.time_start} label="開演" />}
+                  {event.time_end && <EventTimeDisplay eventDate={event.date} eventTime={event.time_end} label="終演" />}
                 </div>
               )}
             </div>

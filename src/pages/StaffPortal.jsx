@@ -9,6 +9,7 @@ import CrewlyLogo from "@/components/CrewlyLogo";
 import QRCodeUpload from "@/components/QRCodeUpload";
 import StaffConfirmationModal from "@/components/StaffConfirmationModal";
 import ComplianceAgreementModal from "@/components/ComplianceAgreementModal";
+import EventTimeDisplay from "@/components/EventTimeDisplay";
 
 const STORAGE_KEY = "crewly_acast_id";
 
@@ -379,12 +380,12 @@ export default function StaffPortal() {
                 )}
               </div>
               {/* Event times */}
-              {(event.time_open || event.time_start || event.time_end) && (
+              {(event.time_priority || event.time_open || event.time_start || event.time_end) && (
                 <div className="flex flex-wrap gap-x-3 mt-1">
-                  {event.time_priority && <span className="text-[11px] text-muted-foreground">先行 {event.time_priority}</span>}
-                  {event.time_open && <span className="text-[11px] text-muted-foreground">開場 {event.time_open}</span>}
-                  {event.time_start && <span className="text-[11px] text-muted-foreground">開演 {event.time_start}</span>}
-                  {event.time_end && <span className="text-[11px] text-muted-foreground">終演 {event.time_end}</span>}
+                  {event.time_priority && <EventTimeDisplay className="text-[11px] text-muted-foreground" eventDate={event.date} eventTime={event.time_priority} label="先行" />}
+                  {event.time_open && <EventTimeDisplay className="text-[11px] text-muted-foreground" eventDate={event.date} eventTime={event.time_open} label="開場" />}
+                  {event.time_start && <EventTimeDisplay className="text-[11px] text-muted-foreground" eventDate={event.date} eventTime={event.time_start} label="開演" />}
+                  {event.time_end && <EventTimeDisplay className="text-[11px] text-muted-foreground" eventDate={event.date} eventTime={event.time_end} label="終演" />}
                 </div>
               )}
             </div>
