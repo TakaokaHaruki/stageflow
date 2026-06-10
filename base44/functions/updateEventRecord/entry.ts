@@ -2,7 +2,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const ALLOWED_FIELDS = [
   'name', 'date', 'venue', 'description', 'status',
-  'time_priority', 'time_open', 'time_start', 'time_end',
+  'time_priority', 'time_priority_end',
+  'time_open', 'time_open_end',
+  'time_start', 'time_start_end',
+  'time_end', 'time_end_end',
 ];
 
 Deno.serve(async (req) => {
