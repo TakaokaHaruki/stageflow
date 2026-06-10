@@ -97,6 +97,15 @@ export default function EventDetail() {
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ];
 
+  const managementTabs = desktopTabs.filter(({ id }) => id === "settings" || id === "admin");
+  const primaryTabs = desktopTabs.filter(({ id }) => id !== "settings" && id !== "admin");
+  const isManagementTab = managementTabs.some(({ id }) => id === tab);
+
+  const selectTab = (childId) => {
+    if (tab === childId) handleActiveTabReset();
+    handleTabChange(childId, tab === childId ? { replace: true, reset: true } : undefined);
+  };
+
   return (
     <div className="min-h-screen bg-background relative scrollbar-hide">
       {isPulling && (
@@ -168,31 +177,69 @@ export default function EventDetail() {
           )}
         </div>
 
-        {/* Desktop tab bar */}
+        {/* Parent tab bar */}
         <div className="hidden sm:block border-t border-border bg-card/80 backdrop-blur-md">
           <div className="max-w-6xl mx-auto px-3">
-            <div className="flex gap-3 overflow-x-auto scrollbar-hide">
-              {desktopTabs.map(({ id, label, icon: Icon }) => (
+            <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+              {primaryTabs.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => selectTab(id)}
+                    className={`flex shrink-0 select-none items-center gap-1.5 whitespace-nowrap border-b-2 py-2 text-xs font-semibold transition-colors focus-visible:outline-none ${
+                      tab === id
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                    aria-current={tab === id ? "page" : undefined}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {label}
+                  </button>
+              ))}
+              {managementTabs.length > 0 && (
                 <button
-                  key={id}
                   onClick={() => {
-                    if (tab === id) handleActiveTabReset();
-                    handleTabChange(id, tab === id ? { replace: true, reset: true } : undefined);
+                    if (!isManagementTab) selectTab(managementTabs[0].id);
                   }}
-                  className={`flex items-center gap-1.5 py-2 text-xs font-medium border-b-2 whitespace-nowrap transition-colors focus-visible:outline-none select-none shrink-0 ${
-                    tab === id
+                  className={`flex shrink-0 select-none items-center gap-1.5 whitespace-nowrap border-b-2 py-2 text-xs font-semibold transition-colors focus-visible:outline-none ${
+                    isManagementTab
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
+                  aria-current={isManagementTab ? "page" : undefined}
+                >
+                  <Settings className="h-3.5 w-3.5" />
+                  管理
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Child tab bar */}
+        {isManagementTab && (
+        <div className="hidden sm:block border-t border-border/70 bg-muted/40">
+          <div className="max-w-6xl mx-auto px-3">
+            <div className="flex gap-1.5 overflow-x-auto py-1.5 scrollbar-hide">
+              {managementTabs.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => selectTab(id)}
+                  className={`flex shrink-0 select-none items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none ${
+                    tab === id
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-card hover:text-foreground"
+                  }`}
                   aria-current={tab === id ? "page" : undefined}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="h-3.5 w-3.5" />
                   {label}
                 </button>
               ))}
             </div>
           </div>
         </div>
+        )}
       </div>
 
       <div className="max-w-6xl mx-auto px-1.5 py-1.5 pb-16 sm:pb-8">
