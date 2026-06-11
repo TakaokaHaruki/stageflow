@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function CrewlyLogo({ className = "", disableLink = false }) {
+export default function CrewlyLogo({ className = "", disableLink = false, administrator = false }) {
   const Wrapper = disableLink ? "div" : Link;
   const wrapperProps = disableLink
     ? { className: `flex items-center gap-1 select-none shrink-0 group ${className}` }
@@ -17,7 +17,7 @@ export default function CrewlyLogo({ className = "", disableLink = false }) {
         className="shrink-0 group-hover:opacity-85 transition-opacity"
       >
         {/* Background rounded square */}
-        <rect width="26" height="26" rx="7" fill="hsl(230 65% 45%)" />
+        <rect width="26" height="26" rx="7" fill={administrator ? "hsl(335 72% 48%)" : "hsl(230 65% 45%)"} />
 
         {/* "C" arc — open to the right, endpoints have dots */}
         {/* Arc: center (13,13), radius 6.5, from ~40° to ~320° */}
@@ -30,12 +30,25 @@ export default function CrewlyLogo({ className = "", disableLink = false }) {
         />
 
         {/* Pin dot at the bottom tip of the C */}
-        <circle cx="18.2" cy="17.7" r="1.6" fill="hsl(195 80% 65%)" />
+        <circle cx="18.2" cy="17.7" r="1.6" fill={administrator ? "hsl(345 95% 78%)" : "hsl(195 80% 65%)"} />
       </svg>
 
       {/* Logotype */}
-      <span className="text-[14px] font-black tracking-tight leading-none text-foreground group-hover:opacity-80 transition-opacity">
-        Crew<span className="text-primary">ly</span>
+      <span className="flex flex-col justify-center leading-none group-hover:opacity-80 transition-opacity">
+        <span className="text-[14px] font-black tracking-tight leading-none text-foreground">
+          Crew
+          <span className={administrator ? "" : "text-primary"} style={administrator ? { color: "hsl(335 72% 48%)" } : undefined}>
+            ly
+          </span>
+        </span>
+        {administrator && (
+          <span
+            className="mt-0.5 text-[4px] font-extrabold leading-none tracking-[0.4px]"
+            style={{ color: "hsl(335 72% 48%)" }}
+          >
+            ADMINISTRATOR
+          </span>
+        )}
       </span>
     </Wrapper>
   );

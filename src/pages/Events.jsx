@@ -144,7 +144,7 @@ export default function Events() {
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-5xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
           {isGuest && <BackButton to="/home" label="ホームへ戻る" />}
-          <CrewlyLogo className="mr-1" />
+          <CrewlyLogo className="mr-1" administrator={role === "admin"} />
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">イベント一覧</h1>
           {!isGuest && (
             <Button onClick={() => {setEditingEvent(null);setShowModal(true);}} className="h-7 shrink-0 gap-1 px-2 text-xs select-none" size="sm" disabled={!canEdit}>

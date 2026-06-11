@@ -19,7 +19,7 @@ function formatCurrentTime() {
   });
 }
 
-export default function EventScreenSaver({ event, onExit }) {
+export default function EventScreenSaver({ event, onExit, administrator = false }) {
   const [currentTime, setCurrentTime] = useState(formatCurrentTime);
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const wakeLockRef = useRef(null);
@@ -114,7 +114,7 @@ export default function EventScreenSaver({ event, onExit }) {
           className="flex h-20 touch-none select-none items-center justify-center sm:h-24 cursor-pointer"
           onClick={handleLogoTap}
         >
-          <CrewlyLogo disableLink className="scale-[2.8] sm:scale-[3.6]" />
+          <CrewlyLogo disableLink administrator={administrator} className="scale-[2.8] sm:scale-[3.6]" />
         </div>
 
         <div className="text-center">

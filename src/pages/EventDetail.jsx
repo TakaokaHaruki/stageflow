@@ -148,7 +148,7 @@ export default function EventDetail() {
         <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
           <BackButton to="/events" label="イベント一覧へ戻る" />
           <div className="hidden sm:flex flex-col items-start mr-1">
-            <CrewlyLogo />
+            <CrewlyLogo administrator={role === "admin"} />
             <span className="text-[10px] text-muted-foreground leading-none mt-0.5 pl-0.5">{currentTime}</span>
           </div>
           <div className="min-w-0 flex-1">
@@ -295,7 +295,7 @@ export default function EventDetail() {
       </div>
 
       {showScreenSaver && (
-        <EventScreenSaver event={event} onExit={() => setShowScreenSaver(false)} />
+        <EventScreenSaver event={event} onExit={() => setShowScreenSaver(false)} administrator={role === "admin"} />
       )}
 
       {confirmScreenSaver && (
