@@ -3,7 +3,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+
+    let user = null;
+    try {
+      user = await base44.auth.me();
+    } catch (_) {
+      // unauthenticated
+    }
 
     if (!user || (user.role !== 'admin' && user.role !== 'chief')) {
       return Response.json({ error: '権限がありません' }, { status: 403 });
