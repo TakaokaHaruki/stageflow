@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, MapPin, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
+import { Check, MapPin, Pencil, Plus, Trash2, Upload, UsersRound, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ function VenueEditModal({ venue, seatingMap, onClose }) {
   const fileInputRef = useRef(null);
   const [name, setName] = useState(venue.name || "");
   const [description, setDescription] = useState(venue.description || "");
+  const [maxCapacity, setMaxCapacity] = useState(venue.max_capacity ?? "");
   const [svgText, setSvgText] = useState("");
   const [svgPreview, setSvgPreview] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -33,7 +34,11 @@ function VenueEditModal({ venue, seatingMap, onClose }) {
       await base44.functions.invoke("updateVenueRecord", {
         action: "update",
         id: venue.id,
-        data: { name: name.trim(), description: description.trim() },
+        data: {
+          name: name.trim(),
+          description: description.trim(),
+          max_capacity: maxCapacity === "" ? null : Number(maxCapacity),
+        },
       });
       if (svgUrl !== undefined) {
         const mapData = { venue_id: venue.id, svg_url: svgUrl, updated_at: new Date().toISOString() };
@@ -110,7 +115,8 @@ function VenueEditModal({ venue, seatingMap, onClose }) {
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
           <div className="grid gap-2 sm:grid-cols-2">
             <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="会場名" />
-            <Input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="備考・説明" />
+            <Input type="number" min="0" inputMode="numeric" value={maxCapacity} onChange={(event) => setMaxCapacity(event.target.value)} placeholder="最大収容人数" />
+            <Input className="sm:col-span-2" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="備考・説明" />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -222,6 +228,10 @@ export default function VenueManager() {
                     <div className="truncate text-sm font-medium">{venue.name}</div>
                     <div className="truncate text-[11px] text-muted-foreground">
                       {seatingMap?.svg_url ? "SVG登録済み" : "SVG未登録"}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-1 truncate text-[11px] text-muted-foreground">
+                      <UsersRound className="h-3 w-3 shrink-0" />
+                      {Number(venue.max_capacity) > 0 ? `最大収容 ${Number(venue.max_capacity).toLocaleString("ja-JP")}人` : "最大収容人数 未登録"}
                     </div>
                   </div>
                   <button onClick={() => setEditingVenue(venue)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={`${venue.name}を編集`}>

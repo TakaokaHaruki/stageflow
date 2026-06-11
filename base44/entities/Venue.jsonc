@@ -9,6 +9,10 @@
     "description": {
       "type": "string",
       "description": "\u5099\u8003\u30fb\u8aac\u660e"
+    },
+    "max_capacity": {
+      "type": "number",
+      "description": "\u6700\u5927\u53ce\u5bb9\u4eba\u6570"
     }
   },
   "required": [

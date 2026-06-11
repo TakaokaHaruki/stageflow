@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, MapPin, ZoomIn, ZoomOut } from "lucide-react";
+import { Check, MapPin, UsersRound, ZoomIn, ZoomOut } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import SectionHeader from "@/components/SectionHeader";
 
@@ -9,6 +9,13 @@ function sanitizeSvg(svg) {
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/\s+on\w+="[^"]*"/gi, "")
     .replace(/\s+on\w+='[^']*'/gi, "");
+}
+
+function capacityLabel(capacity) {
+  const value = Number(capacity);
+  return Number.isFinite(value) && value > 0
+    ? `最大収容 ${value.toLocaleString("ja-JP")}人`
+    : "最大収容人数 未登録";
 }
 
 function SvgDisplay({ svgUrl }) {
@@ -25,7 +32,7 @@ function SvgDisplay({ svgUrl }) {
     setOffset({ x: 0, y: 0 });
     setSvgContent("");
     if (!svgUrl) return;
-    fetch(svgUrl).then((r) => r.text()).then(setSvgContent).catch(() => setSvgContent(""));
+    fetch(svgUrl).then((response) => response.text()).then(setSvgContent).catch(() => setSvgContent(""));
   }, [svgUrl]);
 
   useEffect(() => {
@@ -63,8 +70,8 @@ function SvgDisplay({ svgUrl }) {
       </div>
       <div
         ref={containerRef}
-        className="w-full cursor-grab overflow-hidden rounded-md border border-border bg-white active:cursor-grabbing"
-        style={{ height: "calc(100svh - 300px)", minHeight: 360, touchAction: "none" }}
+        className="h-[55svh] min-h-80 w-full cursor-grab overflow-hidden rounded-md border border-border bg-white active:cursor-grabbing sm:h-[calc(100svh-220px)] sm:min-h-[440px]"
+        style={{ touchAction: "none" }}
         onMouseDown={(event) => beginDrag(event.clientX, event.clientY)}
         onMouseMove={(event) => moveDrag(event.clientX, event.clientY)}
         onMouseUp={() => { dragging.current = false; }}
@@ -98,32 +105,48 @@ export default function SeatingMapViewer() {
 
   return (
     <div className="space-y-3">
-      <SectionHeader icon={MapPin} title="客席配置図" />
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {venues.map((venue) => {
-          const hasMap = seatingMaps.some((map) => map.venue_id === venue.id && map.svg_url);
-          const selected = venue.id === selectedVenueId;
-          return (
-            <button key={venue.id} onClick={() => setSelectedVenueId(venue.id)} className={`flex min-w-0 items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}>
-              <MapPin className={`h-4 w-4 shrink-0 ${selected ? "text-primary" : "text-muted-foreground"}`} />
-              <span className="min-w-0 flex-1 truncate text-sm font-medium">{venue.name}</span>
-              {hasMap && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600" />}
-            </button>
-          );
-        })}
+      <SectionHeader icon={MapPin} title="客席配置図" subtitle={`${venues.length}会場`} />
+      <div className="grid min-w-0 gap-3 sm:grid-cols-[220px_minmax(0,1fr)]">
+        <div className="flex gap-2 overflow-x-auto pb-1 sm:max-h-[calc(100svh-220px)] sm:flex-col sm:overflow-x-hidden sm:overflow-y-auto sm:pb-0 sm:pr-1">
+          {venues.map((venue) => {
+            const hasMap = seatingMaps.some((map) => map.venue_id === venue.id && map.svg_url);
+            const selected = venue.id === selectedVenueId;
+            return (
+              <button
+                key={venue.id}
+                onClick={() => setSelectedVenueId(venue.id)}
+                className={`flex min-w-52 shrink-0 items-start gap-2 rounded-md border px-3 py-2.5 text-left transition-colors sm:min-w-0 sm:shrink ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}
+              >
+                <MapPin className={`mt-0.5 h-4 w-4 shrink-0 ${selected ? "text-primary" : "text-muted-foreground"}`} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{venue.name}</span>
+                  <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">{capacityLabel(venue.max_capacity)}</span>
+                </span>
+                {hasMap && <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="min-w-0 space-y-2">
+          <div className="flex min-h-10 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border pb-2">
+            <h3 className="truncate text-sm font-semibold">{selectedVenue?.name}</h3>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <UsersRound className="h-3.5 w-3.5" />
+              {capacityLabel(selectedVenue?.max_capacity)}
+            </div>
+          </div>
+          {currentMap?.svg_url ? (
+            <SvgDisplay svgUrl={currentMap.svg_url} />
+          ) : (
+            <div className="flex h-[55svh] min-h-80 flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-border bg-muted/30 sm:h-[calc(100svh-220px)] sm:min-h-[440px]">
+              <MapPin className="h-10 w-10 text-muted-foreground/30" />
+              <p className="text-sm font-medium">{selectedVenue?.name}</p>
+              <p className="text-xs text-muted-foreground">客席配置図は未登録です。管理設定の会場管理から登録できます。</p>
+            </div>
+          )}
+        </div>
       </div>
-      {currentMap?.svg_url ? (
-        <div className="space-y-2">
-          <div className="text-sm font-semibold">{selectedVenue?.name}</div>
-          <SvgDisplay svgUrl={currentMap.svg_url} />
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-border bg-muted/30 py-16">
-          <MapPin className="h-10 w-10 text-muted-foreground/30" />
-          <p className="text-sm font-medium">{selectedVenue?.name}</p>
-          <p className="text-xs text-muted-foreground">客席配置図は未登録です。管理設定の会場管理から登録できます。</p>
-        </div>
-      )}
     </div>
   );
 }
