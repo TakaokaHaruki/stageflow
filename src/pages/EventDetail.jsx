@@ -41,7 +41,7 @@ export default function EventDetail() {
   const [tabResetKey, setTabResetKey] = useState(0);
   const [showScreenSaver, setShowScreenSaver] = useState(false);
   const [confirmScreenSaver, setConfirmScreenSaver] = useState(false);
-  const [adminSection, setAdminSection] = useState("users");
+  const [adminSection, setAdminSection] = useState("users"); // 'users' | 'operation_logs' | 'view_logs'
   const [settingsSection, setSettingsSection] = useState("positions");
   const [currentTime, setCurrentTime] = useState(() =>
     new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -112,7 +112,8 @@ export default function EventDetail() {
   const activeManagementChildren = tab === "admin"
     ? [
         { id: "users", label: "ユーザー管理", icon: Users },
-        { id: "logs", label: "操作ログ", icon: FileText },
+        { id: "operation_logs", label: "操作ログ", icon: FileText },
+        { id: "view_logs", label: "閲覧ログ", icon: Monitor },
       ]
     : tab === "settings"
       ? [

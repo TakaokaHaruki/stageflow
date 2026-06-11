@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Trash2, Settings, GripVertical } from "lucide-react";
 import PositionPresetManager from "@/components/PositionPresetManager";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useOperationLog } from "@/hooks/useOperationLog";
 import { toast } from "sonner";
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
@@ -30,6 +31,7 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
   const [dragOverId, setDragOverId] = useState(null);
   const queryClient = useQueryClient();
   const { canEdit: isAdmin } = useUserRole();
+  const { record } = useOperationLog(eventId);
 
   const { data: rawPositionTypes = [], isLoading } = useQuery({
     queryKey: ["positionTypes"],
@@ -55,18 +57,31 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.functions.invoke("updatePositionTypeRecord", { action: "create", data }),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["positionTypes"] });
       setName("");
       setColor(PRESET_COLORS[0]);
+      const created = result?.data?.positionType || result?.positionType;
+      record({
+        action_type: "position_type_add",
+        description: `ポジションタイプ「${created?.name || name.trim()}」を追加しました`,
+        entity_type: "PositionType",
+        entity_id: created?.id || "",
+      });
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.functions.invoke("updatePositionTypeRecord", { action: "delete", id }),
-    onSuccess: () => {
+    mutationFn: ({ id }) => base44.functions.invoke("updatePositionTypeRecord", { action: "delete", id }),
+    onSuccess: (_, { id, name: ptName }) => {
       queryClient.invalidateQueries({ queryKey: ["positionTypes"] });
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+      record({
+        action_type: "position_type_delete",
+        description: `ポジションタイプ「${ptName}」を削除しました`,
+        entity_type: "PositionType",
+        entity_id: id,
+      });
     },
   });
 
@@ -147,6 +162,12 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
       rememberPositionSideSettings(eventId, nextSideSettings);
       queryClient.invalidateQueries({ queryKey: ["positionTypes"] });
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+      record({
+        action_type: "position_type_side_toggle",
+        description: `「${positionType.name}」の上手/下手分割を${splitBySide ? "有効" : "無効"}にしました`,
+        entity_type: "PositionType",
+        entity_id: positionType.id,
+      });
     } catch (err) {
       console.error("上手/下手設定の保存に失敗しました", err);
       // ロールバック
@@ -173,7 +194,14 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
     const reordered = [...positionTypes];
     const [moved] = reordered.splice(fromIdx, 1);
     reordered.splice(toIdx, 0, moved);
-    base44.functions.invoke("updatePositionTypeRecord", { action: "reorder", updates: reordered.map((pt, idx) => ({ id: pt.id, order: idx })) });
+    base44.functions.invoke("updatePositionTypeRecord", { action: "reorder", updates: reordered.map((pt, idx) => ({ id: pt.id, order: idx })) })
+      .then(() => {
+        record({
+          action_type: "position_type_reorder",
+          description: `ポジションタイプの順序を変更しました（「${moved.name}」を移動）`,
+          entity_type: "PositionType",
+        });
+      });
     queryClient.setQueryData(["positionTypes"], reordered.map((pt, idx) => ({ ...pt, order: idx })));
     setDraggingId(null); setDragOverId(null);
   };
@@ -249,6 +277,7 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
                   上手/下手
                 </label>
                 <button onClick={() => setConfirmDelete({ id: pt.id, name: pt.name })} disabled={!isAdmin}
+
                   className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -260,7 +289,7 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
 
       {confirmDelete && (
         <ConfirmDialog message={`「${confirmDelete.name}」を削除しますか？`} confirmLabel="削除"
-          onConfirm={() => { deleteMutation.mutate(confirmDelete.id); setConfirmDelete(null); }}
+          onConfirm={() => { deleteMutation.mutate({ id: confirmDelete.id, name: confirmDelete.name }); setConfirmDelete(null); }}
           onCancel={() => setConfirmDelete(null)} />
       )}
 

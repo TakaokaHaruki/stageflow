@@ -261,24 +261,42 @@ export default function StaffDragDropManager({ eventId }) {
       positionIds: slotPositions.map((p) => p.id),
     });
     queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+    record({
+      action_type: "position_delete",
+      description: `「${slot}」のポジション${slotPositions.length}件を一括削除しました`,
+      entity_type: "Position",
+    });
     setConfirmBulkDelete(null);
   };
 
 
   const deleteMutation = useMutation({
-    mutationFn: async (id) => {
+    mutationFn: async ({ id }) => {
       await base44.functions.invoke("updatePositionSide", { action: "deletePosition", positionId: id });
     },
-    onMutate: async (id) => {
+    onMutate: async ({ id }) => {
       await queryClient.cancelQueries({ queryKey: ["positions", eventId] });
       const prev = queryClient.getQueryData(["positions", eventId]);
+      const posToDelete = prev?.find((p) => p.id === id);
       queryClient.setQueryData(["positions", eventId], (old) => old.filter((p) => p.id !== id));
-      return { previousPositions: prev };
+      return { previousPositions: prev, posToDelete };
     },
-    onError: (err, id, context) => {
+    onError: (err, _, context) => {
       queryClient.setQueryData(["positions", eventId], context.previousPositions);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["positions", eventId] }),
+    onSuccess: (_, { id }, context) => {
+      queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+      const pos = context?.posToDelete;
+      if (pos) {
+        record({
+          action_type: "position_delete",
+          description: `「${pos.name}」(${pos.time_slot || "開場中"})を削除しました`,
+          entity_type: "Position",
+          entity_id: id,
+          snapshot_before: pos,
+        });
+      }
+    },
   });
 
   const [showBulkAddModal, setShowBulkAddModal] = useState(false);
@@ -716,12 +734,30 @@ export default function StaffDragDropManager({ eventId }) {
       {showBulkAddModal && (
         <PositionBulkAddModal eventId={eventId} defaultTimeSlot={defaultSlot}
           onClose={() => setShowBulkAddModal(false)}
-          onSaved={() => { queryClient.invalidateQueries({ queryKey: ["positions", eventId] }); }} />
+          onSaved={(added) => {
+            queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+            const count = Array.isArray(added) ? added.length : 1;
+            record({
+              action_type: "position_add",
+              description: `「${defaultSlot}」に${count}件のポジションを一括追加しました`,
+              entity_type: "Position",
+            });
+          }} />
       )}
       {showModal && (
         <PositionFormModal position={editing} eventId={eventId} defaultTimeSlot={defaultSlot}
           onClose={() => setShowModal(false)}
-          onSaved={() => { queryClient.invalidateQueries({ queryKey: ["positions", eventId] }); }} />
+          onSaved={(saved) => {
+            queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+            if (!editing) {
+              record({
+                action_type: "position_add",
+                description: `「${saved?.name || "不明"}」(${saved?.time_slot || defaultSlot})を追加しました`,
+                entity_type: "Position",
+                entity_id: saved?.id || "",
+              });
+            }
+          }} />
       )}
       {editingStaff && (
         <StaffEditModal
@@ -732,7 +768,7 @@ export default function StaffDragDropManager({ eventId }) {
       )}
       {confirmDelete && (
         <ConfirmDialog message={`「${confirmDelete.name}」を削除しますか？`} confirmLabel="削除"
-          onConfirm={() => { deleteMutation.mutate(confirmDelete.id); setConfirmDelete(null); }}
+          onConfirm={() => { deleteMutation.mutate({ id: confirmDelete.id }); setConfirmDelete(null); }}
           onCancel={() => setConfirmDelete(null)} />
       )}
       {confirmBulkDelete && (

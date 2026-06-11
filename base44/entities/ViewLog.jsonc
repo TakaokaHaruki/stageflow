@@ -1,0 +1,59 @@
+{
+  "name": "ViewLog",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "\u30a4\u30d9\u30f3\u30c8ID"
+    },
+    "actor_name": {
+      "type": "string",
+      "description": "\u95b2\u89a7\u8005\u540d"
+    },
+    "actor_email": {
+      "type": "string",
+      "description": "\u95b2\u89a7\u8005\u30e1\u30fc\u30eb"
+    },
+    "view_type": {
+      "type": "string",
+      "enum": [
+        "announcement_open",
+        "file_open",
+        "tab_open",
+        "item_expand"
+      ],
+      "description": "\u95b2\u89a7\u7a2e\u5225"
+    },
+    "target_title": {
+      "type": "string",
+      "description": "\u95b2\u89a7\u5bfe\u8c61\u306e\u30bf\u30a4\u30c8\u30eb\u3084\u540d\u524d"
+    },
+    "target_id": {
+      "type": "string",
+      "description": "\u5bfe\u8c61\u306e\u30a8\u30f3\u30c6\u30a3\u30c6\u30a3ID"
+    }
+  },
+  "required": [
+    "event_id",
+    "view_type",
+    "target_title"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

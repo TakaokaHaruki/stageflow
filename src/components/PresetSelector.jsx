@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { BookOpen, BookmarkPlus, ChevronDown, ChevronRight, ChevronUp, Zap } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useOperationLog } from "@/hooks/useOperationLog";
 import { TIME_SLOTS, TIME_SLOT_STYLES } from "@/lib/constants";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SaveAsPresetModal from "@/components/SaveAsPresetModal";
@@ -18,6 +19,7 @@ export default function PresetSelector({ eventId, compact = false, positions = [
   const [expandedPresetId, setExpandedPresetId] = useState(null);
   const queryClient = useQueryClient();
   const { canEdit: isAdmin } = useUserRole();
+  const { record } = useOperationLog(eventId);
 
   const { data: presets = [] } = useQuery({
     queryKey: ["positionPresets"],
@@ -81,11 +83,17 @@ export default function PresetSelector({ eventId, compact = false, positions = [
       await base44.entities.Event.update(eventId, { active_preset_id: preset.id });
       return positions.length;
     },
-    onSuccess: (created) => {
+    onSuccess: (created, preset) => {
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });
       toast.success(`プリセットを適用しました（${created}ポジション）`);
       setOpen(false);
+      record({
+        action_type: "preset_apply",
+        description: `「${preset.name}」を全適用しました（${created}ポジション）`,
+        entity_type: "PositionPreset",
+        entity_id: preset.id,
+      });
     },
     onError: (err) => {
       toast.error("プリセットの適用に失敗しました: " + (err?.message || "エラーが発生しました"));
@@ -128,9 +136,15 @@ export default function PresetSelector({ eventId, compact = false, positions = [
       }
       return positions.length;
     },
-    onSuccess: (created) => {
+    onSuccess: (created, { preset, slot }) => {
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
       toast.success(`${created}ポジションを適用しました`);
+      record({
+        action_type: "preset_apply",
+        description: `「${preset.name}」の「${slot}」を適用しました（${created}ポジション）`,
+        entity_type: "PositionPreset",
+        entity_id: preset.id,
+      });
     },
     onError: (err) => {
       toast.error("適用に失敗しました: " + (err?.message || "エラーが発生しました"));
@@ -139,7 +153,17 @@ export default function PresetSelector({ eventId, compact = false, positions = [
 
   const clearMutation = useMutation({
     mutationFn: () => base44.entities.Event.update(eventId, { active_preset_id: null }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["event", eventId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      if (activePreset) {
+        record({
+          action_type: "preset_clear",
+          description: `「${activePreset.name}」の適用を解除しました`,
+          entity_type: "PositionPreset",
+          entity_id: activePreset.id,
+        });
+      }
+    },
   });
 
   if (!isAdmin) return null;
@@ -255,6 +279,7 @@ export default function PresetSelector({ eventId, compact = false, positions = [
           <SaveAsPresetModal
             positions={positions}
             positionTypes={positionTypes}
+            eventId={eventId}
             onClose={() => setShowSaveModal(false)}
           />
         )}

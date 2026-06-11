@@ -6,6 +6,7 @@ import { BookmarkPlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TIME_SLOTS } from "@/lib/constants";
 import { motion } from "framer-motion";
+import { useOperationLog } from "@/hooks/useOperationLog";
 
 /**
  * 現在のイベントのポジション構成をプリセットとして保存するモーダル。
@@ -15,8 +16,9 @@ import { motion } from "framer-motion";
  *   positionTypes   - 全PositionType配列
  *   onClose         - 閉じるコールバック
  */
-export default function SaveAsPresetModal({ positions, positionTypes, onClose }) {
+export default function SaveAsPresetModal({ positions, positionTypes, eventId, onClose }) {
   const queryClient = useQueryClient();
+  const { record } = useOperationLog(eventId);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
@@ -46,9 +48,16 @@ export default function SaveAsPresetModal({ positions, positionTypes, onClose })
         data: { name: name.trim(), description: description.trim() || undefined, slot_positions, positions: [] },
       });
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["positionPresets"] });
       toast.success("プリセットを保存しました");
+      const savedName = name.trim();
+      record({
+        action_type: "preset_save",
+        description: `現在の配置を「${savedName}」として保存しました`,
+        entity_type: "PositionPreset",
+        entity_id: result?.data?.preset?.id || result?.id || "",
+      });
       onClose();
     },
     onError: () => toast.error("保存に失敗しました"),

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import SectionHeader from "@/components/SectionHeader";
+import { useViewLog } from "@/hooks/useViewLog";
 
 const ROLE_OPTIONS = [
   { value: "admin", label: "管理者" },
@@ -306,6 +307,7 @@ export default function SharedFileManager({ eventId }) {
   const [openPanelId, setOpenPanelId] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
   const queryClient = useQueryClient();
+  const { record: recordView } = useViewLog(eventId);
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {}).finally(() => setUserLoading(false));
@@ -405,6 +407,7 @@ export default function SharedFileManager({ eventId }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-medium text-sm hover:text-primary hover:underline flex items-center gap-1 truncate"
+                    onClick={() => recordView({ view_type: "file_open", target_title: f.title, target_id: f.id })}
                   >
                     {f.title}
                     <Download className="w-3 h-3 shrink-0 opacity-60" />

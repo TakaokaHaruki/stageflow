@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { useUserRole } from "@/hooks/useUserRole";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { useOperationLog } from "@/hooks/useOperationLog";
+import { useViewLog } from "@/hooks/useViewLog";
 import SectionHeader from "@/components/SectionHeader";
 
 const PRIORITY_STYLES = {
@@ -375,7 +376,7 @@ function AnnouncementEditForm({ ann, onClose, onSaved }) {
   );
 }
 
-function AnnouncementCard({ ann, onDelete }) {
+function AnnouncementCard({ ann, onDelete, onExpand }) {
   const [expanded, setExpanded] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -418,7 +419,7 @@ function AnnouncementCard({ ann, onDelete }) {
             <Pencil className="w-3.5 h-3.5" />
           </button>
           {ann.body && (
-            <button onClick={() => setExpanded(!expanded)} className="p-1 rounded hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" title={expanded ? "閉じる" : "詳細を表示"}>
+            <button onClick={() => { const next = !expanded; setExpanded(next); if (next) onExpand?.(); }} className="p-1 rounded hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" title={expanded ? "閉じる" : "詳細を表示"}>
               {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
           )}
@@ -453,6 +454,7 @@ export default function AnnouncementManager({ eventId }) {
   const prevIdsRef = useRef(new Set());
   const { role, canEdit } = useUserRole();
   const { record } = useOperationLog(eventId);
+  const { record: recordView } = useViewLog(eventId);
 
   const { data: announcements = [], isLoading } = useQuery({
     queryKey: ["announcements", eventId],
@@ -484,7 +486,6 @@ export default function AnnouncementManager({ eventId }) {
 
   const deleteMutation = useMutation({
     mutationFn: async (ann) => {
-      record({ action_type: "announcement_delete", description: `連絡事項「${ann.title}」を削除しました`, entity_type: "Announcement", entity_id: ann.id });
       await base44.functions.invoke("updateAnnouncementRecord", { action: "delete", announcementId: ann.id });
     },
     onMutate: async (ann) => {
@@ -499,9 +500,10 @@ export default function AnnouncementManager({ eventId }) {
       queryClient.setQueryData(["announcements", eventId], context?.previousAnnouncements);
       queryClient.setQueryData(["announcements-alert", eventId], context?.previousAlert);
     },
-    onSuccess: () => {
+    onSuccess: (_, ann) => {
       queryClient.invalidateQueries({ queryKey: ["announcements", eventId] });
       queryClient.invalidateQueries({ queryKey: ["announcements-alert", eventId] });
+      record({ action_type: "announcement_delete", description: `連絡事項「${ann.title}」を削除しました`, entity_type: "Announcement", entity_id: ann.id });
     },
   });
 
@@ -534,6 +536,7 @@ export default function AnnouncementManager({ eventId }) {
               key={ann.id}
               ann={ann}
               onDelete={(ann) => deleteMutation.mutate(ann)}
+              onExpand={() => recordView({ view_type: "announcement_open", target_title: ann.title, target_id: ann.id })}
             />
           ))}
         </div>
