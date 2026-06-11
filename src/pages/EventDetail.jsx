@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Paperclip, FileText, Monitor } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Paperclip, FileText, Monitor, LayoutTemplate } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -28,6 +28,7 @@ import EventTimeDisplay from "@/components/EventTimeDisplay";
 import EventScreenSaver from "@/components/EventScreenSaver";
 import ThemeToggle from "@/components/ThemeToggle";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import SeatingMapViewer from "@/components/SeatingMapViewer";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -96,6 +97,7 @@ export default function EventDetail() {
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
     { id: "notice", label: "連絡事項", icon: Bell },
     { id: "files", label: "ファイル共有", icon: Paperclip },
+    { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
     ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
@@ -114,6 +116,7 @@ export default function EventDetail() {
         { id: "users", label: "ユーザー管理", icon: Users },
         { id: "operation_logs", label: "操作ログ", icon: FileText },
         { id: "view_logs", label: "閲覧ログ", icon: Monitor },
+        { id: "venues", label: "会場管理", icon: LayoutTemplate },
       ]
     : tab === "settings"
       ? [
@@ -289,6 +292,7 @@ export default function EventDetail() {
             {tab === "settings" && <PositionTypeManagement eventId={eventId} section={settingsSection} />}
             {tab === "notice" && <AnnouncementManager eventId={eventId} />}
             {tab === "files" && <SharedFileManager eventId={eventId} />}
+            {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
             {tab === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
           </motion.div>
         </AnimatePresence>

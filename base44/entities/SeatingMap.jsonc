@@ -1,0 +1,55 @@
+{
+  "name": "SeatingMap",
+  "type": "object",
+  "properties": {
+    "venue_id": {
+      "type": "string",
+      "description": "\u5bfe\u8c61Venue\u306eID"
+    },
+    "svg_content": {
+      "type": "string",
+      "description": "SVG\u5f62\u5f0f\u306e\u5ba2\u5e2d\u914d\u7f6e\u56f3\uff08raw\u30c6\u30ad\u30b9\u30c8\uff09"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u6700\u7d42\u66f4\u65b0\u65e5\u6642"
+    }
+  },
+  "required": [
+    "venue_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "chief"
+          ]
+        }
+      }
+    }
+  }
+}
