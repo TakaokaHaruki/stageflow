@@ -16,16 +16,6 @@ function sanitizeSvg(svgString) {
   return cleaned;
 }
 
-// Minify SVG to reduce storage size
-function minifySvg(svgString) {
-  if (!svgString) return "";
-  return svgString
-    .replace(/<!--[\s\S]*?-->/g, "")      // remove comments
-    .replace(/\s{2,}/g, " ")              // collapse whitespace
-    .replace(/>\s+</g, "><")              // remove whitespace between tags
-    .trim();
-}
-
 function VenueSelector({ venues, selectedId, onSelect }) {
   const [open, setOpen] = useState(false);
   const selected = venues.find((v) => v.id === selectedId);
@@ -83,17 +73,19 @@ function VenueSelector({ venues, selectedId, onSelect }) {
 
 function SvgEditor({ venueId, existing, onClose }) {
   const queryClient = useQueryClient();
-  const [svgText, setSvgText] = useState(existing?.svg_content || "");
+  const [svgText, setSvgText] = useState("");
+  const [svgPreviewUrl, setSvgPreviewUrl] = useState(existing?.svg_url || null);
   const [saveError, setSaveError] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   const saveMutation = useMutation({
-    mutationFn: async (content) => {
+    mutationFn: async (url) => {
       const now = new Date().toISOString();
       if (existing?.id) {
-        return base44.entities.SeatingMap.update(existing.id, { svg_content: content, updated_at: now });
+        return base44.entities.SeatingMap.update(existing.id, { svg_url: url, updated_at: now });
       } else {
-        return base44.entities.SeatingMap.create({ venue_id: venueId, svg_content: content, updated_at: now });
+        return base44.entities.SeatingMap.create({ venue_id: venueId, svg_url: url, updated_at: now });
       }
     },
     onSuccess: () => {
@@ -105,13 +97,36 @@ function SvgEditor({ venueId, existing, onClose }) {
     },
   });
 
-  const handleFile = (e) => {
+  const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Preview
     const reader = new FileReader();
     reader.onload = (ev) => setSvgText(ev.target.result || "");
     reader.readAsText(file);
   };
+
+  const handleSave = async () => {
+    setSaveError(null);
+    try {
+      let urlToSave = svgPreviewUrl;
+      if (svgText.trim()) {
+        setIsUploading(true);
+        const blob = new Blob([svgText], { type: "image/svg+xml" });
+        const uploadFile = new File([blob], "seating_map.svg", { type: "image/svg+xml" });
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: uploadFile });
+        urlToSave = file_url;
+        setIsUploading(false);
+      }
+      if (!urlToSave) return;
+      saveMutation.mutate(urlToSave);
+    } catch (err) {
+      setIsUploading(false);
+      setSaveError(err?.message || "アップロードに失敗しました");
+    }
+  };
+
+  const isBusy = isUploading || saveMutation.isPending;
 
   return (
     <motion.div
@@ -152,11 +167,11 @@ function SvgEditor({ venueId, existing, onClose }) {
           {svgText && (
             <div className="border border-border rounded-lg overflow-auto max-h-64 bg-white p-2">
               <p className="text-[10px] text-muted-foreground mb-1">プレビュー</p>
-              <div
-                className="w-full"
-                dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgText) }}
-              />
+              <div className="w-full" dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgText) }} />
             </div>
+          )}
+          {!svgText && svgPreviewUrl && (
+            <div className="text-xs text-muted-foreground px-1">登録済みのSVGが保存されています。新しいファイルを選ぶか、このまま保存できます。</div>
           )}
         </div>
 
@@ -169,11 +184,11 @@ function SvgEditor({ venueId, existing, onClose }) {
           <Button variant="outline" className="flex-1" onClick={onClose}>キャンセル</Button>
           <Button
             className="flex-1 gap-1.5"
-            disabled={!svgText.trim() || saveMutation.isPending}
-            onClick={() => { setSaveError(null); saveMutation.mutate(minifySvg(svgText)); }}
+            disabled={(!svgText.trim() && !svgPreviewUrl) || isBusy}
+            onClick={handleSave}
           >
             <Check className="w-3.5 h-3.5" />
-            {saveMutation.isPending ? "保存中..." : "保存する"}
+            {isUploading ? "アップロード中..." : saveMutation.isPending ? "保存中..." : "保存する"}
           </Button>
         </div>
       </motion.div>
@@ -181,13 +196,22 @@ function SvgEditor({ venueId, existing, onClose }) {
   );
 }
 
-function SvgDisplay({ svgContent }) {
+function SvgDisplay({ svgUrl }) {
   const containerRef = useRef(null);
+  const [svgContent, setSvgContent] = useState("");
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
   const lastTouchDist = useRef(null);
+
+  useEffect(() => {
+    if (!svgUrl) return;
+    fetch(svgUrl)
+      .then((r) => r.text())
+      .then((text) => setSvgContent(text))
+      .catch(() => setSvgContent(""));
+  }, [svgUrl]);
 
   const clampScale = (s) => Math.min(Math.max(s, 0.3), 5);
 
@@ -371,8 +395,8 @@ export default function SeatingMapViewer({ eventId }) {
         }
       />
 
-      {currentMap?.svg_content ? (
-        <SvgDisplay svgContent={currentMap.svg_content} />
+      {currentMap?.svg_url ? (
+        <SvgDisplay svgUrl={currentMap.svg_url} />
       ) : (
         <div className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-muted/30 py-16">
           <MapPin className="w-10 h-10 text-muted-foreground/30" />
