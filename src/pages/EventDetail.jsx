@@ -300,7 +300,7 @@ export default function EventDetail() {
 
       {confirmScreenSaver && (
         <ConfirmDialog
-          message="スクリーンセーバーを有効にしますか？"
+          message={"スクリーンセーバーを有効にしますか？\nスクリーンセーバーを終了するには、ロゴを5回クリックまたはタップしてください。"}
           confirmLabel="有効にする"
           confirmVariant="default"
           onCancel={() => setConfirmScreenSaver(false)}
