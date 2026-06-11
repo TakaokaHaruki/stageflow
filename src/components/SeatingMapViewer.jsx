@@ -10,12 +10,20 @@ import { motion, AnimatePresence } from "framer-motion";
 // Minimal SVG sanitizer: strips script/event handler attributes
 function sanitizeSvg(svgString) {
   if (!svgString) return "";
-  // Remove <script> tags
   let cleaned = svgString.replace(/<script[\s\S]*?<\/script>/gi, "");
-  // Remove on* event attributes
   cleaned = cleaned.replace(/\s+on\w+="[^"]*"/gi, "");
   cleaned = cleaned.replace(/\s+on\w+='[^']*'/gi, "");
   return cleaned;
+}
+
+// Minify SVG to reduce storage size
+function minifySvg(svgString) {
+  if (!svgString) return "";
+  return svgString
+    .replace(/<!--[\s\S]*?-->/g, "")      // remove comments
+    .replace(/\s{2,}/g, " ")              // collapse whitespace
+    .replace(/>\s+</g, "><")              // remove whitespace between tags
+    .trim();
 }
 
 function VenueSelector({ venues, selectedId, onSelect }) {
@@ -76,6 +84,7 @@ function VenueSelector({ venues, selectedId, onSelect }) {
 function SvgEditor({ venueId, existing, onClose }) {
   const queryClient = useQueryClient();
   const [svgText, setSvgText] = useState(existing?.svg_content || "");
+  const [saveError, setSaveError] = useState(null);
   const fileInputRef = useRef(null);
 
   const saveMutation = useMutation({
@@ -90,6 +99,9 @@ function SvgEditor({ venueId, existing, onClose }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["seating_maps"] });
       onClose();
+    },
+    onError: (err) => {
+      setSaveError(err?.message || "保存に失敗しました");
     },
   });
 
@@ -148,12 +160,17 @@ function SvgEditor({ venueId, existing, onClose }) {
           )}
         </div>
 
+        {saveError && (
+          <div className="mx-4 mb-2 px-3 py-2 rounded-md bg-destructive/10 text-destructive text-xs">
+            ⚠️ {saveError}
+          </div>
+        )}
         <div className="flex gap-2 px-4 pb-4 pt-2 border-t border-border shrink-0">
           <Button variant="outline" className="flex-1" onClick={onClose}>キャンセル</Button>
           <Button
             className="flex-1 gap-1.5"
             disabled={!svgText.trim() || saveMutation.isPending}
-            onClick={() => saveMutation.mutate(svgText.trim())}
+            onClick={() => { setSaveError(null); saveMutation.mutate(minifySvg(svgText)); }}
           >
             <Check className="w-3.5 h-3.5" />
             {saveMutation.isPending ? "保存中..." : "保存する"}
@@ -288,7 +305,7 @@ export default function SeatingMapViewer({ eventId }) {
   const [selectedVenueId, setSelectedVenueId] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
 
-  const { data: venues = [] } = useQuery({
+  const { data: venues = [], isLoading: venuesLoading } = useQuery({
     queryKey: ["venues"],
     queryFn: () => base44.entities.Venue.list(),
   });
@@ -308,13 +325,19 @@ export default function SeatingMapViewer({ eventId }) {
   const selectedVenue = venues.find((v) => v.id === selectedVenueId);
   const currentMap = seatingMaps.find((m) => m.venue_id === selectedVenueId);
 
+  // ロード中
+  if (venuesLoading) {
+    return <div className="py-8 text-center text-sm text-muted-foreground">読み込み中...</div>;
+  }
+
+  // 会場なし
   if (venues.length === 0) {
     return (
       <div className="py-8 flex flex-col items-center gap-3 text-center">
         <MapPin className="w-10 h-10 text-muted-foreground/40" />
         <p className="text-sm text-muted-foreground">会場が登録されていません</p>
         {isPrivileged && (
-          <p className="text-xs text-muted-foreground">管理設定から会場を追加してください</p>
+          <p className="text-xs text-muted-foreground">管理者設定 → 会場管理 から会場を追加してください</p>
         )}
       </div>
     );
