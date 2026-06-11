@@ -106,7 +106,7 @@ export default function SeatingMapViewer() {
   return (
     <div className="space-y-3">
       <SectionHeader icon={MapPin} title="客席配置図" subtitle={`${venues.length}会場`} />
-      <div className="grid min-w-0 gap-3 sm:grid-cols-[220px_minmax(0,1fr)]">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-[260px_minmax(0,1fr)]">
         <div className="flex gap-2 overflow-x-auto pb-1 sm:max-h-[calc(100svh-220px)] sm:flex-col sm:overflow-x-hidden sm:overflow-y-auto sm:pb-0 sm:pr-1">
           {venues.map((venue) => {
             const hasMap = seatingMaps.some((map) => map.venue_id === venue.id && map.svg_url);
@@ -115,11 +115,11 @@ export default function SeatingMapViewer() {
               <button
                 key={venue.id}
                 onClick={() => setSelectedVenueId(venue.id)}
-                className={`flex min-w-52 shrink-0 items-start gap-2 rounded-md border px-3 py-2.5 text-left transition-colors sm:min-w-0 sm:shrink ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}
+                className={`flex min-h-[62px] w-64 shrink-0 items-start gap-2 rounded-md border px-3 py-2.5 text-left transition-colors sm:w-auto sm:min-w-0 sm:shrink ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}
               >
                 <MapPin className={`mt-0.5 h-4 w-4 shrink-0 ${selected ? "text-primary" : "text-muted-foreground"}`} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{venue.name}</span>
+                  <span className="line-clamp-2 block break-words text-[13px] font-medium leading-[1.35]">{venue.name}</span>
                   <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">{capacityLabel(venue.max_capacity)}</span>
                 </span>
                 {hasMap && <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />}
@@ -129,8 +129,8 @@ export default function SeatingMapViewer() {
         </div>
 
         <div className="min-w-0 space-y-2">
-          <div className="flex min-h-10 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border pb-2">
-            <h3 className="truncate text-sm font-semibold">{selectedVenue?.name}</h3>
+          <div className="flex min-h-10 flex-wrap items-start justify-between gap-x-3 gap-y-1 border-b border-border pb-2">
+            <h3 className="min-w-0 flex-1 break-words text-sm font-semibold leading-snug">{selectedVenue?.name}</h3>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <UsersRound className="h-3.5 w-3.5" />
               {capacityLabel(selectedVenue?.max_capacity)}
