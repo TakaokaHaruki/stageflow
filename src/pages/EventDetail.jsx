@@ -29,6 +29,7 @@ import EventScreenSaver from "@/components/EventScreenSaver";
 import ThemeToggle from "@/components/ThemeToggle";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SeatingMapViewer from "@/components/SeatingMapViewer";
+import VenueManager from "@/components/VenueManager";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -116,12 +117,12 @@ export default function EventDetail() {
         { id: "users", label: "ユーザー管理", icon: Users },
         { id: "operation_logs", label: "操作ログ", icon: FileText },
         { id: "view_logs", label: "閲覧ログ", icon: Monitor },
-        { id: "venues", label: "会場管理", icon: LayoutTemplate },
       ]
     : tab === "settings"
       ? [
           { id: "positions", label: "ポジション設定", icon: Settings },
           { id: "presets", label: "ポジションプリセット", icon: ClipboardList },
+          { id: "venues", label: "会場管理", icon: LayoutTemplate },
         ]
       : [];
   const activeManagementChild = tab === "admin" ? adminSection : settingsSection;
@@ -289,7 +290,8 @@ export default function EventDetail() {
                 section={adminSection}
               />
             )}
-            {tab === "settings" && <PositionTypeManagement eventId={eventId} section={settingsSection} />}
+            {tab === "settings" && settingsSection !== "venues" && <PositionTypeManagement eventId={eventId} section={settingsSection} />}
+            {tab === "settings" && settingsSection === "venues" && <VenueManager />}
             {tab === "notice" && <AnnouncementManager eventId={eventId} />}
             {tab === "files" && <SharedFileManager eventId={eventId} />}
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}

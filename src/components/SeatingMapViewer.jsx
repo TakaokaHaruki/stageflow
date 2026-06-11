@@ -1,423 +1,125 @@
-import { useState, useRef, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Check, MapPin, ZoomIn, ZoomOut } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useUserRole } from "@/hooks/useUserRole";
-import { Button } from "@/components/ui/button";
-import { Pencil, MapPin, ChevronDown, Upload, X, Check, ZoomIn, ZoomOut } from "lucide-react";
 import SectionHeader from "@/components/SectionHeader";
-import { motion, AnimatePresence } from "framer-motion";
 
-// Minimal SVG sanitizer: strips script/event handler attributes
-function sanitizeSvg(svgString) {
-  if (!svgString) return "";
-  let cleaned = svgString.replace(/<script[\s\S]*?<\/script>/gi, "");
-  cleaned = cleaned.replace(/\s+on\w+="[^"]*"/gi, "");
-  cleaned = cleaned.replace(/\s+on\w+='[^']*'/gi, "");
-  return cleaned;
+function sanitizeSvg(svg) {
+  return (svg || "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/\s+on\w+="[^"]*"/gi, "")
+    .replace(/\s+on\w+='[^']*'/gi, "");
 }
 
-function VenueSelector({ venues, selectedId, onSelect }) {
-  const [open, setOpen] = useState(false);
-  const selected = venues.find((v) => v.id === selectedId);
-
-  if (venues.length === 0) return null;
-
-  if (venues.length <= 4) {
-    return (
-      <div className="flex flex-wrap gap-1.5">
-        {venues.map((v) => (
-          <button
-            key={v.id}
-            onClick={() => onSelect(v.id)}
-            className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors select-none ${
-              v.id === selectedId
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-            }`}
-          >
-            {v.name}
-          </button>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-1 rounded-md border border-border text-xs font-medium text-foreground bg-card hover:bg-muted transition-colors select-none"
-      >
-        <MapPin className="w-3 h-3 text-primary" />
-        {selected?.name || "会場を選択"}
-        <ChevronDown className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <div className="absolute top-full mt-1 left-0 z-20 bg-card border border-border rounded-lg shadow-lg py-1 min-w-40">
-          {venues.map((v) => (
-            <button
-              key={v.id}
-              onClick={() => { onSelect(v.id); setOpen(false); }}
-              className={`w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors ${
-                v.id === selectedId ? "text-primary font-semibold" : "text-foreground"
-              }`}
-            >
-              {v.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SvgEditor({ venueId, existing, onClose }) {
-  const queryClient = useQueryClient();
-  const [svgText, setSvgText] = useState("");
-  const [svgPreviewUrl, setSvgPreviewUrl] = useState(existing?.svg_url || null);
-  const [saveError, setSaveError] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef(null);
-
-  const saveMutation = useMutation({
-    mutationFn: async (url) => {
-      const now = new Date().toISOString();
-      if (existing?.id) {
-        return base44.entities.SeatingMap.update(existing.id, { svg_url: url, updated_at: now });
-      } else {
-        return base44.entities.SeatingMap.create({ venue_id: venueId, svg_url: url, updated_at: now });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["seating_maps"] });
-      onClose();
-    },
-    onError: (err) => {
-      setSaveError(err?.message || "保存に失敗しました");
-    },
-  });
-
-  const handleFile = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    // Preview
-    const reader = new FileReader();
-    reader.onload = (ev) => setSvgText(ev.target.result || "");
-    reader.readAsText(file);
-  };
-
-  const handleSave = async () => {
-    setSaveError(null);
-    try {
-      let urlToSave = svgPreviewUrl;
-      if (svgText.trim()) {
-        setIsUploading(true);
-        const blob = new Blob([svgText], { type: "image/svg+xml" });
-        const uploadFile = new File([blob], "seating_map.svg", { type: "image/svg+xml" });
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: uploadFile });
-        urlToSave = file_url;
-        setIsUploading(false);
-      }
-      if (!urlToSave) return;
-      saveMutation.mutate(urlToSave);
-    } catch (err) {
-      setIsUploading(false);
-      setSaveError(err?.message || "アップロードに失敗しました");
-    }
-  };
-
-  const isBusy = isUploading || saveMutation.isPending;
-
-  return (
-    <motion.div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-2"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <motion.div
-        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]"
-        initial={{ y: 40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 40, opacity: 0 }}
-        transition={{ ease: [0.22, 1, 0.36, 1], duration: 0.28 }}
-      >
-        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border shrink-0">
-          <h3 className="text-sm font-semibold">客席配置図を登録・編集</h3>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-auto p-4 flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => fileInputRef.current?.click()}>
-              <Upload className="w-3 h-3" />SVGファイルを読み込む
-            </Button>
-            <input ref={fileInputRef} type="file" accept=".svg,image/svg+xml" className="hidden" onChange={handleFile} />
-            <span className="text-xs text-muted-foreground">またはテキストで直接入力</span>
-          </div>
-          <textarea
-            className="w-full flex-1 min-h-48 rounded-md border border-input bg-background px-3 py-2 text-xs font-mono resize-y focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            placeholder={'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">\n  <!-- ここにSVGコードを貼り付けてください -->\n</svg>'}
-            value={svgText}
-            onChange={(e) => setSvgText(e.target.value)}
-          />
-          {svgText && (
-            <div className="border border-border rounded-lg overflow-auto max-h-64 bg-white p-2">
-              <p className="text-[10px] text-muted-foreground mb-1">プレビュー</p>
-              <div className="w-full" dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgText) }} />
-            </div>
-          )}
-          {!svgText && svgPreviewUrl && (
-            <div className="text-xs text-muted-foreground px-1">登録済みのSVGが保存されています。新しいファイルを選ぶか、このまま保存できます。</div>
-          )}
-        </div>
-
-        {saveError && (
-          <div className="mx-4 mb-2 px-3 py-2 rounded-md bg-destructive/10 text-destructive text-xs">
-            ⚠️ {saveError}
-          </div>
-        )}
-        <div className="flex gap-2 px-4 pb-4 pt-2 border-t border-border shrink-0">
-          <Button variant="outline" className="flex-1" onClick={onClose}>キャンセル</Button>
-          <Button
-            className="flex-1 gap-1.5"
-            disabled={(!svgText.trim() && !svgPreviewUrl) || isBusy}
-            onClick={handleSave}
-          >
-            <Check className="w-3.5 h-3.5" />
-            {isUploading ? "アップロード中..." : saveMutation.isPending ? "保存中..." : "保存する"}
-          </Button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-function SvgDisplay({ svgUrl }) {
+function SvgDisplay({ svgContent }) {
   const containerRef = useRef(null);
-  const [svgContent, setSvgContent] = useState("");
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const isDragging = useRef(false);
+  const dragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
-  const lastTouchDist = useRef(null);
+  const clampScale = (value) => Math.min(Math.max(value, 0.3), 5);
 
   useEffect(() => {
-    if (!svgUrl) return;
-    fetch(svgUrl)
-      .then((r) => r.text())
-      .then((text) => setSvgContent(text))
-      .catch(() => setSvgContent(""));
-  }, [svgUrl]);
-
-  const clampScale = (s) => Math.min(Math.max(s, 0.3), 5);
-
-  const handleWheel = (e) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    setScale((s) => clampScale(s + delta));
-  };
-
-  const handleMouseDown = (e) => {
-    isDragging.current = true;
-    dragStart.current = { x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y };
-  };
-  const handleMouseMove = (e) => {
-    if (!isDragging.current) return;
-    setOffset({
-      x: dragStart.current.ox + (e.clientX - dragStart.current.x),
-      y: dragStart.current.oy + (e.clientY - dragStart.current.y),
-    });
-  };
-  const handleMouseUp = () => { isDragging.current = false; };
-
-  const handleTouchStart = (e) => {
-    if (e.touches.length === 2) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      lastTouchDist.current = Math.sqrt(dx * dx + dy * dy);
-    } else if (e.touches.length === 1) {
-      isDragging.current = true;
-      dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, ox: offset.x, oy: offset.y };
-    }
-  };
-  const handleTouchMove = (e) => {
-    if (e.touches.length === 2 && lastTouchDist.current !== null) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const delta = (dist - lastTouchDist.current) * 0.005;
-      setScale((s) => clampScale(s + delta));
-      lastTouchDist.current = dist;
-    } else if (e.touches.length === 1 && isDragging.current) {
-      setOffset({
-        x: dragStart.current.ox + (e.touches[0].clientX - dragStart.current.x),
-        y: dragStart.current.oy + (e.touches[0].clientY - dragStart.current.y),
-      });
-    }
-  };
-  const handleTouchEnd = () => { isDragging.current = false; lastTouchDist.current = null; };
+    setScale(1);
+    setOffset({ x: 0, y: 0 });
+  }, [svgContent]);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    el.addEventListener("wheel", handleWheel, { passive: false });
-    return () => el.removeEventListener("wheel", handleWheel);
-  });
+    const element = containerRef.current;
+    if (!element) return undefined;
+    const handleWheel = (event) => {
+      event.preventDefault();
+      setScale((value) => clampScale(value + (event.deltaY > 0 ? -0.1 : 0.1)));
+    };
+    element.addEventListener("wheel", handleWheel, { passive: false });
+    return () => element.removeEventListener("wheel", handleWheel);
+  }, []);
+
+  const beginDrag = (x, y) => {
+    dragging.current = true;
+    dragStart.current = { x, y, ox: offset.x, oy: offset.y };
+  };
+  const moveDrag = (x, y) => {
+    if (!dragging.current) return;
+    setOffset({ x: dragStart.current.ox + x - dragStart.current.x, y: dragStart.current.oy + y - dragStart.current.y });
+  };
 
   return (
     <div className="relative">
-      <div className="absolute top-2 right-2 z-10 flex gap-1">
-        <button
-          onClick={() => setScale((s) => clampScale(s + 0.2))}
-          className="w-7 h-7 flex items-center justify-center rounded-md bg-card/80 border border-border backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ZoomIn className="w-3.5 h-3.5" />
+      <div className="absolute right-2 top-2 z-10 flex gap-1">
+        <button onClick={() => setScale((value) => clampScale(value + 0.2))} className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground" aria-label="拡大">
+          <ZoomIn className="h-3.5 w-3.5" />
         </button>
-        <button
-          onClick={() => setScale((s) => clampScale(s - 0.2))}
-          className="w-7 h-7 flex items-center justify-center rounded-md bg-card/80 border border-border backdrop-blur-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ZoomOut className="w-3.5 h-3.5" />
+        <button onClick={() => setScale((value) => clampScale(value - 0.2))} className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground" aria-label="縮小">
+          <ZoomOut className="h-3.5 w-3.5" />
         </button>
-        <button
-          onClick={() => { setScale(1); setOffset({ x: 0, y: 0 }); }}
-          className="h-7 px-2 flex items-center justify-center rounded-md bg-card/80 border border-border backdrop-blur-sm text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
+        <button onClick={() => { setScale(1); setOffset({ x: 0, y: 0 }); }} className="flex h-7 items-center justify-center rounded-md border border-border bg-card/80 px-2 text-xs text-muted-foreground backdrop-blur-sm hover:text-foreground">
           リセット
         </button>
       </div>
       <div
         ref={containerRef}
-        className="w-full overflow-hidden rounded-lg border border-border bg-white cursor-grab active:cursor-grabbing"
-        style={{ height: "calc(100svh - 260px)", minHeight: 320, touchAction: "none" }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        className="w-full cursor-grab overflow-hidden rounded-md border border-border bg-white active:cursor-grabbing"
+        style={{ height: "calc(100svh - 300px)", minHeight: 360, touchAction: "none" }}
+        onMouseDown={(event) => beginDrag(event.clientX, event.clientY)}
+        onMouseMove={(event) => moveDrag(event.clientX, event.clientY)}
+        onMouseUp={() => { dragging.current = false; }}
+        onMouseLeave={() => { dragging.current = false; }}
+        onTouchStart={(event) => event.touches.length === 1 && beginDrag(event.touches[0].clientX, event.touches[0].clientY)}
+        onTouchMove={(event) => event.touches.length === 1 && moveDrag(event.touches[0].clientX, event.touches[0].clientY)}
+        onTouchEnd={() => { dragging.current = false; }}
       >
-        <div
-          style={{
-            transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-            transformOrigin: "center center",
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            className="w-full h-full [&_svg]:max-w-full [&_svg]:max-h-full [&_svg]:w-full [&_svg]:h-auto"
-            dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgContent) }}
-          />
+        <div className="flex h-full w-full items-center justify-center" style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`, transformOrigin: "center center" }}>
+          <div className="flex h-full w-full items-center justify-center [&_svg]:max-h-full [&_svg]:max-w-full" dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgContent) }} />
         </div>
       </div>
     </div>
   );
 }
 
-export default function SeatingMapViewer({ eventId }) {
-  const { isAdmin, isChief } = useUserRole();
-  const isPrivileged = isAdmin || isChief;
+export default function SeatingMapViewer() {
   const [selectedVenueId, setSelectedVenueId] = useState(null);
-  const [showEditor, setShowEditor] = useState(false);
+  const { data: venues = [], isLoading } = useQuery({ queryKey: ["venues"], queryFn: () => base44.entities.Venue.list() });
+  const { data: seatingMaps = [] } = useQuery({ queryKey: ["seating_maps"], queryFn: () => base44.entities.SeatingMap.list() });
 
-  const { data: venues = [], isLoading: venuesLoading } = useQuery({
-    queryKey: ["venues"],
-    queryFn: () => base44.entities.Venue.list(),
-  });
-
-  const { data: seatingMaps = [] } = useQuery({
-    queryKey: ["seating_maps"],
-    queryFn: () => base44.entities.SeatingMap.list(),
-  });
-
-  // Auto-select first venue
   useEffect(() => {
-    if (venues.length > 0 && !selectedVenueId) {
-      setSelectedVenueId(venues[0].id);
-    }
-  }, [venues, selectedVenueId]);
+    if (!selectedVenueId && venues.length) setSelectedVenueId(venues[0].id);
+  }, [selectedVenueId, venues]);
 
-  const selectedVenue = venues.find((v) => v.id === selectedVenueId);
-  const currentMap = seatingMaps.find((m) => m.venue_id === selectedVenueId);
+  const selectedVenue = venues.find((venue) => venue.id === selectedVenueId);
+  const currentMap = seatingMaps.find((map) => map.venue_id === selectedVenueId);
 
-  // ロード中
-  if (venuesLoading) {
-    return <div className="py-8 text-center text-sm text-muted-foreground">読み込み中...</div>;
-  }
-
-  // 会場なし
-  if (venues.length === 0) {
-    return (
-      <div className="py-8 flex flex-col items-center gap-3 text-center">
-        <MapPin className="w-10 h-10 text-muted-foreground/40" />
-        <p className="text-sm text-muted-foreground">会場が登録されていません</p>
-        {isPrivileged && (
-          <p className="text-xs text-muted-foreground">管理者設定 → 会場管理 から会場を追加してください</p>
-        )}
-      </div>
-    );
-  }
+  if (isLoading) return <div className="py-8 text-center text-sm text-muted-foreground">読み込み中...</div>;
+  if (!venues.length) return <div className="py-10 text-center text-sm text-muted-foreground">会場が登録されていません</div>;
 
   return (
-    <div className="flex flex-col gap-3">
-      <SectionHeader
-        icon={MapPin}
-        title="客席配置図"
-        subtitle={selectedVenue?.name}
-        actions={
-          <div className="flex items-center gap-2">
-            <VenueSelector
-              venues={venues}
-              selectedId={selectedVenueId}
-              onSelect={setSelectedVenueId}
-            />
-            {isPrivileged && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5 text-xs h-7"
-                onClick={() => setShowEditor(true)}
-              >
-                <Pencil className="w-3 h-3" />
-                {currentMap ? "編集" : "登録"}
-              </Button>
-            )}
-          </div>
-        }
-      />
-
-      {currentMap?.svg_url ? (
-        <SvgDisplay svgUrl={currentMap.svg_url} />
+    <div className="space-y-3">
+      <SectionHeader icon={MapPin} title="客席配置図" />
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {venues.map((venue) => {
+          const hasMap = seatingMaps.some((map) => map.venue_id === venue.id && map.svg_content);
+          const selected = venue.id === selectedVenueId;
+          return (
+            <button key={venue.id} onClick={() => setSelectedVenueId(venue.id)} className={`flex min-w-0 items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}>
+              <MapPin className={`h-4 w-4 shrink-0 ${selected ? "text-primary" : "text-muted-foreground"}`} />
+              <span className="min-w-0 flex-1 truncate text-sm font-medium">{venue.name}</span>
+              {hasMap && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600" />}
+            </button>
+          );
+        })}
+      </div>
+      {currentMap?.svg_content ? (
+        <div className="space-y-2">
+          <div className="text-sm font-semibold">{selectedVenue?.name}</div>
+          <SvgDisplay svgContent={currentMap.svg_content} />
+        </div>
       ) : (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-muted/30 py-16">
-          <MapPin className="w-10 h-10 text-muted-foreground/30" />
-          <p className="text-sm text-muted-foreground">配置図未登録</p>
-          {isPrivileged && (
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs mt-1" onClick={() => setShowEditor(true)}>
-              <Pencil className="w-3 h-3" />SVGを登録する
-            </Button>
-          )}
+        <div className="flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-border bg-muted/30 py-16">
+          <MapPin className="h-10 w-10 text-muted-foreground/30" />
+          <p className="text-sm font-medium">{selectedVenue?.name}</p>
+          <p className="text-xs text-muted-foreground">客席配置図は未登録です。管理設定の会場管理から登録できます。</p>
         </div>
       )}
-
-      <AnimatePresence>
-        {showEditor && (
-          <SvgEditor
-            venueId={selectedVenueId}
-            existing={currentMap}
-            onClose={() => setShowEditor(false)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }

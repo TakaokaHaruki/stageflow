@@ -22,7 +22,14 @@ Deno.serve(async (req) => {
       return Response.json(result);
     }
 
+    if (action === 'update') {
+      const result = await base44.asServiceRole.entities.Venue.update(id, data);
+      return Response.json(result);
+    }
+
     if (action === 'delete') {
+      const seatingMaps = await base44.asServiceRole.entities.SeatingMap.filter({ venue_id: id });
+      await Promise.all(seatingMaps.map((map) => base44.asServiceRole.entities.SeatingMap.delete(map.id)));
       await base44.asServiceRole.entities.Venue.delete(id);
       return Response.json({ success: true });
     }
