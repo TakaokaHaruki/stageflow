@@ -11,8 +11,9 @@ export default function VenueManager() {
   const queryClient = useQueryClient();
   const [newName, setNewName] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [error, setError] = useState(null);
 
-  const { data: venues = [] } = useQuery({
+  const { data: venues = [], isLoading } = useQuery({
     queryKey: ["venues"],
     queryFn: () => base44.entities.Venue.list(),
   });
@@ -22,6 +23,10 @@ export default function VenueManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["venues"] });
       setNewName("");
+      setError(null);
+    },
+    onError: (err) => {
+      setError(err?.message || "会場の追加に失敗しました");
     },
   });
 
@@ -38,6 +43,9 @@ export default function VenueManager() {
 
   return (
     <div className="flex flex-col gap-3">
+      {error && (
+        <div className="px-3 py-2 rounded-md bg-destructive/10 text-destructive text-xs">⚠️ {error}</div>
+      )}
       <div className="flex gap-2">
         <Input
           placeholder="新しい会場名"
