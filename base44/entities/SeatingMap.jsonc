@@ -20,36 +20,9 @@
     "venue_id"
   ],
   "rls": {
-    "create": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chief"
-          ]
-        }
-      }
-    },
+    "create": true,
     "read": true,
-    "update": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chief"
-          ]
-        }
-      }
-    },
-    "delete": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "chief"
-          ]
-        }
-      }
-    }
+    "update": true,
+    "delete": true
   }
 }
