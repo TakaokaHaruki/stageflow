@@ -19,7 +19,7 @@ export default function VenueManager() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (name) => base44.entities.Venue.create({ name }),
+    mutationFn: (name) => base44.functions.invoke("updateVenueRecord", { action: "create", data: { name } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["venues"] });
       setNewName("");
@@ -31,7 +31,7 @@ export default function VenueManager() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Venue.delete(id),
+    mutationFn: (id) => base44.functions.invoke("updateVenueRecord", { action: "delete", id }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["venues"] }),
   });
 
