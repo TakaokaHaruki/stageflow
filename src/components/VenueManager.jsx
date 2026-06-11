@@ -21,26 +21,27 @@ function VenueEditModal({ venue, seatingMap, onClose }) {
   const fileInputRef = useRef(null);
   const [name, setName] = useState(venue.name || "");
   const [description, setDescription] = useState(venue.description || "");
-  const [svgContent, setSvgContent] = useState(seatingMap?.svg_content || "");
+  const [svgText, setSvgText] = useState("");
+  const [svgPreview, setSvgPreview] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
 
+  const hasSavedMap = !!seatingMap?.svg_url;
+
   const saveMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (svgUrl) => {
       await base44.functions.invoke("updateVenueRecord", {
         action: "update",
         id: venue.id,
         data: { name: name.trim(), description: description.trim() },
       });
-
-      const mapData = {
-        venue_id: venue.id,
-        svg_content: svgContent.trim(),
-        updated_at: new Date().toISOString(),
-      };
-      if (seatingMap?.id) {
-        await base44.entities.SeatingMap.update(seatingMap.id, mapData);
-      } else if (svgContent.trim()) {
-        await base44.entities.SeatingMap.create(mapData);
+      if (svgUrl !== undefined) {
+        const mapData = { venue_id: venue.id, svg_url: svgUrl, updated_at: new Date().toISOString() };
+        if (seatingMap?.id) {
+          await base44.entities.SeatingMap.update(seatingMap.id, mapData);
+        } else {
+          await base44.entities.SeatingMap.create(mapData);
+        }
       }
     },
     onSuccess: () => {
@@ -55,10 +56,35 @@ function VenueEditModal({ venue, seatingMap, onClose }) {
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ({ target }) => setSvgContent(String(target?.result || ""));
+    reader.onload = ({ target }) => {
+      const text = String(target?.result || "");
+      setSvgText(text);
+      setSvgPreview(text);
+    };
     reader.readAsText(file);
     event.target.value = "";
   };
+
+  const handleSave = async () => {
+    setError("");
+    try {
+      let svgUrl;
+      if (svgText.trim()) {
+        setIsUploading(true);
+        const blob = new Blob([svgText], { type: "image/svg+xml" });
+        const uploadFile = new File([blob], "seating_map.svg", { type: "image/svg+xml" });
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: uploadFile });
+        svgUrl = file_url;
+        setIsUploading(false);
+      }
+      saveMutation.mutate(svgUrl);
+    } catch (err) {
+      setIsUploading(false);
+      setError(err?.message || "アップロードに失敗しました");
+    }
+  };
+
+  const isBusy = isUploading || saveMutation.isPending;
 
   return (
     <motion.div
@@ -93,19 +119,19 @@ function VenueEditModal({ venue, seatingMap, onClose }) {
               SVGファイルを読み込む
             </Button>
             <input ref={fileInputRef} type="file" accept=".svg,image/svg+xml" className="hidden" onChange={handleFile} />
-            <span className="text-xs text-muted-foreground">SVGコードを直接編集することもできます</span>
+            {hasSavedMap && !svgText && <span className="text-xs text-emerald-600">✓ SVG登録済み（新しいファイルを選ぶと上書きされます）</span>}
           </div>
 
           <textarea
             className="min-h-40 w-full resize-y rounded-md border border-input bg-background px-3 py-2 font-mono text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            value={svgContent}
-            onChange={(event) => setSvgContent(event.target.value)}
+            value={svgText}
+            onChange={(event) => { setSvgText(event.target.value); setSvgPreview(event.target.value); }}
             placeholder='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">...</svg>'
           />
 
-          {svgContent.trim() && (
+          {svgPreview.trim() && (
             <div className="max-h-80 overflow-auto rounded-md border border-border bg-white p-2">
-              <div className="flex min-h-48 items-center justify-center [&_svg]:max-h-72 [&_svg]:max-w-full" dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgContent) }} />
+              <div className="flex min-h-48 items-center justify-center [&_svg]:max-h-72 [&_svg]:max-w-full" dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgPreview) }} />
             </div>
           )}
           {error && <div className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</div>}
@@ -113,9 +139,9 @@ function VenueEditModal({ venue, seatingMap, onClose }) {
 
         <div className="flex gap-2 border-t border-border p-4">
           <Button variant="outline" className="flex-1" onClick={onClose}>キャンセル</Button>
-          <Button className="flex-1 gap-1.5" disabled={!name.trim() || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
+          <Button className="flex-1 gap-1.5" disabled={!name.trim() || isBusy} onClick={handleSave}>
             <Check className="h-3.5 w-3.5" />
-            {saveMutation.isPending ? "保存中..." : "保存"}
+            {isUploading ? "アップロード中..." : saveMutation.isPending ? "保存中..." : "保存"}
           </Button>
         </div>
       </motion.div>
@@ -195,7 +221,7 @@ export default function VenueManager() {
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium">{venue.name}</div>
                     <div className="truncate text-[11px] text-muted-foreground">
-                      {seatingMap?.svg_content ? "SVG登録済み" : "SVG未登録"}
+                      {seatingMap?.svg_url ? "SVG登録済み" : "SVG未登録"}
                     </div>
                   </div>
                   <button onClick={() => setEditingVenue(venue)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={`${venue.name}を編集`}>

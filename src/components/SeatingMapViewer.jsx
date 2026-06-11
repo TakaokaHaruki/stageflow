@@ -11,8 +11,9 @@ function sanitizeSvg(svg) {
     .replace(/\s+on\w+='[^']*'/gi, "");
 }
 
-function SvgDisplay({ svgContent }) {
+function SvgDisplay({ svgUrl }) {
   const containerRef = useRef(null);
+  const [svgContent, setSvgContent] = useState("");
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const dragging = useRef(false);
@@ -22,7 +23,10 @@ function SvgDisplay({ svgContent }) {
   useEffect(() => {
     setScale(1);
     setOffset({ x: 0, y: 0 });
-  }, [svgContent]);
+    setSvgContent("");
+    if (!svgUrl) return;
+    fetch(svgUrl).then((r) => r.text()).then(setSvgContent).catch(() => setSvgContent(""));
+  }, [svgUrl]);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -97,7 +101,7 @@ export default function SeatingMapViewer() {
       <SectionHeader icon={MapPin} title="客席配置図" />
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {venues.map((venue) => {
-          const hasMap = seatingMaps.some((map) => map.venue_id === venue.id && map.svg_content);
+          const hasMap = seatingMaps.some((map) => map.venue_id === venue.id && map.svg_url);
           const selected = venue.id === selectedVenueId;
           return (
             <button key={venue.id} onClick={() => setSelectedVenueId(venue.id)} className={`flex min-w-0 items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}>
@@ -108,10 +112,10 @@ export default function SeatingMapViewer() {
           );
         })}
       </div>
-      {currentMap?.svg_content ? (
+      {currentMap?.svg_url ? (
         <div className="space-y-2">
           <div className="text-sm font-semibold">{selectedVenue?.name}</div>
-          <SvgDisplay svgContent={currentMap.svg_content} />
+          <SvgDisplay svgUrl={currentMap.svg_url} />
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-border bg-muted/30 py-16">
