@@ -43,7 +43,7 @@ export default function CrewlyLogo({ className = "", disableLink = false, admini
         </span>
         {administrator && (
           <span
-            className="mt-0.5 text-[4px] font-extrabold leading-none tracking-[0.4px]"
+            className="mt-0.5 text-[5px] font-extrabold leading-none tracking-[0.25px]"
             style={{ color: "hsl(335 72% 48%)" }}
           >
             ADMINISTRATOR
