@@ -1,11 +1,12 @@
 import CrewlyLogo from "@/components/CrewlyLogo";
+import { Link } from "react-router-dom";
 import { ShieldOff } from "lucide-react";
 
 export default function PortalMaintenance() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
       <div className="flex flex-col items-center gap-6 text-center max-w-sm">
-        <CrewlyLogo />
+        <Link to="/home"><CrewlyLogo disableLink /></Link>
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
             <ShieldOff className="w-8 h-8 text-destructive" />
