@@ -141,6 +141,7 @@ export default function Events() {
           <div className="w-6 h-6 border-3 border-primary/30 border-t-primary rounded-full animate-spin" style={{ opacity: pullDistance / 100 }} />
         </div>
       }
+      <GlobalBanner />
       {/* Sticky Header */}
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-5xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
@@ -206,7 +207,6 @@ export default function Events() {
 
       <div className="max-w-5xl mx-auto px-2 py-2 pb-16 sm:pb-2">
       <UserRestrictionBanner role={role} />
-      <GlobalBanner />
 
         {isLoading ?
         <div className="flex justify-center py-20">

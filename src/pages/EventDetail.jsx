@@ -66,9 +66,9 @@ export default function EventDetail() {
     queryKey: ["appConfig", "tab_control"],
     queryFn: () => base44.entities.AppConfig.list(),
     refetchInterval: 30000,
-    enabled: !isPrivileged,
+    enabled: !isAdmin,
   });
-  const disabledTabIds = isPrivileged
+  const disabledTabIds = isAdmin
     ? []
     : tabConfigs
         .filter((c) => c.key?.startsWith("tab_disabled_") && c.value_bool)
@@ -115,7 +115,7 @@ export default function EventDetail() {
     { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
-  ].filter((t) => isPrivileged || !disabledTabIds.includes(t.id));
+  ].filter((t) => isAdmin || !disabledTabIds.includes(t.id));
 
   const managementTabs = desktopTabs
     .filter(({ id }) => id === "settings" || id === "admin")
@@ -163,6 +163,7 @@ export default function EventDetail() {
       )}
 
       <AnnouncementAlert eventId={eventId} />
+      <GlobalBanner />
 
       {/* Top bar */}
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
@@ -291,7 +292,6 @@ export default function EventDetail() {
 
       <div className="max-w-6xl mx-auto px-1.5 py-1.5 pb-16 sm:pb-8">
         <UserRestrictionBanner role={role} />
-        <GlobalBanner />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={`${tab}-${activeManagementChild || "main"}-${tabResetKey}`}
