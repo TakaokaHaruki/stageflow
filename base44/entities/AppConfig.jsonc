@@ -1,0 +1,36 @@
+{
+  "name": "AppConfig",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "\u8a2d\u5b9a\u30ad\u30fc\uff08\u4f8b: portal_login_disabled\uff09"
+    },
+    "value_bool": {
+      "type": "boolean",
+      "description": "boolean\u5024",
+      "default": false
+    }
+  },
+  "required": [
+    "key"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

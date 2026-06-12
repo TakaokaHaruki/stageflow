@@ -10,6 +10,7 @@ import QRCodeUpload from "@/components/QRCodeUpload";
 import StaffConfirmationModal from "@/components/StaffConfirmationModal";
 import ComplianceAgreementModal from "@/components/ComplianceAgreementModal";
 import EventTimeDisplay from "@/components/EventTimeDisplay";
+import PortalMaintenance from "@/components/PortalMaintenance";
 
 const STORAGE_KEY = "crewly_acast_id";
 
@@ -36,18 +37,29 @@ export default function StaffPortal() {
   const [pendingAuthData, setPendingAuthData] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showComplianceModal, setShowComplianceModal] = useState(false);
+  const [portalDisabled, setPortalDisabled] = useState(false);
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
 
-  // Restore saved ID on mount
+  // Check portal restriction and restore saved ID on mount
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      setAcastId(saved);
-      authenticate(saved);
-    } else {
-      setInitialized(true);
-    }
+    (async () => {
+      try {
+        const configs = await base44.entities.AppConfig.filter({ key: "portal_login_disabled" });
+        if (configs?.[0]?.value_bool === true) {
+          setPortalDisabled(true);
+          setInitialized(true);
+          return;
+        }
+      } catch (_) {}
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        setAcastId(saved);
+        authenticate(saved);
+      } else {
+        setInitialized(true);
+      }
+    })();
   }, []);
 
   const authenticate = async (id) => {
@@ -191,6 +203,10 @@ export default function StaffPortal() {
         <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
       </div>
     );
+  }
+
+  if (portalDisabled) {
+    return <PortalMaintenance />;
   }
 
   // Login screen

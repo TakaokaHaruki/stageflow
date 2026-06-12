@@ -43,7 +43,7 @@ export default function EventDetail() {
   const [tabResetKey, setTabResetKey] = useState(0);
   const [showScreenSaver, setShowScreenSaver] = useState(false);
   const [confirmScreenSaver, setConfirmScreenSaver] = useState(false);
-  const [adminSection, setAdminSection] = useState("users"); // 'users' | 'operation_logs' | 'view_logs'
+  const [adminSection, setAdminSection] = useState("users"); // 'users' | 'operation_logs' | 'view_logs' | 'portal_restriction'
   const [settingsSection, setSettingsSection] = useState("positions");
   const [currentTime, setCurrentTime] = useState(() =>
     new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -99,7 +99,6 @@ export default function EventDetail() {
     { id: "notice", label: "連絡事項", icon: Bell },
     { id: "files", label: "ファイル共有", icon: Paperclip },
     { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
-    ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ];
@@ -117,12 +116,14 @@ export default function EventDetail() {
         { id: "users", label: "ユーザー管理", icon: Users },
         { id: "operation_logs", label: "操作ログ", icon: FileText },
         { id: "view_logs", label: "閲覧ログ", icon: Monitor },
+        { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
       ]
     : tab === "settings"
       ? [
           { id: "positions", label: "ポジション設定", icon: Settings },
           { id: "presets", label: "ポジションプリセット", icon: ClipboardList },
           { id: "venues", label: "会場管理", icon: LayoutTemplate },
+          ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
         ]
       : [];
   const activeManagementChild = tab === "admin" ? adminSection : settingsSection;
@@ -290,12 +291,13 @@ export default function EventDetail() {
                 section={adminSection}
               />
             )}
-            {tab === "settings" && settingsSection !== "venues" && <PositionTypeManagement eventId={eventId} section={settingsSection} />}
+            {tab === "settings" && settingsSection === "positions" && <PositionTypeManagement eventId={eventId} section="positions" />}
+            {tab === "settings" && settingsSection === "presets" && <PositionTypeManagement eventId={eventId} section="presets" />}
             {tab === "settings" && settingsSection === "venues" && <VenueManager />}
+            {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
             {tab === "notice" && <AnnouncementManager eventId={eventId} />}
             {tab === "files" && <SharedFileManager eventId={eventId} />}
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
-            {tab === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
           </motion.div>
         </AnimatePresence>
       </div>

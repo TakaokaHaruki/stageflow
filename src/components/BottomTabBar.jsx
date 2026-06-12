@@ -9,6 +9,7 @@ const ALL_TABS = [
   { id: "admin", label: "管理者設定", icon: ShieldCheck },
   { id: "settings", label: "管理設定", icon: Settings },
 ];
+// pos_notes は settings の子タブに移動済み
 
 export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset, isPrivileged = true, isAdmin = false }) {
   const TABS = ALL_TABS.filter((t) => {
