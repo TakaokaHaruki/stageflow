@@ -17,6 +17,7 @@ import PositionNotesEditor from "@/components/PositionNotesEditor";
 import BottomTabBar from "@/components/BottomTabBar";
 import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
+import GlobalBanner from "@/components/GlobalBanner";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
@@ -60,6 +61,19 @@ export default function EventDetail() {
   const isPrivileged = isAdmin || isChief;
   const [currentUser, setCurrentUser] = useState(null);
 
+  // Fetch tab-disabled configs for filtering
+  const { data: tabConfigs = [] } = useQuery({
+    queryKey: ["appConfig", "tab_control"],
+    queryFn: () => base44.entities.AppConfig.list(),
+    refetchInterval: 30000,
+    enabled: !isPrivileged,
+  });
+  const disabledTabIds = isPrivileged
+    ? []
+    : tabConfigs
+        .filter((c) => c.key?.startsWith("tab_disabled_") && c.value_bool)
+        .map((c) => c.key.replace("tab_disabled_", ""));
+
   const handleTabChange = (newTab, options) => {
     setTab(newTab, options);
   };
@@ -101,7 +115,7 @@ export default function EventDetail() {
     { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
-  ];
+  ].filter((t) => isPrivileged || !disabledTabIds.includes(t.id));
 
   const managementTabs = desktopTabs
     .filter(({ id }) => id === "settings" || id === "admin")
@@ -117,6 +131,8 @@ export default function EventDetail() {
         { id: "operation_logs", label: "操作ログ", icon: FileText },
         { id: "view_logs", label: "閲覧ログ", icon: Monitor },
         { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
+        { id: "global_banner", label: "グローバル通知", icon: Bell },
+        { id: "tab_control", label: "タブ制御", icon: LayoutTemplate },
       ]
     : tab === "settings"
       ? [
@@ -275,6 +291,7 @@ export default function EventDetail() {
 
       <div className="max-w-6xl mx-auto px-1.5 py-1.5 pb-16 sm:pb-8">
         <UserRestrictionBanner role={role} />
+        <GlobalBanner />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={`${tab}-${activeManagementChild || "main"}-${tabResetKey}`}

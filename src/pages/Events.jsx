@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import EventFormModal from "@/components/EventFormModal";
 import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
+import GlobalBanner from "@/components/GlobalBanner";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
@@ -205,6 +206,7 @@ export default function Events() {
 
       <div className="max-w-5xl mx-auto px-2 py-2 pb-16 sm:pb-2">
       <UserRestrictionBanner role={role} />
+      <GlobalBanner />
 
         {isLoading ?
         <div className="flex justify-center py-20">

@@ -2,7 +2,8 @@ import ActivityLogViewer from "@/components/ActivityLogViewer";
 import ViewLogViewer from "@/components/ViewLogViewer";
 import UserRoleManager from "@/components/UserRoleManager";
 import PortalRestrictionManager from "@/components/PortalRestrictionManager";
-import { History, Users, Eye, ShieldOff } from "lucide-react";
+import GlobalBannerManager from "@/components/GlobalBannerManager";
+import TabControlManager from "@/components/TabControlManager";
 
 export default function AdminSettings({ eventId, section = "users" }) {
   return (
@@ -11,6 +12,8 @@ export default function AdminSettings({ eventId, section = "users" }) {
       {section === "operation_logs" && <ActivityLogViewer eventId={eventId} />}
       {section === "view_logs" && <ViewLogViewer eventId={eventId} />}
       {section === "portal_restriction" && <PortalRestrictionManager />}
+      {section === "global_banner" && <GlobalBannerManager />}
+      {section === "tab_control" && <TabControlManager />}
     </div>
   );
 }

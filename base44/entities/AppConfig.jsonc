@@ -6,6 +6,10 @@
       "type": "string",
       "description": "\u8a2d\u5b9a\u30ad\u30fc\uff08\u4f8b: portal_login_disabled\uff09"
     },
+    "value": {
+      "type": "string",
+      "description": "\u30c6\u30ad\u30b9\u30c8\u5024\uff08\u30b0\u30ed\u30fc\u30d0\u30eb\u901a\u77e5\u30d0\u30ca\u30fc\u672c\u6587\u306a\u3069\uff09"
+    },
     "value_bool": {
       "type": "boolean",
       "description": "boolean\u5024",
