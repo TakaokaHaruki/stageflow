@@ -44,7 +44,7 @@ export default function Landing() {
 
         <h1 className="text-2xl font-bold text-foreground mb-1 tracking-tight">Crew<span className="text-primary">ly</span></h1>
         <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-          スタッフ配置・アナウンス・タスク管理を<br />一元化するコンサート運営システム
+          スタッフ管理及び配置など<br />一元化するコンサート運営システム
         </p>
 
         <div className="flex flex-col gap-3 w-full">
