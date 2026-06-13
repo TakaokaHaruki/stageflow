@@ -138,8 +138,8 @@ export function applyPositionSideSettingsToPositions(positions, positionTypes, s
     return {
       ...position,
       split_by_side: splitBySide,
-      staff_names_kamite: saved.staff_names_kamite || [],
-      staff_names_shimote: saved.staff_names_shimote || [],
+      staff_names_kamite: saved.staff_names_kamite || position.staff_names_kamite || [],
+      staff_names_shimote: saved.staff_names_shimote || position.staff_names_shimote || [],
     };
   });
 }
