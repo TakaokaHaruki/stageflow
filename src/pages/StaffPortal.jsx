@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -169,7 +169,7 @@ export default function StaffPortal() {
     await authenticate(extractedId);
   };
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setAcastId("");
     setStaffName(null);
@@ -181,7 +181,33 @@ export default function StaffPortal() {
     setPendingAuthData(null);
     setShowConfirmation(false);
     setShowComplianceModal(false);
-  };
+  }, []);
+
+  // Keep a ref of staffName for the portal polling callback
+  const staffNameRef = useRef(staffName);
+  useEffect(() => { staffNameRef.current = staffName; }, [staffName]);
+
+  // Poll for portal restriction changes every 15 seconds
+  useEffect(() => {
+    if (!initialized) return;
+
+    const checkPortal = async () => {
+      try {
+        const configs = await base44.entities.AppConfig.filter({ key: "portal_login_disabled" });
+        setPortalDisabled(configs?.[0]?.value_bool === true);
+      } catch (_) {}
+    };
+
+    const interval = setInterval(checkPortal, 15000);
+    return () => clearInterval(interval);
+  }, [initialized]);
+
+  // Force logout when portal becomes restricted while logged in
+  useEffect(() => {
+    if (portalDisabled && staffNameRef.current) {
+      handleLogout();
+    }
+  }, [portalDisabled, handleLogout]);
 
   const handleLogoClick = () => {
     clickCountRef.current += 1;
