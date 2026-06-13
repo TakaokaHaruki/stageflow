@@ -9,7 +9,7 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={() => setIsDark(!isDark)}
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-7 sm:w-7"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-7 sm:w-7"
       aria-label={label}
       title={label}
     >

@@ -58,13 +58,13 @@ function SvgDisplay({ svgUrl }) {
   return (
     <div className="relative">
       <div className="absolute right-2 top-2 z-10 flex gap-1">
-        <button onClick={() => setScale((value) => clampScale(value + 0.2))} className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:w-7" aria-label="拡大">
+        <button onClick={() => setScale((value) => clampScale(value + 0.2))} className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:w-7" aria-label="拡大">
           <ZoomIn className="h-3.5 w-3.5" />
         </button>
-        <button onClick={() => setScale((value) => clampScale(value - 0.2))} className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:w-7" aria-label="縮小">
+        <button onClick={() => setScale((value) => clampScale(value - 0.2))} className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:w-7" aria-label="縮小">
           <ZoomOut className="h-3.5 w-3.5" />
         </button>
-        <button onClick={() => { setScale(1); setOffset({ x: 0, y: 0 }); }} className="flex h-10 items-center justify-center rounded-md border border-border bg-card/80 px-3 text-xs text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:px-2">
+        <button onClick={() => { setScale(1); setOffset({ x: 0, y: 0 }); }} className="flex h-8 items-center justify-center rounded-md border border-border bg-card/80 px-2 text-[11px] text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:text-xs">
           リセット
         </button>
       </div>
@@ -116,7 +116,7 @@ export default function SeatingMapViewer() {
               <button
                 key={venue.id}
                 onClick={() => setSelectedVenueId(venue.id)}
-                className={`flex min-h-[68px] w-[calc(100vw-3.5rem)] max-w-64 shrink-0 snap-start items-start gap-2 rounded-md border px-3 py-2.5 text-left transition-colors sm:w-auto sm:min-w-0 sm:max-w-none sm:shrink ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}
+                className={`flex min-h-[58px] w-[calc(100vw-3.5rem)] max-w-64 shrink-0 snap-start items-start gap-2 rounded-md border px-2.5 py-2 text-left transition-colors sm:min-h-[62px] sm:w-auto sm:min-w-0 sm:max-w-none sm:shrink sm:px-3 sm:py-2.5 ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}
               >
                 <MapPin className={`mt-0.5 h-4 w-4 shrink-0 ${selected ? "text-primary" : "text-muted-foreground"}`} />
                 <span className="min-w-0 flex-1">

@@ -233,14 +233,14 @@ export default function StaffManagement({ eventId }) {
             onKeyDown={handleKeyDown}
             placeholder="スタッフ名"
             disabled={!canUseEditTools}
-            className="col-span-2 h-10 min-w-0 flex-1 text-sm sm:col-span-1 sm:h-8" />
+            className="col-span-2 h-9 min-w-0 flex-1 text-sm sm:col-span-1 sm:h-8" />
           
           <Input
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="備考"
             disabled={!canUseEditTools}
-            className="h-10 min-w-0 text-sm sm:h-8 sm:w-24" />
+            className="h-9 min-w-0 text-sm sm:h-8 sm:w-24" />
           
           <Button onClick={handleAdd} disabled={!canUseEditTools || !name.trim() || createMutation.isPending} size="sm" className="gap-0.5 shrink-0">
             <Plus className="w-3 h-3" />追加
@@ -296,10 +296,10 @@ export default function StaffManagement({ eventId }) {
                       )}
                     </div>
                   </div>
-                  <button onClick={() => canUseEditTools && setEditingStaff(staff)} disabled={!canUseEditTools} className="flex h-10 w-10 shrink-0 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-6 sm:w-6" title="編集" aria-label={`${displayName}を編集`}>
+                  <button onClick={() => canUseEditTools && setEditingStaff(staff)} disabled={!canUseEditTools} className="flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-6 sm:w-6" title="編集" aria-label={`${displayName}を編集`}>
                     <Pencil className="w-3 h-3" />
                   </button>
-                  <button onClick={() => canUseEditTools && setConfirmDelete({ id: staff.id, name: staff.name })} disabled={!canUseEditTools} className="flex h-10 w-10 shrink-0 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-6 sm:w-6" title="削除" aria-label={`${displayName}を削除`}>
+                  <button onClick={() => canUseEditTools && setConfirmDelete({ id: staff.id, name: staff.name })} disabled={!canUseEditTools} className="flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-6 sm:w-6" title="削除" aria-label={`${displayName}を削除`}>
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>

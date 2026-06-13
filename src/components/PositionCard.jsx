@@ -15,7 +15,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
       draggable={draggable && isAdmin && !isLocked}
       onDragStart={draggable && isAdmin && !isLocked && onStaffDragStart ? (e) => onStaffDragStart(e, name, pos.id) : undefined}
       onDragEnd={draggable && isAdmin ? onStaffDragEnd : undefined}
-      className={["flex min-h-10 items-center justify-between gap-2 px-2 py-0.5 select-none sm:min-h-0",
+      className={["flex min-h-8 items-center justify-between gap-1.5 px-2 py-0.5 select-none sm:min-h-0 sm:gap-2",
         isLocked ? "bg-amber-50/60 dark:bg-amber-900/20" : "",
         draggable && isAdmin && !isLocked ? "cursor-move hover:bg-muted/50" : "",
         draggable && draggedStaff === name ? "opacity-50" : ""].join(" ")}
@@ -36,19 +36,19 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
           {onToggleLock && (
             <button
               onClick={() => onToggleLock(name)}
-              className={`flex h-9 w-9 items-center justify-center rounded transition-colors sm:h-5 sm:w-5 ${isLocked ? "text-amber-500 hover:text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/40" : "text-muted-foreground hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20"}`}
+              className={`flex h-7 w-7 items-center justify-center rounded transition-colors sm:h-5 sm:w-5 ${isLocked ? "text-amber-500 hover:text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/40" : "text-muted-foreground hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20"}`}
               title={isLocked ? "ロック解除" : "ロック（自動配置から除外）"}
             >
               {isLocked ? <Lock className="w-3 h-3" /> : <LockOpen className="w-3 h-3" />}
             </button>
           )}
           {onStaffEdit && staffData && (
-            <button onClick={() => onStaffEdit(staffData)} className="flex h-9 w-9 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors sm:h-5 sm:w-5" title="スタッフ編集">
+            <button onClick={() => onStaffEdit(staffData)} className="flex h-7 w-7 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors sm:h-5 sm:w-5" title="スタッフ編集">
               <Pencil className="w-3 h-3" />
             </button>
           )}
           {onStaffRemove && (
-            <button onClick={() => onStaffRemove(pos.id, name)} className="flex h-9 w-9 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors sm:h-5 sm:w-5" title="配置から外す">
+            <button onClick={() => onStaffRemove(pos.id, name)} className="flex h-7 w-7 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors sm:h-5 sm:w-5" title="配置から外す">
               <Trash2 className="w-3 h-3" />
             </button>
           )}
@@ -91,10 +91,10 @@ export default function PositionCard({
         {onRequiredCountChange && isAdmin ? (
           <div className="flex items-center border border-border/60 rounded overflow-hidden bg-background ml-1">
             <button type="button" onClick={() => onRequiredCountChange(Math.max(0, requiredCount - 1))}
-              className="flex h-8 w-8 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-4 sm:w-4"><Minus className="w-2 h-2" /></button>
-            <span className="w-6 text-center text-xs leading-8 sm:w-5 sm:text-[10px] sm:leading-4">{requiredCount}</span>
+              className="flex h-7 w-7 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-4 sm:w-4"><Minus className="w-2 h-2" /></button>
+            <span className="w-5 text-center text-[11px] leading-7 sm:text-[10px] sm:leading-4">{requiredCount}</span>
             <button type="button" onClick={() => onRequiredCountChange(requiredCount + 1)}
-              className="flex h-8 w-8 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-4 sm:w-4"><Plus className="w-2 h-2" /></button>
+              className="flex h-7 w-7 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-4 sm:w-4"><Plus className="w-2 h-2" /></button>
           </div>
         ) : (
           <span className="text-[10px] text-muted-foreground">{assignedCount}名{requiredCount > 0 ? `/${requiredCount}名` : ""}</span>
@@ -104,8 +104,8 @@ export default function PositionCard({
         {pos.notes && <span className="text-[10px] text-muted-foreground truncate flex-1">{pos.notes}</span>}
         {(onEdit || onDelete) && (
           <div className="flex gap-1 ml-auto flex-shrink-0">
-            {onEdit && <button onClick={() => onEdit(pos)} disabled={!isAdmin} className="flex h-9 w-9 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-5 sm:w-5" aria-label={`${pos.name}を編集`}><Pencil className="w-3 h-3" /></button>}
-            {onDelete && <button onClick={() => onDelete(pos.id)} disabled={!isAdmin} className="flex h-9 w-9 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-5 sm:w-5" aria-label={`${pos.name}を削除`}><Trash2 className="w-3 h-3" /></button>}
+            {onEdit && <button onClick={() => onEdit(pos)} disabled={!isAdmin} className="flex h-7 w-7 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-5 sm:w-5" aria-label={`${pos.name}を編集`}><Pencil className="w-3 h-3" /></button>}
+            {onDelete && <button onClick={() => onDelete(pos.id)} disabled={!isAdmin} className="flex h-7 w-7 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-5 sm:w-5" aria-label={`${pos.name}を削除`}><Trash2 className="w-3 h-3" /></button>}
           </div>
         )}
       </div>

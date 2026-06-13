@@ -103,7 +103,7 @@ export function ModeVisibilityControls({ eventId, field, mode = "edit", canManag
   ];
 
   return (
-    <div className="flex h-10 shrink-0 items-center gap-1 rounded-lg border border-border bg-card p-1 sm:h-8">
+    <div className="flex h-9 shrink-0 items-center gap-0.5 rounded-lg border border-border bg-card p-0.5 sm:h-8 sm:gap-1 sm:p-1">
       <span className="hidden sm:inline-flex items-center gap-1 px-1.5 text-[10px] font-medium text-muted-foreground">
         <Lock className="w-3 h-3" />
         {label}
@@ -114,7 +114,7 @@ export function ModeVisibilityControls({ eventId, field, mode = "edit", canManag
           type="button"
           onClick={() => updateMode.mutate(value)}
           disabled={updateMode.isPending || mode === value}
-          className={`inline-flex h-8 items-center gap-1 whitespace-nowrap rounded-md px-2.5 text-xs font-semibold transition-colors sm:h-6 sm:px-2 sm:text-[11px] ${
+          className={`inline-flex h-7 items-center gap-1 whitespace-nowrap rounded-md px-2 text-[11px] font-semibold transition-colors sm:h-6 ${
             mode === value
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"

@@ -187,7 +187,7 @@ export default function EventDetail() {
 
       {/* Top bar */}
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
-        <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex flex-wrap items-center gap-1.5 sm:flex-nowrap">
+        <div className="max-w-6xl mx-auto px-2 pb-1 pt-1 flex flex-wrap items-center gap-1 sm:flex-nowrap sm:gap-1.5">
           <BackButton to="/events" label="イベント一覧へ戻る" />
           <div className="hidden sm:flex flex-col items-start mr-1">
             <CrewlyLogo administrator={role === "admin"} />
@@ -216,7 +216,7 @@ export default function EventDetail() {
           <button
             type="button"
             onClick={() => setConfirmScreenSaver(true)}
-            className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:ml-0 sm:h-7 sm:w-7"
+            className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:ml-0 sm:h-7 sm:w-7"
             title="スクリーンセーバー"
             aria-label="スクリーンセーバーを表示"
           >
@@ -224,15 +224,15 @@ export default function EventDetail() {
           </button>
           <ThemeToggle />
           {currentUser ? (
-            <div className="flex h-10 max-w-36 shrink-0 items-center gap-1 rounded-md bg-muted px-1 sm:h-7">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-5 sm:w-5">
+            <div className="flex h-9 max-w-36 shrink-0 items-center gap-0.5 rounded-md bg-muted px-0.5 sm:h-7 sm:gap-1 sm:px-1">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-5 sm:w-5">
                 <User className="w-3 h-3 text-primary" />
               </div>
               <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
               <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
               <button
                 onClick={() => base44.auth.logout()}
-                className="flex h-8 w-8 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
+                className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
                 title="ログアウト"
                 aria-label="ログアウト"
               >
@@ -269,7 +269,7 @@ export default function EventDetail() {
                 <button
                   key={id}
                   onClick={() => selectTab(id)}
-                  className={`flex min-h-11 min-w-0 select-none items-center justify-center gap-1 whitespace-normal border-b-2 px-1 py-1.5 text-center text-[10px] font-semibold leading-tight transition-colors focus-visible:outline-none sm:min-h-0 sm:shrink-0 sm:justify-start sm:gap-1.5 sm:whitespace-nowrap sm:px-0 sm:py-2 sm:text-left sm:text-xs ${
+                  className={`flex min-h-9 min-w-0 select-none items-center justify-center gap-1 whitespace-normal border-b-2 px-1 py-1 text-center text-[10px] font-semibold leading-tight transition-colors focus-visible:outline-none sm:min-h-0 sm:shrink-0 sm:justify-start sm:gap-1.5 sm:whitespace-nowrap sm:px-0 sm:py-2 sm:text-left sm:text-xs ${
                     tab === id
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground"
@@ -293,7 +293,7 @@ export default function EventDetail() {
                 <button
                   key={id}
                   onClick={() => selectManagementChild(id)}
-                  className={`flex min-h-11 min-w-0 select-none items-center justify-center gap-1 whitespace-normal border-b-2 px-1 py-1.5 text-center text-[10px] font-semibold leading-tight transition-colors focus-visible:outline-none sm:min-h-0 sm:shrink-0 sm:justify-start sm:gap-1.5 sm:whitespace-nowrap sm:px-0 sm:py-2 sm:text-left sm:text-xs ${
+                  className={`flex min-h-9 min-w-0 select-none items-center justify-center gap-1 whitespace-normal border-b-2 px-1 py-1 text-center text-[10px] font-semibold leading-tight transition-colors focus-visible:outline-none sm:min-h-0 sm:shrink-0 sm:justify-start sm:gap-1.5 sm:whitespace-nowrap sm:px-0 sm:py-2 sm:text-left sm:text-xs ${
                     activeManagementChild === id
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground"
@@ -310,7 +310,7 @@ export default function EventDetail() {
         )}
       </div>
 
-      <div className="max-w-6xl mx-auto px-1.5 py-1.5 pb-20 sm:pb-8">
+      <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:py-1.5 sm:pb-8">
         <UserRestrictionBanner role={role} />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

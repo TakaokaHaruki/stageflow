@@ -162,7 +162,7 @@ export default function Events() {
                 onClick={() => setShowAdminModal(true)}
                 variant="outline"
                 size="sm"
-                className="w-10 gap-1 px-0 select-none sm:w-auto sm:px-3"
+                className="w-9 gap-1 px-0 select-none sm:w-auto sm:px-3"
                 title="管理者設定"
                 aria-label="管理者設定"
               >
@@ -175,7 +175,7 @@ export default function Events() {
                 <LogIn className="w-3 h-3" />ログイン
               </Button>
             ) : currentUser ? (
-              <div className="flex h-10 max-w-44 items-center gap-1 rounded-md bg-muted px-1 sm:h-7">
+              <div className="flex h-9 max-w-44 items-center gap-0.5 rounded-md bg-muted px-0.5 sm:h-7 sm:gap-1 sm:px-1">
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20">
                   <User className="w-3 h-3 text-primary" />
                 </div>
@@ -184,13 +184,13 @@ export default function Events() {
                   <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
                   <button
                     onClick={() => setConfirmDeleteAccount(true)}
-                    className="flex h-8 w-8 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive select-none sm:h-5 sm:w-5"
+                    className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive select-none sm:h-5 sm:w-5"
                     title="アカウント削除">
                     <Trash2 className="h-3 w-3" />
                   </button>
                   <button
                     onClick={() => base44.auth.logout()}
-                    className="flex h-8 w-8 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive select-none sm:h-5 sm:w-5"
+                    className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive select-none sm:h-5 sm:w-5"
                     title="ログアウト">
                     <LogOut className="h-3 w-3" />
                   </button>
@@ -231,7 +231,7 @@ export default function Events() {
             to={`/events/${event.id}`}
             className="group block bg-card border border-border rounded-lg px-2.5 py-1.5 hover:border-primary/40 hover:shadow-sm transition-all duration-200">
             
-                <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center justify-between gap-1.5">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <h2 className="text-sm font-semibold text-foreground truncate">{event.name}</h2>
@@ -254,13 +254,13 @@ export default function Events() {
                   }
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center justify-end gap-1">
+                  <div className="flex shrink-0 items-center justify-end gap-0.5">
                     {!isGuest && (
                       <>
                         <button
                           onClick={(e) => handleToggleVisibility(e, event)}
                           disabled={!canManageVisibility}
-                          className={`flex min-h-9 items-center gap-1 rounded-md px-2 text-[11px] font-medium transition-colors select-none sm:min-h-0 sm:px-1.5 sm:py-0.5
+                          className={`flex min-h-8 items-center gap-0.5 rounded-md px-1.5 text-[10px] font-medium transition-colors select-none sm:min-h-0 sm:py-0.5 sm:text-[11px]
                             ${isEventPublic(event)
                               ? "bg-green-100 text-green-700 hover:bg-green-200"
                               : "bg-slate-100 text-slate-500 hover:bg-slate-200"}
@@ -272,13 +272,13 @@ export default function Events() {
                         <button
                           onClick={(e) => handleEdit(e, event)}
                           disabled={!canEdit}
-                          className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none sm:h-8 sm:w-8" aria-label={`${event.name}を編集`}>
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name}を編集`}>
                           <Pencil className="w-3 h-3" />
                         </button>
                         <button
                           onClick={(e) => handleDelete(e, event.id, event.name)}
                           disabled={!canEdit}
-                          className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none sm:h-8 sm:w-8" aria-label={`${event.name}を削除`}>
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name}を削除`}>
                           <Trash2 className="w-3 h-3" />
                         </button>
                       </>

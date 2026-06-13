@@ -50,14 +50,14 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
       {moreOpen && (
         <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]" onClick={() => setMoreOpen(false)}>
           <div
-            className="absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] left-2 right-2 rounded-lg border border-border bg-card p-2 shadow-xl"
+            className="absolute bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-2 right-2 rounded-lg border border-border bg-card p-1.5 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-1 flex items-center justify-between px-1">
               <span className="text-xs font-semibold text-muted-foreground">その他のメニュー</span>
               <button
                 type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
                 onClick={() => setMoreOpen(false)}
                 aria-label="閉じる"
               >
@@ -70,7 +70,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
                   key={id}
                   type="button"
                   onClick={() => handleTabClick(id)}
-                  className={`flex min-h-12 items-center gap-2 rounded-md border px-3 text-left text-sm font-semibold ${
+                  className={`flex min-h-10 items-center gap-2 rounded-md border px-2.5 text-left text-xs font-semibold ${
                     activeTab === id
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border text-foreground hover:bg-muted"
@@ -86,19 +86,19 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
       )}
 
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/90 backdrop-blur-md safe-area-bottom">
-        <div className="grid min-h-16 grid-cols-6">
+        <div className="grid min-h-14 grid-cols-6">
           {PRIMARY_TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               type="button"
               onClick={() => handleTabClick(id)}
-              className={`flex min-w-0 select-none flex-col items-center justify-center gap-1 px-0.5 py-1 transition-colors focus-visible:outline-none ${
+              className={`flex min-w-0 select-none flex-col items-center justify-center gap-0.5 px-0.5 py-0.5 transition-colors focus-visible:outline-none ${
                 activeTab === id ? "text-primary" : "text-muted-foreground"
               }`}
               aria-current={activeTab === id ? "page" : undefined}
               aria-label={label}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className="h-4.5 w-4.5 shrink-0" />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">{label}</span>
             </button>
           ))}
@@ -106,13 +106,13 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
             <button
               type="button"
               onClick={() => setMoreOpen((open) => !open)}
-              className={`flex min-w-0 select-none flex-col items-center justify-center gap-1 px-0.5 py-1 transition-colors focus-visible:outline-none ${
+              className={`flex min-w-0 select-none flex-col items-center justify-center gap-0.5 px-0.5 py-0.5 transition-colors focus-visible:outline-none ${
                 isMoreActive || moreOpen ? "text-primary" : "text-muted-foreground"
               }`}
               aria-expanded={moreOpen}
               aria-label="その他"
             >
-              <MoreHorizontal className="h-5 w-5 shrink-0" />
+              <MoreHorizontal className="h-4.5 w-4.5 shrink-0" />
               <span className="text-[10px] font-medium leading-none">その他</span>
             </button>
           )}
