@@ -4,10 +4,23 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { History, RotateCcw, ChevronDown, ChevronUp, Trash2, ChevronRight, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { ja } from "date-fns/locale";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion, AnimatePresence } from "framer-motion";
+
+function formatLogTimeJST(log) {
+  let dateStr;
+  if (log.logged_at_jst) {
+    dateStr = log.logged_at_jst;
+  } else if (log.created_date) {
+    dateStr = new Date(log.created_date).toLocaleString("sv-SE", { timeZone: "Asia/Tokyo" }).replace("T", " ").slice(0, 16);
+  } else {
+    return "";
+  }
+  const [d, t] = dateStr.split(" ");
+  const [y, m, day] = d.split("-");
+  const wd = ["日","月","火","水","木","金","土"][new Date(parseInt(y), parseInt(m)-1, parseInt(day)).getDay()];
+  return `${parseInt(m)}/${parseInt(day)}(${wd}) ${t}`;
+}
 
 const ACTION_LABELS = {
   staff_add: { label: "スタッフ追加", color: "bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700" },
@@ -108,7 +121,7 @@ function UndoConfirmModal({ log, onConfirm, onCancel }) {
   const before = log.snapshot_before || {};
   const after = log.snapshot_after || {};
   const meta = ACTION_LABELS[log.action_type] || { label: log.action_type, color: "bg-slate-100 text-slate-700 border-slate-300" };
-  const timeStr = log.created_date ? format(new Date(log.created_date), "M/d HH:mm", { locale: ja }) : "";
+  const timeStr = formatLogTimeJST(log);
 
   return (
     <motion.div
@@ -166,9 +179,7 @@ function LogEntry({ log, onUndo, undoPending }) {
   const [showDetail, setShowDetail] = useState(false);
   const meta = ACTION_LABELS[log.action_type] || { label: log.action_type, color: "bg-slate-100 text-slate-700 border-slate-300" };
   const canUndo = UNDOABLE_ACTIONS.includes(log.action_type) && !log.is_undone;
-  const timeStr = log.created_date
-    ? format(new Date(log.created_date), "M/d(E) HH:mm", { locale: ja })
-    : "";
+  const timeStr = formatLogTimeJST(log);
   const hasDiff = Object.keys(log.snapshot_before || {}).length > 0 || Object.keys(log.snapshot_after || {}).length > 0;
 
   return (

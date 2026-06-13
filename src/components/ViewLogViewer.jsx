@@ -4,10 +4,23 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { Eye, ChevronDown, ChevronUp, Trash2, FileText, Bell, Folder } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { ja } from "date-fns/locale";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion, AnimatePresence } from "framer-motion";
+
+function formatLogTimeJST(log) {
+  let dateStr;
+  if (log.logged_at_jst) {
+    dateStr = log.logged_at_jst;
+  } else if (log.created_date) {
+    dateStr = new Date(log.created_date).toLocaleString("sv-SE", { timeZone: "Asia/Tokyo" }).replace("T", " ").slice(0, 16);
+  } else {
+    return "";
+  }
+  const [d, t] = dateStr.split(" ");
+  const [y, m, day] = d.split("-");
+  const wd = ["日","月","火","水","木","金","土"][new Date(parseInt(y), parseInt(m)-1, parseInt(day)).getDay()];
+  return `${parseInt(m)}/${parseInt(day)}(${wd}) ${t}`;
+}
 
 const VIEW_TYPE_META = {
   announcement_open: {
@@ -39,9 +52,7 @@ function ViewLogEntry({ log }) {
     icon: Eye,
   };
   const Icon = meta.icon;
-  const timeStr = log.created_date
-    ? format(new Date(log.created_date), "M/d(E) HH:mm", { locale: ja })
-    : "";
+  const timeStr = formatLogTimeJST(log);
 
   return (
     <div className="px-2.5 py-1.5">

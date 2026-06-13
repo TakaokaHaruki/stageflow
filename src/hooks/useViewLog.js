@@ -2,6 +2,10 @@ import { useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { getUserDisplayName } from "@/components/UserNameEditor";
 
+function getJSTDateTime() {
+  return new Date().toLocaleString("sv-SE", { timeZone: "Asia/Tokyo" }).replace("T", " ").slice(0, 16);
+}
+
 /**
  * 閲覧ログ記録フック
  * record(entry) で非同期にログ保存（失敗しても無視）
@@ -38,6 +42,7 @@ export function useViewLog(eventId) {
         target_id: entry.target_id || "",
         actor_name: actor.name,
         actor_email: actor.email,
+        logged_at_jst: getJSTDateTime(),
       });
     } catch {
       // 閲覧ログ保存失敗は無視

@@ -31,6 +31,10 @@
     "target_id": {
       "type": "string",
       "description": "\u5bfe\u8c61\u306e\u30a8\u30f3\u30c6\u30a3\u30c6\u30a3ID"
+    },
+    "logged_at_jst": {
+      "type": "string",
+      "description": "\u65e5\u672c\u6642\u9593\u3067\u306e\u95b2\u89a7\u65e5\u6642 (YYYY-MM-DD HH:mm)"
     }
   },
   "required": [
