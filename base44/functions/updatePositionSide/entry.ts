@@ -94,20 +94,32 @@ Deno.serve(async (req) => {
 
       const updatedPositions = [];
       for (const position of matchingPositions) {
-        let staffNames;
+        const posSettings = (sideSettings?.positions || {})[position.id] || {};
+        let staffNames, kamite, shimote;
         if (splitBySide) {
           staffNames = unique(position.staff_names || []);
+          kamite = posSettings.staff_names_kamite || position.staff_names || [];
+          shimote = posSettings.staff_names_shimote || [];
         } else {
-          const kamite = position.staff_names_kamite || [];
-          const shimote = position.staff_names_shimote || [];
-          staffNames = unique([...kamite, ...shimote]);
+          const existingKamite = position.staff_names_kamite || [];
+          const existingShimote = position.staff_names_shimote || [];
+          staffNames = unique([...existingKamite, ...existingShimote]);
+          kamite = [];
+          shimote = [];
         }
-        const updated = await base44.asServiceRole.entities.Position.update(position.id, { staff_names: staffNames });
+        const updated = await base44.asServiceRole.entities.Position.update(position.id, {
+          staff_names: staffNames,
+          split_by_side: splitBySide,
+          staff_names_kamite: kamite,
+          staff_names_shimote: shimote,
+        });
         updatedPositions.push({
           ...(updated || position),
           id: position.id,
           split_by_side: splitBySide,
           staff_names: staffNames,
+          staff_names_kamite: kamite,
+          staff_names_shimote: shimote,
         });
       }
 
