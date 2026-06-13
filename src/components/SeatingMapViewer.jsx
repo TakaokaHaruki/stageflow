@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, MapPin, UsersRound, ZoomIn, ZoomOut } from "lucide-react";
+import { Check, ChevronRight, MapPin, UsersRound, ZoomIn, ZoomOut } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import SectionHeader from "@/components/SectionHeader";
 
@@ -58,13 +58,13 @@ function SvgDisplay({ svgUrl }) {
   return (
     <div className="relative">
       <div className="absolute right-2 top-2 z-10 flex gap-1">
-        <button onClick={() => setScale((value) => clampScale(value + 0.2))} className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground" aria-label="拡大">
+        <button onClick={() => setScale((value) => clampScale(value + 0.2))} className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:w-7" aria-label="拡大">
           <ZoomIn className="h-3.5 w-3.5" />
         </button>
-        <button onClick={() => setScale((value) => clampScale(value - 0.2))} className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground" aria-label="縮小">
+        <button onClick={() => setScale((value) => clampScale(value - 0.2))} className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:w-7" aria-label="縮小">
           <ZoomOut className="h-3.5 w-3.5" />
         </button>
-        <button onClick={() => { setScale(1); setOffset({ x: 0, y: 0 }); }} className="flex h-7 items-center justify-center rounded-md border border-border bg-card/80 px-2 text-xs text-muted-foreground backdrop-blur-sm hover:text-foreground">
+        <button onClick={() => { setScale(1); setOffset({ x: 0, y: 0 }); }} className="flex h-10 items-center justify-center rounded-md border border-border bg-card/80 px-3 text-xs text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:px-2">
           リセット
         </button>
       </div>
@@ -107,7 +107,8 @@ export default function SeatingMapViewer() {
     <div className="space-y-3">
       <SectionHeader icon={MapPin} title="客席配置図" subtitle={`${venues.length}会場`} />
       <div className="grid min-w-0 gap-3 sm:grid-cols-[260px_minmax(0,1fr)]">
-        <div className="flex gap-2 overflow-x-auto pb-1 sm:max-h-[calc(100svh-220px)] sm:flex-col sm:overflow-x-hidden sm:overflow-y-auto sm:pb-0 sm:pr-1">
+        <div className="relative min-w-0">
+          <div className="flex max-w-full snap-x snap-mandatory gap-2 overflow-x-auto pb-1 pr-8 sm:max-h-[calc(100svh-220px)] sm:flex-col sm:overflow-x-hidden sm:overflow-y-auto sm:pb-0 sm:pr-1">
           {venues.map((venue) => {
             const hasMap = seatingMaps.some((map) => map.venue_id === venue.id && map.svg_url);
             const selected = venue.id === selectedVenueId;
@@ -115,7 +116,7 @@ export default function SeatingMapViewer() {
               <button
                 key={venue.id}
                 onClick={() => setSelectedVenueId(venue.id)}
-                className={`flex min-h-[62px] w-64 shrink-0 items-start gap-2 rounded-md border px-3 py-2.5 text-left transition-colors sm:w-auto sm:min-w-0 sm:shrink ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}
+                className={`flex min-h-[68px] w-[calc(100vw-3.5rem)] max-w-64 shrink-0 snap-start items-start gap-2 rounded-md border px-3 py-2.5 text-left transition-colors sm:w-auto sm:min-w-0 sm:max-w-none sm:shrink ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-muted"}`}
               >
                 <MapPin className={`mt-0.5 h-4 w-4 shrink-0 ${selected ? "text-primary" : "text-muted-foreground"}`} />
                 <span className="min-w-0 flex-1">
@@ -126,6 +127,10 @@ export default function SeatingMapViewer() {
               </button>
             );
           })}
+          </div>
+          <div className="pointer-events-none absolute bottom-1 right-0 top-0 flex w-10 items-center justify-end bg-gradient-to-l from-background via-background/80 to-transparent pr-1 sm:hidden">
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </div>
         </div>
 
         <div className="min-w-0 space-y-2">

@@ -103,7 +103,7 @@ export function ModeVisibilityControls({ eventId, field, mode = "edit", canManag
   ];
 
   return (
-    <div className="flex h-8 shrink-0 items-center gap-1 rounded-lg border border-border bg-card p-1">
+    <div className="flex h-10 shrink-0 items-center gap-1 rounded-lg border border-border bg-card p-1 sm:h-8">
       <span className="hidden sm:inline-flex items-center gap-1 px-1.5 text-[10px] font-medium text-muted-foreground">
         <Lock className="w-3 h-3" />
         {label}
@@ -114,7 +114,7 @@ export function ModeVisibilityControls({ eventId, field, mode = "edit", canManag
           type="button"
           onClick={() => updateMode.mutate(value)}
           disabled={updateMode.isPending || mode === value}
-          className={`inline-flex h-6 items-center gap-1 whitespace-nowrap rounded-md px-2 text-[11px] font-semibold transition-colors ${
+          className={`inline-flex h-8 items-center gap-1 whitespace-nowrap rounded-md px-2.5 text-xs font-semibold transition-colors sm:h-6 sm:px-2 sm:text-[11px] ${
             mode === value
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -141,9 +141,10 @@ export function HiddenInEditMode({ title = "編集モード中です" }) {
 
 export function ModeLoadingPlaceholder() {
   return (
-    <div className="rounded-xl border border-border bg-card px-4 py-8 text-center text-muted-foreground">
-      <div className="mx-auto mb-2 h-6 w-6 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-      <p className="text-xs font-medium">表示モードを確認しています</p>
+    <div className="rounded-lg border border-border bg-card px-4 py-6 text-center text-muted-foreground">
+      <div className="mx-auto mb-3 h-7 w-7 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+      <p className="text-sm font-medium">表示モードを確認しています</p>
+      <p className="mt-1 text-xs">確認に時間がかかる場合は、画面を再読み込みしてください。</p>
     </div>
   );
 }

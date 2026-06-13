@@ -1,6 +1,6 @@
 export default function SectionHeader({ icon: Icon, title, subtitle, actions }) {
   return (
-    <div className="mb-2 flex min-h-8 flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mb-2 flex min-h-8 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-1.5">
       <div className="min-w-0 flex-1">
         <h2 className="flex min-h-8 items-center gap-1.5 text-sm font-bold leading-tight">
           {Icon && <Icon className="h-4 w-4 shrink-0 text-primary" />}
@@ -8,7 +8,7 @@ export default function SectionHeader({ icon: Icon, title, subtitle, actions }) 
         </h2>
         {subtitle && <div className="text-xs leading-tight text-muted-foreground">{subtitle}</div>}
       </div>
-      {actions && <div className="flex min-h-8 shrink-0 flex-wrap items-center justify-end gap-1.5">{actions}</div>}
+      {actions && <div className="flex min-h-10 w-full flex-wrap items-center justify-start gap-1.5 sm:min-h-8 sm:w-auto sm:shrink-0 sm:justify-end">{actions}</div>}
     </div>
   );
 }

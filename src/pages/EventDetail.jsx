@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Paperclip, FileText, Monitor, LayoutTemplate } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Paperclip, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2 } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -99,13 +99,33 @@ export default function EventDetail() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 px-4 text-center text-muted-foreground">
+        <div className="h-8 w-8 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+        <p className="text-sm font-medium">イベント情報を読み込んでいます</p>
       </div>
     );
   }
 
-  if (!event) return <div className="p-8 text-muted-foreground">イベントが見つかりません</div>;
+  if (!event) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="w-full max-w-sm rounded-lg border border-border bg-card p-6 text-center shadow-sm">
+          <CalendarX2 className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
+          <h1 className="text-base font-bold">イベントが見つかりません</h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            イベントが削除されたか、表示する権限がない可能性があります。
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              <RefreshCw className="h-4 w-4" />
+              再読み込み
+            </Button>
+            <Button onClick={() => { window.location.href = "/events"; }}>イベント一覧</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const desktopTabs = [
     { id: "staff", label: "スタッフ管理", icon: Users },
@@ -167,13 +187,13 @@ export default function EventDetail() {
 
       {/* Top bar */}
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
-        <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
+        <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex flex-wrap items-center gap-1.5 sm:flex-nowrap">
           <BackButton to="/events" label="イベント一覧へ戻る" />
           <div className="hidden sm:flex flex-col items-start mr-1">
             <CrewlyLogo administrator={role === "admin"} />
             <span className="text-[10px] text-muted-foreground leading-none mt-0.5 pl-0.5">{currentTime}</span>
           </div>
-          <div className="min-w-0 flex-1">
+          <div className="order-2 min-w-0 basis-full flex-1 pl-10 sm:order-none sm:basis-auto sm:pl-0">
             <div className="flex items-baseline gap-2 min-w-0">
               <h1 className="font-bold text-sm leading-snug truncate shrink-0">{event.name}</h1>
               {(event.time_priority || event.time_open || event.time_start || event.time_end) && (
@@ -196,7 +216,7 @@ export default function EventDetail() {
           <button
             type="button"
             onClick={() => setConfirmScreenSaver(true)}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:ml-0 sm:h-7 sm:w-7"
             title="スクリーンセーバー"
             aria-label="スクリーンセーバーを表示"
           >
@@ -204,15 +224,15 @@ export default function EventDetail() {
           </button>
           <ThemeToggle />
           {currentUser ? (
-            <div className="flex h-7 max-w-36 shrink-0 items-center gap-1 rounded-md bg-muted px-1">
-              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20">
+            <div className="flex h-10 max-w-36 shrink-0 items-center gap-1 rounded-md bg-muted px-1 sm:h-7">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-5 sm:w-5">
                 <User className="w-3 h-3 text-primary" />
               </div>
               <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
               <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
               <button
                 onClick={() => base44.auth.logout()}
-                className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive"
+                className="flex h-8 w-8 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
                 title="ログアウト"
                 aria-label="ログアウト"
               >
@@ -229,7 +249,7 @@ export default function EventDetail() {
         {/* Parent tab bar */}
         <div className="hidden sm:block border-t border-border bg-card/80 backdrop-blur-md">
           <div className="max-w-6xl mx-auto px-3">
-            <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+            <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-4 sm:overflow-x-auto sm:scrollbar-hide">
               {primaryTabs.map(({ id, label, icon: Icon }) => (
                   <button
                     key={id}
@@ -249,15 +269,15 @@ export default function EventDetail() {
                 <button
                   key={id}
                   onClick={() => selectTab(id)}
-                  className={`flex shrink-0 select-none items-center gap-1.5 whitespace-nowrap border-b-2 py-2 text-xs font-semibold transition-colors focus-visible:outline-none ${
+                  className={`flex min-h-11 min-w-0 select-none items-center justify-center gap-1 whitespace-normal border-b-2 px-1 py-1.5 text-center text-[10px] font-semibold leading-tight transition-colors focus-visible:outline-none sm:min-h-0 sm:shrink-0 sm:justify-start sm:gap-1.5 sm:whitespace-nowrap sm:px-0 sm:py-2 sm:text-left sm:text-xs ${
                     tab === id
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
                   aria-current={tab === id ? "page" : undefined}
                 >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
+                  <Icon className="hidden h-3.5 w-3.5 sm:block" />
+                  <span>{label}</span>
                 </button>
               ))}
             </div>
@@ -268,20 +288,20 @@ export default function EventDetail() {
         {isManagementTab && (
         <div className="block border-t border-border/70 bg-muted/40">
           <div className="max-w-6xl mx-auto px-3">
-            <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+            <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-4 sm:overflow-x-auto sm:scrollbar-hide">
               {activeManagementChildren.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   onClick={() => selectManagementChild(id)}
-                  className={`flex shrink-0 select-none items-center gap-1.5 whitespace-nowrap border-b-2 py-2 text-xs font-semibold transition-colors focus-visible:outline-none ${
+                  className={`flex min-h-11 min-w-0 select-none items-center justify-center gap-1 whitespace-normal border-b-2 px-1 py-1.5 text-center text-[10px] font-semibold leading-tight transition-colors focus-visible:outline-none sm:min-h-0 sm:shrink-0 sm:justify-start sm:gap-1.5 sm:whitespace-nowrap sm:px-0 sm:py-2 sm:text-left sm:text-xs ${
                     activeManagementChild === id
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
                   aria-current={activeManagementChild === id ? "page" : undefined}
                 >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
+                  <Icon className="hidden h-3.5 w-3.5 sm:block" />
+                  <span>{label}</span>
                 </button>
               ))}
             </div>
@@ -290,7 +310,7 @@ export default function EventDetail() {
         )}
       </div>
 
-      <div className="max-w-6xl mx-auto px-1.5 py-1.5 pb-16 sm:pb-8">
+      <div className="max-w-6xl mx-auto px-1.5 py-1.5 pb-20 sm:pb-8">
         <UserRestrictionBanner role={role} />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

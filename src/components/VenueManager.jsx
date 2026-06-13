@@ -107,7 +107,7 @@ function VenueEditModal({ venue, seatingMap, onClose }) {
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h3 className="text-sm font-semibold">会場を編集</h3>
-          <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted">
+          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:bg-muted sm:h-8 sm:w-8" aria-label="閉じる">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -234,10 +234,10 @@ export default function VenueManager() {
                       {Number(venue.max_capacity) > 0 ? `最大収容 ${Number(venue.max_capacity).toLocaleString("ja-JP")}人` : "最大収容人数 未登録"}
                     </div>
                   </div>
-                  <button onClick={() => setEditingVenue(venue)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={`${venue.name}を編集`}>
+                  <button onClick={() => setEditingVenue(venue)} className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground sm:h-7 sm:w-7" aria-label={`${venue.name}を編集`}>
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={() => setConfirmDelete(venue)} className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive" aria-label={`${venue.name}を削除`}>
+                  <button onClick={() => setConfirmDelete(venue)} className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:h-7 sm:w-7" aria-label={`${venue.name}を削除`}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>

@@ -34,6 +34,7 @@ export default function StaffDragDropManager({ eventId }) {
   const queryClient = useQueryClient();
   const { canEdit, canManageSettings, role } = useUserRole();
   const { record } = useOperationLog(eventId);
+  const [mobileSlot, setMobileSlot] = useState(TIME_SLOTS[0]);
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -495,6 +496,22 @@ export default function StaffDragDropManager({ eventId }) {
       ) : (
         <>
 
+      <div className="mb-2 grid grid-cols-3 gap-1 rounded-lg border border-border bg-muted/40 p-1 sm:hidden">
+        {TIME_SLOTS.map((slot) => (
+          <button
+            key={slot}
+            type="button"
+            onClick={() => setMobileSlot(slot)}
+            className={`min-h-10 rounded-md px-1 text-xs font-semibold transition-colors ${
+              mobileSlot === slot ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+            }`}
+            aria-pressed={mobileSlot === slot}
+          >
+            {slot}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
         {TIME_SLOTS.map((slot) => {
           const style = TIME_SLOT_STYLES[slot];
@@ -504,7 +521,7 @@ export default function StaffDragDropManager({ eventId }) {
           const slotAssignedCount = staffList.filter((s) => slotAssignedStaffNames.has(s.name)).length;
           const slotBorderClass = slot === "開場中" ? "border-amber-400 dark:border-amber-500" : slot === "開演中" ? "border-blue-400 dark:border-blue-500" : "border-slate-400 dark:border-slate-400";
           return (
-            <div key={slot} className={`border-2 rounded-lg overflow-hidden ${slotBorderClass}`}>
+            <div key={slot} className={`${mobileSlot === slot ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block ${slotBorderClass}`}>
               <div className={`flex items-center justify-between px-2 py-1 ${style.header}`}>
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-xs">{slot}</span>
@@ -517,13 +534,13 @@ export default function StaffDragDropManager({ eventId }) {
 
                     <button onClick={() => openAdd(slot)}
                       title="ポジションを追加"
-                      className="text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/60 dark:bg-white/10 hover:bg-white/90 dark:hover:bg-white/20 text-current transition-colors font-medium select-none">
+                      className="flex min-h-10 items-center gap-1 rounded bg-white/60 px-2 text-xs font-medium text-current transition-colors hover:bg-white/90 dark:bg-white/10 dark:hover:bg-white/20 sm:min-h-0 sm:px-1.5 sm:py-0.5 sm:text-[10px] select-none">
                       <Plus className="w-2.5 h-2.5" />追加
                     </button>
                     {slotPositions.length > 0 && (
                       <button onClick={() => setConfirmBulkDelete(slot)}
                         title="このスロットを一括削除"
-                        className="text-[10px] flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-red-500/20 hover:bg-red-500/40 text-red-800 dark:text-red-200 transition-colors font-medium select-none">
+                        className="flex min-h-10 items-center gap-1 rounded bg-red-500/20 px-2 text-xs font-medium text-red-800 transition-colors hover:bg-red-500/40 dark:text-red-200 sm:min-h-0 sm:px-1.5 sm:py-0.5 sm:text-[10px] select-none">
                         <Trash2 className="w-2.5 h-2.5" />一括削除
                       </button>
                     )}

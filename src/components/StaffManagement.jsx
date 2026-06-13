@@ -207,7 +207,7 @@ export default function StaffManagement({ eventId }) {
           <Button
             size="sm"
             variant="outline"
-            className="gap-1 h-8 text-xs px-2 shrink-0"
+            className="gap-1 text-xs shrink-0"
             onClick={() => canUseEditTools && setShowScrapeModal(true)}
             disabled={!canUseEditTools}
           >
@@ -226,23 +226,23 @@ export default function StaffManagement({ eventId }) {
 
       {/* Add form */}
       <div className="bg-card border border-border rounded-lg p-1 mb-1.5">
-        <div className="flex gap-1.5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1.5 sm:flex">
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="スタッフ名"
             disabled={!canUseEditTools}
-            className="flex-1 h-8 text-sm" />
+            className="col-span-2 h-10 min-w-0 flex-1 text-sm sm:col-span-1 sm:h-8" />
           
           <Input
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="備考"
             disabled={!canUseEditTools}
-            className="w-24 h-8 text-sm" />
+            className="h-10 min-w-0 text-sm sm:h-8 sm:w-24" />
           
-          <Button onClick={handleAdd} disabled={!canUseEditTools || !name.trim() || createMutation.isPending} size="sm" className="gap-0.5 h-8 px-2 shrink-0">
+          <Button onClick={handleAdd} disabled={!canUseEditTools || !name.trim() || createMutation.isPending} size="sm" className="gap-0.5 shrink-0">
             <Plus className="w-3 h-3" />追加
           </Button>
         </div>
@@ -296,10 +296,10 @@ export default function StaffManagement({ eventId }) {
                       )}
                     </div>
                   </div>
-                  <button onClick={() => canUseEditTools && setEditingStaff(staff)} disabled={!canUseEditTools} className="p-1 rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none" title="編集">
+                  <button onClick={() => canUseEditTools && setEditingStaff(staff)} disabled={!canUseEditTools} className="flex h-10 w-10 shrink-0 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-6 sm:w-6" title="編集" aria-label={`${displayName}を編集`}>
                     <Pencil className="w-3 h-3" />
                   </button>
-                  <button onClick={() => canUseEditTools && setConfirmDelete({ id: staff.id, name: staff.name })} disabled={!canUseEditTools} className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none" title="削除">
+                  <button onClick={() => canUseEditTools && setConfirmDelete({ id: staff.id, name: staff.name })} disabled={!canUseEditTools} className="flex h-10 w-10 shrink-0 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-6 sm:w-6" title="削除" aria-label={`${displayName}を削除`}>
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>

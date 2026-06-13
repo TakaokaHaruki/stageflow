@@ -45,7 +45,7 @@ export default function UserNameEditor({ user, onSaved }) {
     <>
       <button
         onClick={handleOpen}
-        className="p-0.5 rounded text-muted-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none"
+        className="flex h-8 w-8 items-center justify-center rounded text-muted-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none sm:h-5 sm:w-5"
         title="ユーザー名を編集"
         aria-label="ユーザー名を編集"
       >
@@ -68,7 +68,7 @@ export default function UserNameEditor({ user, onSaved }) {
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold">ユーザー名を登録</h3>
-              <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-muted text-muted-foreground" aria-label="閉じる">
+              <button onClick={() => setOpen(false)} className="flex h-10 w-10 items-center justify-center rounded hover:bg-muted text-muted-foreground sm:h-8 sm:w-8" aria-label="閉じる">
                 <X className="w-4 h-4" />
               </button>
             </div>
