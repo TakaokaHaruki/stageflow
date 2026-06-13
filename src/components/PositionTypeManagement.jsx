@@ -126,19 +126,16 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
 
     // 楽観的UI更新
     const prevSideSettings = queryClient.getQueryData(["positionSideSettings", eventId]);
+    const nextPositions = { ...(prevSideSettings?.positions || {}) };
+    for (const [posId, migrationData] of Object.entries(positionMigrationMap)) {
+      nextPositions[posId] = { ...(nextPositions[posId] || {}), ...migrationData };
+    }
     const nextSideSettings = {
       position_types: {
         ...(prevSideSettings?.position_types || {}),
         [positionType.name]: splitBySide,
       },
-      positions: Object.fromEntries(
-        Object.entries(prevSideSettings?.positions || {}).map(([positionId, data]) => [
-          positionId,
-          matchingPositionIds.has(positionId) && positionMigrationMap[positionId]
-            ? { ...data, ...positionMigrationMap[positionId] }
-            : data,
-        ])
-      ),
+      positions: nextPositions,
       updated_at: new Date().toISOString(),
     };
     queryClient.setQueryData(["positionSideSettings", eventId], nextSideSettings);
