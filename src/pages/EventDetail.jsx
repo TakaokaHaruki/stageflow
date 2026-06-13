@@ -179,9 +179,9 @@ export default function EventDetail() {
               {(event.time_priority || event.time_open || event.time_start || event.time_end) && (
                 <div className="text-xs text-muted-foreground flex flex-wrap gap-x-2 shrink-0">
                   {event.time_priority && <EventTimeDisplay eventDate={event.date} eventTime={event.time_priority} endTime={event.time_priority_end} label="先行" />}
-                  {event.time_open && <EventTimeDisplay eventDate={event.date} eventTime={event.time_open} endTime={event.time_open_end} label="開場" />}
-                  {event.time_start && <EventTimeDisplay eventDate={event.date} eventTime={event.time_start} endTime={event.time_start_end} label="開演" />}
-                  {event.time_end && <EventTimeDisplay eventDate={event.date} eventTime={event.time_end} endTime={event.time_end_end} label="終演" />}
+                  {event.time_open && <EventTimeDisplay eventDate={event.date} eventTime={event.time_open} endTime={event.time_start} label="開場" />}
+                  {event.time_start && <EventTimeDisplay eventDate={event.date} eventTime={event.time_start} endTime={event.time_end} label="開演" />}
+                  {event.time_end && <EventTimeDisplay eventDate={event.date} eventTime={event.time_end} label="終演" />}
                 </div>
               )}
             </div>

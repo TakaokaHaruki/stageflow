@@ -22,20 +22,23 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     time_priority: event?.time_priority || "",
     time_priority_end: event?.time_priority_end || "",
     time_open: event?.time_open || "",
-    time_open_end: event?.time_open_end || "",
     time_start: event?.time_start || "",
-    time_start_end: event?.time_start_end || "",
     time_end: event?.time_end || "",
-    time_end_end: event?.time_end_end || "",
   });
 
   const mutation = useMutation({
     mutationFn: async (data) => {
+      // Auto-populate end times: 開場終了=開演開始, 開演終了=終演開始
+      const payload = {
+        ...data,
+        time_open_end: data.time_start || "",
+        time_start_end: data.time_end || "",
+      };
       if (event) {
-        const res = await base44.functions.invoke("updateEventRecord", { eventId: event.id, data });
+        const res = await base44.functions.invoke("updateEventRecord", { eventId: event.id, data: payload });
         return res?.data?.event ?? null;
       }
-      return base44.entities.Event.create(data);
+      return base44.entities.Event.create(payload);
     },
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: ["events"] });
@@ -75,9 +78,9 @@ export default function EventFormModal({ event, onClose, onSaved }) {
   const isNonTextChange = (prev, cur) =>
     prev.date !== cur.date || prev.status !== cur.status ||
     prev.time_priority !== cur.time_priority || prev.time_priority_end !== cur.time_priority_end ||
-    prev.time_open !== cur.time_open || prev.time_open_end !== cur.time_open_end ||
-    prev.time_start !== cur.time_start || prev.time_start_end !== cur.time_start_end ||
-    prev.time_end !== cur.time_end || prev.time_end_end !== cur.time_end_end;
+    prev.time_open !== cur.time_open ||
+    prev.time_start !== cur.time_start ||
+    prev.time_end !== cur.time_end;
 
   useEffect(() => {
     if (!event || !form.name) return;
@@ -165,35 +168,26 @@ export default function EventFormModal({ event, onClose, onSaved }) {
           <div>
             <Label>時間設定</Label>
             <div className="mt-1 space-y-2">
-              {/* Header row */}
-              <div className="grid grid-cols-[4rem_1fr_1fr] gap-2 items-center">
-                <div />
-                <Label className="text-xs text-muted-foreground text-center">開始</Label>
-                <Label className="text-xs text-muted-foreground text-center">終了</Label>
-              </div>
-              {/* 先行 */}
+              {/* 先行 - 開始・終了あり */}
               <div className="grid grid-cols-[4rem_1fr_1fr] gap-2 items-center">
                 <Label className="text-xs text-muted-foreground">先行</Label>
                 <Input type="time" className="w-full" value={form.time_priority} onChange={(e) => setForm({ ...form, time_priority: e.target.value })} />
                 <Input type="time" className="w-full" value={form.time_priority_end} onChange={(e) => setForm({ ...form, time_priority_end: e.target.value })} />
               </div>
-              {/* 開場 */}
-              <div className="grid grid-cols-[4rem_1fr_1fr] gap-2 items-center">
+              {/* 開場 - 開始のみ */}
+              <div className="grid grid-cols-[4rem_1fr] gap-2 items-center">
                 <Label className="text-xs text-muted-foreground">開場</Label>
                 <Input type="time" className="w-full" value={form.time_open} onChange={(e) => setForm({ ...form, time_open: e.target.value })} />
-                <Input type="time" className="w-full" value={form.time_open_end} onChange={(e) => setForm({ ...form, time_open_end: e.target.value })} />
               </div>
-              {/* 開演 */}
-              <div className="grid grid-cols-[4rem_1fr_1fr] gap-2 items-center">
+              {/* 開演 - 開始のみ */}
+              <div className="grid grid-cols-[4rem_1fr] gap-2 items-center">
                 <Label className="text-xs text-muted-foreground">開演</Label>
                 <Input type="time" className="w-full" value={form.time_start} onChange={(e) => setForm({ ...form, time_start: e.target.value })} />
-                <Input type="time" className="w-full" value={form.time_start_end} onChange={(e) => setForm({ ...form, time_start_end: e.target.value })} />
               </div>
-              {/* 終演 */}
-              <div className="grid grid-cols-[4rem_1fr_1fr] gap-2 items-center">
+              {/* 終演 - 開始のみ */}
+              <div className="grid grid-cols-[4rem_1fr] gap-2 items-center">
                 <Label className="text-xs text-muted-foreground">終演</Label>
                 <Input type="time" className="w-full" value={form.time_end} onChange={(e) => setForm({ ...form, time_end: e.target.value })} />
-                <Input type="time" className="w-full" value={form.time_end_end} onChange={(e) => setForm({ ...form, time_end_end: e.target.value })} />
               </div>
             </div>
           </div>
