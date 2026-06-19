@@ -92,6 +92,9 @@ Deno.serve(async (req) => {
       const positions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
       const matchingPositions = positions.filter((p) => p.name === positionTypeName);
 
+      // PositionType の split_by_side も更新（他ユーザーへの反映のため）
+      await base44.asServiceRole.entities.PositionType.update(positionTypeId, { split_by_side: splitBySide });
+
       const updatedPositions = [];
       for (const position of matchingPositions) {
         const posSettings = (sideSettings?.positions || {})[position.id] || {};
@@ -123,14 +126,18 @@ Deno.serve(async (req) => {
         });
       }
 
-      // PositionSideSettings に保存 (upsert)
+      // PositionSideSettings に保存（upsert、失敗時は Position 本体の保存を優先して続行）
       if (sideSettings) {
-        const existing = (await base44.asServiceRole.entities.PositionSideSettings.filter({ event_id: eventId }))[0];
-        const payload = { ...sideSettings, event_id: eventId, updated_at: new Date().toISOString() };
-        if (existing?.id) {
-          await base44.asServiceRole.entities.PositionSideSettings.update(existing.id, payload);
-        } else {
-          await base44.asServiceRole.entities.PositionSideSettings.create(payload);
+        try {
+          const existing = (await base44.asServiceRole.entities.PositionSideSettings.filter({ event_id: eventId }))[0];
+          const payload = { ...sideSettings, event_id: eventId, updated_at: new Date().toISOString() };
+          if (existing?.id) {
+            await base44.asServiceRole.entities.PositionSideSettings.update(existing.id, payload);
+          } else {
+            await base44.asServiceRole.entities.PositionSideSettings.create(payload);
+          }
+        } catch (sideErr) {
+          console.error("PositionSideSettings save failed (non-critical)", sideErr);
         }
       }
 
@@ -175,6 +182,9 @@ Deno.serve(async (req) => {
       const position = await base44.asServiceRole.entities.Position.update(positionId, {
         ...extraFields,
         staff_names: staffNames,
+        split_by_side: splitBySide,
+        staff_names_kamite: kamite,
+        staff_names_shimote: shimote,
       });
 
       return Response.json({

@@ -124,7 +124,7 @@ export function applyPositionSideSettingsToTypes(positionTypes, settings) {
   const typeSettings = settings?.position_types || {};
   return (positionTypes || []).map((pt) => ({
     ...pt,
-    split_by_side: Boolean(typeSettings[pt.name]),
+    split_by_side: Boolean(typeSettings[pt.name] ?? pt.split_by_side),
   }));
 }
 
@@ -134,7 +134,7 @@ export function applyPositionSideSettingsToPositions(positions, positionTypes, s
   return (positions || []).map((position) => {
     const saved = positionSettings[position.id] || {};
     const splitByType = Boolean(typeSettings[position.name]);
-    const splitBySide = Boolean(saved.split_by_side ?? splitByType);
+    const splitBySide = Boolean(saved.split_by_side ?? splitByType ?? position.split_by_side);
     return {
       ...position,
       split_by_side: splitBySide,
