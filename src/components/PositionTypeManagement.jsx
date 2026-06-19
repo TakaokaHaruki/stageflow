@@ -47,7 +47,7 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
     refetchInterval: LIVE_SYNC_INTERVAL,
   });
 
-  const positionTypes = applyPositionSideSettingsToTypes(rawPositionTypes, sideSettings);
+  const positionTypes = applyPositionSideSettingsToTypes(rawPositionTypes);
 
   const { data: event } = useQuery({
     queryKey: ["event", eventId],
@@ -124,7 +124,11 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
       })
     );
 
-    // 楽観的UI更新
+    // 楽観的UI更新: PositionType キャッシュを直接更新
+    queryClient.setQueryData(["positionTypes"], (old = []) =>
+      old.map((pt) => pt.id === positionType.id ? { ...pt, split_by_side: splitBySide } : pt)
+    );
+
     const prevSideSettings = queryClient.getQueryData(["positionSideSettings", eventId]);
     const nextPositions = { ...(prevSideSettings?.positions || {}) };
     for (const [posId, migrationData] of Object.entries(positionMigrationMap)) {

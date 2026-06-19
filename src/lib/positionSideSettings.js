@@ -120,12 +120,9 @@ export function applyPositionSideMutation(settings, positionId, data) {
   };
 }
 
-export function applyPositionSideSettingsToTypes(positionTypes, settings) {
-  const typeSettings = settings?.position_types || {};
-  return (positionTypes || []).map((pt) => ({
-    ...pt,
-    split_by_side: Boolean(typeSettings[pt.name] ?? pt.split_by_side),
-  }));
+export function applyPositionSideSettingsToTypes(positionTypes) {
+  // split_by_side is persisted directly on the PositionType entity — no override needed.
+  return positionTypes || [];
 }
 
 export function applyPositionSideSettingsToPositions(positions, positionTypes, settings) {
