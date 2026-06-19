@@ -133,7 +133,7 @@ export function applyPositionSideSettingsToPositions(positions, positionTypes, s
   const positionSettings = settings?.positions || {};
   return (positions || []).map((position) => {
     const saved = positionSettings[position.id] || {};
-    const splitByType = Boolean(typeSettings[position.name]);
+    const splitByType = typeSettings[position.name];
     const splitBySide = Boolean(saved.split_by_side ?? splitByType ?? position.split_by_side);
     return {
       ...position,
