@@ -45,6 +45,16 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     []
   );
 
+  const [venueMode, setVenueMode] = useState("select");
+  const handleVenueModeChange = (mode) => {
+    if (mode === venueMode) return;
+    setVenueMode(mode);
+    setForm((prev) => ({ ...prev, venue: "" }));
+  };
+  useEffect(() => {
+    if (venueOptions.length === 0) setVenueMode("direct");
+  }, [venueOptions.length]);
+
   const handleMapUpload = async (file) => {
     if (!file) return;
     setUploadingMap(true);
@@ -180,9 +190,28 @@ export default function EventFormModal({ event, onClose, onSaved }) {
             />
           </div>
           <div>
-            <Label>会場名</Label>
-            {venueOptions.length > 0 ? (
-              <div className="mt-1">
+            <div className="flex items-center justify-between">
+              <Label>会場名</Label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleVenueModeChange("select")}
+                  disabled={venueOptions.length === 0}
+                  className={`text-xs underline transition-colors ${venueMode === "select" ? "text-primary font-semibold" : "text-muted-foreground"} ${venueOptions.length === 0 ? "opacity-40 cursor-not-allowed" : ""}`}
+                >
+                  登録会場から選ぶ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleVenueModeChange("direct")}
+                  className={`text-xs underline transition-colors ${venueMode === "direct" ? "text-primary font-semibold" : "text-muted-foreground"}`}
+                >
+                  直接入力する
+                </button>
+              </div>
+            </div>
+            <div className="mt-1">
+              {venueMode === "select" && venueOptions.length > 0 ? (
                 <ResponsiveSelect
                   value={form.venue}
                   onValueChange={(val) => setForm({ ...form, venue: val })}
@@ -190,10 +219,10 @@ export default function EventFormModal({ event, onClose, onSaved }) {
                   options={venueOptions}
                   label="会場名"
                 />
-              </div>
-            ) : (
-              <p className="mt-1 text-xs text-muted-foreground">会場が登録されていません（管理設定 → 会場管理から追加できます）</p>
-            )}
+              ) : (
+                <Input value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} placeholder="例：〇〇アリーナ" />
+              )}
+            </div>
           </div>
           {event && (
             <div>

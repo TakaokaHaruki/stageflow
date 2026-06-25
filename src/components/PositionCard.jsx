@@ -1,15 +1,42 @@
-import { Pencil, Trash2, Minus, Plus, Lock, LockOpen } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Pencil, Trash2, Minus, Plus, Lock, LockOpen, AlertCircle } from "lucide-react";
 import { getStaffDisplayName } from "@/lib/staffName";
 
 const SLOT_NOTE_KEY = { "開場中": "note_before", "開演中": "note_during", "終演後": "note_after" };
 
 function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, isLocked, side = null }) {
+  const [showNotePopup, setShowNotePopup] = useState(false);
+  const [notePopupPos, setNotePopupPos] = useState(null);
+  const noteIconRef = useRef(null);
   const staffData = staffList.find((s) => s.name === name);
   const displayName = getStaffDisplayName(name, maskStaffNames);
   const nameColor = staffData?.color || undefined;
   const slotNoteKey = SLOT_NOTE_KEY[pos.time_slot];
   const slotNote = slotNoteKey ? staffData?.[slotNoteKey] : null;
   const displayNote = slotNote || staffData?.note;
+
+  useEffect(() => {
+    if (!showNotePopup) return;
+    const handler = (e) => {
+      if (noteIconRef.current && !noteIconRef.current.contains(e.target)) setShowNotePopup(false);
+    };
+    document.addEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
+  }, [showNotePopup]);
+
+  const handleNoteClick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (showNotePopup) { setShowNotePopup(false); return; }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setNotePopupPos({ left: rect.left, top: rect.bottom + 4 });
+    setShowNotePopup(true);
+  };
+
   return (
     <div
       draggable={draggable && isAdmin && !isLocked}
@@ -23,7 +50,27 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
       <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-1 gap-y-0.5">
         {isLocked && <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />}
         <span className="text-xs font-medium" style={{ color: nameColor }}>{displayName}</span>
-        {displayNote && <span className="text-[10px] text-muted-foreground">({displayNote})</span>}
+        {displayNote && (
+          <div className="relative shrink-0" ref={noteIconRef}>
+            <button
+              type="button"
+              onClick={handleNoteClick}
+              title={displayNote}
+              className="flex items-center justify-center text-amber-500 hover:text-amber-600 transition-colors"
+              aria-label="備考を表示"
+            >
+              <AlertCircle className="w-3 h-3" />
+            </button>
+            {showNotePopup && notePopupPos && (
+              <div
+                className="fixed z-50 bg-card border border-border shadow-md rounded-lg p-2 text-[10px] text-foreground max-w-48 break-all"
+                style={{ left: notePopupPos.left, top: notePopupPos.top }}
+              >
+                {displayNote}
+              </div>
+            )}
+          </div>
+        )}
         {staffData?.costume_change && (
           <span className="text-[10px] px-1 py-0.5 rounded bg-purple-100 border border-purple-300 text-purple-700 dark:bg-purple-900/40 dark:border-purple-700 dark:text-purple-300 font-medium">着替</span>
         )}

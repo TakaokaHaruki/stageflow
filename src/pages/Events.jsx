@@ -4,17 +4,15 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn, ShieldCheck } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Trash2, Pencil } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
-import ThemeToggle from "@/components/ThemeToggle";
 import AdminUserModal from "@/components/AdminUserModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion } from "framer-motion";
 import EventFormModal from "@/components/EventFormModal";
-import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
+import EventsSidebar from "@/components/EventsSidebar";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import GlobalBanner from "@/components/GlobalBanner";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
@@ -100,63 +98,23 @@ export default function Events() {
           {isGuest && <BackButton to="/home" label="ホームへ戻る" />}
           <CrewlyLogo className="mr-1" administrator={role === "admin"} />
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">イベント一覧</h1>
-          {!isGuest && (
-            <Button onClick={() => {setEditingEvent(null);setShowModal(true);}} className="shrink-0 gap-1 text-xs select-none" size="sm" disabled={!canEdit}>
-              <Plus className="w-3.5 h-3.5" />
-              新規
-            </Button>
-          )}
-          <div className="min-w-0 flex-1" />
-          <div className="flex items-center gap-1.5 shrink-0">
-            <ThemeToggle />
-            {!isGuest && role === "admin" && (
-              <Button
-                onClick={() => setShowAdminModal(true)}
-                variant="outline"
-                size="sm"
-                className="w-9 gap-1 px-0 select-none sm:w-auto sm:px-3"
-                title="管理者設定"
-                aria-label="管理者設定"
-              >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">管理者設定</span>
-              </Button>
-            )}
-            {isGuest ? (
-              <Button size="sm" className="gap-1 h-7 text-xs px-2" onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}>
-                <LogIn className="w-3 h-3" />ログイン
-              </Button>
-            ) : currentUser ? (
-              <div className="flex h-9 max-w-44 items-center gap-0.5 rounded-md bg-muted px-0.5 sm:h-7 sm:gap-1 sm:px-1">
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20">
-                  <User className="w-3 h-3 text-primary" />
-                </div>
-                <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
-                <div className="flex shrink-0 gap-0.5">
-                  <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
-                  <button
-                    onClick={() => setConfirmDeleteAccount(true)}
-                    className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive select-none sm:h-5 sm:w-5"
-                    title="アカウント削除">
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                  <button
-                    onClick={() => base44.auth.logout()}
-                    className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive select-none sm:h-5 sm:w-5"
-                    title="ログアウト">
-                    <LogOut className="h-3 w-3" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <Button size="sm" variant="outline" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { window.location.href = "/login"; }}>
-                <LogIn className="w-3 h-3" />ログイン
-              </Button>
-            )}
-          </div>
         </div>
       </div>
 
+      <div className="sm:flex">
+        <EventsSidebar
+          canEdit={canEdit}
+          isAdmin={role === "admin"}
+          isGuest={isGuest}
+          currentUser={currentUser}
+          setCurrentUser={setCurrentUser}
+          onNewEvent={() => { setEditingEvent(null); setShowModal(true); }}
+          onAdminSettings={() => setShowAdminModal(true)}
+          onLogout={() => base44.auth.logout()}
+          onLogin={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}
+          onDeleteAccount={() => setConfirmDeleteAccount(true)}
+        />
+        <div className="flex-1 min-w-0">
       <div className="max-w-5xl mx-auto px-2 py-2 pb-16 sm:pb-2">
       <UserRestrictionBanner role={role} />
 
@@ -228,6 +186,8 @@ export default function Events() {
           </motion.div>
         }
       </div>{/* end max-w container */}
+        </div>{/* end flex-1 */}
+      </div>{/* end sm:flex */}
 
       {confirmDeleteEvent &&
       <ConfirmDialog
