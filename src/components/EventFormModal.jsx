@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ResponsiveSelect } from "@/components/ui/responsive-select";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -18,13 +17,28 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     date: event?.date || "",
     venue: event?.venue || "",
     description: event?.description || "",
-    status: event?.status || "準備中",
+    map_image_url: event?.map_image_url || "",
     time_priority: event?.time_priority || "",
     time_priority_end: event?.time_priority_end || "",
     time_open: event?.time_open || "",
     time_start: event?.time_start || "",
     time_end: event?.time_end || "",
   });
+  const [uploadingMap, setUploadingMap] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleMapUpload = async (file) => {
+    if (!file) return;
+    setUploadingMap(true);
+    try {
+      const res = await base44.integrations.Core.UploadFile({ file });
+      setForm((prev) => ({ ...prev, map_image_url: res?.file_url || "" }));
+    } catch {
+      toast.error("画像のアップロードに失敗しました");
+    } finally {
+      setUploadingMap(false);
+    }
+  };
 
   const mutation = useMutation({
     mutationFn: async (data) => {
@@ -76,7 +90,8 @@ export default function EventFormModal({ event, onClose, onSaved }) {
   const isTextChange = (prev, cur) =>
     prev.name !== cur.name || prev.venue !== cur.venue || prev.description !== cur.description;
   const isNonTextChange = (prev, cur) =>
-    prev.date !== cur.date || prev.status !== cur.status ||
+    prev.date !== cur.date ||
+    prev.map_image_url !== cur.map_image_url ||
     prev.time_priority !== cur.time_priority || prev.time_priority_end !== cur.time_priority_end ||
     prev.time_open !== cur.time_open ||
     prev.time_start !== cur.time_start ||
@@ -150,21 +165,46 @@ export default function EventFormModal({ event, onClose, onSaved }) {
             <Label>会場名</Label>
             <Input className="mt-1" value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} placeholder="例：〇〇アリーナ" />
           </div>
-          <div>
-            <Label>ステータス</Label>
-            <div className="mt-1">
-              <ResponsiveSelect
-                value={form.status}
-                onValueChange={(v) => setForm({ ...form, status: v })}
-                options={[
-                  { value: "準備中", label: "準備中" },
-                  { value: "開催中", label: "開催中" },
-                  { value: "終了", label: "終了" },
-                ]}
-                placeholder="ステータスを選択"
-              />
+          {event && (
+            <div>
+              <Label>会場マップ画像</Label>
+              <div className="mt-1 space-y-2">
+                {form.map_image_url && (
+                  <img src={form.map_image_url} alt="会場マップ" className="w-full rounded-lg border border-border" />
+                )}
+                <div className="flex items-center gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleMapUpload(f); e.target.value = ""; }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1 text-xs"
+                    disabled={uploadingMap}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {uploadingMap ? "アップロード中..." : form.map_image_url ? "画像を変更" : "画像をアップロード"}
+                  </Button>
+                  {form.map_image_url && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-destructive"
+                      onClick={() => setForm({ ...form, map_image_url: "" })}
+                    >
+                      削除
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
           <div>
             <Label>時間設定</Label>
             <div className="mt-1 space-y-2">

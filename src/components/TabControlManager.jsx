@@ -6,8 +6,6 @@ import { LayoutTemplate } from "lucide-react";
 const TAB_CONFIGS = [
   { id: "staff", label: "スタッフ管理", key: "tab_disabled_staff" },
   { id: "dragdrop", label: "配置表", key: "tab_disabled_dragdrop" },
-  { id: "notice", label: "連絡事項", key: "tab_disabled_notice" },
-  { id: "files", label: "ファイル共有", key: "tab_disabled_files" },
   { id: "seating_map", label: "客席配置図", key: "tab_disabled_seating_map" },
 ];
 
