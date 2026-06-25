@@ -34,8 +34,8 @@ export default function EventsSidebar({ canEdit, isAdmin, isGuest, currentUser, 
       className="hidden sm:flex sticky self-start flex-col border-r border-border bg-card/80 backdrop-blur-md"
       style={{ width, top: 56, height: "calc(100vh - 56px)", transition: "width 200ms ease" }}
     >
+      <TooltipProvider delayDuration={200}>
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
-        <TooltipProvider delayDuration={200}>
           <ul className="flex flex-col gap-0.5 px-1.5">
             {actionItems.map(({ id, label, icon: Icon, onClick }) => {
               const button = (
@@ -60,7 +60,6 @@ export default function EventsSidebar({ canEdit, isAdmin, isGuest, currentUser, 
               return <li key={id}>{button}</li>;
             })}
           </ul>
-        </TooltipProvider>
       </nav>
 
       <div className="border-t border-border p-1.5 space-y-1.5">
@@ -110,6 +109,7 @@ export default function EventsSidebar({ canEdit, isAdmin, isGuest, currentUser, 
           {!collapsed && <span>折りたたむ</span>}
         </button>
       </div>
+      </TooltipProvider>
     </aside>
   );
 
