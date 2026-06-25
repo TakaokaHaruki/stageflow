@@ -3,16 +3,14 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Paperclip, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2 } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Map, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2 } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
 import PositionTypeManagement from "@/components/PositionTypeManagement";
 import AdminSettings from "@/components/AdminSettings";
-import AnnouncementManager from "@/components/AnnouncementManager";
-import AnnouncementAlert from "@/components/AnnouncementAlert";
 import StaffDragDropManager from "@/components/StaffDragDropManager";
-import SharedFileManager from "@/components/SharedFileManager";
+import PositionMapViewer from "@/components/PositionMapViewer";
 import PositionNotesEditor from "@/components/PositionNotesEditor";
 import BottomTabBar from "@/components/BottomTabBar";
 import SidebarNav from "@/components/SidebarNav";
@@ -143,8 +141,7 @@ export default function EventDetail() {
   const desktopTabs = [
     { id: "staff", label: "スタッフ管理", icon: Users },
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
-    { id: "notice", label: "連絡事項", icon: Bell },
-    { id: "files", label: "ファイル共有", icon: Paperclip },
+    { id: "map", label: "配置マップ", icon: Map },
     { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
@@ -194,7 +191,6 @@ export default function EventDetail() {
         </div>
       )}
 
-      <AnnouncementAlert eventId={eventId} />
       <GlobalBanner />
 
       {/* Top bar */}
@@ -311,8 +307,7 @@ export default function EventDetail() {
             {tab === "settings" && settingsSection === "presets" && <PositionTypeManagement eventId={eventId} section="presets" />}
             {tab === "settings" && settingsSection === "venues" && <VenueManager />}
             {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
-            {tab === "notice" && <AnnouncementManager eventId={eventId} />}
-            {tab === "files" && <SharedFileManager eventId={eventId} />}
+            {tab === "map" && <PositionMapViewer eventId={eventId} event={event} />}
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
           </motion.div>
         </AnimatePresence>

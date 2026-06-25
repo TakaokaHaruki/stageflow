@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import {
   Users,
-  Megaphone,
   ClipboardList,
   Settings,
   ShieldCheck,
-  Paperclip,
+  Map,
   LayoutTemplate,
   FileText,
   MoreHorizontal,
@@ -15,8 +14,7 @@ import {
 const PRIMARY_TABS = [
   { id: "staff", label: "スタッフ", icon: Users },
   { id: "dragdrop", label: "配置表", icon: ClipboardList },
-  { id: "notice", label: "連絡事項", icon: Megaphone },
-  { id: "files", label: "ファイル", icon: Paperclip },
+  { id: "map", label: "配置マップ", icon: Map },
   { id: "seating_map", label: "客席図", icon: LayoutTemplate },
 ];
 
