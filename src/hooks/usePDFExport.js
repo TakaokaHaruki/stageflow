@@ -9,7 +9,8 @@ export function usePDFExport(eventId, type, filename) {
     setExporting(true);
     try {
       const response = await base44.functions.invoke("exportPositionPDF", { eventId, type });
-      const payload = response?.data ?? response;
+      // response が {data: {...}} 形式か、直接 {positions, staff, event} 形式かに対応
+      const payload = (response?.positions || response?.staff) ? response : (response?.data ?? response);
       if (payload.error) {
         alert("エラー: " + payload.error);
         return;
