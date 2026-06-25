@@ -71,14 +71,8 @@ function getColX(index) {
   return MARGIN + index * (getColWidth() + COL_GAP);
 }
 
-function calcFontSize(maxStaffCount, availableTextH) {
-  const fontSizes = [9, 8, 7, 6, 5, 4, 3];
-  for (const fs of fontSizes) {
-    const lineH = fs * 0.353 * 1.3;
-    if (maxStaffCount * lineH <= availableTextH) return fs;
-  }
-  return 4;
-}
+const STAFF_FONT_SIZE = 9;
+const STAFF_LINE_H = STAFF_FONT_SIZE * 0.353 * 1.3;
 
 function drawTitle(doc, event) {
   doc.setFontSize(12);
@@ -105,31 +99,27 @@ function drawCard(doc, pos, x, y, w, cardH) {
     ? [...new Set([...kamiteNames, ...shimoteNames])]
     : (pos.staff_names || []);
 
-  const maxStaffCount = splitBySide
-    ? Math.max(kamiteNames.length, shimoteNames.length)
-    : staffNames.length;
-
-  const availableTextH = cardH - NAME_BAR_H - 2;
-  const fontSize = calcFontSize(maxStaffCount, availableTextH);
-  const lineH = fontSize * 0.353 * 1.3;
-
-  doc.setDrawColor(170, 170, 170);
+  // カード本体: 白背景・グレー枠線・角丸1mm
+  doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.2);
   doc.setFillColor(255, 255, 255);
-  doc.roundedRect(x, y, w, cardH, 1, 1, 'S');
+  doc.roundedRect(x, y, w, cardH, 1, 1, 'FD');
 
+  // ポジション名バー: 薄グレー背景
   doc.setFillColor(245, 245, 245);
   doc.rect(x, y, w, NAME_BAR_H, 'F');
-  doc.setDrawColor(204, 204, 204);
+  doc.setDrawColor(210, 210, 210);
   doc.setLineWidth(0.2);
   doc.line(x, y + NAME_BAR_H, x + w, y + NAME_BAR_H);
 
+  // カラーインジケータ
   const [r, g, b] = hexToRgb(pos.color || '#6366f1');
   doc.setFillColor(r, g, b);
   doc.setDrawColor(51, 51, 51);
   doc.setLineWidth(0.1);
   doc.circle(x + 3, y + 2.5, 1.2, 'F');
 
+  // ポジション名
   doc.setFontSize(9);
   doc.setFont('NotoSansJP', 'normal');
   doc.setTextColor(0, 0, 0);
@@ -142,40 +132,48 @@ function drawCard(doc, pos, x, y, w, cardH) {
   doc.text(name, x + 6, y + 3.5);
 
   const staffY = y + NAME_BAR_H;
+  const cardBottom = y + cardH;
 
   if (splitBySide) {
     const halfW = w / 2;
-    doc.setDrawColor(221, 221, 221);
+    const headerH = 4;
+
+    // 上手・下手ヘッダー行: グレー背景・左右均等
+    doc.setFillColor(240, 240, 240);
+    doc.rect(x, staffY, halfW, headerH, 'F');
+    doc.rect(x + halfW, staffY, halfW, headerH, 'F');
+
+    doc.setDrawColor(210, 210, 210);
     doc.setLineWidth(0.2);
-    doc.line(x + halfW, staffY, x + halfW, y + cardH);
+    doc.line(x + halfW, staffY, x + halfW, cardBottom);
+    doc.line(x, staffY + headerH, x + w, staffY + headerH);
 
-    const sides = [
-      { label: '上手', names: kamiteNames, sx: x },
-      { label: '下手', names: shimoteNames, sx: x + halfW },
-    ];
-    sides.forEach(side => {
-      doc.setFillColor(245, 245, 245);
-      doc.rect(side.sx, staffY, halfW, 3.5, 'F');
-      doc.setFontSize(9);
-      doc.setFont('NotoSansJP', 'normal');
-      doc.setTextColor(102, 102, 102);
-      doc.text(side.label, side.sx + halfW / 2, staffY + 2.5, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setFont('NotoSansJP', 'normal');
+    doc.setTextColor(102, 102, 102);
+    doc.text('上手', x + halfW / 2, staffY + 2.8, { align: 'center' });
+    doc.text('下手', x + halfW + halfW / 2, staffY + 2.8, { align: 'center' });
 
-      doc.setFontSize(fontSize);
-      doc.setFont('NotoSansJP', 'normal');
-      doc.setTextColor(0, 0, 0);
-      side.names.forEach((nm, ni) => {
-        const ny = staffY + 3.5 + 1 + ni * lineH;
-        if (ny < y + cardH - 0.5) doc.text(nm, side.sx + 2, ny);
-      });
+    // スタッフ名: 9pt固定・はみ出し省略
+    doc.setFontSize(STAFF_FONT_SIZE);
+    doc.setTextColor(0, 0, 0);
+    const nameStartY = staffY + headerH + STAFF_LINE_H;
+    kamiteNames.forEach((nm, ni) => {
+      const ny = nameStartY + ni * STAFF_LINE_H;
+      if (ny < cardBottom - 0.5) doc.text(nm, x + 2, ny);
+    });
+    shimoteNames.forEach((nm, ni) => {
+      const ny = nameStartY + ni * STAFF_LINE_H;
+      if (ny < cardBottom - 0.5) doc.text(nm, x + halfW + 2, ny);
     });
   } else {
-    doc.setFontSize(fontSize);
+    doc.setFontSize(STAFF_FONT_SIZE);
     doc.setFont('NotoSansJP', 'normal');
     doc.setTextColor(0, 0, 0);
+    const nameStartY = staffY + STAFF_LINE_H;
     staffNames.forEach((nm, ni) => {
-      const ny = staffY + 2 + ni * lineH;
-      if (ny < y + cardH - 0.5) doc.text(nm, x + 3, ny);
+      const ny = nameStartY + ni * STAFF_LINE_H;
+      if (ny < cardBottom - 0.5) doc.text(nm, x + 3, ny);
     });
     if (staffNames.length === 0) {
       doc.setFontSize(9);
