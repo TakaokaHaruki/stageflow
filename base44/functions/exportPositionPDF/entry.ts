@@ -32,7 +32,7 @@ function generateHTML(event, positions, staff, type) {
         padding: 8px;
         background: white;
         color: #000;
-        font-size: 12px;
+        font-size: 13px;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
@@ -46,10 +46,10 @@ function generateHTML(event, positions, staff, type) {
       .event-info { font-size: 12px; color: #333; margin-top: 2px; }
 
       /* 3列グリッド */
-      .slot-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+      .slot-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 10px; align-items: stretch; }
 
       /* 時間帯カラム */
-      .slot-column { border: 1px solid #888; border-radius: 4px; overflow: hidden; }
+      .slot-column { border: 1px solid #888; border-radius: 4px; overflow: hidden; height: 100%; }
       .slot-column.col-open { border-left: 3px solid #555; }
       .slot-column.col-show { border-left: 3px solid #222; }
       .slot-column.col-after { border: 1px dashed #888; }
@@ -66,11 +66,11 @@ function generateHTML(event, positions, staff, type) {
 
       /* PositionCard */
       .pos-card { border: 1px solid #aaa; border-radius: 3px; overflow: hidden; }
-      .pos-card-bar { display: flex; align-items: center; gap: 4px; padding: 3px 6px; background: #f5f5f5; border-bottom: 1px solid #ccc; }
+      .pos-card-bar { display: flex; align-items: center; gap: 4px; padding: 3px 6px; background: #f5f5f5; border-bottom: 1px solid #ccc; overflow: hidden; }
       .pos-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; border: 1px solid #333; }
-      .pos-name { font-size: 12px; font-weight: bold; }
-      .pos-count { font-size: 10px; color: #555; }
-      .pos-badge { font-size: 10px; font-weight: bold; padding: 1px 4px; border: 1px solid #555; border-radius: 2px; margin-left: auto; white-space: nowrap; }
+      .pos-name { font-size: 13px; font-weight: bold; flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .pos-count { font-size: 10px; color: #555; flex-shrink: 0; min-width: 32px; white-space: nowrap; }
+      .pos-badge { font-size: 10px; font-weight: bold; padding: 1px 4px; border: 1px solid #555; border-radius: 2px; flex-shrink: 0; white-space: nowrap; }
       .pos-badge.ok { background: #f5f5f5; }
       .pos-badge.short { background: #fff; border-style: dashed; }
       .pos-badge.over { background: #cccccc; }
