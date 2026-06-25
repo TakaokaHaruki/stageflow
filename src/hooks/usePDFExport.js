@@ -8,8 +8,8 @@ export function usePDFExport(eventId, type, filename) {
   const exportPDF = async () => {
     setExporting(true);
     try {
-      const payload = await base44.functions.invoke("exportPositionPDF", { eventId, type });
-      console.log("[PDF Export] raw payload:", JSON.stringify(payload), "keys:", Object.keys(payload || {}));
+      const response = await base44.functions.invoke("exportPositionPDF", { eventId, type });
+      const payload = response?.data ?? response;
       if (payload.error) {
         alert("エラー: " + payload.error);
         return;
