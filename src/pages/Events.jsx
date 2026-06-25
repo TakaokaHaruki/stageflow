@@ -6,7 +6,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn, Globe, Lock, ShieldCheck } from "lucide-react";
+import { Plus, Calendar, MapPin, ChevronRight, Trash2, Pencil, LogOut, User, LogIn, ShieldCheck } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -20,12 +20,6 @@ import GlobalBanner from "@/components/GlobalBanner";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-
-const statusColor = {
-  "準備中": "bg-amber-100 text-amber-700 border-amber-200",
-  "開催中": "bg-green-100 text-green-700 border-green-200",
-  "終了": "bg-slate-100 text-slate-500 border-slate-200"
-};
 
 export default function Events() {
   const navigate = useNavigate();
@@ -42,10 +36,7 @@ export default function Events() {
     refetchInterval: LIVE_SYNC_INTERVAL
   });
 
-  // Guests see only publicly visible events
-  const events = isGuest
-    ? allEvents.filter((e) => e.assignment_mode === "public" || e.staff_management_mode === "public")
-    : allEvents;
+  const events = allEvents;
 
   const { isPulling, pullDistance } = usePullToRefresh(async () => {
     await refetch();
@@ -54,45 +45,6 @@ export default function Events() {
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
-
-  const canManageVisibility = role === "admin" || role === "chief";
-
-  const isEventPublic = (event) =>
-    event.staff_management_mode === "public" ||
-    event.assignment_mode === "public";
-
-  const toggleVisibilityMutation = useMutation({
-    mutationFn: async ({ eventId, makePublic }) => {
-      const mode = makePublic ? "public" : "edit";
-      await base44.entities.Event.update(eventId, {
-        staff_management_mode: mode,
-        assignment_mode: mode,
-      });
-    },
-    onMutate: async ({ eventId, makePublic }) => {
-      await queryClient.cancelQueries({ queryKey: ["events"] });
-      const previousEvents = queryClient.getQueryData(["events"]);
-      const mode = makePublic ? "public" : "edit";
-      queryClient.setQueryData(["events"], (old = []) =>
-        old.map((e) =>
-          e.id === eventId
-            ? { ...e, staff_management_mode: mode, assignment_mode: mode }
-            : e
-        )
-      );
-      return { previousEvents };
-    },
-    onError: (_, __, context) => {
-      queryClient.setQueryData(["events"], context?.previousEvents);
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["events"] }),
-  });
-
-  const handleToggleVisibility = (e, event) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleVisibilityMutation.mutate({ eventId: event.id, makePublic: !isEventPublic(event) });
-  };
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Event.delete(id),
@@ -235,9 +187,6 @@ export default function Events() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <h2 className="text-sm font-semibold text-foreground truncate">{event.name}</h2>
-                      <span className={`text-[11px] px-1.5 py-0.5 rounded-full border font-medium shrink-0 ${statusColor[event.status]}`}>
-                        {event.status}
-                      </span>
                     </div>
                     <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
                       {event.date &&
@@ -257,18 +206,6 @@ export default function Events() {
                   <div className="flex shrink-0 items-center justify-end gap-0.5">
                     {!isGuest && (
                       <>
-                        <button
-                          onClick={(e) => handleToggleVisibility(e, event)}
-                          disabled={!canManageVisibility}
-                          className={`flex min-h-8 items-center gap-0.5 rounded-md px-1.5 text-[10px] font-medium transition-colors select-none sm:min-h-0 sm:py-0.5 sm:text-[11px]
-                            ${isEventPublic(event)
-                              ? "bg-green-100 text-green-700 hover:bg-green-200"
-                              : "bg-slate-100 text-slate-500 hover:bg-slate-200"}
-                            disabled:pointer-events-none disabled:opacity-50`}
-                        >
-                          {isEventPublic(event) ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
-                          {isEventPublic(event) ? "公開中" : "非公開"}
-                        </button>
                         <button
                           onClick={(e) => handleEdit(e, event)}
                           disabled={!canEdit}

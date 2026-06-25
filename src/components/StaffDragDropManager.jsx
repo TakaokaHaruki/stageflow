@@ -25,7 +25,6 @@ import {
   rememberPositionSideSettings,
 } from "@/lib/positionSideSettings";
 import PresetSelector from "@/components/PresetSelector";
-import { HiddenInEditMode, ModeLoadingPlaceholder, ModeVisibilityControls, useResolvedEventMode } from "@/components/ModeVisibilityControls";
 import AutoAssignModal from "@/components/AutoAssignModal";
 import BulkDeleteDialog from "@/components/BulkDeleteDialog";
 import SectionHeader from "@/components/SectionHeader";
@@ -455,11 +454,7 @@ export default function StaffDragDropManager({ eventId }) {
       return { ...staff, missingSlots };
     })
     .filter((staff) => staff.missingSlots.length > 0);
-  const { mode: assignmentMode, isReady: isModeReady } = useResolvedEventMode(eventId, "assignment_mode", event?.assignment_mode);
-  const isPublicMode = assignmentMode === "public";
-  const hideForUser = !isPublicMode && !canEdit;
-  const isVisibilityReady = Boolean(role) && isModeReady;
-  const isAdmin = canEdit && !isPublicMode;
+  const isAdmin = canEdit;
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
 
   return (
@@ -469,32 +464,20 @@ export default function StaffDragDropManager({ eventId }) {
         title="配置表"
         actions={(
           <>
-          <ModeVisibilityControls
-            eventId={eventId}
-            field="assignment_mode"
-            mode={assignmentMode}
-            canManage={canManageSettings}
-            label="配置表"
-          />
           {canManageSettings && <PresetSelector eventId={eventId} compact positions={positions} />}
           {canEdit && (
             <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 shrink-0" onClick={() => setShowAutoAssign(true)} disabled={positions.length === 0}>
               <Wand2 className="w-3 h-3" />自動配置
             </Button>
           )}
-          <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 shrink-0" onClick={handleExportPDF} disabled={!isVisibilityReady || hideForUser || exportingPDF || positions.length === 0}>
+          <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 shrink-0" onClick={handleExportPDF} disabled={exportingPDF || positions.length === 0}>
             <Download className="w-3 h-3" />{exportingPDF ? '...' : 'PDF'}
           </Button>
           </>
         )}
       />
 
-      {!isVisibilityReady ? (
-        <ModeLoadingPlaceholder />
-      ) : hideForUser ? (
-        <HiddenInEditMode title="配置表は編集モード中です" />
-      ) : (
-        <>
+      <>
 
       <div className="mb-1.5 grid grid-cols-3 gap-1 rounded-lg border border-border bg-muted/40 p-0.5 sm:hidden">
         {TIME_SLOTS.map((slot) => (
@@ -826,8 +809,7 @@ export default function StaffDragDropManager({ eventId }) {
           }}
         />
       )}
-        </>
-      )}
+      </>
     </div>
   );
 }
