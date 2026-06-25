@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { MapPin, ImageOff } from "lucide-react";
+import { MapPin, ImageOff, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useUserRole } from "@/hooks/useUserRole";
+import PositionMapEditor from "@/components/PositionMapEditor";
 
 export default function PositionMapViewer({ eventId, event }) {
+  const { canEdit } = useUserRole();
+  const [editMode, setEditMode] = useState(false);
   const [selectedPin, setSelectedPin] = useState(null);
 
   const { data: positions = [], isLoading } = useQuery({
@@ -29,6 +34,10 @@ export default function PositionMapViewer({ eventId, event }) {
     );
   }
 
+  if (editMode && canEdit) {
+    return <PositionMapEditor eventId={eventId} event={event} onExit={() => setEditMode(false)} />;
+  }
+
   const pins = [];
   positions.forEach((pos) => {
     if (pos.split_by_side) {
@@ -45,6 +54,13 @@ export default function PositionMapViewer({ eventId, event }) {
 
   return (
     <div className="space-y-3">
+      {canEdit && (
+        <div className="flex justify-end">
+          <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => setEditMode(true)}>
+            <Pencil className="h-3.5 w-3.5" />ピン位置を編集
+          </Button>
+        </div>
+      )}
       <div className="relative w-full overflow-hidden rounded-lg border border-border bg-card">
         <img
           src={event.map_image_url}
