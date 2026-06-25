@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -15,6 +15,7 @@ import StaffDragDropManager from "@/components/StaffDragDropManager";
 import SharedFileManager from "@/components/SharedFileManager";
 import PositionNotesEditor from "@/components/PositionNotesEditor";
 import BottomTabBar from "@/components/BottomTabBar";
+import SidebarNav from "@/components/SidebarNav";
 import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import GlobalBanner from "@/components/GlobalBanner";
@@ -46,6 +47,8 @@ export default function EventDetail() {
   const [confirmScreenSaver, setConfirmScreenSaver] = useState(false);
   const [adminSection, setAdminSection] = useState("users"); // 'users' | 'operation_logs' | 'view_logs' | 'portal_restriction'
   const [settingsSection, setSettingsSection] = useState("positions");
+  const topBarRef = useRef(null);
+  const [topBarHeight, setTopBarHeight] = useState(56);
   const [currentTime, setCurrentTime] = useState(() =>
     new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', second: '2-digit' })
   );
@@ -84,6 +87,16 @@ export default function EventDetail() {
 
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const el = topBarRef.current;
+    if (!el) return;
+    const update = () => setTopBarHeight(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   const { data: event, isLoading, refetch: refetchEvent } = useQuery({
@@ -143,7 +156,6 @@ export default function EventDetail() {
       ...item,
       label: item.id === "admin" ? "管理者設定" : "管理設定",
     }));
-  const primaryTabs = desktopTabs.filter(({ id }) => id !== "settings" && id !== "admin");
   const isManagementTab = managementTabs.some(({ id }) => id === tab);
   const activeManagementChildren = tab === "admin"
     ? [
@@ -186,7 +198,7 @@ export default function EventDetail() {
       <GlobalBanner />
 
       {/* Top bar */}
-      <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
+      <div ref={topBarRef} className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-6xl mx-auto px-2 pb-1 pt-1 flex flex-wrap items-center gap-1 sm:flex-nowrap sm:gap-1.5">
           <BackButton to="/events" label="イベント一覧へ戻る" />
           <div className="hidden sm:flex flex-col items-start mr-1">
@@ -246,71 +258,38 @@ export default function EventDetail() {
           )}
         </div>
 
-        {/* Parent tab bar */}
-        <div className="hidden sm:block border-t border-border bg-card/80 backdrop-blur-md">
-          <div className="max-w-6xl mx-auto px-3">
-            <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-4 sm:overflow-x-auto sm:scrollbar-hide">
-              {primaryTabs.map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    onClick={() => selectTab(id)}
-                    className={`flex shrink-0 select-none items-center gap-1.5 whitespace-nowrap border-b-2 py-2 text-xs font-semibold transition-colors focus-visible:outline-none ${
-                      tab === id
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                    aria-current={tab === id ? "page" : undefined}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {label}
-                  </button>
-              ))}
-              {managementTabs.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => selectTab(id)}
-                  className={`flex min-h-9 min-w-0 select-none items-center justify-center gap-1 whitespace-normal border-b-2 px-1 py-1 text-center text-[10px] font-semibold leading-tight transition-colors focus-visible:outline-none sm:min-h-0 sm:shrink-0 sm:justify-start sm:gap-1.5 sm:whitespace-nowrap sm:px-0 sm:py-2 sm:text-left sm:text-xs ${
-                    tab === id
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
-                  }`}
-                  aria-current={tab === id ? "page" : undefined}
-                >
-                  <Icon className="hidden h-3.5 w-3.5 sm:block" />
-                  <span>{label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Child tab bar */}
-        {isManagementTab && (
-        <div className="block border-t border-border/70 bg-muted/40">
-          <div className="max-w-6xl mx-auto px-3">
-            <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-4 sm:overflow-x-auto sm:scrollbar-hide">
-              {activeManagementChildren.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => selectManagementChild(id)}
-                  className={`flex min-h-9 min-w-0 select-none items-center justify-center gap-1 whitespace-normal border-b-2 px-1 py-1 text-center text-[10px] font-semibold leading-tight transition-colors focus-visible:outline-none sm:min-h-0 sm:shrink-0 sm:justify-start sm:gap-1.5 sm:whitespace-nowrap sm:px-0 sm:py-2 sm:text-left sm:text-xs ${
-                    activeManagementChild === id
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
-                  }`}
-                  aria-current={activeManagementChild === id ? "page" : undefined}
-                >
-                  <Icon className="hidden h-3.5 w-3.5 sm:block" />
-                  <span>{label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-        )}
       </div>
 
-      <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:py-1.5 sm:pb-8">
+      {/* 2-column layout: sidebar + content (PC only) */}
+      <div className="sm:flex">
+        <SidebarNav tabs={desktopTabs} activeTab={tab} onSelectTab={selectTab} topOffset={topBarHeight} />
+        <div className="flex-1 min-w-0">
+          {/* Child tab bar */}
+          {isManagementTab && (
+            <div className="block border-b border-border/70 bg-muted/40 sm:sticky sm:z-40" style={{ top: topBarHeight }}>
+              <div className="max-w-6xl mx-auto px-3">
+                <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-4 sm:overflow-x-auto sm:scrollbar-hide">
+                  {activeManagementChildren.map(({ id, label, icon: Icon }) => (
+                    <button
+                      key={id}
+                      onClick={() => selectManagementChild(id)}
+                      className={`flex min-h-9 min-w-0 select-none items-center justify-center gap-1 whitespace-normal border-b-2 px-1 py-1 text-center text-[10px] font-semibold leading-tight transition-colors focus-visible:outline-none sm:min-h-0 sm:shrink-0 sm:justify-start sm:gap-1.5 sm:whitespace-nowrap sm:px-0 sm:py-2 sm:text-left sm:text-xs ${
+                        activeManagementChild === id
+                          ? "border-primary text-primary"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      }`}
+                      aria-current={activeManagementChild === id ? "page" : undefined}
+                    >
+                      <Icon className="hidden h-3.5 w-3.5 sm:block" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:py-1.5 sm:pb-8">
         <UserRestrictionBanner role={role} />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
@@ -337,6 +316,8 @@ export default function EventDetail() {
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
           </motion.div>
         </AnimatePresence>
+      </div>
+        </div>
       </div>
 
       {showScreenSaver && (
