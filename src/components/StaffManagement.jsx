@@ -201,8 +201,6 @@ export default function StaffManagement({ eventId }) {
         )}
       />
 
-      <>
-
       {/* Add form */}
       <div className="bg-card border border-border rounded-lg p-1 mb-1.5">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1.5 sm:flex">
@@ -306,7 +304,6 @@ export default function StaffManagement({ eventId }) {
           onCancel={() => setConfirmDelete(null)}
         />
       )}
-      </>
     </div>);
 
 }

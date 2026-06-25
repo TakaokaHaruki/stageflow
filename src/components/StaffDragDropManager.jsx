@@ -477,8 +477,6 @@ export default function StaffDragDropManager({ eventId }) {
         )}
       />
 
-      <>
-
       <div className="mb-1.5 grid grid-cols-3 gap-1 rounded-lg border border-border bg-muted/40 p-0.5 sm:hidden">
         {TIME_SLOTS.map((slot) => (
           <button
@@ -809,7 +807,6 @@ export default function StaffDragDropManager({ eventId }) {
           }}
         />
       )}
-      </>
     </div>
   );
 }
