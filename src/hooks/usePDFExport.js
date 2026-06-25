@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { unwrapFunctionResponse } from "@/lib/base44Response";
 import { generatePositionPDF } from "@/lib/pdfGenerator";
 
 export function usePDFExport(eventId, type, filename) {
@@ -9,13 +8,7 @@ export function usePDFExport(eventId, type, filename) {
   const exportPDF = async () => {
     setExporting(true);
     try {
-      const response = await base44.functions.invoke("exportPositionPDF", { eventId, type });
-      let payload = unwrapFunctionResponse(response);
-      // 二重ネスト対策: response.data.data 構造の場合はもう1段アンラップ
-      if (payload?.data && !payload.positions && payload.data?.positions) {
-        payload = payload.data;
-      }
-      console.log("[PDF Export] payload:", { positions: payload?.positions?.length, staff: payload?.staff?.length });
+      const payload = await base44.functions.invoke("exportPositionPDF", { eventId, type });
       if (payload.error) {
         alert("エラー: " + payload.error);
         return;
