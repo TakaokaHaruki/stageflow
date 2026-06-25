@@ -9,7 +9,7 @@ export function usePDFExport(eventId, type, filename) {
     setExporting(true);
     try {
       const payload = await base44.functions.invoke("exportPositionPDF", { eventId, type });
-      console.log("[PDF Export] raw payload:", payload, "keys:", Object.keys(payload || {}), "positions:", payload?.positions?.length, "staff:", payload?.staff?.length);
+      console.log("[PDF Export] raw payload:", JSON.stringify(payload), "keys:", Object.keys(payload || {}));
       if (payload.error) {
         alert("エラー: " + payload.error);
         return;
