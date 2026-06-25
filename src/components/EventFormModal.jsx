@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useOperationLog } from "@/hooks/useOperationLog";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ResponsiveSelect } from "@/components/ui/responsive-select";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -26,6 +27,23 @@ export default function EventFormModal({ event, onClose, onSaved }) {
   });
   const [uploadingMap, setUploadingMap] = useState(false);
   const fileInputRef = useRef(null);
+
+  const { data: venues = [] } = useQuery({
+    queryKey: ["venues"],
+    queryFn: () => base44.entities.Venue.list(),
+  });
+  const venueOptions = useMemo(() => venues.map((v) => ({ value: v.name, label: v.name })), [venues]);
+
+  const timeOptions = useMemo(
+    () =>
+      Array.from({ length: 288 }, (_, i) => {
+        const h = Math.floor(i / 12);
+        const m = (i % 12) * 5;
+        const val = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        return { value: val, label: val };
+      }),
+    []
+  );
 
   const handleMapUpload = async (file) => {
     if (!file) return;
@@ -163,7 +181,19 @@ export default function EventFormModal({ event, onClose, onSaved }) {
           </div>
           <div>
             <Label>会場名</Label>
-            <Input className="mt-1" value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} placeholder="例：〇〇アリーナ" />
+            {venueOptions.length > 0 ? (
+              <div className="mt-1">
+                <ResponsiveSelect
+                  value={form.venue}
+                  onValueChange={(val) => setForm({ ...form, venue: val })}
+                  placeholder="会場を選択"
+                  options={venueOptions}
+                  label="会場名"
+                />
+              </div>
+            ) : (
+              <p className="mt-1 text-xs text-muted-foreground">会場が登録されていません（管理設定 → 会場管理から追加できます）</p>
+            )}
           </div>
           {event && (
             <div>
@@ -209,25 +239,30 @@ export default function EventFormModal({ event, onClose, onSaved }) {
             <Label>時間設定</Label>
             <div className="mt-1 space-y-2">
               {/* 先行 - 開始・終了あり */}
-              <div className="grid grid-cols-[4rem_1fr_1fr] gap-2 items-center">
+              <div className="grid grid-cols-[4rem_1fr_auto_1fr_auto] gap-1.5 items-center">
                 <Label className="text-xs text-muted-foreground">先行</Label>
-                <Input type="time" className="w-full" value={form.time_priority} onChange={(e) => setForm({ ...form, time_priority: e.target.value })} />
-                <Input type="time" className="w-full" value={form.time_priority_end} onChange={(e) => setForm({ ...form, time_priority_end: e.target.value })} />
+                <ResponsiveSelect value={form.time_priority} onValueChange={(val) => setForm({ ...form, time_priority: val })} placeholder="--:--" options={timeOptions} label="先行 開始時刻" />
+                <button type="button" onClick={() => setForm({ ...form, time_priority: "" })} disabled={!form.time_priority} className="text-muted-foreground hover:text-destructive disabled:opacity-30 transition-colors"><X className="w-3.5 h-3.5" /></button>
+                <ResponsiveSelect value={form.time_priority_end} onValueChange={(val) => setForm({ ...form, time_priority_end: val })} placeholder="--:--" options={timeOptions} label="先行 終了時刻" />
+                <button type="button" onClick={() => setForm({ ...form, time_priority_end: "" })} disabled={!form.time_priority_end} className="text-muted-foreground hover:text-destructive disabled:opacity-30 transition-colors"><X className="w-3.5 h-3.5" /></button>
               </div>
               {/* 開場 - 開始のみ */}
-              <div className="grid grid-cols-[4rem_1fr] gap-2 items-center">
+              <div className="grid grid-cols-[4rem_1fr_auto] gap-1.5 items-center">
                 <Label className="text-xs text-muted-foreground">開場</Label>
-                <Input type="time" className="w-full" value={form.time_open} onChange={(e) => setForm({ ...form, time_open: e.target.value })} />
+                <ResponsiveSelect value={form.time_open} onValueChange={(val) => setForm({ ...form, time_open: val })} placeholder="--:--" options={timeOptions} label="開場時刻" />
+                <button type="button" onClick={() => setForm({ ...form, time_open: "" })} disabled={!form.time_open} className="text-muted-foreground hover:text-destructive disabled:opacity-30 transition-colors"><X className="w-3.5 h-3.5" /></button>
               </div>
               {/* 開演 - 開始のみ */}
-              <div className="grid grid-cols-[4rem_1fr] gap-2 items-center">
+              <div className="grid grid-cols-[4rem_1fr_auto] gap-1.5 items-center">
                 <Label className="text-xs text-muted-foreground">開演</Label>
-                <Input type="time" className="w-full" value={form.time_start} onChange={(e) => setForm({ ...form, time_start: e.target.value })} />
+                <ResponsiveSelect value={form.time_start} onValueChange={(val) => setForm({ ...form, time_start: val })} placeholder="--:--" options={timeOptions} label="開演時刻" />
+                <button type="button" onClick={() => setForm({ ...form, time_start: "" })} disabled={!form.time_start} className="text-muted-foreground hover:text-destructive disabled:opacity-30 transition-colors"><X className="w-3.5 h-3.5" /></button>
               </div>
               {/* 終演 - 開始のみ */}
-              <div className="grid grid-cols-[4rem_1fr] gap-2 items-center">
+              <div className="grid grid-cols-[4rem_1fr_auto] gap-1.5 items-center">
                 <Label className="text-xs text-muted-foreground">終演</Label>
-                <Input type="time" className="w-full" value={form.time_end} onChange={(e) => setForm({ ...form, time_end: e.target.value })} />
+                <ResponsiveSelect value={form.time_end} onValueChange={(val) => setForm({ ...form, time_end: val })} placeholder="--:--" options={timeOptions} label="終演時刻" />
+                <button type="button" onClick={() => setForm({ ...form, time_end: "" })} disabled={!form.time_end} className="text-muted-foreground hover:text-destructive disabled:opacity-30 transition-colors"><X className="w-3.5 h-3.5" /></button>
               </div>
             </div>
           </div>
