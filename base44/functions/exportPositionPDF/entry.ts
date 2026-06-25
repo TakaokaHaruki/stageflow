@@ -46,10 +46,10 @@ function generateHTML(event, positions, staff, type) {
       .event-info { font-size: 12px; color: #333; margin-top: 2px; }
 
       /* 3列グリッド */
-      .slot-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 10px; align-items: stretch; }
+      .slot-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 10px; align-items: start; }
 
       /* 時間帯カラム */
-      .slot-column { border: 1px solid #888; border-radius: 4px; overflow: hidden; height: 100%; }
+      .slot-column { border: 1px solid #888; border-radius: 4px; }
       .slot-column.col-open { border-left: 3px solid #555; }
       .slot-column.col-show { border-left: 3px solid #222; }
       .slot-column.col-after { border: 1px dashed #888; }
@@ -65,8 +65,8 @@ function generateHTML(event, positions, staff, type) {
       .pos-list { padding: 4px; display: flex; flex-direction: column; gap: 4px; }
 
       /* PositionCard */
-      .pos-card { border: 1px solid #aaa; border-radius: 3px; overflow: hidden; }
-      .pos-card-bar { display: flex; align-items: center; gap: 4px; padding: 3px 6px; background: #f5f5f5; border-bottom: 1px solid #ccc; overflow: hidden; }
+      .pos-card { border: 1px solid #aaa; border-radius: 3px; }
+      .pos-card-bar { display: flex; align-items: center; gap: 4px; padding: 3px 6px; background: #f5f5f5; border-bottom: 1px solid #ccc; }
       .pos-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; border: 1px solid #333; }
       .pos-name { font-size: 13px; font-weight: bold; flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .pos-count { font-size: 10px; color: #555; flex-shrink: 0; min-width: 32px; white-space: nowrap; }
