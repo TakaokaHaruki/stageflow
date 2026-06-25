@@ -12,9 +12,11 @@ export const SIDEBAR_COLLAPSED_WIDTH = COLLAPSED_WIDTH;
 export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 56 }) {
   const [collapsed, setCollapsed] = useState(() => {
     try {
-      return localStorage.getItem(STORAGE_KEY) === "true";
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored === null) return true; // デフォルトで折りたたむ
+      return stored === "true";
     } catch {
-      return false;
+      return true;
     }
   });
 
@@ -40,7 +42,7 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
               const isActive = activeTab === id;
               const button = (
                 <button
-                  onClick={() => onSelectTab(id)}
+                  onClick={() => { onSelectTab(id); setCollapsed(true); }}
                   className={`relative flex w-full items-center gap-2.5 rounded-md py-2 pr-2 text-xs font-semibold transition-colors ${
                     collapsed ? "justify-center px-0" : "px-2.5"
                   } ${
