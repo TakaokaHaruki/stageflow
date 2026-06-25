@@ -81,8 +81,8 @@ function calcFontSize(maxStaffCount, availableTextH) {
 }
 
 function drawTitle(doc, event) {
-  doc.setFontSize(14);
-  doc.setFont('NotoSansJP', 'bold');
+  doc.setFontSize(16);
+  doc.setFont('NotoSansJP', 'normal');
   doc.setTextColor(0, 0, 0);
   doc.text(event.name || '', MARGIN, MARGIN + 6);
 
@@ -130,8 +130,8 @@ function drawCard(doc, pos, x, y, w, cardH) {
   doc.setLineWidth(0.1);
   doc.circle(x + 3, y + 2.5, 1.2, 'F');
 
-  doc.setFontSize(10);
-  doc.setFont('NotoSansJP', 'bold');
+  doc.setFontSize(11);
+  doc.setFont('NotoSansJP', 'normal');
   doc.setTextColor(0, 0, 0);
   let name = pos.name || '';
   const maxNameW = w - 8;
@@ -156,8 +156,8 @@ function drawCard(doc, pos, x, y, w, cardH) {
     sides.forEach(side => {
       doc.setFillColor(245, 245, 245);
       doc.rect(side.sx, staffY, halfW, 3.5, 'F');
-      doc.setFontSize(7);
-      doc.setFont('NotoSansJP', 'bold');
+      doc.setFontSize(8);
+      doc.setFont('NotoSansJP', 'normal');
       doc.setTextColor(102, 102, 102);
       doc.text(side.label, side.sx + halfW / 2, staffY + 2.5, { align: 'center' });
 
@@ -215,8 +215,8 @@ function drawColumns(doc, positions, staff) {
     doc.setLineWidth(0.3);
     doc.roundedRect(x, colStartY, colW, COL_HEADER_H, 1, 1, 'F');
 
-    doc.setFontSize(11);
-    doc.setFont('NotoSansJP', 'bold');
+    doc.setFontSize(13);
+    doc.setFont('NotoSansJP', 'normal');
     doc.setTextColor(0, 0, 0);
     doc.text(slot, x + 3, colStartY + 4.2);
 
@@ -266,8 +266,8 @@ function drawUnassigned(doc, positions, staff, startY) {
     y = MARGIN + 4;
   }
 
-  doc.setFontSize(11);
-  doc.setFont('NotoSansJP', 'bold');
+  doc.setFontSize(13);
+  doc.setFont('NotoSansJP', 'normal');
   doc.setTextColor(0, 0, 0);
   doc.text(`未配置スタッフ（${unassigned.length}名）`, MARGIN, y);
 
@@ -314,8 +314,8 @@ function drawTimelineTable(doc, positions, staff) {
 
   doc.setFillColor(202, 202, 202);
   doc.rect(MARGIN, y, PAGE_W - 2 * MARGIN, rowH, 'F');
-  doc.setFontSize(10);
-  doc.setFont('NotoSansJP', 'bold');
+  doc.setFontSize(12);
+  doc.setFont('NotoSansJP', 'normal');
   doc.setTextColor(0, 0, 0);
   ['スタッフ名', '開場中', '開演中', '終演後'].forEach((label, i) => {
     doc.text(label, MARGIN + i * colW + colW / 2, y + 5.5, { align: 'center' });
