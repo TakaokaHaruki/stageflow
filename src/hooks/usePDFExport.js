@@ -8,13 +8,14 @@ export function usePDFExport(eventId, type, filename) {
   const exportPDF = async () => {
     setExporting(true);
     try {
-      const response = await base44.functions.invoke("exportPositionPDF", { eventId, type });
-      // response が {data: {...}} 形式か、直接 {positions, staff, event} 形式かに対応
-      const payload = (response?.positions || response?.staff) ? response : (response?.data ?? response);
-      if (payload.error) {
-        alert("エラー: " + payload.error);
-        return;
-      }
+      // バックエンド関数を経由せず、フロントエンドから直接データ取得
+      const [event, positions, staff] = await Promise.all([
+        base44.entities.Event.get(eventId),
+        base44.entities.Position.filter({ event_id: eventId }),
+        base44.entities.Staff.filter({ event_id: eventId }),
+      ]);
+
+      const payload = { event, positions: positions || [], staff: staff || [], type };
       await generatePositionPDF(payload, filename);
     } catch (error) {
       console.error("PDF export error:", error);
