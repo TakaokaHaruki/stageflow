@@ -89,16 +89,6 @@ export default function EventDetail() {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
 
-  useLayoutEffect(() => {
-    const el = topBarRef.current;
-    if (!el) return;
-    const update = () => setTopBarHeight(el.offsetHeight);
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [isLoading]);
-
   const { data: event, isLoading, refetch: refetchEvent } = useQuery({
     queryKey: ["event", eventId],
     queryFn: () => loadEventById(eventId),
@@ -109,6 +99,16 @@ export default function EventDetail() {
   const { isPulling, pullDistance } = usePullToRefresh(async () => {
     await refetchEvent();
   });
+
+  useLayoutEffect(() => {
+    const el = topBarRef.current;
+    if (!el) return;
+    const update = () => setTopBarHeight(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isLoading]);
 
   if (isLoading) {
     return (
