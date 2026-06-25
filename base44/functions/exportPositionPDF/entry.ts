@@ -10,10 +10,12 @@ Deno.serve(async (req) => {
     }
 
     const event = await base44.entities.Event.get(eventId);
-    const positions = await base44.entities.Position.filter({ event_id: eventId });
-    const staff = await base44.entities.Staff.filter({ event_id: eventId });
+    const positions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
+    const staff = await base44.asServiceRole.entities.Staff.filter({ event_id: eventId });
 
-    return Response.json({ event, positions, staff, type });
+    console.log('PDF Export:', { eventId, positionCount: positions?.length, staffCount: staff?.length });
+
+    return Response.json({ event, positions: positions || [], staff: staff || [], type });
   } catch (error) {
     console.error('PDF Export Error:', error);
     return Response.json({ error: error.message }, { status: 500 });

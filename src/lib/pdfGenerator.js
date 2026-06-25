@@ -49,9 +49,9 @@ function compareByOrder(a, b) {
 
 const TIME_SLOTS = ['開場中', '開演中', '終演後'];
 const SLOT_STYLES = {
-  '開場中': { bg: [229, 229, 229], border: [85, 85, 85] },
-  '開演中': { bg: [200, 200, 200], border: [34, 34, 34] },
-  '終演後': { bg: [255, 255, 255], border: [136, 136, 136] },
+  '開場中': { bg: [251, 191, 36], border: [180, 83, 9] },
+  '開演中': { bg: [147, 197, 253], border: [37, 99, 235] },
+  '終演後': { bg: [203, 213, 225], border: [100, 116, 139] },
 };
 
 const PAGE_W = 297;
@@ -72,7 +72,7 @@ function getColX(index) {
 }
 
 function calcFontSize(maxStaffCount, availableTextH) {
-  const fontSizes = [10, 9, 8, 7, 6, 5, 4];
+  const fontSizes = [9, 8, 7, 6, 5, 4, 3];
   for (const fs of fontSizes) {
     const lineH = fs * 0.353 * 1.3;
     if (maxStaffCount * lineH <= availableTextH) return fs;
@@ -81,7 +81,7 @@ function calcFontSize(maxStaffCount, availableTextH) {
 }
 
 function drawTitle(doc, event) {
-  doc.setFontSize(16);
+  doc.setFontSize(12);
   doc.setFont('NotoSansJP', 'normal');
   doc.setTextColor(0, 0, 0);
   doc.text(event.name || '', MARGIN, MARGIN + 6);
@@ -130,7 +130,7 @@ function drawCard(doc, pos, x, y, w, cardH) {
   doc.setLineWidth(0.1);
   doc.circle(x + 3, y + 2.5, 1.2, 'F');
 
-  doc.setFontSize(11);
+  doc.setFontSize(9);
   doc.setFont('NotoSansJP', 'normal');
   doc.setTextColor(0, 0, 0);
   let name = pos.name || '';
@@ -156,7 +156,7 @@ function drawCard(doc, pos, x, y, w, cardH) {
     sides.forEach(side => {
       doc.setFillColor(245, 245, 245);
       doc.rect(side.sx, staffY, halfW, 3.5, 'F');
-      doc.setFontSize(8);
+      doc.setFontSize(9);
       doc.setFont('NotoSansJP', 'normal');
       doc.setTextColor(102, 102, 102);
       doc.text(side.label, side.sx + halfW / 2, staffY + 2.5, { align: 'center' });
@@ -178,7 +178,7 @@ function drawCard(doc, pos, x, y, w, cardH) {
       if (ny < y + cardH - 0.5) doc.text(nm, x + 3, ny);
     });
     if (staffNames.length === 0) {
-      doc.setFontSize(8);
+      doc.setFontSize(9);
       doc.setTextColor(153, 153, 153);
       doc.text('（未配置）', x + 3, staffY + 4);
     }
@@ -215,19 +215,19 @@ function drawColumns(doc, positions, staff) {
     doc.setLineWidth(0.3);
     doc.roundedRect(x, colStartY, colW, COL_HEADER_H, 1, 1, 'F');
 
-    doc.setFontSize(13);
+    doc.setFontSize(10);
     doc.setFont('NotoSansJP', 'normal');
     doc.setTextColor(0, 0, 0);
     doc.text(slot, x + 3, colStartY + 4.2);
 
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('NotoSansJP', 'normal');
     doc.text(`${numCards}件`, x + colW - 3, colStartY + 4.2, { align: 'right' });
 
     let cardY = colStartY + COL_HEADER_H + 1;
 
     if (numCards === 0) {
-      doc.setFontSize(8);
+      doc.setFontSize(9);
       doc.setFont('NotoSansJP', 'normal');
       doc.setTextColor(153, 153, 153);
       doc.text('ポジションがありません', x + colW / 2, cardY + 6, { align: 'center' });
@@ -266,7 +266,7 @@ function drawUnassigned(doc, positions, staff, startY) {
     y = MARGIN + 4;
   }
 
-  doc.setFontSize(13);
+  doc.setFontSize(10);
   doc.setFont('NotoSansJP', 'normal');
   doc.setTextColor(0, 0, 0);
   doc.text(`未配置スタッフ（${unassigned.length}名）`, MARGIN, y);
@@ -314,7 +314,7 @@ function drawTimelineTable(doc, positions, staff) {
 
   doc.setFillColor(202, 202, 202);
   doc.rect(MARGIN, y, PAGE_W - 2 * MARGIN, rowH, 'F');
-  doc.setFontSize(12);
+  doc.setFontSize(10);
   doc.setFont('NotoSansJP', 'normal');
   doc.setTextColor(0, 0, 0);
   ['スタッフ名', '開場中', '開演中', '終演後'].forEach((label, i) => {
