@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -89,7 +89,7 @@ export default function EventDetail() {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = topBarRef.current;
     if (!el) return;
     const update = () => setTopBarHeight(el.offsetHeight);
