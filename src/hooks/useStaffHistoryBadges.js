@@ -21,7 +21,7 @@ export function useStaffHistoryBadges(eventId) {
       const events = await base44.entities.Event.list("-date", 200);
       const recentEvents = (events || [])
         .filter((e) => e.id !== eventId)
-        .slice(0, 5);
+        .slice(0, 10);
 
       if (recentEvents.length === 0) return {};
 
