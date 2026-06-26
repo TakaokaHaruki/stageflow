@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, ChevronRight, Trash2, Pencil } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Trash2, Pencil, TrendingUp } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import AdminUserModal from "@/components/AdminUserModal";
@@ -98,6 +98,12 @@ export default function Events() {
           {isGuest && <BackButton to="/home" label="ホームへ戻る" />}
           <CrewlyLogo className="mr-1" administrator={role === "admin"} />
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">イベント一覧</h1>
+          <Link
+            to="/staff-trends"
+            className="ml-auto flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 border border-primary/30 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+          >
+            <TrendingUp className="w-3.5 h-3.5" />配置傾向
+          </Link>
         </div>
       </div>
 

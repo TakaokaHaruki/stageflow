@@ -18,6 +18,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import StaffTrends from "./pages/StaffTrends";
 
 const pageVariants = {
   initial: { opacity: 0, x: "100%" },
@@ -65,6 +66,7 @@ const AuthenticatedApp = () => {
           <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
             <Route path="/events" element={<Events />} />
             <Route path="/events/:eventId" element={<EventDetail />} />
+            <Route path="/staff-trends" element={<StaffTrends />} />
           </Route>
           
           <Route path="*" element={<PageNotFound />} />
