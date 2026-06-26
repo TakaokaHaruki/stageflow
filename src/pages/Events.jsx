@@ -94,7 +94,7 @@ export default function Events() {
       <GlobalBanner />
       {/* Sticky Header */}
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
-        <div className="max-w-5xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
+        <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
           {isGuest && <BackButton to="/home" label="ホームへ戻る" />}
           <CrewlyLogo className="mr-1" administrator={role === "admin"} />
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">イベント一覧</h1>
@@ -121,7 +121,7 @@ export default function Events() {
           onDeleteAccount={() => setConfirmDeleteAccount(true)}
         />
         <div className="flex-1 min-w-0">
-      <div className="max-w-5xl mx-auto px-2 py-2 pb-16 sm:pb-2">
+      <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:pb-8">
       <UserRestrictionBanner role={role} />
 
         {isLoading ?
