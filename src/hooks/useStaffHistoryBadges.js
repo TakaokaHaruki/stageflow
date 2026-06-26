@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { TIME_SLOTS } from "@/lib/constants";
 
@@ -14,7 +14,7 @@ function normalizeSlot(slot) {
  * 戻り値: { [staffName]: { "開場中": "もぎり", "開演中": "案内", ... } }
  */
 export function useStaffHistoryBadges(eventId) {
-  const { data: historyMap = {} } = useQuery({
+  const query = useQuery({
     queryKey: ["staffHistoryBadges", eventId],
     queryFn: async () => {
       // Event一覧をdate降順で取得
@@ -77,9 +77,11 @@ export function useStaffHistoryBadges(eventId) {
       });
       return result;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 
-  return useMemo(() => historyMap, [historyMap]);
+  const badges = useMemo(() => query.data ?? {}, [query.data]);
+  return { badges, isLoading: query.isLoading && !query.data };
 }

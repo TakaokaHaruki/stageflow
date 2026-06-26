@@ -28,7 +28,7 @@ export default function StaffManagement({ eventId }) {
   const { canEdit, canManageSettings, role } = useUserRole();
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
   const { record } = useOperationLog(eventId);
-  const historyBadges = useStaffHistoryBadges(eventId);
+  const { badges: historyBadges, isLoading: isLoadingBadges } = useStaffHistoryBadges(eventId);
 
 
   const { data: staffList = [], isLoading } = useQuery({
@@ -189,7 +189,17 @@ export default function StaffManagement({ eventId }) {
       <SectionHeader
         icon={UserCog}
         title="スタッフ管理"
-        subtitle={`登録スタッフ数：${staffList.length}名`}
+        subtitle={
+          <span className="flex items-center gap-1.5">
+            <span>登録スタッフ数：{staffList.length}名</span>
+            {isLoadingBadges && (
+              <span className="flex items-center gap-0.5 text-primary">
+                <span className="inline-block w-2.5 h-2.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                傾向取得中
+              </span>
+            )}
+          </span>
+        }
         actions={(
           <Button
             size="sm"
