@@ -15,6 +15,7 @@ import { getStaffDisplayName } from "@/lib/staffName";
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { useOperationLog } from "@/hooks/useOperationLog";
+import { useStaffHistoryBadges } from "@/hooks/useStaffHistoryBadges";
 import SectionHeader from "@/components/SectionHeader";
 
 export default function StaffManagement({ eventId }) {
@@ -27,6 +28,7 @@ export default function StaffManagement({ eventId }) {
   const { canEdit, canManageSettings, role } = useUserRole();
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
   const { record } = useOperationLog(eventId);
+  const historyBadges = useStaffHistoryBadges(eventId);
 
 
   const { data: staffList = [], isLoading } = useQuery({
@@ -257,6 +259,15 @@ export default function StaffManagement({ eventId }) {
                         <span key={skill} className="text-[10px] px-1 rounded bg-primary/10 border border-primary/30 text-primary font-medium">{skill}</span>
                       ))}
                     </div>
+                    {historyBadges[staff.name] && (
+                      <div className="flex flex-wrap gap-0.5 mt-0.5 opacity-70">
+                        {SLOT_ORDER.filter((slot) => historyBadges[staff.name][slot]).map((slot) => (
+                          <span key={slot} className={`text-[9px] font-medium px-1 rounded border ${TIME_SLOT_STYLES[slot]?.badge || "bg-slate-100 border-slate-200 text-slate-700"}`}>
+                            {slot}：{historyBadges[staff.name][slot]}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     {(staff.note_before || staff.note_during || staff.note_after) && (
                       <div className="flex flex-wrap gap-x-2 gap-y-0">
                         {staff.note_before && <span className="text-[10px] text-muted-foreground">開場中: {staff.note_before}</span>}
