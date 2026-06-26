@@ -236,13 +236,13 @@ export default function StaffManagement({ eventId }) {
           <p className="text-sm font-medium">スタッフが登録されていません</p>
         </div> :
 
-      <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
+      <div className="grid grid-cols-2 gap-1">
           {staffList.map((staff) => {
           const assigned = assignedMap[staff.name] || [];
           const displayName = getStaffDisplayName(staff.name, shouldMaskStaffNames);
           const unassigned = assigned.length === 0;
           return (
-            <div key={staff.id} className={`bg-card px-2.5 py-1.5 ${unassigned ? "bg-amber-50/50 dark:bg-amber-900/10" : ""}`}>
+            <div key={staff.id} className={`bg-card border border-border rounded-lg px-2.5 py-1.5 ${unassigned ? "bg-amber-50/50 dark:bg-amber-900/10" : ""}`}>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px] shrink-0">
                     {displayName.charAt(0)}

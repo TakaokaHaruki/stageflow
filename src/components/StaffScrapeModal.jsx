@@ -57,9 +57,11 @@ export default function StaffScrapeModal({ eventId, onClose }) {
         setError(data.message || '名前が見つかりませんでした');
       } else {
         setStaffList(data.staffList);
+        const EXCLUDED_TYPES = ['ケータ', 'ケータリング', 'ランナー'];
         const initChecked = {};
         data.staffList.forEach((s, i) => {
-          initChecked[i] = s.defaultChecked && !fetchedExistingNames.has(s.name);
+          const isExcludedType = EXCLUDED_TYPES.some(t => s.type?.includes(t));
+          initChecked[i] = isExcludedType ? false : (s.defaultChecked && !fetchedExistingNames.has(s.name));
         });
         setChecked(initChecked);
       }
