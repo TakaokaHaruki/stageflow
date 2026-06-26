@@ -17,13 +17,8 @@ export function useStaffHistoryBadges(eventId) {
   const query = useQuery({
     queryKey: ["staffHistoryBadges", eventId],
     queryFn: async () => {
-      // Event一覧をdate降順で取得
-      let events = [];
-      try {
-        events = await base44.entities.Event.list("-date", 200);
-      } catch {
-        return {};
-      }
+      // Event一覧をdate降順で取得（エラー時は再試行させるためcatchしない）
+      const events = await base44.entities.Event.list("-date", 200);
       const recentEvents = (events || [])
         .filter((e) => e.id !== eventId)
         .slice(0, 10);
@@ -79,6 +74,7 @@ export function useStaffHistoryBadges(eventId) {
     },
     staleTime: Infinity,
     gcTime: Infinity,
+    retry: 3,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchInterval: false,

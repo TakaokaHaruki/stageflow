@@ -99,6 +99,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
         setResult(data);
         setStaffList(null);
         queryClient.invalidateQueries({ queryKey: ["staff", eventId] });
+        queryClient.invalidateQueries({ queryKey: ["staffHistoryBadges", eventId] });
       }
     } catch (err) {
       setError(err?.response?.data?.error || err.message || "保存中にエラーが発生しました");
