@@ -77,8 +77,11 @@ export function useStaffHistoryBadges(eventId) {
       });
       return result;
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
+    refetchInterval: false,
     placeholderData: keepPreviousData,
   });
 
