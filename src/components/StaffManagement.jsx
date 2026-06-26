@@ -28,7 +28,7 @@ export default function StaffManagement({ eventId }) {
   const { canEdit, canManageSettings, role } = useUserRole();
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
   const { record } = useOperationLog(eventId);
-  const { badges: historyBadges, isLoading: isLoadingBadges } = useStaffHistoryBadges(eventId);
+  const { badges: historyBadges, isLoading: isLoadingBadges, isFetching: isFetchingBadges } = useStaffHistoryBadges(eventId);
 
 
   const { data: staffList = [], isLoading } = useQuery({
@@ -269,7 +269,12 @@ export default function StaffManagement({ eventId }) {
                         <span key={skill} className="text-[10px] px-1 rounded bg-primary/10 border border-primary/30 text-primary font-medium">{skill}</span>
                       ))}
                     </div>
-                    {historyBadges[staff.name] && (
+                    {isLoadingBadges ? (
+                      <div className="flex items-center gap-0.5 mt-0.5">
+                        <span className="inline-block w-2.5 h-2.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                        <span className="text-[9px] text-muted-foreground">取得中</span>
+                      </div>
+                    ) : historyBadges[staff.name] && Object.keys(historyBadges[staff.name]).length > 0 ? (
                       <div className="flex flex-wrap gap-0.5 mt-0.5">
                         {SLOT_ORDER.filter((slot) => historyBadges[staff.name][slot]).map((slot) => {
                           const shortSlot = slot.replace(/中|後$/, "");
@@ -280,6 +285,8 @@ export default function StaffManagement({ eventId }) {
                           );
                         })}
                       </div>
+                    ) : (
+                      <p className="text-[9px] text-muted-foreground/60 italic mt-0.5">配置傾向が分析できませんでした</p>
                     )}
                     {(staff.note_before || staff.note_during || staff.note_after) && (
                       <div className="flex flex-wrap gap-x-2 gap-y-0">

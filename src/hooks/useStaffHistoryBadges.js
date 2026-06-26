@@ -83,5 +83,5 @@ export function useStaffHistoryBadges(eventId) {
   });
 
   const badges = useMemo(() => query.data ?? {}, [query.data]);
-  return { badges, isLoading: query.isLoading && !query.data };
+  return { badges, isLoading: query.isLoading, isFetching: query.isFetching };
 }
