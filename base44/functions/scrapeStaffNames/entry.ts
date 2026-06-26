@@ -28,6 +28,11 @@ Deno.serve(async (req) => {
 
     const html = await response.text();
 
+    // A-CASTの点呼URLが有効期限切れ・無効の場合の検知
+    if (html.includes('点呼が存在しません') || html.includes('URLをご確認ください')) {
+      return Response.json({ error: '点呼表のURLが有効期限切れ、または無効です。A-CASTで最新の点呼URLを再取得してください。' });
+    }
+
     // If selectedStaff or selectedNames provided, this is the "confirm & save" phase
     if ((selectedStaff && Array.isArray(selectedStaff)) || (selectedNames && Array.isArray(selectedNames))) {
       // Support legacy selectedNames format (backward compatibility)
