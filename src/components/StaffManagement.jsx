@@ -261,11 +261,14 @@ export default function StaffManagement({ eventId }) {
                     </div>
                     {historyBadges[staff.name] && (
                       <div className="flex flex-wrap gap-0.5 mt-0.5">
-                        {SLOT_ORDER.filter((slot) => historyBadges[staff.name][slot]).map((slot) => (
-                          <span key={slot} className="text-[9px] font-medium px-1 rounded border bg-gray-100 border-gray-300 text-gray-500 dark:bg-gray-700/40 dark:border-gray-600 dark:text-gray-400">
-                            傾向 {slot}：{historyBadges[staff.name][slot]}
-                          </span>
-                        ))}
+                        {SLOT_ORDER.filter((slot) => historyBadges[staff.name][slot]).map((slot) => {
+                          const shortSlot = slot.replace(/中|後$/, "");
+                          return (
+                            <span key={slot} className="text-[9px] font-medium px-1 rounded border bg-gray-100 border-gray-300 text-gray-500 dark:bg-gray-700/40 dark:border-gray-600 dark:text-gray-400">
+                              {shortSlot}：{historyBadges[staff.name][slot]}
+                            </span>
+                          );
+                        })}
                       </div>
                     )}
                     {(staff.note_before || staff.note_during || staff.note_after) && (
