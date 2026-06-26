@@ -18,18 +18,25 @@ export function useStaffHistoryBadges(eventId) {
     queryKey: ["staffHistoryBadges", eventId],
     queryFn: async () => {
       // Event一覧をdate降順で取得
-      const events = await base44.entities.Event.list("-date", 200);
+      let events = [];
+      try {
+        events = await base44.entities.Event.list("-date", 200);
+      } catch {
+        return {};
+      }
       const recentEvents = (events || [])
         .filter((e) => e.id !== eventId)
         .slice(0, 10);
 
       if (recentEvents.length === 0) return {};
 
-      // 5件のイベントのPositionをまとめて取得
-      const positionsPerEvent = await Promise.all(
+      // 各イベントのPositionを取得（一部失敗しても全体は失敗させない）
+      const settled = await Promise.allSettled(
         recentEvents.map((e) => base44.entities.Position.filter({ event_id: e.id }))
       );
-      const allPositions = positionsPerEvent.flat();
+      const allPositions = settled
+        .filter((r) => r.status === "fulfilled")
+        .flatMap((r) => r.value || []);
 
       // staffName -> slot -> { posName -> count }
       const tally = {};
