@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { useEndShowDetection } from "@/hooks/useEndShowDetection";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import EventTimeDisplay from "@/components/EventTimeDisplay";
 
@@ -22,6 +23,7 @@ function formatCurrentTime() {
 export default function EventScreenSaver({ event, onExit, administrator = false }) {
   const [currentTime, setCurrentTime] = useState(formatCurrentTime);
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
+  const { micState, isEnded, currentLevel, resetDetection } = useEndShowDetection({ event });
   const wakeLockRef = useRef(null);
   const tapCountRef = useRef(0);
   const tapResetTimerRef = useRef(null);
@@ -143,6 +145,53 @@ export default function EventScreenSaver({ event, onExit, administrator = false 
           </div>
         )}
       </div>
+
+      {/* 騒音検知ステータス */}
+      {micState !== "idle" && !isEnded && (
+        <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 text-xs text-muted-foreground">
+          {micState === "granted" && (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+              </span>
+              <span>騒音検知中</span>
+              <span className="font-mono tabular-nums">{currentLevel.toFixed(0)}dB</span>
+            </>
+          )}
+          {micState === "denied" && (
+            <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+              <VolumeX className="h-3 w-3" />マイク許可が必要です
+            </span>
+          )}
+          {micState === "error" && (
+            <span className="flex items-center gap-1 text-destructive">
+              <VolumeX className="h-3 w-3" />マイクエラー
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* 終演確認オーバーレイ */}
+      {isEnded && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm px-4">
+          <div className="text-center space-y-6">
+            <div className="flex items-center justify-center gap-3 text-primary">
+              <Volume2 className="h-8 w-8 sm:h-10 sm:w-10" />
+              <span className="text-4xl sm:text-6xl font-bold">終演を確認しました</span>
+            </div>
+            <p className="text-sm text-muted-foreground">騒音レベルから終演を検知しました</p>
+            <button
+              type="button"
+              onClick={resetDetection}
+              className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              <RotateCcw className="h-4 w-4" />
+              判定をリセット
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
