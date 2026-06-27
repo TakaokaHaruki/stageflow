@@ -17,7 +17,7 @@ function normalizeSlot(slot) {
  * }
  */
 export function useStaffTrends() {
-  const { data = { tally: {}, recentEvents: [] } } = useQuery({
+  const { data = { tally: {}, recentEvents: [], positionsPerEvent: [] } } = useQuery({
     queryKey: ["staffTrends"],
     queryFn: async () => {
       const events = await base44.entities.Event.list("-date", 200);
@@ -45,7 +45,7 @@ export function useStaffTrends() {
         });
       });
 
-      return { tally, recentEvents };
+      return { tally, recentEvents, positionsPerEvent };
     },
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,

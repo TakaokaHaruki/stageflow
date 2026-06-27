@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { TrendingUp, Table as TableIcon, BarChart3, Users } from "lucide-react";
+import { TrendingUp, Table as TableIcon, BarChart3, Users, LayoutGrid } from "lucide-react";
+import PositionHeatmap from "@/components/PositionHeatmap";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import GlobalBanner from "@/components/GlobalBanner";
@@ -28,7 +29,7 @@ function getMostFrequent(slotCounts) {
 }
 
 export default function StaffTrends() {
-  const { tally, recentEvents } = useStaffTrends();
+  const { tally, recentEvents, positionsPerEvent } = useStaffTrends();
   const [view, setView] = useState("table"); // "table" | "chart"
   const [selectedSlot, setSelectedSlot] = useState("開場中");
   const { role } = useUserRole();
@@ -109,6 +110,14 @@ export default function StaffTrends() {
           >
             <BarChart3 className="w-3.5 h-3.5" />グラフ
           </button>
+          <button
+            onClick={() => setView("heatmap")}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              view === "heatmap" ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />推移
+          </button>
         </div>
 
         {Object.keys(tally).length === 0 ? (
@@ -155,7 +164,7 @@ export default function StaffTrends() {
               </tbody>
             </table>
           </div>
-        ) : (
+        ) : view === "chart" ? (
           /* Chart view */
           <div>
             {/* Slot selector */}
@@ -197,6 +206,9 @@ export default function StaffTrends() {
               </div>
             )}
           </div>
+        ) : (
+          /* Heatmap view */
+          <PositionHeatmap recentEvents={recentEvents} positionsPerEvent={positionsPerEvent} />
         )}
       </div>
     </div>
