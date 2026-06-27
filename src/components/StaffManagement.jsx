@@ -290,16 +290,16 @@ export default function StaffManagement({ eventId }) {
                     )}
                     {(staff.note_before || staff.note_during || staff.note_after) && (
                       <div className="flex flex-wrap gap-x-2 gap-y-0">
-                        {staff.note_before && <span className="text-[10px] text-muted-foreground">開場中: {staff.note_before}</span>}
-                        {staff.note_during && <span className="text-[10px] text-muted-foreground">開演中: {staff.note_during}</span>}
-                        {staff.note_after && <span className="text-[10px] text-muted-foreground">終演後: {staff.note_after}</span>}
+                        {staff.note_before && <span className="text-[10px] text-muted-foreground">開場: {staff.note_before}</span>}
+                        {staff.note_during && <span className="text-[10px] text-muted-foreground">開演: {staff.note_during}</span>}
+                        {staff.note_after && <span className="text-[10px] text-muted-foreground">終演: {staff.note_after}</span>}
                       </div>
                     )}
                     <div className="flex flex-wrap gap-0.5 mt-0.5">
                       {unassigned && <span className="flex items-center gap-0.5 text-[10px] text-amber-700 dark:text-amber-300"><AlertCircle className="w-2.5 h-2.5" />未配置</span>}
                       {assigned.map((a, i) =>
                         <span key={i} className={`text-[10px] font-semibold px-1 rounded border ${TIME_SLOT_STYLES[a.slot]?.badge || "bg-slate-100 border-slate-200 text-slate-700"}`}>
-                          {a.slot}：{a.posName}
+                          {a.slot.replace(/中|後$/, "")}：{a.posName}
                         </span>
                       )}
                     </div>
