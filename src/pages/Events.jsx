@@ -12,6 +12,7 @@ import AdminUserModal from "@/components/AdminUserModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion } from "framer-motion";
 import EventFormModal from "@/components/EventFormModal";
+import EventPublishToggle from "@/components/EventPublishToggle";
 import EventsSidebar from "@/components/EventsSidebar";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import GlobalBanner from "@/components/GlobalBanner";
@@ -165,6 +166,7 @@ export default function Events() {
                           {event.venue}
                         </span>
                   }
+                    <EventPublishToggle event={event} canEdit={canEdit} />
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center justify-end gap-0.5">
