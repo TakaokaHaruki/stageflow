@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { TrendingUp, Table as TableIcon, BarChart3, Users, LayoutGrid } from "lucide-react";
+import { TrendingUp, Table as TableIcon, BarChart3, Users, LayoutGrid, Gauge } from "lucide-react";
 import PositionHeatmap from "@/components/PositionHeatmap";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
@@ -61,9 +61,26 @@ export default function StaffTrends() {
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 15);
-  }, [tally, selectedSlot]);
+    }, [tally, selectedSlot]);
 
-  return (
+    // Workload data: staffName -> { total, slot counts } sorted by total desc
+    const workloadRows = useMemo(() => {
+    const rows = Object.keys(tally).map((name) => {
+    const row = { name, total: 0 };
+    SLOT_ORDER.forEach((slot) => {
+      const slotCounts = tally[name][slot];
+      const slotTotal = slotCounts ? Object.values(slotCounts).reduce((sum, c) => sum + c, 0) : 0;
+      row[slot] = slotTotal;
+      row.total += slotTotal;
+    });
+    return row;
+    });
+    return rows.sort((a, b) => b.total - a.total);
+    }, [tally]);
+
+    const maxWorkload = workloadRows.length > 0 ? workloadRows[0].total : 0;
+
+    return (
     <div className="min-h-screen bg-background safe-area-top safe-area-bottom relative scrollbar-hide overflow-x-hidden">
       <GlobalBanner />
       {/* Header */}
@@ -117,6 +134,14 @@ export default function StaffTrends() {
             }`}
           >
             <LayoutGrid className="w-3.5 h-3.5" />推移
+          </button>
+          <button
+            onClick={() => setView("workload")}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              view === "workload" ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            <Gauge className="w-3.5 h-3.5" />稼働
           </button>
         </div>
 
@@ -205,6 +230,47 @@ export default function StaffTrends() {
                 </ResponsiveContainer>
               </div>
             )}
+          </div>
+        ) : view === "workload" ? (
+          /* Workload view */
+          <div className="bg-card border border-border rounded-lg overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="text-left px-2 py-2 font-semibold whitespace-nowrap">スタッフ名</th>
+                  <th className="text-right px-2 py-2 font-semibold whitespace-nowrap">合計</th>
+                  {SLOT_ORDER.map((slot) => (
+                    <th key={slot} className="text-right px-2 py-2 font-semibold whitespace-nowrap min-w-16">
+                      <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] ${TIME_SLOT_STYLES[slot]?.badge || ""}`}>{slot}</span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {workloadRows.map((row, i) => (
+                  <tr key={row.name} className={i % 2 === 0 ? "" : "bg-muted/30"}>
+                    <td className="px-2 py-1.5 font-medium whitespace-nowrap">{row.name}</td>
+                    <td className="px-2 py-1.5">
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <div className="w-16 h-2 rounded-full bg-muted overflow-hidden hidden sm:block">
+                          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${maxWorkload > 0 ? (row.total / maxWorkload) * 100 : 0}%` }} />
+                        </div>
+                        <span className="font-bold tabular-nums whitespace-nowrap">{row.total}件</span>
+                      </div>
+                    </td>
+                    {SLOT_ORDER.map((slot) => (
+                      <td key={slot} className="px-2 py-1.5 text-right tabular-nums">
+                        {row[slot] > 0 ? (
+                          <span className="whitespace-nowrap">{row[slot]}件</span>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : (
           /* Heatmap view */
