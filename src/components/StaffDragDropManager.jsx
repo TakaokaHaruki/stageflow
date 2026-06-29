@@ -607,14 +607,13 @@ export default function StaffDragDropManager({ eventId }) {
         })}
         {/* 未配置列 */}
         <div className={`${mobileSlot === "未配置" ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block border-amber-400 dark:border-amber-500`}>
-          <div className="flex items-center justify-between px-2 py-1 bg-amber-50 dark:bg-amber-900/40 border-b border-amber-200 dark:border-amber-700 text-amber-800 dark:text-amber-300">
+          <div className="flex items-center justify-between px-2 py-1 bg-amber-100 border-amber-300 text-amber-800 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-300">
             <div className="flex items-center gap-1.5">
-              <AlertCircle className="w-3 h-3" />
               <span className="font-bold text-xs">未配置</span>
               <span className="text-[10px] opacity-70">{unassigned.length}名</span>
             </div>
           </div>
-          <div className="bg-card p-1 min-h-[28px]" onDragOver={isAdmin ? handleDragOver : undefined} onDrop={isAdmin ? handleDropUnassigned : undefined}>
+          <div className="bg-card p-1" onDragOver={isAdmin ? handleDragOver : undefined} onDrop={isAdmin ? handleDropUnassigned : undefined}>
             {unassigned.length === 0 ? (
               <p className="text-[11px] text-muted-foreground text-center py-1.5">未配置スタッフはいません</p>
             ) : (
@@ -625,7 +624,7 @@ export default function StaffDragDropManager({ eventId }) {
                   <div key={s.id} draggable={isAdmin}
                     onDragStart={isAdmin ? (e) => handleStaffDragStart(e, s.name) : undefined}
                     onDragEnd={isAdmin ? handleStaffDragEnd : undefined}
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 ${isAdmin ? "cursor-move hover:bg-amber-100 dark:hover:bg-amber-900/50" : "cursor-default"} ${draggedStaff === s.name ? "opacity-50" : ""}`}>
+                    className={`flex min-h-8 items-center justify-between gap-1.5 px-2 py-0.5 select-none bg-card border border-border rounded ${isAdmin ? "cursor-move hover:bg-muted/50" : "cursor-default"} ${draggedStaff === s.name ? "opacity-50" : ""}`}>
                     <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-xs font-medium text-foreground">{displayName}</span>
