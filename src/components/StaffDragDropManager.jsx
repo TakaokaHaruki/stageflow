@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, ClipboardList, Plus, Download, Users, GripVertical, Trash2, Wand2, Lock, LockOpen } from "lucide-react";
+import { AlertCircle, ClipboardList, Plus, Download, Users, GripVertical, Trash2, Wand2, Lock, LockOpen, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import PositionCard from "@/components/PositionCard";
 import PositionBulkAddModal from "@/components/PositionBulkAddModal";
 import PositionFormModal from "@/components/PositionFormModal";
@@ -507,35 +508,29 @@ export default function StaffDragDropManager({ eventId }) {
         {TIME_SLOTS.map((slot) => {
           const style = TIME_SLOT_STYLES[slot];
           const slotPositions = grouped[slot];
-          const slotRequiredCount = slotPositions.reduce((sum, p) => sum + (p.required_count ?? 0), 0);
-          const slotAssignedStaffNames = new Set(slotPositions.flatMap((p) => p.staff_names || []));
-          const slotAssignedCount = staffList.filter((s) => slotAssignedStaffNames.has(s.name)).length;
           const slotBorderClass = slot === "開場中" ? "border-amber-400 dark:border-amber-500" : slot === "開演中" ? "border-blue-400 dark:border-blue-500" : "border-slate-400 dark:border-slate-400";
           return (
             <div key={slot} className={`${mobileSlot === slot ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block ${slotBorderClass}`}>
               <div className={`flex items-center justify-between px-2 py-1 ${style.header}`}>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs">{slot}</span>
-                  <span className="text-[10px] opacity-70">{slotPositions.length}件</span>
-                  <span className="text-[10px] opacity-70">設定：{slotRequiredCount}名</span>
-                  <span className="text-[10px] opacity-70 flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />配置：{slotAssignedCount}名</span>
-                </div>
+                <span className="font-bold text-xs">{slot}</span>
                 {isAdmin && (
-                  <div className="flex items-center gap-1">
-
-                    <button onClick={() => openAdd(slot)}
-                      title="ポジションを追加"
-                      className="flex min-h-8 items-center gap-1 rounded bg-white/60 px-1.5 text-[11px] font-medium text-current transition-colors hover:bg-white/90 dark:bg-white/10 dark:hover:bg-white/20 sm:min-h-0 sm:py-0.5 sm:text-[10px] select-none">
-                      <Plus className="w-2.5 h-2.5" />追加
-                    </button>
-                    {slotPositions.length > 0 && (
-                      <button onClick={() => setConfirmBulkDelete(slot)}
-                        title="このスロットを一括削除"
-                        className="flex min-h-8 items-center gap-1 rounded bg-red-500/20 px-1.5 text-[11px] font-medium text-red-800 transition-colors hover:bg-red-500/40 dark:text-red-200 sm:min-h-0 sm:py-0.5 sm:text-[10px] select-none">
-                        <Trash2 className="w-2.5 h-2.5" />一括削除
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex min-h-8 items-center gap-0.5 rounded bg-white/60 px-1.5 text-[11px] font-medium text-current transition-colors hover:bg-white/90 dark:bg-white/10 dark:hover:bg-white/20 sm:min-h-0 sm:py-0.5 sm:text-[10px] select-none">
+                        編集<ChevronDown className="w-2.5 h-2.5" />
                       </button>
-                    )}
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-[7rem]">
+                      <DropdownMenuItem onClick={() => openAdd(slot)}>
+                        <Plus className="w-3 h-3" />追加
+                      </DropdownMenuItem>
+                      {slotPositions.length > 0 && (
+                        <DropdownMenuItem onClick={() => setConfirmBulkDelete(slot)} className="text-destructive focus:text-destructive">
+                          <Trash2 className="w-3 h-3" />一括削除
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </div>
               <div className="bg-card p-1">
@@ -575,7 +570,6 @@ export default function StaffDragDropManager({ eventId }) {
                             onStaffRemove={removeStaffFromPosition}
                             onStaffEdit={(staff, pos) => setEditingStaff({ staff, pos })}
                             onEdit={(p) => { setEditing(p); setShowModal(true); }}
-                            onDelete={(id) => setConfirmDelete({ id, name: pos.name })}
                             emptyLabel="スタッフをドラッグして配置"
                             staffList={staffList}
                             requiredCount={pos.required_count ?? 0}

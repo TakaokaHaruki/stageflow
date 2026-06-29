@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Pencil, Trash2, Minus, Plus, Lock, LockOpen, AlertCircle } from "lucide-react";
+import { Pencil, Minus, Plus, Lock, LockOpen, AlertCircle } from "lucide-react";
 import { getStaffDisplayName } from "@/lib/staffName";
 
 const SLOT_NOTE_KEY = { "開場中": "note_before", "開演中": "note_during", "終演後": "note_after" };
@@ -102,7 +102,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
 
 export default function PositionCard({
   pos, isAdmin, draggable = false, draggedStaff = null,
-  onEdit, onDelete, onDragOver, onDrop, onStaffDragStart, onStaffDragEnd, onStaffRemove,
+  onEdit, onDragOver, onDrop, onStaffDragStart, onStaffDragEnd, onStaffRemove,
   onStaffEdit, onDropSide, onToggleLock, lockedNames = [],
   emptyLabel = "スタッフ未登録", staffList = [],
   requiredCount = 0, onRequiredCountChange, occupiedInSlot = [],
@@ -139,15 +139,13 @@ export default function PositionCard({
               className="flex h-7 w-7 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-4 sm:w-4"><Plus className="w-2 h-2" /></button>
           </div>
         ) : (
-          <span className="text-[10px] text-muted-foreground">{assignedCount}名{requiredCount > 0 ? `/${requiredCount}名` : ""}</span>
+          <span className="text-[10px] text-muted-foreground">{assignedCount}名</span>
         )}
-        {onRequiredCountChange && isAdmin && <span className="text-[10px] text-muted-foreground">{assignedCount}名配置</span>}
         {statusBadge && <span className={`text-[10px] font-semibold px-1 py-0.5 rounded border ${statusBadge.cls}`}>{statusBadge.label}</span>}
         {pos.notes && <span className="text-[10px] text-muted-foreground truncate flex-1">{pos.notes}</span>}
-        {(onEdit || onDelete) && (
+        {onEdit && (
           <div className="flex gap-1 ml-auto flex-shrink-0">
-            {onEdit && <button onClick={() => onEdit(pos)} disabled={!isAdmin} className="flex h-7 w-7 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-5 sm:w-5" aria-label={`${pos.name}を編集`}><Pencil className="w-3 h-3" /></button>}
-            {onDelete && <button onClick={() => onDelete(pos.id)} disabled={!isAdmin} className="flex h-7 w-7 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-5 sm:w-5" aria-label={`${pos.name}を削除`}><Trash2 className="w-3 h-3" /></button>}
+            <button onClick={() => onEdit(pos)} disabled={!isAdmin} className="flex h-7 w-7 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-5 sm:w-5" aria-label={`${pos.name}を編集`}><Pencil className="w-3 h-3" /></button>
           </div>
         )}
       </div>
