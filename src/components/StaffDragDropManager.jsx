@@ -508,7 +508,6 @@ export default function StaffDragDropManager({ eventId }) {
         {TIME_SLOTS.map((slot) => {
           const style = TIME_SLOT_STYLES[slot];
           const slotPositions = grouped[slot];
-          const slotRequiredCount = slotPositions.reduce((sum, p) => sum + (p.required_count ?? 0), 0);
           const slotAssignedStaffNames = new Set(slotPositions.flatMap((p) => p.staff_names || []));
           const slotAssignedCount = staffList.filter((s) => slotAssignedStaffNames.has(s.name)).length;
           const slotBorderClass = slot === "開場中" ? "border-amber-400 dark:border-amber-500" : slot === "開演中" ? "border-blue-400 dark:border-blue-500" : "border-slate-400 dark:border-slate-400";
@@ -518,7 +517,6 @@ export default function StaffDragDropManager({ eventId }) {
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-xs">{slot}</span>
                   <span className="text-[10px] opacity-70">{slotPositions.length}件</span>
-                  <span className="text-[10px] opacity-70">設定：{slotRequiredCount}名</span>
                   <span className="text-[10px] opacity-70 flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />配置：{slotAssignedCount}名</span>
                 </div>
                 {isAdmin && (
