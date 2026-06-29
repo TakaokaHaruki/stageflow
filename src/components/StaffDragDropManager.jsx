@@ -477,7 +477,7 @@ export default function StaffDragDropManager({ eventId }) {
         )}
       />
 
-      <div className="mb-1.5 grid grid-cols-3 gap-1 rounded-lg border border-border bg-muted/40 p-0.5 sm:hidden">
+      <div className="mb-1.5 grid grid-cols-4 gap-1 rounded-lg border border-border bg-muted/40 p-0.5 sm:hidden">
         {TIME_SLOTS.map((slot) => (
           <button
             key={slot}
@@ -491,9 +491,19 @@ export default function StaffDragDropManager({ eventId }) {
             {slot}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={() => setMobileSlot("未配置")}
+          className={`min-h-9 rounded-md px-1 text-xs font-semibold transition-colors ${
+            mobileSlot === "未配置" ? "bg-amber-500 text-white shadow-sm" : "text-amber-600 dark:text-amber-400"
+          }`}
+          aria-pressed={mobileSlot === "未配置"}
+        >
+          未配置
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-1.5">
         {TIME_SLOTS.map((slot) => {
           const style = TIME_SLOT_STYLES[slot];
           const slotPositions = grouped[slot];
@@ -563,7 +573,7 @@ export default function StaffDragDropManager({ eventId }) {
                             }}
                             onStaffDragEnd={handleStaffDragEnd}
                             onStaffRemove={removeStaffFromPosition}
-                            onStaffEdit={(staff) => setEditingStaff(staff)}
+                            onStaffEdit={(staff, pos) => setEditingStaff({ staff, pos })}
                             onEdit={(p) => { setEditing(p); setShowModal(true); }}
                             onDelete={(id) => setConfirmDelete({ id, name: pos.name })}
                             emptyLabel="スタッフをドラッグして配置"
@@ -595,42 +605,48 @@ export default function StaffDragDropManager({ eventId }) {
             </div>
           );
         })}
-      </div>
-
-      {unassigned.length > 0 && (
-        <div className="mt-1.5 border border-amber-300 dark:border-amber-700 rounded-lg overflow-hidden">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 dark:bg-amber-900/40 border-b border-amber-200 dark:border-amber-700 text-amber-800 dark:text-amber-300">
-            <AlertCircle className="w-3 h-3" />
-            <span className="font-bold text-xs">未配置スタッフ</span>
-            <span className="text-[10px] opacity-70">{unassigned.length}名</span>
+        {/* 未配置列 */}
+        <div className={`${mobileSlot === "未配置" ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block border-amber-400 dark:border-amber-500`}>
+          <div className="flex items-center justify-between px-2 py-1 bg-amber-50 dark:bg-amber-900/40 border-b border-amber-200 dark:border-amber-700 text-amber-800 dark:text-amber-300">
+            <div className="flex items-center gap-1.5">
+              <AlertCircle className="w-3 h-3" />
+              <span className="font-bold text-xs">未配置</span>
+              <span className="text-[10px] opacity-70">{unassigned.length}名</span>
+            </div>
           </div>
-          <div className="bg-card p-1 grid gap-0.5 min-h-[28px] sm:grid-cols-3" onDragOver={isAdmin ? handleDragOver : undefined} onDrop={isAdmin ? handleDropUnassigned : undefined}>
-            {unassigned.map((s) => {
-              const displayName = getStaffDisplayName(s.name, shouldMaskStaffNames);
-              return (
-              <div key={s.id} draggable={isAdmin}
-                onDragStart={isAdmin ? (e) => handleStaffDragStart(e, s.name) : undefined}
-                onDragEnd={isAdmin ? handleStaffDragEnd : undefined}
-                className={`flex items-center gap-1.5 px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 ${isAdmin ? "cursor-move hover:bg-amber-100 dark:hover:bg-amber-900/50" : "cursor-default"} ${draggedStaff === s.name ? "opacity-50" : ""}`}>
-                <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-xs font-medium text-foreground">{displayName}</span>
-                  {s.note && <span className="text-[10px] text-muted-foreground">({s.note})</span>}
-                </div>
-                <div className="flex flex-wrap gap-1 mt-0.5">
-                  {s.missingSlots.map((slot) => (
-                    <span key={slot} className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${TIME_SLOT_STYLES[slot].header}`}>
-                      {slot}未配置
-                    </span>
-                  ))}
-                </div>
-                </div>
+          <div className="bg-card p-1 min-h-[28px]" onDragOver={isAdmin ? handleDragOver : undefined} onDrop={isAdmin ? handleDropUnassigned : undefined}>
+            {unassigned.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground text-center py-1.5">未配置スタッフはいません</p>
+            ) : (
+              <div className="grid gap-0.5">
+                {unassigned.map((s) => {
+                  const displayName = getStaffDisplayName(s.name, shouldMaskStaffNames);
+                  return (
+                  <div key={s.id} draggable={isAdmin}
+                    onDragStart={isAdmin ? (e) => handleStaffDragStart(e, s.name) : undefined}
+                    onDragEnd={isAdmin ? handleStaffDragEnd : undefined}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 ${isAdmin ? "cursor-move hover:bg-amber-100 dark:hover:bg-amber-900/50" : "cursor-default"} ${draggedStaff === s.name ? "opacity-50" : ""}`}>
+                    <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-medium text-foreground">{displayName}</span>
+                      {s.note && <span className="text-[10px] text-muted-foreground">({s.note})</span>}
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-0.5">
+                      {s.missingSlots.map((slot) => (
+                        <span key={slot} className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${TIME_SLOT_STYLES[slot].header}`}>
+                          {slot}未配置
+                        </span>
+                      ))}
+                    </div>
+                    </div>
+                  </div>
+                  );
+                })}
               </div>
-              );
-            })}
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       <div className="mt-1.5 border border-border rounded-lg overflow-hidden">
         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-muted border-b border-border">
@@ -759,7 +775,12 @@ export default function StaffDragDropManager({ eventId }) {
       )}
       {editingStaff && (
         <StaffEditModal
-          staff={editingStaff}
+          staff={editingStaff.staff}
+          pos={editingStaff.pos}
+          onRemoveFromPosition={editingStaff.pos ? (posId, name) => {
+            removeStaffFromPosition(posId, name);
+            setEditingStaff(null);
+          } : undefined}
           onClose={() => setEditingStaff(null)}
           onSaved={() => {}}
         />

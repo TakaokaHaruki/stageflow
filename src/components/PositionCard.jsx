@@ -90,13 +90,8 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
             </button>
           )}
           {onStaffEdit && staffData && (
-            <button onClick={() => onStaffEdit(staffData)} className="flex h-7 w-7 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors sm:h-5 sm:w-5" title="スタッフ編集">
+            <button onClick={() => onStaffEdit(staffData, pos)} className="flex h-7 w-7 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors sm:h-5 sm:w-5" title="スタッフ編集">
               <Pencil className="w-3 h-3" />
-            </button>
-          )}
-          {onStaffRemove && (
-            <button onClick={() => onStaffRemove(pos.id, name)} className="flex h-7 w-7 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors sm:h-5 sm:w-5" title="配置から外す">
-              <Trash2 className="w-3 h-3" />
             </button>
           )}
         </div>

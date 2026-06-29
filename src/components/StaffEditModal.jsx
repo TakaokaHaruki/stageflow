@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { X, Plus } from "lucide-react";
+import { X, Plus, UserMinus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ const PRESET_COLORS = [
   { label: "白", value: "#ffffff" },
 ];
 
-export default function StaffEditModal({ staff, onClose, onSaved }) {
+export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClose, onSaved }) {
   const [localName, setLocalName] = useState(staff.name);
   const [localAcastId, setLocalAcastId] = useState(staff.acast_id || "");
   const [localNote, setLocalNote] = useState(staff.note || "");
@@ -235,6 +235,17 @@ export default function StaffEditModal({ staff, onClose, onSaved }) {
         <div className="flex gap-2 mt-4">
           <Button variant="outline" className="flex-1" size="sm" onClick={onClose}>閉じる</Button>
         </div>
+        {pos && onRemoveFromPosition && (
+          <Button
+            variant="destructive"
+            className="w-full mt-2 gap-1"
+            size="sm"
+            onClick={() => onRemoveFromPosition(pos.id, staff.name)}
+          >
+            <UserMinus className="w-3.5 h-3.5" />
+            このポジションから外す
+          </Button>
+        )}
       </motion.div>
     </motion.div>
   );
