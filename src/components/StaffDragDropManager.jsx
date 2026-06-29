@@ -516,7 +516,6 @@ export default function StaffDragDropManager({ eventId }) {
               <div className={`flex items-center justify-between px-2 py-1 ${style.header}`}>
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-xs">{slot}</span>
-                  <span className="text-[10px] opacity-70">{slotPositions.length}件</span>
                   <span className="text-[10px] opacity-70 flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />配置：{slotAssignedCount}名</span>
                 </div>
                 {isAdmin && (
