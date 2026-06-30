@@ -49,16 +49,20 @@ export default function StaffTrendSummary({ staffName }) {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3);
 
-    // 分析コメント
+    // 分析コメント: 最多配置ポジションに焦点を当てる
     let analysis = "";
     if (total === 0) {
       analysis = "過去の配置データがありません";
-    } else if (topPositions.length > 0 && topPositions[0][1] / total >= 0.6) {
-      analysis = `「${topPositions[0][0]}」への配置が多く、特定ポジションに偏りがあります`;
-    } else if (topPositions.length >= 3) {
-      analysis = "複数のポジションを担当できる柔軟なスタッフです";
     } else {
-      analysis = `主に「${topPositions.map((p) => p[0]).join("、")}」を担当しています`;
+      const [topName, topCount] = topPositions[0];
+      const ratio = Math.round((topCount / total) * 100);
+      if (ratio >= 60) {
+        analysis = `最多配置は「${topName}」(${topCount}回/配比率${ratio}%)で、このポジションに強く偏っています。`;
+      } else if (ratio >= 40) {
+        analysis = `最多配置は「${topName}」(${topCount}回/配比率${ratio}%)です。他ポジションへの柔軟性も兼ね備えています。`;
+      } else {
+        analysis = `最多配置は「${topName}」(${topCount}回/配比率${ratio}%)で、複数ポジションを幅広く担当しています。`;
+      }
     }
 
     return { slotFreqs, total, topPositions, analysis };
