@@ -129,7 +129,7 @@ export default function TagManagement() {
           </div>
         )}
         <p className="text-[10px] text-muted-foreground mt-1.5">
-          固定役割（インカム・セクションチーフ）は削除できません。カスタム役割には追加時に7色からランダムで色が割り当てられます。
+          固定役割（インカム・セクションチーフ・バラシ）は削除できません。カスタム役割には追加時に7色からランダムで色が割り当てられます。
         </p>
       </div>
 

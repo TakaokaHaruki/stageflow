@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCaptureTags } from "@/hooks/useCaptureTags";
 import { useAllRoles } from "@/hooks/useAllRoles";
+import RoleIcon from "@/components/RoleIcon";
 import StaffTrendSummary from "@/components/StaffTrendSummary";
 
 const PRESET_COLORS = [
@@ -33,6 +34,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
   const [localSkills, setLocalSkills] = useState(staff.skills || []);
   const [skillInput, setSkillInput] = useState("");
   const [localRoles, setLocalRoles] = useState(staff.roles || []);
+  const [roleInput, setRoleInput] = useState("");
   const [noteTab, setNoteTab] = useState("all");
   const { tags: captureTags = [] } = useCaptureTags();
   const { allRoles, getBadgeClass } = useAllRoles();
@@ -186,12 +188,39 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
                     key={role.name}
                     type="button"
                     onClick={() => setLocalRoles((prev) => active ? prev.filter((r) => r !== role.name) : [...prev, role.name])}
-                    className={`text-xs px-2 py-0.5 rounded-full border font-medium transition-colors ${active ? getBadgeClass(role.name) : "border-border text-muted-foreground hover:border-primary/50"}`}
+                    className={`inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full border font-medium transition-colors ${active ? getBadgeClass(role.name) : "border-border text-muted-foreground hover:border-primary/50"}`}
                   >
+                    <RoleIcon role={role.name} className="w-3 h-3" />
                     {active ? "" : "+"}{role.name}
+                    {active && (
+                      <span className="ml-0.5 hover:text-destructive transition-colors" onClick={(e) => { e.stopPropagation(); setLocalRoles((prev) => prev.filter((r) => r !== role.name)); }}>
+                        <X className="w-2.5 h-2.5" />
+                      </span>
+                    )}
                   </button>
                 );
               })}
+              {localRoles.filter((r) => !allRoles.some((ar) => ar.name === r)).map((role) => (
+                <span key={role} className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30 font-medium">
+                  <RoleIcon role={role} className="w-3 h-3" />
+                  {role}
+                  <button onClick={() => setLocalRoles((prev) => prev.filter((r) => r !== role))} className="ml-0.5 hover:text-destructive transition-colors" aria-label="削除">
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-1.5 mt-1.5">
+              <Input
+                value={roleInput}
+                onChange={(e) => setRoleInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); const r = roleInput.trim(); if (r && !localRoles.includes(r)) { setLocalRoles((prev) => [...prev, r]); setRoleInput(""); } } }}
+                placeholder="カスタム役割を入力"
+                className="h-7 text-xs flex-1"
+              />
+              <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-0.5" onClick={() => { const r = roleInput.trim(); if (r && !localRoles.includes(r)) { setLocalRoles((prev) => [...prev, r]); setRoleInput(""); } }} disabled={!roleInput.trim()}>
+                <Plus className="w-3 h-3" />追加
+              </Button>
             </div>
           </div>
           <div>

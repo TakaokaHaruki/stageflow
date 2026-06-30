@@ -10,6 +10,7 @@ module.exports = {
       'bg-yellow-100', 'border-yellow-300', 'text-yellow-700', 'bg-yellow-900/40', 'border-yellow-700', 'text-yellow-300', 'text-yellow-500',
       'bg-indigo-100', 'border-indigo-300', 'text-indigo-700', 'bg-indigo-900/40', 'border-indigo-700', 'text-indigo-300', 'text-indigo-500',
       'bg-fuchsia-100', 'border-fuchsia-300', 'text-fuchsia-700', 'bg-fuchsia-900/40', 'border-fuchsia-700', 'text-fuchsia-300', 'text-fuchsia-500',
+      'bg-cyan-100', 'border-cyan-300', 'text-cyan-700', 'bg-cyan-900/40', 'border-cyan-700', 'text-cyan-300', 'text-cyan-500',
     ],
   theme: {
   	extend: {

@@ -149,11 +149,12 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     if (!textChanged && !nonTextChanged) return;
 
     const delay = nonTextChanged ? 0 : 500;
+    const nextData = { ...form };
     const timer = setTimeout(() => {
-      savePosition({ ...form }, {
+      savePosition(nextData, {
         onSuccess: () => {
           toast.success("保存しました");
-          prevFormRef.current = form;
+          prevFormRef.current = nextData;
         }
       });
     }, delay);
@@ -366,7 +367,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
           <div>
             <Label>属性</Label>
             <div className="mt-1.5">
-              <CategoryPicker value={form.category} onChange={(v) => setForm({ ...form, category: v })} />
+              <CategoryPicker value={form.category} onChange={(v) => setForm((f) => ({ ...f, category: v }))} />
             </div>
           </div>
 

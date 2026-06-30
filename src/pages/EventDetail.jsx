@@ -30,6 +30,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SeatingMapViewer from "@/components/SeatingMapViewer";
 import VenueManager from "@/components/VenueManager";
+import TagManagement from "@/components/TagManagement";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -162,7 +163,6 @@ export default function EventDetail() {
         { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
         { id: "global_banner", label: "グローバル通知", icon: Bell },
         { id: "tab_control", label: "タブ制御", icon: LayoutTemplate },
-        { id: "tag_management", label: "タグ・役割", icon: Tag },
       ]
     : tab === "settings"
       ? [
@@ -170,6 +170,7 @@ export default function EventDetail() {
           { id: "presets", label: "ポジションプリセット", icon: ClipboardList },
           { id: "venues", label: "会場管理", icon: LayoutTemplate },
           ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
+          { id: "tag_management", label: "タグ・役割管理", icon: Tag },
         ]
       : [];
   const activeManagementChild = tab === "admin" ? adminSection : settingsSection;
@@ -308,6 +309,7 @@ export default function EventDetail() {
             {tab === "settings" && settingsSection === "presets" && <PositionTypeManagement eventId={eventId} section="presets" />}
             {tab === "settings" && settingsSection === "venues" && <VenueManager />}
             {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
+            {tab === "settings" && settingsSection === "tag_management" && <TagManagement />}
             {tab === "map" && <PositionMapViewer eventId={eventId} event={event} />}
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
           </motion.div>

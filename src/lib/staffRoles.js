@@ -1,19 +1,22 @@
 // 役割の定義とスタイルマッピング
-export const STAFF_ROLES = ["インカム", "セクションチーフ"];
+export const STAFF_ROLES = ["インカム", "セクションチーフ", "バラシ"];
 
 export const ROLE_BADGE_STYLES = {
   "インカム": "bg-orange-100 border-orange-300 text-orange-700 dark:bg-orange-900/40 dark:border-orange-700 dark:text-orange-300",
   "セクションチーフ": "bg-purple-100 border-purple-300 text-purple-700 dark:bg-purple-900/40 dark:border-purple-700 dark:text-purple-300",
+  "バラシ": "bg-cyan-100 border-cyan-300 text-cyan-700 dark:bg-cyan-900/40 dark:border-cyan-700 dark:text-cyan-300",
 };
 
 export const ROLE_DOT_STYLES = {
   "インカム": "bg-orange-500",
   "セクションチーフ": "bg-purple-500",
+  "バラシ": "bg-cyan-500",
 };
 
 export const ROLE_ICON_COLORS = {
   "インカム": "text-orange-500",
   "セクションチーフ": "text-purple-500",
+  "バラシ": "text-cyan-500",
 };
 
 // カスタム役割用カラープリセット（ランダム割り当て用7色）

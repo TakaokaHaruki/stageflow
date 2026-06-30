@@ -120,6 +120,7 @@ export default function PositionCard({
   emptyLabel = "スタッフ未登録", staffList = [],
   requiredCount = 0, onRequiredCountChange, occupiedInSlot = [],
   maskStaffNames = false,
+  onPosDragStart, onPosDragEnd,
 }) {
   const { hasExperience } = useStaffExperience();
   const splitBySide = Boolean(pos.split_by_side);
@@ -142,7 +143,12 @@ export default function PositionCard({
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-colors"
       onDragOver={onDragOver} onDrop={onDrop}>
-      <div className="flex items-center gap-1.5 px-1.5 py-1 border-b border-border/60 bg-muted/20 select-none">
+      <div
+        className={`flex items-center gap-1.5 px-1.5 py-1 border-b border-border/60 bg-muted/20 select-none ${isAdmin && onPosDragStart ? "cursor-grab active:cursor-grabbing" : ""}`}
+        draggable={isAdmin && !!onPosDragStart}
+        onDragStart={isAdmin && onPosDragStart ? onPosDragStart : undefined}
+        onDragEnd={isAdmin && onPosDragEnd ? onPosDragEnd : undefined}
+      >
         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pos.color || "#6366f1" }} />
         <span className="text-xs font-semibold text-foreground">{pos.name}</span>
         {onRequiredCountChange && isAdmin ? (

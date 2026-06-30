@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, ClipboardList, Plus, Download, Users, GripVertical, Trash2, Wand2, Lock, LockOpen, ChevronDown } from "lucide-react";
+import { AlertCircle, ClipboardList, Plus, Download, Users, Trash2, Wand2, Lock, LockOpen, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import PositionCard from "@/components/PositionCard";
@@ -547,56 +547,48 @@ export default function StaffDragDropManager({ eventId }) {
                     {slotPositions.map((pos) => (
                       <div key={pos.id}
                         data-pos-id={pos.id}
-                        className={`flex items-start gap-1 ${draggingPosId === pos.id ? "opacity-40" : ""} ${dragOverPosId === pos.id ? "ring-2 ring-primary rounded-lg" : ""}`}
+                        className={`${draggingPosId === pos.id ? "opacity-40" : ""} ${dragOverPosId === pos.id ? "ring-2 ring-primary rounded-lg" : ""}`}
                         onDragOver={(e) => handlePosDragOver(e, pos.id)}
                         onDrop={(e) => handlePosDrop(e, slot, pos.id)}
                       >
-                        {isAdmin && (
-                          <div draggable
-                            onDragStart={(e) => handlePosDragStart(e, pos.id)}
-                            onDragEnd={handlePosDragEnd}
-                            className="mt-2 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-0.5 shrink-0">
-                            <GripVertical className="w-3.5 h-3.5" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <PositionCard
-                            pos={pos}
-                            isAdmin={isAdmin}
-                            draggable={true}
-                            draggedStaff={draggedStaff}
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDropOnPosition(e, pos.id)}
-                            onDropSide={(e, side) => handleDropOnPositionSide(e, pos.id, side)}
-                            onStaffDragStart={(e, name, posId) => {
-                              handleStaffDragStart(e, name);
-                              removeStaffFromPosition(posId, name);
-                            }}
-                            onStaffDragEnd={handleStaffDragEnd}
-                            onStaffRemove={removeStaffFromPosition}
-                            onStaffEdit={(staff, pos) => setEditingStaff({ staff, pos })}
-                            onEdit={(p) => { setEditing(p); setShowModal(true); }}
-                            emptyLabel="スタッフをドラッグして配置"
-                            staffList={staffList}
-                            requiredCount={pos.required_count ?? 0}
-                            onRequiredCountChange={(v) => {
-                              queryClient.setQueryData(["positions", eventId], (old) =>
-                                old.map((p) => p.id === pos.id ? { ...p, required_count: v } : p)
-                              );
-                              base44.functions.invoke("updatePositionSide", {
-                                action: "updatePositionFields",
-                                positionId: pos.id,
-                                data: { required_count: v },
-                              });
-                            }}
-                            occupiedInSlot={[...new Set(
-                              slotPositions.filter((p) => p.id !== pos.id).flatMap((p) => p.staff_names || [])
-                            )]}
-                            maskStaffNames={shouldMaskStaffNames}
-                            onToggleLock={isAdmin ? toggleLock : undefined}
-                            lockedNames={lockedNames}
-                          />
-                        </div>
+                        <PositionCard
+                          pos={pos}
+                          isAdmin={isAdmin}
+                          draggable={true}
+                          draggedStaff={draggedStaff}
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleDropOnPosition(e, pos.id)}
+                          onDropSide={(e, side) => handleDropOnPositionSide(e, pos.id, side)}
+                          onStaffDragStart={(e, name, posId) => {
+                            handleStaffDragStart(e, name);
+                            removeStaffFromPosition(posId, name);
+                          }}
+                          onStaffDragEnd={handleStaffDragEnd}
+                          onStaffRemove={removeStaffFromPosition}
+                          onStaffEdit={(staff, pos) => setEditingStaff({ staff, pos })}
+                          onEdit={(p) => { setEditing(p); setShowModal(true); }}
+                          emptyLabel="スタッフをドラッグして配置"
+                          staffList={staffList}
+                          requiredCount={pos.required_count ?? 0}
+                          onRequiredCountChange={(v) => {
+                            queryClient.setQueryData(["positions", eventId], (old) =>
+                              old.map((p) => p.id === pos.id ? { ...p, required_count: v } : p)
+                            );
+                            base44.functions.invoke("updatePositionSide", {
+                              action: "updatePositionFields",
+                              positionId: pos.id,
+                              data: { required_count: v },
+                            });
+                          }}
+                          occupiedInSlot={[...new Set(
+                            slotPositions.filter((p) => p.id !== pos.id).flatMap((p) => p.staff_names || [])
+                          )]}
+                          maskStaffNames={shouldMaskStaffNames}
+                          onToggleLock={isAdmin ? toggleLock : undefined}
+                          lockedNames={lockedNames}
+                          onPosDragStart={isAdmin ? (e) => handlePosDragStart(e, pos.id) : undefined}
+                          onPosDragEnd={isAdmin ? handlePosDragEnd : undefined}
+                        />
                       </div>
                     ))}
                   </div>

@@ -1,9 +1,10 @@
-import { Headphones, Star, Shield } from "lucide-react";
+import { Headphones, Star, Shield, Theater } from "lucide-react";
 import { useAllRoles } from "@/hooks/useAllRoles";
 
 const ROLE_ICONS = {
   "インカム": Headphones,
   "セクションチーフ": Star,
+  "バラシ": Theater,
 };
 
 export default function RoleIcon({ role, className = "" }) {
