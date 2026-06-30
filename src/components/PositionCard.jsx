@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { Pencil, Minus, Plus, Lock, LockOpen, AlertCircle } from "lucide-react";
+import { Pencil, Minus, Plus, Lock, LockOpen, AlertCircle, AlertTriangle } from "lucide-react";
 import { getStaffDisplayName } from "@/lib/staffName";
 import RoleIcon from "@/components/RoleIcon";
+import { useStaffExperience } from "@/hooks/useStaffExperience";
 
 const SLOT_NOTE_KEY = { "開場中": "note_before", "開演中": "note_during", "終演後": "note_after" };
 
-function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, isLocked, side = null }) {
+function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, isLocked, isInexperienced, side = null }) {
   const [showNotePopup, setShowNotePopup] = useState(false);
   const [notePopupPos, setNotePopupPos] = useState(null);
   const noteIconRef = useRef(null);
@@ -51,6 +52,11 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
       <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-1 gap-y-0.5">
         {isLocked && <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />}
         <span className="text-xs font-medium" style={{ color: nameColor }}>{displayName}</span>
+        {isAdmin && isInexperienced && (
+          <span className="shrink-0" title="経験のないポジションです">
+            <AlertTriangle className="w-3 h-3 text-amber-500" />
+          </span>
+        )}
         {displayNote && (
           <div className="relative shrink-0" ref={noteIconRef}>
             <button
@@ -115,6 +121,7 @@ export default function PositionCard({
   requiredCount = 0, onRequiredCountChange, occupiedInSlot = [],
   maskStaffNames = false,
 }) {
+  const { hasExperience } = useStaffExperience();
   const splitBySide = Boolean(pos.split_by_side);
   const kamiteStaffNames = pos.staff_names_kamite || [];
   const shimoteStaffNames = pos.staff_names_shimote || [];
@@ -172,7 +179,7 @@ export default function PositionCard({
               >
                 <div className="px-2 py-1 text-[10px] font-bold text-muted-foreground bg-muted/30">{side.label}</div>
                 {side.names.length > 0 ? side.names.map((name, i) => (
-                  <StaffRow key={`${pos.id}-${side.key}-${name}-${i}`} name={name} isLocked={lockedNames.includes(name)} {...commonRowProps} />
+                  <StaffRow key={`${pos.id}-${side.key}-${name}-${i}`} name={name} isLocked={lockedNames.includes(name)} isInexperienced={!hasExperience(name, pos.name, pos.category)} {...commonRowProps} />
                 )) : (
                   <div className="px-2 py-2 text-[11px] text-muted-foreground">{emptyLabel}</div>
                 )}
@@ -180,7 +187,7 @@ export default function PositionCard({
             ))}
           </div>
         ) : staffNames.length > 0 ? staffNames.map((name, i) => (
-          <StaffRow key={draggable ? `${pos.id}-${name}` : i} name={name} isLocked={lockedNames.includes(name)} {...commonRowProps} />
+          <StaffRow key={draggable ? `${pos.id}-${name}` : i} name={name} isLocked={lockedNames.includes(name)} isInexperienced={!hasExperience(name, pos.name, pos.category)} {...commonRowProps} />
         )) : (
           <div className="px-2 py-0.5 text-[11px] text-muted-foreground">{emptyLabel}</div>
         )}

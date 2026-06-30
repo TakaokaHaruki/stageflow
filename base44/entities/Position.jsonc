@@ -10,6 +10,11 @@
       "type": "string",
       "description": "\u30dd\u30b8\u30b7\u30e7\u30f3\u540d\uff08\u4f8b\uff1a\u53d7\u4ed8 A\u3001\u8a98\u5c0e B\uff09"
     },
+    "category": {
+      "type": "string",
+      "description": "\u5c5e\u6027\uff08PositionType\u304b\u3089\u7d99\u627f\u3001\u500b\u5225\u4e0a\u66f8\u304d\u53ef\uff09",
+      "default": ""
+    },
     "time_slot": {
       "type": "string",
       "enum": [

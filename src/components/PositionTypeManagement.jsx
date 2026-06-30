@@ -18,6 +18,7 @@ import {
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SectionHeader from "@/components/SectionHeader";
 import { STAFF_ROLES, getRoleBadgeClass } from "@/lib/staffRoles";
+import CategoryPicker from "@/components/CategoryPicker";
 
 const PRESET_COLORS = [
   "#6366f1", "#3b82f6", "#10b981", "#f59e0b",
@@ -27,6 +28,7 @@ const PRESET_COLORS = [
 export default function PositionTypeManagement({ eventId, section = "positions" }) {
   const [name, setName] = useState("");
   const [color, setColor] = useState(PRESET_COLORS[0]);
+  const [category, setCategory] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
   const [dragOverId, setDragOverId] = useState(null);
@@ -62,6 +64,7 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
       queryClient.invalidateQueries({ queryKey: ["positionTypes"] });
       setName("");
       setColor(PRESET_COLORS[0]);
+      setCategory("");
       const created = result?.data?.positionType || result?.positionType;
       record({
         action_type: "position_type_add",
@@ -92,6 +95,7 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
     createMutation.mutate({
       name: name.trim(),
       color,
+      category: category || "",
       required_count: 0,
       required_count_before: 0,
       required_count_during: 0,
@@ -181,6 +185,13 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
     }
   };
 
+  const handleCategoryChange = (pt, nextCategory) => {
+    queryClient.setQueryData(["positionTypes"], (old = []) =>
+      old.map((p) => p.id === pt.id ? { ...p, category: nextCategory } : p)
+    );
+    base44.functions.invoke("updatePositionTypeRecord", { action: "update", data: { id: pt.id, category: nextCategory } });
+  };
+
   const handleToggleRole = (pt, role) => {
     const current = pt.required_roles || [];
     const next = current.includes(role) ? current.filter((r) => r !== role) : [...current, role];
@@ -234,6 +245,7 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
         <div className="space-y-1.5">
           <Input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={handleKeyDown}
             placeholder="ポジション名（例：メイン受付A）" className="h-8 text-sm" />
+          <CategoryPicker value={category} onChange={setCategory} />
           <div className="flex items-center gap-1.5">
             <div className="flex gap-1 flex-1">
               {PRESET_COLORS.map((c) => (
@@ -291,6 +303,16 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
                   className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
+              </div>
+              <div className="flex flex-wrap items-center gap-1 mt-1.5 pl-5">
+                <span className="text-[10px] text-muted-foreground mr-0.5">属性:</span>
+                <div className="flex-1 min-w-0">
+                  <CategoryPicker
+                    value={pt.category || ""}
+                    onChange={(v) => handleCategoryChange(pt, v)}
+                    disabled={!isAdmin}
+                  />
+                </div>
               </div>
               <div className="flex flex-wrap items-center gap-1 mt-1.5 pl-5">
                 <span className="text-[10px] text-muted-foreground mr-0.5">必要役割:</span>

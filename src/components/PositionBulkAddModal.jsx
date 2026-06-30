@@ -72,6 +72,7 @@ export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "é–‹å 
       staff_names: [],
       notes: "",
       color: pt.color || "#6366f1",
+      category: pt.category || "",
       required_count: getRequiredCount(pt),
       order: startOrder + idx,
     }));

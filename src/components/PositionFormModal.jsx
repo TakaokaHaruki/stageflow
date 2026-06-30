@@ -18,6 +18,7 @@ import { X, Check, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCaptureTags } from "@/hooks/useCaptureTags";
 import { STAFF_ROLES, getRoleBadgeClass } from "@/lib/staffRoles";
+import CategoryPicker from "@/components/CategoryPicker";
 
 const PRESET_COLORS = [
   "#6366f1", "#3b82f6", "#10b981", "#f59e0b",
@@ -38,6 +39,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     map_y: position?.map_y ?? null,
     required_skills: position?.required_skills || [],
     required_roles: position?.required_roles || [],
+    category: position?.category || "",
     event_id: eventId,
   });
   const [skillInput, setSkillInput] = useState("");
@@ -134,6 +136,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     prev.staff_names_shimote !== cur.staff_names_shimote ||
     prev.split_by_side !== cur.split_by_side ||
     prev.color !== cur.color ||
+    prev.category !== cur.category ||
     JSON.stringify(prev.required_skills) !== JSON.stringify(cur.required_skills) ||
     JSON.stringify(prev.required_roles) !== JSON.stringify(cur.required_roles);
 
@@ -211,13 +214,13 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
       const nextSplit = Boolean(pt.split_by_side);
       setForm((f) => {
         if (nextSplit === f.split_by_side) {
-          return { ...f, name: pt.name, color: pt.color || f.color };
+          return { ...f, name: pt.name, color: pt.color || f.color, category: pt.category || f.category };
         }
         if (nextSplit) {
-          return { ...f, name: pt.name, color: pt.color || f.color, split_by_side: true, staff_names_kamite: [...f.staff_names], staff_names_shimote: [] };
+          return { ...f, name: pt.name, color: pt.color || f.color, category: pt.category || f.category, split_by_side: true, staff_names_kamite: [...f.staff_names], staff_names_shimote: [] };
         } else {
           const merged = [...new Set([...f.staff_names_kamite, ...f.staff_names_shimote])];
-          return { ...f, name: pt.name, color: pt.color || f.color, split_by_side: false, staff_names: merged, staff_names_kamite: [], staff_names_shimote: [] };
+          return { ...f, name: pt.name, color: pt.color || f.color, category: pt.category || f.category, split_by_side: false, staff_names: merged, staff_names_kamite: [], staff_names_shimote: [] };
         }
       });
     }
@@ -356,6 +359,13 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
                   style={{ backgroundColor: c }}
                 />
               ))}
+            </div>
+          </div>
+
+          <div>
+            <Label>属性</Label>
+            <div className="mt-1.5">
+              <CategoryPicker value={form.category} onChange={(v) => setForm({ ...form, category: v })} />
             </div>
           </div>
 
