@@ -3,8 +3,8 @@ import { ChevronLeft } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 const STORAGE_KEY = "crewly:sidebar:collapsed";
-const EXPANDED_WIDTH = 200;
-const COLLAPSED_WIDTH = 52;
+const EXPANDED_WIDTH = 168;
+const COLLAPSED_WIDTH = 48;
 
 export const SIDEBAR_EXPANDED_WIDTH = EXPANDED_WIDTH;
 export const SIDEBAR_COLLAPSED_WIDTH = COLLAPSED_WIDTH;

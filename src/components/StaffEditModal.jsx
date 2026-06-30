@@ -7,7 +7,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCaptureTags } from "@/hooks/useCaptureTags";
-import { STAFF_ROLES, getRoleBadgeClass } from "@/lib/staffRoles";
+import { useAllRoles } from "@/hooks/useAllRoles";
 import StaffTrendSummary from "@/components/StaffTrendSummary";
 
 const PRESET_COLORS = [
@@ -35,6 +35,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
   const [localRoles, setLocalRoles] = useState(staff.roles || []);
   const [noteTab, setNoteTab] = useState("all");
   const { tags: captureTags = [] } = useCaptureTags();
+  const { allRoles, getBadgeClass } = useAllRoles();
   const prevDataRef = useRef({
     name: staff.name, acast_id: staff.acast_id || "", note: staff.note || "",
     note_before: staff.note_before || "", note_during: staff.note_during || "", note_after: staff.note_after || "",
@@ -178,16 +179,16 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
           <div>
             <label className="text-xs font-medium text-muted-foreground">役割</label>
             <div className="mt-1.5 flex flex-wrap gap-1">
-              {STAFF_ROLES.map((role) => {
-                const active = localRoles.includes(role);
+              {allRoles.map((role) => {
+                const active = localRoles.includes(role.name);
                 return (
                   <button
-                    key={role}
+                    key={role.name}
                     type="button"
-                    onClick={() => setLocalRoles((prev) => active ? prev.filter((r) => r !== role) : [...prev, role])}
-                    className={`text-xs px-2 py-0.5 rounded-full border font-medium transition-colors ${active ? getRoleBadgeClass(role) : "border-border text-muted-foreground hover:border-primary/50"}`}
+                    onClick={() => setLocalRoles((prev) => active ? prev.filter((r) => r !== role.name) : [...prev, role.name])}
+                    className={`text-xs px-2 py-0.5 rounded-full border font-medium transition-colors ${active ? getBadgeClass(role.name) : "border-border text-muted-foreground hover:border-primary/50"}`}
                   >
-                    {active ? "" : "+"}{role}
+                    {active ? "" : "+"}{role.name}
                   </button>
                 );
               })}

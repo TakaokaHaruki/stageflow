@@ -505,7 +505,7 @@ export default function StaffDragDropManager({ eventId }) {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-1">
         {TIME_SLOTS.map((slot) => {
           const style = TIME_SLOT_STYLES[slot];
           const slotPositions = grouped[slot];

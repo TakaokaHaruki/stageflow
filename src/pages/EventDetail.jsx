@@ -196,7 +196,7 @@ export default function EventDetail() {
 
       {/* Top bar */}
       <div ref={topBarRef} className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
-        <div className="max-w-6xl mx-auto px-2 pb-1 pt-1 flex flex-wrap items-center gap-1 sm:flex-nowrap sm:gap-1.5">
+        <div className="max-w-[1400px] mx-auto px-1.5 pb-1 pt-1 flex flex-wrap items-center gap-1 sm:flex-nowrap sm:gap-1.5">
           <BackButton to="/events" label="イベント一覧へ戻る" />
           <div className="hidden sm:flex flex-col items-start mr-1">
             <CrewlyLogo administrator={role === "admin"} />
@@ -264,7 +264,7 @@ export default function EventDetail() {
           {/* Child tab bar */}
           {isManagementTab && (
             <div className="block border-b border-border/70 bg-muted/40 sm:sticky sm:z-40" style={{ top: topBarHeight }}>
-              <div className="max-w-6xl mx-auto px-3">
+              <div className="max-w-[1400px] mx-auto px-2">
                 <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-4 sm:overflow-x-auto sm:scrollbar-hide">
                   {activeManagementChildren.map(({ id, label, icon: Icon }) => (
                     <button
@@ -286,7 +286,7 @@ export default function EventDetail() {
             </div>
           )}
 
-          <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:pb-8">
+          <div className="max-w-[1400px] mx-auto px-1 py-1 pb-16 sm:pb-8">
         <UserRestrictionBanner role={role} />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

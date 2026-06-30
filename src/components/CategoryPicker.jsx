@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { X, Plus } from "lucide-react";
-
-export const CATEGORY_PRESETS = ["客案", "場内配置", "場外配置", "楽屋口"];
+import { usePositionCategories } from "@/hooks/usePositionCategories";
 
 /**
- * 属性ピッカー: プリセット4択 + 自由テキスト追加。0個または1個選択（単一選択）。
+ * 属性ピッカー: マスターリスト（AppConfig.position_categories）から候補を表示 + 自由テキスト追加。
+ * 自由追加時はマスターリストにも自動追記され、他イベントでも利用可能になる。
  * @param {string} value - 現在選択中の属性（空文字=未選択）
  * @param {(v: string) => void} onChange
  * @param {boolean} disabled
  */
 export default function CategoryPicker({ value, onChange, disabled = false }) {
+  const { categories, addCategory } = usePositionCategories();
   const [input, setInput] = useState("");
   const selected = value || "";
 
@@ -22,13 +23,16 @@ export default function CategoryPicker({ value, onChange, disabled = false }) {
     const v = input.trim();
     if (!v || disabled) return;
     onChange(v);
+    if (!categories.includes(v)) {
+      addCategory(v);
+    }
     setInput("");
   };
 
   return (
     <div className="space-y-1.5">
       <div className="flex flex-wrap gap-1">
-        {CATEGORY_PRESETS.map((preset) => (
+        {categories.map((preset) => (
           <button
             key={preset}
             type="button"
@@ -43,7 +47,7 @@ export default function CategoryPicker({ value, onChange, disabled = false }) {
             {preset}
           </button>
         ))}
-        {selected && !CATEGORY_PRESETS.includes(selected) && (
+        {selected && !categories.includes(selected) && (
           <span className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/40 font-medium">
             {selected}
             <button

@@ -6,7 +6,7 @@ import { useStaffExperience } from "@/hooks/useStaffExperience";
 
 const SLOT_NOTE_KEY = { "開場中": "note_before", "開演中": "note_during", "終演後": "note_after" };
 
-function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, isLocked, isInexperienced, side = null }) {
+function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, isLocked, isInexperienced, showSkills = false, side = null }) {
   const [showNotePopup, setShowNotePopup] = useState(false);
   const [notePopupPos, setNotePopupPos] = useState(null);
   const noteIconRef = useRef(null);
@@ -44,7 +44,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
       draggable={draggable && isAdmin && !isLocked}
       onDragStart={draggable && isAdmin && !isLocked && onStaffDragStart ? (e) => onStaffDragStart(e, name, pos.id) : undefined}
       onDragEnd={draggable && isAdmin ? onStaffDragEnd : undefined}
-      className={["flex min-h-8 items-center justify-between gap-1.5 px-2 py-0.5 select-none sm:min-h-0 sm:gap-2",
+      className={["flex min-h-8 items-center justify-between gap-1 px-1.5 py-0.5 select-none sm:min-h-0 sm:gap-1.5",
         isLocked ? "bg-amber-50/60 dark:bg-amber-900/20" : "",
         draggable && isAdmin && !isLocked ? "cursor-move hover:bg-muted/50" : "",
         draggable && draggedStaff === name ? "opacity-50" : ""].join(" ")}
@@ -81,7 +81,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
         {(staffData?.roles || []).map((role) => (
           <RoleIcon key={role} role={role} />
         ))}
-        {(staffData?.skills || []).map((skill) => (
+        {showSkills && (staffData?.skills || []).map((skill) => (
           <span key={skill} className="text-[10px] px-1 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-medium">{skill}</span>
         ))}
         {staffData?.costume_change && (
@@ -137,11 +137,12 @@ export default function PositionCard({
   }
 
   const commonRowProps = { pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock };
+  const showSkills = pos.time_slot === "終演後";
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-colors"
       onDragOver={onDragOver} onDrop={onDrop}>
-      <div className="flex items-center gap-1.5 px-2 py-1 border-b border-border/60 bg-muted/20 select-none">
+      <div className="flex items-center gap-1.5 px-1.5 py-1 border-b border-border/60 bg-muted/20 select-none">
         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pos.color || "#6366f1" }} />
         <span className="text-xs font-semibold text-foreground">{pos.name}</span>
         {onRequiredCountChange && isAdmin ? (
@@ -179,7 +180,7 @@ export default function PositionCard({
               >
                 <div className="px-2 py-1 text-[10px] font-bold text-muted-foreground bg-muted/30">{side.label}</div>
                 {side.names.length > 0 ? side.names.map((name, i) => (
-                  <StaffRow key={`${pos.id}-${side.key}-${name}-${i}`} name={name} isLocked={lockedNames.includes(name)} isInexperienced={!hasExperience(name, pos.name, pos.category)} {...commonRowProps} />
+                  <StaffRow key={`${pos.id}-${side.key}-${name}-${i}`} name={name} isLocked={lockedNames.includes(name)} isInexperienced={!hasExperience(name, pos.name, pos.category)} showSkills={showSkills} {...commonRowProps} />
                 )) : (
                   <div className="px-2 py-2 text-[11px] text-muted-foreground">{emptyLabel}</div>
                 )}
@@ -187,7 +188,7 @@ export default function PositionCard({
             ))}
           </div>
         ) : staffNames.length > 0 ? staffNames.map((name, i) => (
-          <StaffRow key={draggable ? `${pos.id}-${name}` : i} name={name} isLocked={lockedNames.includes(name)} isInexperienced={!hasExperience(name, pos.name, pos.category)} {...commonRowProps} />
+          <StaffRow key={draggable ? `${pos.id}-${name}` : i} name={name} isLocked={lockedNames.includes(name)} isInexperienced={!hasExperience(name, pos.name, pos.category)} showSkills={showSkills} {...commonRowProps} />
         )) : (
           <div className="px-2 py-0.5 text-[11px] text-muted-foreground">{emptyLabel}</div>
         )}

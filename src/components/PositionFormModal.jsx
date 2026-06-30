@@ -17,7 +17,7 @@ import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { X, Check, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCaptureTags } from "@/hooks/useCaptureTags";
-import { STAFF_ROLES, getRoleBadgeClass } from "@/lib/staffRoles";
+import { useAllRoles } from "@/hooks/useAllRoles";
 import CategoryPicker from "@/components/CategoryPicker";
 
 const PRESET_COLORS = [
@@ -44,6 +44,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
   });
   const [skillInput, setSkillInput] = useState("");
   const { tags: captureTags = [] } = useCaptureTags();
+  const { allRoles, getBadgeClass } = useAllRoles();
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -372,16 +373,16 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
           <div>
             <Label>必要役割（自動配置で優先マッチング）</Label>
             <div className="mt-1.5 flex flex-wrap gap-1">
-              {STAFF_ROLES.map((role) => {
-                const active = (form.required_roles || []).includes(role);
+              {allRoles.map((role) => {
+                const active = (form.required_roles || []).includes(role.name);
                 return (
                   <button
-                    key={role}
+                    key={role.name}
                     type="button"
-                    onClick={() => setForm((f) => ({ ...f, required_roles: active ? f.required_roles.filter((r) => r !== role) : [...(f.required_roles || []), role] }))}
-                    className={`text-xs px-2 py-0.5 rounded-full border font-medium transition-colors ${active ? getRoleBadgeClass(role) : "border-border text-muted-foreground hover:border-primary/50"}`}
+                    onClick={() => setForm((f) => ({ ...f, required_roles: active ? f.required_roles.filter((r) => r !== role.name) : [...(f.required_roles || []), role.name] }))}
+                    className={`text-xs px-2 py-0.5 rounded-full border font-medium transition-colors ${active ? getBadgeClass(role.name) : "border-border text-muted-foreground hover:border-primary/50"}`}
                   >
-                    {active ? "" : "+"}{role}
+                    {active ? "" : "+"}{role.name}
                   </button>
                 );
               })}

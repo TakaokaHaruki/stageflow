@@ -17,7 +17,7 @@ import {
 } from "@/lib/positionSideSettings";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SectionHeader from "@/components/SectionHeader";
-import { STAFF_ROLES, getRoleBadgeClass } from "@/lib/staffRoles";
+import { useAllRoles } from "@/hooks/useAllRoles";
 import CategoryPicker from "@/components/CategoryPicker";
 
 const PRESET_COLORS = [
@@ -35,6 +35,7 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
   const queryClient = useQueryClient();
   const { canEdit: isAdmin } = useUserRole();
   const { record } = useOperationLog(eventId);
+  const { allRoles, getBadgeClass } = useAllRoles();
 
   const { data: rawPositionTypes = [], isLoading } = useQuery({
     queryKey: ["positionTypes"],
@@ -316,17 +317,17 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
               </div>
               <div className="flex flex-wrap items-center gap-1 mt-1.5 pl-5">
                 <span className="text-[10px] text-muted-foreground mr-0.5">必要役割:</span>
-                {STAFF_ROLES.map((role) => {
-                  const active = (pt.required_roles || []).includes(role);
+                {allRoles.map((role) => {
+                  const active = (pt.required_roles || []).includes(role.name);
                   return (
                     <button
-                      key={role}
+                      key={role.name}
                       type="button"
-                      onClick={() => isAdmin && handleToggleRole(pt, role)}
+                      onClick={() => isAdmin && handleToggleRole(pt, role.name)}
                       disabled={!isAdmin}
-                      className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium transition-colors disabled:opacity-50 ${active ? getRoleBadgeClass(role) : "border-border text-muted-foreground"}`}
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium transition-colors disabled:opacity-50 ${active ? getBadgeClass(role.name) : "border-border text-muted-foreground"}`}
                     >
-                      {active ? "" : "+"}{role}
+                      {active ? "" : "+"}{role.name}
                     </button>
                   );
                 })}
