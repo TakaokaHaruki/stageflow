@@ -120,19 +120,19 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-5"
+        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-2xl p-4 sm:p-5 max-h-[90vh] overflow-y-auto scrollbar-hide"
         initial={{ y: 32, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <h3 className="font-bold text-base">スタッフ編集</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="閉じる">
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="space-y-3">
-          <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-3">
+          <div className="sm:col-span-2">
             <label className="text-xs font-medium text-muted-foreground">スタッフ名</label>
             <Input value={localName} onChange={(e) => setLocalName(e.target.value)} className="mt-1" style={{ color: localColor || undefined }} />
           </div>
@@ -224,7 +224,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
               </Button>
             </div>
           </div>
-          <div>
+          <div className="sm:col-span-2">
             <label className="text-xs font-medium text-muted-foreground">表示文字色</label>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {PRESET_COLORS.map((c) => (
