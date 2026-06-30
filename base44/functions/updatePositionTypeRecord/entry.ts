@@ -20,7 +20,18 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'update') {
-      const record = await base44.asServiceRole.entities.PositionType.update(id, data);
+      if (!id || !data) {
+        return Response.json({ error: 'id and data are required' }, { status: 400 });
+      }
+      let record;
+      try {
+        record = await base44.asServiceRole.entities.PositionType.update(id, data);
+      } catch (updErr) {
+        if (String(updErr?.message || '').includes('not found')) {
+          return Response.json({ error: 'PositionType not found', not_found: true }, { status: 404 });
+        }
+        throw updErr;
+      }
       return Response.json({ record });
     }
 

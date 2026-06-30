@@ -190,7 +190,7 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
     queryClient.setQueryData(["positionTypes"], (old = []) =>
       old.map((p) => p.id === pt.id ? { ...p, category: nextCategory } : p)
     );
-    base44.functions.invoke("updatePositionTypeRecord", { action: "update", data: { id: pt.id, category: nextCategory } });
+    base44.functions.invoke("updatePositionTypeRecord", { action: "update", id: pt.id, data: { category: nextCategory } }).catch(() => {});
   };
 
   const handleToggleRole = (pt, role) => {
@@ -199,7 +199,7 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
     queryClient.setQueryData(["positionTypes"], (old = []) =>
       old.map((p) => p.id === pt.id ? { ...p, required_roles: next } : p)
     );
-    base44.functions.invoke("updatePositionTypeRecord", { action: "update", data: { id: pt.id, required_roles: next } });
+    base44.functions.invoke("updatePositionTypeRecord", { action: "update", id: pt.id, data: { required_roles: next } }).catch(() => {});
   };
 
   const handleKeyDown = (e) => {
@@ -224,7 +224,8 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
           description: `ポジションタイプの順序を変更しました（「${moved.name}」を移動）`,
           entity_type: "PositionType",
         });
-      });
+      })
+      .catch(() => {});
     queryClient.setQueryData(["positionTypes"], reordered.map((pt, idx) => ({ ...pt, order: idx })));
     setDraggingId(null); setDragOverId(null);
   };
