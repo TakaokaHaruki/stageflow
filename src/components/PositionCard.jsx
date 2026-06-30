@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Pencil, Minus, Plus, Lock, LockOpen, AlertCircle } from "lucide-react";
 import { getStaffDisplayName } from "@/lib/staffName";
-import { getRoleBadgeClass } from "@/lib/staffRoles";
+import RoleIcon from "@/components/RoleIcon";
 
 const SLOT_NOTE_KEY = { "開場中": "note_before", "開演中": "note_during", "終演後": "note_after" };
 
@@ -73,7 +73,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
           </div>
         )}
         {(staffData?.roles || []).map((role) => (
-          <span key={role} className={`text-[10px] px-1 py-0.5 rounded border font-medium ${getRoleBadgeClass(role)}`}>{role}</span>
+          <RoleIcon key={role} role={role} />
         ))}
         {(staffData?.skills || []).map((skill) => (
           <span key={skill} className="text-[10px] px-1 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-medium">{skill}</span>
