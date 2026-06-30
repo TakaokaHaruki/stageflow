@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCaptureTags } from "@/hooks/useCaptureTags";
 import { STAFF_ROLES, getRoleBadgeClass } from "@/lib/staffRoles";
+import StaffTrendSummary from "@/components/StaffTrendSummary";
 
 const PRESET_COLORS = [
   { label: "デフォルト", value: "" },
@@ -137,7 +138,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
             <Input value={localName} onChange={(e) => setLocalName(e.target.value)} className="mt-1" style={{ color: localColor || undefined }} />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">AキャストID</label>
+            <label className="text-xs font-medium text-muted-foreground">A-CAST ID</label>
             <Input value={localAcastId} onChange={(e) => setLocalAcastId(e.target.value)} className="mt-1" placeholder="例：AC-12345" />
           </div>
           <div>
@@ -252,6 +253,9 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
               </div>
             </div>
           </div>
+        </div>
+        <div className="mt-3">
+          <StaffTrendSummary staffName={localName} />
         </div>
         <div className="flex gap-2 mt-4">
           <Button variant="outline" className="flex-1" size="sm" onClick={onClose}>閉じる</Button>
