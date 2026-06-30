@@ -16,7 +16,7 @@ import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { useOperationLog } from "@/hooks/useOperationLog";
 import { useStaffHistoryBadges } from "@/hooks/useStaffHistoryBadges";
-import { getRoleBadgeClass } from "@/lib/staffRoles";
+import { useAllRoles } from "@/hooks/useAllRoles";
 import SectionHeader from "@/components/SectionHeader";
 
 export default function StaffManagement({ eventId }) {
@@ -30,6 +30,7 @@ export default function StaffManagement({ eventId }) {
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
   const { record } = useOperationLog(eventId);
   const { badges: historyBadges, isLoading: isLoadingBadges, isFetching: isFetchingBadges } = useStaffHistoryBadges(eventId);
+  const { getBadgeClass } = useAllRoles();
 
 
   const { data: staffList = [], isLoading } = useQuery({
@@ -265,7 +266,7 @@ export default function StaffManagement({ eventId }) {
                       <p className="font-medium text-xs" style={{ color: staff.color || undefined }}>{displayName}</p>
                       {staff.note && <span className="text-[10px] text-muted-foreground">({staff.note})</span>}
                       {(staff.roles || []).map((role) => (
-                        <span key={role} className={`text-[10px] px-1 rounded border font-medium ${getRoleBadgeClass(role)}`}>{role}</span>
+                        <span key={role} className={`text-[10px] px-1 rounded border font-medium ${getBadgeClass(role)}`}>{role}</span>
                       ))}
                       {staff.costume_change && <span className="text-[10px] px-1 rounded bg-purple-100 border border-purple-300 text-purple-700 dark:bg-purple-900/40 dark:border-purple-700 dark:text-purple-300 font-medium">着替</span>}
                       {staff.break && <span className="text-[10px] px-1 rounded bg-sky-100 border border-sky-300 text-sky-700 dark:bg-sky-900/40 dark:border-sky-700 dark:text-sky-300 font-medium">休憩</span>}

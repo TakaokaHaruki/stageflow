@@ -2,6 +2,15 @@
 module.exports = {
     darkMode: ["class"],
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
+    safelist: [
+      'bg-teal-100', 'border-teal-300', 'text-teal-700', 'bg-teal-900/40', 'border-teal-700', 'text-teal-300', 'text-teal-500',
+      'bg-sky-100', 'border-sky-300', 'text-sky-700', 'bg-sky-900/40', 'border-sky-700', 'text-sky-300', 'text-sky-500',
+      'bg-green-100', 'border-green-300', 'text-green-700', 'bg-green-900/40', 'border-green-700', 'text-green-300', 'text-green-500',
+      'bg-rose-100', 'border-rose-300', 'text-rose-700', 'bg-rose-900/40', 'border-rose-700', 'text-rose-300', 'text-rose-500',
+      'bg-yellow-100', 'border-yellow-300', 'text-yellow-700', 'bg-yellow-900/40', 'border-yellow-700', 'text-yellow-300', 'text-yellow-500',
+      'bg-indigo-100', 'border-indigo-300', 'text-indigo-700', 'bg-indigo-900/40', 'border-indigo-700', 'text-indigo-300', 'text-indigo-500',
+      'bg-fuchsia-100', 'border-fuchsia-300', 'text-fuchsia-700', 'bg-fuchsia-900/40', 'border-fuchsia-700', 'text-fuchsia-300', 'text-fuchsia-500',
+    ],
   theme: {
   	extend: {
       fontFamily: {

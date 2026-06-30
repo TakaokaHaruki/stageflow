@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Wand2, X, ChevronRight, Lock, LockOpen, ChevronDown } from "lucide-react";
 import { TIME_SLOTS, TIME_SLOT_STYLES } from "@/lib/constants";
-import { getRoleBadgeClass } from "@/lib/staffRoles";
+import { useAllRoles } from "@/hooks/useAllRoles";
 
 // スタッフがポジションの必要スキルにどれだけマッチするかのスコア（0〜）
 function skillMatchScore(staff, pos) {
@@ -109,6 +109,7 @@ export function computeAutoAssign(positions, staffList) {
 
 export default function AutoAssignModal({ positions, staffList, lockedNames = [], onConfirm, onCancel, onClearLocks }) {
   const [lockedSectionOpen, setLockedSectionOpen] = useState(false);
+  const { getBadgeClass } = useAllRoles();
 
   // ロック中スタッフを除外して計算
   const freeStaffList = staffList.filter((s) => !lockedNames.includes(s.name));
@@ -259,7 +260,7 @@ export default function AutoAssignModal({ positions, staffList, lockedNames = []
                           <div key={`${posName}-${name}`} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 text-xs">
                             <span className="font-medium text-foreground">{name}</span>
                             {matchedRoles.map((r) => (
-                              <span key={r} className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${getRoleBadgeClass(r)}`}>
+                              <span key={r} className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${getBadgeClass(r)}`}>
                                 {r}
                               </span>
                             ))}
