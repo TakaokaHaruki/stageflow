@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Wand2, X, ChevronRight, Lock, LockOpen, ChevronDown } from "lucide-react";
 import { TIME_SLOTS, TIME_SLOT_STYLES } from "@/lib/constants";
+import { getRoleBadgeClass } from "@/lib/staffRoles";
 
 // スタッフがポジションの必要スキルにどれだけマッチするかのスコア（0〜）
 function skillMatchScore(staff, pos) {
@@ -10,6 +11,19 @@ function skillMatchScore(staff, pos) {
   if (required.length === 0) return 0;
   const staffSkills = staff.skills || [];
   return required.filter((s) => staffSkills.includes(s)).length;
+}
+
+// スタッフがポジションの必要役割にどれだけマッチするかのスコア
+function roleMatchScore(staff, pos) {
+  const requiredRoles = pos.required_roles || [];
+  if (requiredRoles.length === 0) return 0;
+  const staffRoles = staff.roles || [];
+  return requiredRoles.filter((r) => staffRoles.includes(r)).length;
+}
+
+// セクションチーフを持つスタッフを優先するためのスコア
+function chiefPriority(staff) {
+  return (staff.roles || []).includes("セクションチーフ") ? 1 : 0;
 }
 
 export function computeAutoAssign(positions, staffList) {
@@ -54,10 +68,12 @@ export function computeAutoAssign(positions, staffList) {
       const needed = (pos.required_count ?? 0) - (pos.staff_names || []).length;
       if (needed <= 0) return;
 
-      // このポジション未割り当てのスタッフをスキルスコア→均等順でソート
+      // このポジション未割り当てのスタッフを役割マッチ→スキルマッチ→均等順でソート
       const candidates = unassignedInSlot
         .filter((s) => !assignedThisRound.has(s.name))
         .sort((a, b) => {
+          const roleDiff = roleMatchScore(b, pos) - roleMatchScore(a, pos);
+          if (roleDiff !== 0) return roleDiff;
           const scoreDiff = skillMatchScore(b, pos) - skillMatchScore(a, pos);
           if (scoreDiff !== 0) return scoreDiff;
           return countUnassigned(b) - countUnassigned(a);
@@ -236,9 +252,17 @@ export default function AutoAssignModal({ positions, staffList, lockedNames = []
                         const matchedSkills = posObj && staffObj
                           ? (posObj.required_skills || []).filter((s) => (staffObj.skills || []).includes(s))
                           : [];
+                        const matchedRoles = posObj && staffObj
+                          ? (posObj.required_roles || []).filter((r) => (staffObj.roles || []).includes(r))
+                          : [];
                         return (
                           <div key={`${posName}-${name}`} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 text-xs">
                             <span className="font-medium text-foreground">{name}</span>
+                            {matchedRoles.map((r) => (
+                              <span key={r} className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${getRoleBadgeClass(r)}`}>
+                                {r}
+                              </span>
+                            ))}
                             {matchedSkills.length > 0 && (
                               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
                                 {matchedSkills.join("・")}

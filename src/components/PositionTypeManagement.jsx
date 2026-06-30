@@ -17,6 +17,7 @@ import {
 } from "@/lib/positionSideSettings";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SectionHeader from "@/components/SectionHeader";
+import { STAFF_ROLES, getRoleBadgeClass } from "@/lib/staffRoles";
 
 const PRESET_COLORS = [
   "#6366f1", "#3b82f6", "#10b981", "#f59e0b",
@@ -180,6 +181,15 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
     }
   };
 
+  const handleToggleRole = (pt, role) => {
+    const current = pt.required_roles || [];
+    const next = current.includes(role) ? current.filter((r) => r !== role) : [...current, role];
+    queryClient.setQueryData(["positionTypes"], (old = []) =>
+      old.map((p) => p.id === pt.id ? { ...p, required_roles: next } : p)
+    );
+    base44.functions.invoke("updatePositionTypeRecord", { action: "update", data: { id: pt.id, required_roles: next } });
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); handleAdd(); }
   };
@@ -278,10 +288,26 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
                   上手/下手
                 </label>
                 <button onClick={() => setConfirmDelete({ id: pt.id, name: pt.name })} disabled={!isAdmin}
-
                   className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
+              </div>
+              <div className="flex flex-wrap items-center gap-1 mt-1.5 pl-5">
+                <span className="text-[10px] text-muted-foreground mr-0.5">必要役割:</span>
+                {STAFF_ROLES.map((role) => {
+                  const active = (pt.required_roles || []).includes(role);
+                  return (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => isAdmin && handleToggleRole(pt, role)}
+                      disabled={!isAdmin}
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium transition-colors disabled:opacity-50 ${active ? getRoleBadgeClass(role) : "border-border text-muted-foreground"}`}
+                    >
+                      {active ? "" : "+"}{role}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ))}

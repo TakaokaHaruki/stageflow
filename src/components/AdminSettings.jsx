@@ -4,6 +4,7 @@ import UserRoleManager from "@/components/UserRoleManager";
 import PortalRestrictionManager from "@/components/PortalRestrictionManager";
 import GlobalBannerManager from "@/components/GlobalBannerManager";
 import TabControlManager from "@/components/TabControlManager";
+import TagManagement from "@/components/TagManagement";
 
 export default function AdminSettings({ eventId, section = "users" }) {
   return (
@@ -14,6 +15,7 @@ export default function AdminSettings({ eventId, section = "users" }) {
       {section === "portal_restriction" && <PortalRestrictionManager />}
       {section === "global_banner" && <GlobalBannerManager />}
       {section === "tab_control" && <TabControlManager />}
+      {section === "tag_management" && <TagManagement />}
     </div>
   );
 }

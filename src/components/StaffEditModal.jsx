@@ -6,8 +6,8 @@ import { X, Plus, UserMinus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const SKILL_PRESETS = ["誘導", "受付", "音響", "照明", "映像", "司会", "警備", "救護", "物販", "清掃"];
+import { useCaptureTags } from "@/hooks/useCaptureTags";
+import { STAFF_ROLES, getRoleBadgeClass } from "@/lib/staffRoles";
 
 const PRESET_COLORS = [
   { label: "デフォルト", value: "" },
@@ -31,11 +31,13 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
   const [localColor, setLocalColor] = useState(staff.color || "");
   const [localSkills, setLocalSkills] = useState(staff.skills || []);
   const [skillInput, setSkillInput] = useState("");
+  const [localRoles, setLocalRoles] = useState(staff.roles || []);
   const [noteTab, setNoteTab] = useState("all");
+  const { tags: captureTags = [] } = useCaptureTags();
   const prevDataRef = useRef({
     name: staff.name, acast_id: staff.acast_id || "", note: staff.note || "",
     note_before: staff.note_before || "", note_during: staff.note_during || "", note_after: staff.note_after || "",
-    color: staff.color || "", skills: staff.skills || []
+    color: staff.color || "", skills: staff.skills || [], roles: staff.roles || []
   });
   const queryClient = useQueryClient();
 
@@ -87,16 +89,17 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
     if (!localName.trim()) return;
     const prev = prevDataRef.current;
     const skillsChanged = JSON.stringify(localSkills) !== JSON.stringify(prev.skills);
+    const rolesChanged = JSON.stringify(localRoles) !== JSON.stringify(prev.roles);
     if (
       localName === prev.name && localAcastId === prev.acast_id && localNote === prev.note &&
       localNoteBefore === prev.note_before && localNoteDuring === prev.note_during && localNoteAfter === prev.note_after &&
-      localColor === prev.color && !skillsChanged
+      localColor === prev.color && !skillsChanged && !rolesChanged
     ) return;
     const timer = setTimeout(() => {
       const nextData = {
         name: localName.trim(), acast_id: localAcastId.trim(), note: localNote.trim(),
         note_before: localNoteBefore.trim(), note_during: localNoteDuring.trim(), note_after: localNoteAfter.trim(),
-        color: localColor, skills: localSkills
+        color: localColor, skills: localSkills, roles: localRoles
       };
       updateMutation.mutate(nextData, {
         onSuccess: () => {
@@ -106,7 +109,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
       });
     }, 500);
     return () => clearTimeout(timer);
-  }, [localName, localAcastId, localNote, localNoteBefore, localNoteDuring, localNoteAfter, localColor, localSkills]);
+  }, [localName, localAcastId, localNote, localNoteBefore, localNoteDuring, localNoteAfter, localColor, localSkills, localRoles]);
 
   return (
     <motion.div
@@ -172,7 +175,25 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground">スキルタグ</label>
+            <label className="text-xs font-medium text-muted-foreground">役割</label>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {STAFF_ROLES.map((role) => {
+                const active = localRoles.includes(role);
+                return (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => setLocalRoles((prev) => active ? prev.filter((r) => r !== role) : [...prev, role])}
+                    className={`text-xs px-2 py-0.5 rounded-full border font-medium transition-colors ${active ? getRoleBadgeClass(role) : "border-border text-muted-foreground hover:border-primary/50"}`}
+                  >
+                    {active ? "" : "+"}{role}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">捕まりタグ</label>
             <div className="mt-1.5 flex flex-wrap gap-1">
               {localSkills.map((skill) => (
                 <span key={skill} className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30 text-xs font-medium">
@@ -184,7 +205,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
               ))}
             </div>
             <div className="flex flex-wrap gap-1 mt-1.5">
-              {SKILL_PRESETS.filter((s) => !localSkills.includes(s)).map((s) => (
+              {captureTags.filter((s) => !localSkills.includes(s)).map((s) => (
                 <button key={s} onClick={() => addSkill(s)} className="text-[11px] px-2 py-0.5 rounded-full border border-border hover:border-primary hover:text-primary text-muted-foreground transition-colors">
                   +{s}
                 </button>
@@ -195,7 +216,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
                 value={skillInput}
                 onChange={(e) => setSkillInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); addSkill(skillInput); } }}
-                placeholder="カスタムスキルを入力"
+                placeholder="カスタムタグを入力"
                 className="h-7 text-xs flex-1"
               />
               <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-0.5" onClick={() => addSkill(skillInput)} disabled={!skillInput.trim()}>

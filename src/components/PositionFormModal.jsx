@@ -16,8 +16,8 @@ import {
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { X, Check, Plus } from "lucide-react";
 import { motion } from "framer-motion";
-
-const SKILL_PRESETS = ["誘導", "受付", "音響", "照明", "映像", "司会", "警備", "救護", "物販", "清掃"];
+import { useCaptureTags } from "@/hooks/useCaptureTags";
+import { STAFF_ROLES, getRoleBadgeClass } from "@/lib/staffRoles";
 
 const PRESET_COLORS = [
   "#6366f1", "#3b82f6", "#10b981", "#f59e0b",
@@ -37,9 +37,11 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     map_x: position?.map_x ?? null,
     map_y: position?.map_y ?? null,
     required_skills: position?.required_skills || [],
+    required_roles: position?.required_roles || [],
     event_id: eventId,
   });
   const [skillInput, setSkillInput] = useState("");
+  const { tags: captureTags = [] } = useCaptureTags();
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -132,7 +134,8 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     prev.staff_names_shimote !== cur.staff_names_shimote ||
     prev.split_by_side !== cur.split_by_side ||
     prev.color !== cur.color ||
-    JSON.stringify(prev.required_skills) !== JSON.stringify(cur.required_skills);
+    JSON.stringify(prev.required_skills) !== JSON.stringify(cur.required_skills) ||
+    JSON.stringify(prev.required_roles) !== JSON.stringify(cur.required_roles);
 
   useEffect(() => {
     if (!position) return;
@@ -357,7 +360,25 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
           </div>
 
           <div>
-            <Label>必要スキル（自動配置で優先）</Label>
+            <Label>必要役割（自動配置で優先マッチング）</Label>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {STAFF_ROLES.map((role) => {
+                const active = (form.required_roles || []).includes(role);
+                return (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, required_roles: active ? f.required_roles.filter((r) => r !== role) : [...(f.required_roles || []), role] }))}
+                    className={`text-xs px-2 py-0.5 rounded-full border font-medium transition-colors ${active ? getRoleBadgeClass(role) : "border-border text-muted-foreground hover:border-primary/50"}`}
+                  >
+                    {active ? "" : "+"}{role}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <Label>必要捕まりタグ（自動配置で優先）</Label>
             <div className="mt-1.5 flex flex-wrap gap-1">
               {(form.required_skills || []).map((skill) => (
                 <span key={skill} className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30 text-xs font-medium">
@@ -369,7 +390,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
               ))}
             </div>
             <div className="flex flex-wrap gap-1 mt-1.5">
-              {SKILL_PRESETS.filter((s) => !(form.required_skills || []).includes(s)).map((s) => (
+              {captureTags.filter((s) => !(form.required_skills || []).includes(s)).map((s) => (
                 <button key={s} type="button" onClick={() => setForm((f) => ({ ...f, required_skills: [...(f.required_skills || []), s] }))} className="text-[11px] px-2 py-0.5 rounded-full border border-border hover:border-primary hover:text-primary text-muted-foreground transition-colors">
                   +{s}
                 </button>
@@ -389,7 +410,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
                     }
                   }
                 }}
-                placeholder="カスタムスキルを入力"
+                placeholder="カスタムタグを入力"
                 className="h-7 text-xs flex-1"
               />
               <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-0.5" type="button"

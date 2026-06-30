@@ -18,6 +18,7 @@ import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { useOperationLog } from "@/hooks/useOperationLog";
 import { useLockedStaff } from "@/hooks/useLockedStaff";
+import { getRoleBadgeClass } from "@/lib/staffRoles";
 import {
   applyPositionSideMutation,
   applyPositionSideSettingsToPositions,
@@ -627,6 +628,9 @@ export default function StaffDragDropManager({ eventId }) {
                     <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-xs font-medium text-foreground">{displayName}</span>
+                      {(s.roles || []).map((role) => (
+                        <span key={role} className={`text-[10px] px-1 py-0.5 rounded border font-medium ${getRoleBadgeClass(role)}`}>{role}</span>
+                      ))}
                       {s.note && <span className="text-[10px] text-muted-foreground">({s.note})</span>}
                     </div>
                     <div className="flex flex-wrap gap-1 mt-0.5">
@@ -671,6 +675,12 @@ export default function StaffDragDropManager({ eventId }) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="text-xs font-medium" style={{ color: nameColor }}>{displayName}</p>
+                      {(s.roles || []).map((role) => (
+                        <span key={role} className={`text-[10px] px-1 py-0.5 rounded border font-medium ${getRoleBadgeClass(role)}`}>{role}</span>
+                      ))}
+                      {(s.skills || []).map((skill) => (
+                        <span key={skill} className="text-[10px] px-1 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-medium">{skill}</span>
+                      ))}
                       {s.note && <span className="text-[10px] text-muted-foreground">({s.note})</span>}
                     </div>
                     {(s.note_before || s.note_during || s.note_after) && (
