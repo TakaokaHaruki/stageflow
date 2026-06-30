@@ -49,7 +49,15 @@
       "items": {
         "type": "string"
       },
-      "description": "\u30b9\u30ad\u30eb\u30bf\u30b0\uff08\u4f8b\uff1a\u8a98\u5c0e\u3001\u97f3\u97ff\u3001\u53d7\u4ed8\uff09",
+      "description": "\u6355\u307e\u308a\u30bf\u30b0\uff08\u4f8b\uff1a\u7167\u660e\u3001\u9053\u5177\u3001PA\u3001\u30de\u30a4\u30af\uff09",
+      "default": []
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u5f79\u5272\uff08\u4f8b\uff1a\u30a4\u30f3\u30ab\u30e0\u3001\u30bb\u30af\u30b7\u30e7\u30f3\u30c1\u30fc\u30d5\uff09",
       "default": []
     }
   },
@@ -65,12 +73,12 @@
         },
         {
           "user_condition": {
-            "role": {
-              "$in": [
-                "admin",
-                "chief"
-              ]
-            }
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
           }
         }
       ]
@@ -83,12 +91,12 @@
         },
         {
           "user_condition": {
-            "role": {
-              "$in": [
-                "admin",
-                "chief"
-              ]
-            }
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
           }
         }
       ]
@@ -100,12 +108,12 @@
         },
         {
           "user_condition": {
-            "role": {
-              "$in": [
-                "admin",
-                "chief"
-              ]
-            }
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
           }
         }
       ]
