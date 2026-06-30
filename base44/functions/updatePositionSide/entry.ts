@@ -54,7 +54,14 @@ Deno.serve(async (req) => {
       if (!positionId) {
         return Response.json({ error: 'positionId is required' }, { status: 400 });
       }
-      await base44.asServiceRole.entities.Position.delete(positionId);
+      try {
+        await base44.asServiceRole.entities.Position.delete(positionId);
+      } catch (delErr) {
+        if (String(delErr?.message || '').includes('not found')) {
+          return Response.json({ ok: true, not_found: true });
+        }
+        throw delErr;
+      }
       return Response.json({ ok: true });
     }
 
@@ -77,7 +84,15 @@ Deno.serve(async (req) => {
       const filteredData = Object.fromEntries(
         Object.entries(data).filter(([key]) => ALLOWED_UPDATE_FIELDS.includes(key))
       );
-      const updated = await base44.asServiceRole.entities.Position.update(positionId, filteredData);
+      let updated;
+      try {
+        updated = await base44.asServiceRole.entities.Position.update(positionId, filteredData);
+      } catch (updErr) {
+        if (String(updErr?.message || '').includes('not found')) {
+          return Response.json({ error: 'Position not found', not_found: true }, { status: 404 });
+        }
+        throw updErr;
+      }
       return Response.json({ position: updated });
     }
 
@@ -179,13 +194,21 @@ Deno.serve(async (req) => {
         staffNames = unique(current?.staff_names || []);
       }
 
-      const position = await base44.asServiceRole.entities.Position.update(positionId, {
-        ...extraFields,
-        staff_names: staffNames,
-        split_by_side: splitBySide,
-        staff_names_kamite: kamite,
-        staff_names_shimote: shimote,
-      });
+      let position;
+      try {
+        position = await base44.asServiceRole.entities.Position.update(positionId, {
+          ...extraFields,
+          staff_names: staffNames,
+          split_by_side: splitBySide,
+          staff_names_kamite: kamite,
+          staff_names_shimote: shimote,
+        });
+      } catch (updErr) {
+        if (String(updErr?.message || '').includes('not found')) {
+          return Response.json({ error: 'Position not found', not_found: true }, { status: 404 });
+        }
+        throw updErr;
+      }
 
       return Response.json({
         position: {

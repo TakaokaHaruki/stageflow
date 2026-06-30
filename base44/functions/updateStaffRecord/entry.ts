@@ -31,7 +31,15 @@ Deno.serve(async (req) => {
       if (!staffId || !data) {
         return Response.json({ error: 'staffId and data are required' }, { status: 400 });
       }
-      const staff = await base44.asServiceRole.entities.Staff.update(staffId, data);
+      let staff;
+      try {
+        staff = await base44.asServiceRole.entities.Staff.update(staffId, data);
+      } catch (updErr) {
+        if (String(updErr?.message || '').includes('not found')) {
+          return Response.json({ error: 'Staff not found', not_found: true }, { status: 404 });
+        }
+        throw updErr;
+      }
       return Response.json({ staff });
     }
 

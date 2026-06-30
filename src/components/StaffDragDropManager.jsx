@@ -249,7 +249,7 @@ export default function StaffDragDropManager({ eventId }) {
         split_by_side: Boolean(p.split_by_side),
         staff_names_kamite: [],
         staff_names_shimote: [],
-      })
+      }).catch(() => {})
     ));
     queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
     setConfirmBulkDelete(null);
@@ -407,7 +407,7 @@ export default function StaffDragDropManager({ eventId }) {
         action: "update",
         id: event.active_preset_id,
         data: { slot_positions: { ...currentSlotPositions, [slot]: newSlotIds } },
-      });
+      }).catch(() => {});
       queryClient.setQueryData(["positionPresets"], (old) =>
         (old || []).map((p) =>
           p.id === event.active_preset_id
@@ -433,7 +433,7 @@ export default function StaffDragDropManager({ eventId }) {
     const [moved] = reordered.splice(fromIdx, 1);
     reordered.splice(toIdx, 0, moved);
     const updates = reordered.map((pos, idx) => ({ positionId: pos.id, data: { order: idx } }));
-    Promise.all(updates.map((u) => base44.functions.invoke("updatePositionSide", { action: "updatePositionFields", ...u })));
+    Promise.all(updates.map((u) => base44.functions.invoke("updatePositionSide", { action: "updatePositionFields", ...u }))).catch(() => {});
     queryClient.setQueryData(["positions", eventId], (old) => {
       const others = old.filter((p) => (p.time_slot || "開場中") !== slot);
       return [...others, ...reordered.map((pos, idx) => ({ ...pos, order: idx }))];
@@ -578,7 +578,7 @@ export default function StaffDragDropManager({ eventId }) {
                               action: "updatePositionFields",
                               positionId: pos.id,
                               data: { required_count: v },
-                            });
+                            }).catch(() => {});
                           }}
                           occupiedInSlot={[...new Set(
                             slotPositions.filter((p) => p.id !== pos.id).flatMap((p) => p.staff_names || [])
@@ -714,7 +714,7 @@ export default function StaffDragDropManager({ eventId }) {
                               queryClient.setQueryData(["staff", eventId], (old = []) =>
                                 old.map((item) => item.id === s.id ? { ...item, costume_change: val } : item)
                               );
-                              base44.functions.invoke("updateStaffRecord", { action: "update", staffId: s.id, data: { costume_change: val } });
+                              base44.functions.invoke("updateStaffRecord", { action: "update", staffId: s.id, data: { costume_change: val } }).catch(() => {});
                             }}
                             className="w-3 h-3 accent-purple-600"
                           />
@@ -729,7 +729,7 @@ export default function StaffDragDropManager({ eventId }) {
                               queryClient.setQueryData(["staff", eventId], (old = []) =>
                                 old.map((item) => item.id === s.id ? { ...item, break: val } : item)
                               );
-                              base44.functions.invoke("updateStaffRecord", { action: "update", staffId: s.id, data: { break: val } });
+                              base44.functions.invoke("updateStaffRecord", { action: "update", staffId: s.id, data: { break: val } }).catch(() => {});
                             }}
                             className="w-3 h-3 accent-sky-600"
                           />
