@@ -166,7 +166,7 @@ export default function Events() {
           onLogin={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}
           onDeleteAccount={() => setConfirmDeleteAccount(true)}
         />
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 sm:ml-[52px]">
       <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:pb-8">
       <UserRestrictionBanner role={role} />
 
