@@ -31,6 +31,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import SeatingMapViewer from "@/components/SeatingMapViewer";
 import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
+import EventSheetEditor from "@/components/EventSheetEditor";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -176,6 +177,7 @@ export default function EventDetail() {
           { id: "positions", label: "ポジション設定", icon: Settings },
           { id: "presets", label: "ポジションプリセット", icon: ClipboardList },
           { id: "venues", label: "会場管理", icon: LayoutTemplate },
+          { id: "event_sheet", label: "公演シート", icon: FileText },
           ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
           { id: "tag_management", label: "タグ・役割管理", icon: Tag },
         ]
@@ -315,6 +317,7 @@ export default function EventDetail() {
             {tab === "settings" && settingsSection === "positions" && <PositionTypeManagement eventId={eventId} section="positions" />}
             {tab === "settings" && settingsSection === "presets" && <PositionTypeManagement eventId={eventId} section="presets" />}
             {tab === "settings" && settingsSection === "venues" && <VenueManager />}
+            {tab === "settings" && settingsSection === "event_sheet" && <EventSheetEditor eventId={eventId} />}
             {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
             {tab === "settings" && settingsSection === "tag_management" && <TagManagement />}
             {tab === "map" && <PositionMapViewer eventId={eventId} event={event} />}
