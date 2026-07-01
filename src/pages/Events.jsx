@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, ChevronRight, Trash2, Pencil, TrendingUp } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Trash2, Pencil, TrendingUp, Search } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import AdminUserModal from "@/components/AdminUserModal";
@@ -19,6 +19,7 @@ import GlobalBanner from "@/components/GlobalBanner";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
+import { Input } from "@/components/ui/input";
 
 export default function Events() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export default function Events() {
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
   const { canEdit, role, isGuest } = useUserRole();
 
@@ -35,7 +37,55 @@ export default function Events() {
     refetchInterval: LIVE_SYNC_INTERVAL
   });
 
-  const events = allEvents;
+  // Group events by date and sort by date descending
+  const groupedEvents = useMemo(() => {
+    if (!allEvents || allEvents.length === 0) return [];
+    
+    // Filter by search query first
+    const filtered = allEvents.filter((event) => {
+      const query = searchQuery.toLowerCase();
+      const nameMatch = event.name?.toLowerCase().includes(query);
+      const venueMatch = event.venue?.toLowerCase().includes(query);
+      return nameMatch || venueMatch;
+    });
+    
+    // Sort by date descending (newest first)
+    const sorted = [...filtered].sort((a, b) => {
+      if (!a.date && !b.date) return 0;
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return new Date(b.date) - new Date(a.date);
+    });
+    
+    // Group by date
+    const groups = {};
+    for (const event of sorted) {
+      const dateKey = event.date || "no-date";
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(event);
+    }
+    
+    // Convert to array and sort groups by date descending
+    return Object.entries(groups)
+      .sort((a, b) => {
+        if (a[0] === "no-date") return 1;
+        if (b[0] === "no-date") return -1;
+        return new Date(b[0]) - new Date(a[0]);
+      })
+      .map(([date, events]) => ({ date, events }));
+  }, [allEvents, searchQuery]);
+
+  // Check if a date is today (JST)
+  const isToday = (dateStr) => {
+    if (!dateStr) return false;
+    const now = new Date();
+    const jstOffset = 9 * 60;
+    const jstDate = new Date(now.getTime() + jstOffset * 60000);
+    const today = jstDate.toISOString().split("T")[0];
+    return dateStr === today;
+  };
 
   const { isPulling, pullDistance } = usePullToRefresh(async () => {
     await refetch();
@@ -129,69 +179,113 @@ export default function Events() {
         <div className="flex justify-center py-20">
             <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
           </div> :
-        events.length === 0 ?
+        groupedEvents.length === 0 ?
         <div className="text-center py-24 text-muted-foreground">
             <Calendar className="w-14 h-14 mx-auto mb-4 opacity-20" />
-            <p className="text-lg font-medium">イベントがありません</p>
-            <p className="text-sm mt-1">新規イベントを追加してください</p>
+            {searchQuery ? (
+              <>
+                <p className="text-lg font-medium">該当するイベントがありません</p>
+                <p className="text-sm mt-1">検索条件を変更してください</p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-medium">イベントがありません</p>
+                <p className="text-sm mt-1">新規イベントを追加してください</p>
+              </>
+            )}
           </div> :
 
-        <motion.div
-          className="grid gap-2 pb-6"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.25 }}>
-          
-            {events.map((event) =>
-          <Link
-            key={event.id}
-            to={`/events/${event.id}`}
-            className="group block bg-card border border-border rounded-lg px-2.5 py-1.5 hover:border-primary/40 hover:shadow-sm transition-all duration-200">
-            
-                <div className="flex items-center justify-between gap-1.5">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <h2 className="text-sm font-semibold text-foreground truncate">{event.name}</h2>
-                    </div>
-                    <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-                      {event.date &&
-                  <span className="flex items-center gap-0.5">
-                          <Calendar className="w-2.5 h-2.5" />
-                          {format(new Date(event.date), "M月d日（E）", { locale: ja })}
-                        </span>
-                  }
-                      {event.venue &&
-                  <span className="flex items-center gap-0.5">
-                          <MapPin className="w-2.5 h-2.5" />
-                          {event.venue}
-                        </span>
-                  }
-                    <EventPublishToggle event={event} canEdit={canEdit} />
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center justify-end gap-0.5">
-                    {!isGuest && (
-                      <>
-                        <button
-                          onClick={(e) => handleEdit(e, event)}
-                          disabled={!canEdit}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name}を編集`}>
-                          <Pencil className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={(e) => handleDelete(e, event.id, event.name)}
-                          disabled={!canEdit}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name}を削除`}>
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </>
-                    )}
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
+        <div className="space-y-4 pb-6">
+          {/* Search box */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="イベント名または会場名で検索"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          {/* Grouped events */}
+          {groupedEvents.map(({ date, events: dateEvents }, groupIdx) => (
+            <motion.div
+              key={date}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: groupIdx * 0.05 }}
+              className="space-y-2"
+            >
+              {/* Date header */}
+              {date !== "no-date" && (
+                <div className="font-bold text-base text-foreground border-b border-border pb-1 mb-2">
+                  {format(new Date(date), "M 月 d 日（E）", { locale: ja })}
+                  {isToday(date) && <span className="ml-2 text-xs text-primary">（今日）</span>}
                 </div>
-              </Link>
-          )}
-          </motion.div>
+              )}
+              {date === "no-date" && (
+                <div className="font-bold text-base text-foreground border-b border-border pb-1 mb-2">
+                  日付未設定
+                </div>
+              )}
+
+              {/* Event rows */}
+              {dateEvents.map((event) => (
+                <Link
+                  key={event.id}
+                  to={`/events/${event.id}`}
+                  className={`group block bg-card border rounded-lg px-2.5 py-1.5 hover:shadow-sm transition-all duration-200 ${
+                    isToday(date)
+                      ? "border-primary hover:border-primary/60"
+                      : "border-border hover:border-primary/40"
+                  }`}>
+                  <div className="flex items-center justify-between gap-1.5">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <h2 className="text-sm font-semibold text-foreground truncate">{event.name}</h2>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                        {event.date && (
+                          <span className="flex items-center gap-0.5">
+                            <Calendar className="w-2.5 h-2.5" />
+                            {format(new Date(event.date), "M 月 d 日（E）", { locale: ja })}
+                          </span>
+                        )}
+                        {event.venue && (
+                          <span className="flex items-center gap-0.5">
+                            <MapPin className="w-2.5 h-2.5" />
+                            {event.venue}
+                          </span>
+                        )}
+                        <EventPublishToggle event={event} canEdit={canEdit} />
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center justify-end gap-0.5">
+                      {!isGuest && (
+                        <>
+                          <button
+                            onClick={(e) => handleEdit(e, event)}
+                            disabled={!canEdit}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を編集`}>
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={(e) => handleDelete(e, event.id, event.name)}
+                            disabled={!canEdit}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を削除`}>
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </>
+                      )}
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </motion.div>
+          ))}
+        </div>
         }
       </div>{/* end max-w container */}
         </div>{/* end flex-1 */}
