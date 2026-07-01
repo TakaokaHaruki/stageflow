@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import jsQR from "jsqr";
-import { X, Camera, RefreshCw, CheckCircle, ExternalLink } from "lucide-react";
+import { X, Camera, RefreshCw, CheckCircle, ScanLine, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
-import CameraPermissionGuide from "@/components/CameraPermissionGuide";
 
 /**
  * カメラでA-CAST IDのQRコードをリアルタイム読取するコンポーネント
@@ -15,9 +14,9 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const rafRef = useRef(null);
+  const [phase, setPhase] = useState("ready"); // ready | starting | scanning | error
   const [error, setError] = useState("");
   const [scannedValue, setScannedValue] = useState(null);
-  const [isStarting, setIsStarting] = useState(true);
 
   const stopCamera = useCallback(() => {
     if (rafRef.current) {
@@ -30,14 +29,15 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
     }
   }, []);
 
+  // ユーザージェスチャー内で直接 getUserMedia を呼ぶ（iOS/Android対応）
   const startCamera = useCallback(async () => {
-    setIsStarting(true);
+    setPhase("starting");
     setError("");
 
     if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
-      setIsStarting(false);
       const inIframe = window.self !== window.top;
       setError(inIframe ? "iframe_blocked" : "no_media_devices");
+      setPhase("error");
       return;
     }
 
@@ -52,9 +52,8 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
         video.srcObject = stream;
         await video.play().catch(() => {});
       }
-      setIsStarting(false);
+      setPhase("scanning");
     } catch (err) {
-      setIsStarting(false);
       if (err?.name === "NotAllowedError") {
         setError("permission_denied");
       } else if (err?.name === "NotFoundError") {
@@ -62,12 +61,13 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
       } else {
         setError("カメラの起動に失敗しました。");
       }
+      setPhase("error");
     }
   }, []);
 
   // スキャンループ
   useEffect(() => {
-    if (isStarting || error || scannedValue || processing) return;
+    if (phase !== "scanning" || error || scannedValue || processing) return;
 
     const tick = () => {
       const video = videoRef.current;
@@ -87,7 +87,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
           if (code && code.data) {
             setScannedValue(code.data);
             onScan(code.data);
-            return; // スキャン停止
+            return;
           }
         }
       }
@@ -101,13 +101,12 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
         rafRef.current = null;
       }
     };
-  }, [isStarting, error, scannedValue, processing, onScan]);
+  }, [phase, error, scannedValue, processing, onScan]);
 
-  // マウント時にカメラ起動
+  // アンマウント時にカメラ停止
   useEffect(() => {
-    startCamera();
     return () => stopCamera();
-  }, [startCamera, stopCamera]);
+  }, [stopCamera]);
 
   const handleRetry = () => {
     setScannedValue(null);
@@ -147,7 +146,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
 
         <div className="relative bg-black aspect-square">
           {/* カメラ映像 */}
-          {!error && (
+          {(phase === "scanning" || phase === "starting") && (
             <video
               ref={videoRef}
               playsInline
@@ -158,7 +157,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
           )}
 
           {/* スキャン枠 */}
-          {!error && !scannedValue && (
+          {phase === "scanning" && !scannedValue && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="relative w-56 h-56">
                 <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white/80 rounded-tl-lg" />
@@ -187,18 +186,52 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
             </div>
           )}
 
-          {/* 開始中 */}
-          {isStarting && !error && (
+          {/* 起動中スピナー */}
+          {phase === "starting" && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
           )}
 
+          {/* 説明・起動画面（モバイル向け） */}
+          {phase === "ready" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="flex flex-col items-center"
+              >
+                <div className="relative mb-5">
+                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl" />
+                  <div className="relative w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center">
+                    <ScanLine className="w-8 h-8 text-primary" />
+                  </div>
+                </div>
+                <p className="text-sm text-white font-medium mb-1">QRコードを読み取ります</p>
+                <p className="text-[11px] text-white/50 mb-5 leading-relaxed px-2">
+                  下のボタンをタップすると<br />カメラの使用許可を求めます
+                </p>
+                <button
+                  onClick={startCamera}
+                  className="flex items-center gap-2 text-sm text-white bg-primary px-7 py-3 rounded-2xl font-semibold shadow-lg active:scale-95 transition-transform"
+                >
+                  <Camera className="w-4 h-4" />
+                  カメラを起動
+                </button>
+                <div className="flex items-center gap-1 mt-4 text-[10px] text-white/30">
+                  <ShieldCheck className="w-3 h-3" />
+                  カメラ映像は保存されません
+                </div>
+              </motion.div>
+            </div>
+          )}
+
           {/* エラー */}
-          {error && (
+          {phase === "error" && (
             <div className="absolute inset-0 bg-black flex flex-col items-center justify-center px-6 text-center">
               {error === "permission_denied" ? (
-                <CameraPermissionGuide onRetry={startCamera} />
+                <PermissionDeniedGuide onRetry={startCamera} />
               ) : error === "iframe_blocked" ? (
                 <>
                   <Camera className="w-10 h-10 text-white/40 mb-3" />
@@ -211,7 +244,6 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-xs text-white bg-primary px-4 py-2 rounded-lg"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" />
                     新しいタブで開く
                   </a>
                 </>
@@ -258,5 +290,54 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
         </div>
       </motion.div>
     </motion.div>
+  );
+}
+
+/** 権限拒否時のガイド（モバイル向け） */
+function PermissionDeniedGuide({ onRetry }) {
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+
+  const steps = isIOS
+    ? [
+        "Safariのアドレスバー横の「AA」または権限アイコンをタップ",
+        "「設定」から「カメラ」をオンにする",
+        "または 設定 › Safari › カメラ を「許可」に変更",
+      ]
+    : isAndroid
+      ? [
+          "Chromeのアドレスバー横の権限アイコンをタップ",
+          "「カメラ」を「許可」に変更",
+          "または 設定 › アプリ › Chrome › 権限 › カメラ",
+        ]
+      : [
+          "ブラウザのアドレスバー横のカメラアイコンをクリック",
+          "「カメラを許可」を選択",
+          "ページを再読み込みしてください",
+        ];
+
+  return (
+    <div className="w-full">
+      <Camera className="w-10 h-10 text-white/40 mx-auto mb-3" />
+      <p className="text-sm text-white font-medium mb-4">カメラの使用が許可されていません</p>
+      <div className="text-left bg-white/5 rounded-xl p-3 mb-4">
+        <p className="text-[11px] text-white/60 mb-2 font-medium">以下の手順で許可してください：</p>
+        <ol className="space-y-1.5">
+          {steps.map((step, i) => (
+            <li key={i} className="text-[11px] text-white/80 flex gap-2">
+              <span className="text-primary font-bold shrink-0">{i + 1}.</span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <button
+        onClick={onRetry}
+        className="flex items-center gap-1.5 text-xs text-white bg-primary px-4 py-2 rounded-lg mx-auto"
+      >
+        <RefreshCw className="w-3.5 h-3.5" />
+        カメラを再起動
+      </button>
+    </div>
   );
 }
