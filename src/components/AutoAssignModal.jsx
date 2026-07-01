@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Wand2, X, ChevronRight, Lock, LockOpen, ChevronDown } from "lucide-react";
-import { TIME_SLOTS, TIME_SLOT_STYLES } from "@/lib/constants";
+import { TIME_SLOTS, TIME_SLOT_STYLES, CONTINUOUS_SLOT } from "@/lib/constants";
 import { useAllRoles } from "@/hooks/useAllRoles";
 
 // スタッフがポジションの必要スキルにどれだけマッチするかのスコア（0〜）
@@ -30,7 +30,11 @@ export function computeAutoAssign(positions, staffList) {
   const plan = {};
   const warnings = [];
 
-  TIME_SLOTS.forEach((slot) => {
+  // 派生: ポジションに含まれる全 time_slot を抽出（通しモード含む）
+  const positionSlots = [...new Set(positions.map((p) => p.time_slot || "開場中"))];
+  const activeSlots = positionSlots.length > 0 ? positionSlots : TIME_SLOTS;
+
+  activeSlots.forEach((slot) => {
     const slotPositions = positions
       .filter((p) => (p.time_slot || "開場中") === slot)
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -49,7 +53,7 @@ export function computeAutoAssign(positions, staffList) {
 
     // 未配置スロット数が多い人を優先（均等配置）
     const countUnassigned = (staff) =>
-      TIME_SLOTS.filter(
+      activeSlots.filter(
         (sl) => !positions.some(
           (p) => (p.time_slot || "開場中") === sl && (p.staff_names || []).includes(staff.name)
         )
@@ -117,7 +121,9 @@ export default function AutoAssignModal({ positions, staffList, lockedNames = []
 
   const totalAssignments = Object.values(plan).reduce((s, arr) => s + arr.length, 0);
 
-  const displayBySlot = TIME_SLOTS.map((slot) => {
+  const positionSlots = [...new Set(positions.map((p) => p.time_slot || "開場中"))];
+  const activeSlots = positionSlots.length > 0 ? positionSlots : TIME_SLOTS;
+  const displayBySlot = activeSlots.map((slot) => {
     const slotPositions = positions.filter((p) => (p.time_slot || "開場中") === slot);
     const items = slotPositions
       .map((pos) => ({ posName: pos.name, posId: pos.id, newStaff: plan[pos.id] || [] }))

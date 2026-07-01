@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { BookmarkPlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TIME_SLOTS } from "@/lib/constants";
+import { TIME_SLOTS, CONTINUOUS_SLOT } from "@/lib/constants";
 import { motion } from "framer-motion";
 import { useOperationLog } from "@/hooks/useOperationLog";
 
@@ -16,16 +16,17 @@ import { useOperationLog } from "@/hooks/useOperationLog";
  *   positionTypes   - 全PositionType配列
  *   onClose         - 閉じるコールバック
  */
-export default function SaveAsPresetModal({ positions, positionTypes, eventId, onClose }) {
+export default function SaveAsPresetModal({ positions, positionTypes, eventId, continuousMode = false, onClose }) {
   const queryClient = useQueryClient();
   const { record } = useOperationLog(eventId);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const activeSlots = continuousMode ? [CONTINUOUS_SLOT] : TIME_SLOTS;
 
   // ポジション名 → PositionType ID へのマッピング
   const buildSlotPositions = () => {
     const result = {};
-    for (const slot of TIME_SLOTS) {
+    for (const slot of activeSlots) {
       const slotPositions = positions
         .filter((p) => (p.time_slot || "開場中") === slot)
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -64,7 +65,7 @@ export default function SaveAsPresetModal({ positions, positionTypes, eventId, o
   });
 
   const totalPositions = positions.length;
-  const slotSummary = TIME_SLOTS.map((slot) => {
+  const slotSummary = activeSlots.map((slot) => {
     const count = positions.filter((p) => (p.time_slot || "開場中") === slot).length;
     return count > 0 ? `${slot}：${count}件` : null;
   }).filter(Boolean);

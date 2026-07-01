@@ -282,6 +282,7 @@ export default function PresetSelector({ eventId, compact = false, positions = [
             positions={positions}
             positionTypes={positionTypes}
             eventId={eventId}
+            continuousMode={continuousMode}
             onClose={() => setShowSaveModal(false)}
           />
         )}
