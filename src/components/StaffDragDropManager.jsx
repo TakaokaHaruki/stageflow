@@ -465,7 +465,7 @@ export default function StaffDragDropManager({ eventId }) {
     ...(p.staff_names_shimote || []),
   ]));
   const unassigned = continuousMode
-    ? staffList.filter((s) => !allAssignedNames.has(s.name))
+    ? staffList.filter((s) => !allAssignedNames.has(s.name)).map((s) => ({ ...s, missingSlots: [] }))
     : staffList
         .map((staff) => {
           const missingSlots = TIME_SLOTS.filter((slot) =>
