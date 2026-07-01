@@ -25,10 +25,10 @@ const PRESET_COLORS = [
   "#ef4444", "#8b5cf6", "#06b6d4", "#f97316",
 ];
 
-export default function PositionFormModal({ position, eventId, defaultTimeSlot = "開場中", onClose, onSaved }) {
+export default function PositionFormModal({ position, eventId, defaultTimeSlot = "開場中", continuousMode = false, onClose, onSaved }) {
   const [form, setForm] = useState({
     name: position?.name || "",
-    time_slot: position?.time_slot || defaultTimeSlot,
+    time_slot: position?.time_slot || (continuousMode ? "通し" : defaultTimeSlot),
     staff_names: position?.staff_names || [],
     staff_names_kamite: position?.staff_names_kamite || [],
     staff_names_shimote: position?.staff_names_shimote || [],
@@ -273,11 +273,13 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
             <ResponsiveSelect
               value={form.time_slot}
               onValueChange={(v) => setForm({ ...form, time_slot: v })}
-              options={[
-                { value: "開場中", label: "開場中" },
-                { value: "開演中", label: "開演中" },
-                { value: "終演後", label: "終演後" },
-              ]}
+              options={continuousMode
+                ? [{ value: "通し", label: "通し" }]
+                : [
+                    { value: "開場中", label: "開場中" },
+                    { value: "開演中", label: "開演中" },
+                    { value: "終演後", label: "終演後" },
+                  ]}
               placeholder="時間帯を選択"
             />
           </div>

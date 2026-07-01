@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { X, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
-import { TIME_SLOTS } from "@/lib/constants";
+import { TIME_SLOTS, CONTINUOUS_SLOT } from "@/lib/constants";
 
-export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開場中", onClose, onSaved }) {
+export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開場中", continuousMode = false, onClose, onSaved }) {
   const queryClient = useQueryClient();
-  const [timeSlot, setTimeSlot] = useState(defaultTimeSlot);
+  const activeSlots = continuousMode ? [CONTINUOUS_SLOT] : TIME_SLOTS;
+  const [timeSlot, setTimeSlot] = useState(continuousMode ? CONTINUOUS_SLOT : defaultTimeSlot);
   const [selectedIds, setSelectedIds] = useState([]);
   const [saving, setSaving] = useState(false);
 
@@ -53,6 +54,7 @@ export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開�
   };
 
   const getRequiredCount = (pt) => {
+    if (continuousMode || timeSlot === CONTINUOUS_SLOT) return pt.required_count ?? 0;
     if (timeSlot === "開場中") return pt.required_count_before ?? pt.required_count ?? 0;
     if (timeSlot === "開演中") return pt.required_count_during ?? pt.required_count ?? 0;
     return pt.required_count_after ?? pt.required_count ?? 0;
@@ -116,8 +118,9 @@ export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開�
         </div>
 
         {/* Time slot tabs */}
+        {!continuousMode && (
         <div className="flex gap-1 mb-3 shrink-0">
-          {TIME_SLOTS.map((slot) => (
+          {activeSlots.map((slot) => (
             <button
               key={slot}
               onClick={() => { setTimeSlot(slot); setSelectedIds([]); }}
@@ -131,6 +134,7 @@ export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開�
             </button>
           ))}
         </div>
+        )}
 
         {/* List */}
         <div className="flex-1 overflow-y-auto scrollbar-hide min-h-0">

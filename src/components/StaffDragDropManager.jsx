@@ -35,9 +35,7 @@ export default function StaffDragDropManager({ eventId }) {
   const queryClient = useQueryClient();
   const { canEdit, canManageSettings, role } = useUserRole();
   const { record } = useOperationLog(eventId);
-  const continuousMode = Boolean(event?.continuous_mode);
-  const activeSlots = continuousMode ? [CONTINUOUS_SLOT] : TIME_SLOTS;
-  const [mobileSlot, setMobileSlot] = useState(activeSlots[0]);
+  const [mobileSlot, setMobileSlot] = useState(null);
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -62,6 +60,17 @@ export default function StaffDragDropManager({ eventId }) {
     queryFn: () => loadEventById(eventId),
     refetchInterval: LIVE_SYNC_INTERVAL,
   });
+
+  const continuousMode = Boolean(event?.continuous_mode);
+  const activeSlots = continuousMode ? [CONTINUOUS_SLOT] : TIME_SLOTS;
+  const currentMobileSlot = mobileSlot ?? activeSlots[0];
+  useEffect(() => {
+    if (!continuousMode) {
+      setMobileSlot((prev) => prev && !TIME_SLOTS.includes(prev) ? "開場中" : prev);
+    } else {
+      setMobileSlot(CONTINUOUS_SLOT);
+    }
+  }, [continuousMode]);
 
   const { lockedNames, isLocked, toggleLock, clearAllLocks } = useLockedStaff(eventId, event ?? null);
 
@@ -495,9 +504,9 @@ export default function StaffDragDropManager({ eventId }) {
             type="button"
             onClick={() => setMobileSlot(slot)}
             className={`min-h-9 rounded-md px-1 text-xs font-semibold transition-colors ${
-              mobileSlot === slot ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+              currentMobileSlot === slot ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
             }`}
-            aria-pressed={mobileSlot === slot}
+            aria-pressed={currentMobileSlot === slot}
           >
             {slot}
           </button>
@@ -506,9 +515,9 @@ export default function StaffDragDropManager({ eventId }) {
           type="button"
           onClick={() => setMobileSlot("未配置")}
           className={`min-h-9 rounded-md px-1 text-xs font-semibold transition-colors ${
-            mobileSlot === "未配置" ? "bg-amber-500 text-white shadow-sm" : "text-amber-600 dark:text-amber-400"
+            currentMobileSlot === "未配置" ? "bg-amber-500 text-white shadow-sm" : "text-amber-600 dark:text-amber-400"
           }`}
-          aria-pressed={mobileSlot === "未配置"}
+          aria-pressed={currentMobileSlot === "未配置"}
         >
           未配置
         </button>
@@ -522,7 +531,7 @@ export default function StaffDragDropManager({ eventId }) {
           const slotAssignedCount = staffList.filter((s) => slotAssignedStaffNames.has(s.name)).length;
           const slotBorderClass = slot === "開場中" ? "border-amber-400 dark:border-amber-500" : slot === "開演中" ? "border-blue-400 dark:border-blue-500" : slot === "通し" ? "border-emerald-400 dark:border-emerald-500" : "border-slate-400 dark:border-slate-400";
           return (
-            <div key={slot} className={`${mobileSlot === slot ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block ${slotBorderClass}`}>
+            <div key={slot} className={`${currentMobileSlot === slot ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block ${slotBorderClass}`}>
               <div className={`flex items-center justify-between px-2 py-1 ${style.header}`}>
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-xs">{slot}</span>
@@ -607,7 +616,7 @@ export default function StaffDragDropManager({ eventId }) {
           );
         })}
         {/* 未配置列 */}
-        <div className={`${mobileSlot === "未配置" ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block border-amber-400 dark:border-amber-500`}>
+        <div className={`${currentMobileSlot === "未配置" ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block border-amber-400 dark:border-amber-500`}>
           <div className="flex items-center justify-between px-2 py-1 bg-amber-100 border-amber-300 text-amber-800 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-300">
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-xs">未配置</span>
@@ -755,7 +764,7 @@ export default function StaffDragDropManager({ eventId }) {
       </div>
 
       {showBulkAddModal && (
-        <PositionBulkAddModal eventId={eventId} defaultTimeSlot={defaultSlot}
+        <PositionBulkAddModal eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode}
           onClose={() => setShowBulkAddModal(false)}
           onSaved={(added) => {
             queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
@@ -768,7 +777,7 @@ export default function StaffDragDropManager({ eventId }) {
           }} />
       )}
       {showModal && (
-        <PositionFormModal position={editing} eventId={eventId} defaultTimeSlot={defaultSlot}
+        <PositionFormModal position={editing} eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode}
           onClose={() => setShowModal(false)}
           onSaved={(saved) => {
             queryClient.invalidateQueries({ queryKey: ["positions", eventId] });

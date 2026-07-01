@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, BookmarkPlus, ChevronDown, ChevronRight, ChevronUp, Zap } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useOperationLog } from "@/hooks/useOperationLog";
-import { TIME_SLOTS, TIME_SLOT_STYLES } from "@/lib/constants";
+import { TIME_SLOTS, TIME_SLOT_STYLES, CONTINUOUS_SLOT } from "@/lib/constants";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SaveAsPresetModal from "@/components/SaveAsPresetModal";
 import { loadEventById } from "@/lib/eventLoader";
@@ -41,7 +41,9 @@ export default function PresetSelector({ eventId, compact = false, positions = [
 
   const activePreset = presets.find((p) => p.id === event?.active_preset_id);
 
-  const slotToField = { "開場中": "required_count_before", "開演中": "required_count_during", "終演後": "required_count_after" };
+  const continuousMode = Boolean(event?.continuous_mode);
+  const activeSlots = continuousMode ? [CONTINUOUS_SLOT] : TIME_SLOTS;
+  const slotToField = { "通し": "required_count", "開場中": "required_count_before", "開演中": "required_count_during", "終演後": "required_count_after" };
 
   // 全時間帯一括適用
   const applyMutation = useMutation({
@@ -56,7 +58,7 @@ export default function PresetSelector({ eventId, compact = false, positions = [
       }
       const slotMap = preset.slot_positions || {};
       const positions = [];
-      for (const slot of TIME_SLOTS) {
+      for (const slot of activeSlots) {
         const ids = slotMap[slot] || [];
         const field = slotToField[slot];
         for (let i = 0; i < ids.length; i++) {
@@ -235,7 +237,7 @@ export default function PresetSelector({ eventId, compact = false, positions = [
                         {isExpanded && (
                           <div className="px-3 pb-2 bg-muted/30 space-y-1">
                             <p className="text-[10px] text-muted-foreground pt-1 pb-0.5">時間帯別に適用：</p>
-                            {TIME_SLOTS.map((slot) => {
+                            {activeSlots.map((slot) => {
                               const slotStyle = TIME_SLOT_STYLES[slot];
                               const count = ((preset.slot_positions || {})[slot] || []).length;
                               return (
