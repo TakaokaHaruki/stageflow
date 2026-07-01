@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { QrCode, Download } from "lucide-react";
 import { toast } from "sonner";
 import QRCode from "qrcode";
 
-export default function StaffQrExport() {
+export default function StaffQrExport({ eventId }) {
   const [generating, setGenerating] = useState(false);
 
   const generateQrImages = async (staffList) => {
@@ -163,7 +163,7 @@ function StaffQrList({ eventId, onExportSingle }) {
   const [staffList, setStaffList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useState(() => {
+  useEffect(() => {
     const fetchStaff = async () => {
       try {
         const staff = await base44.entities.Staff.filter({ event_id: eventId });
