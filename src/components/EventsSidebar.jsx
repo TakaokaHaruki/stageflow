@@ -32,7 +32,7 @@ export default function EventsSidebar({ canEdit, isAdmin, isGuest, currentUser, 
 
   const desktopSidebar = (
     <aside
-      className="hidden sm:flex sticky self-start flex-col border-r border-border bg-card/80 backdrop-blur-md"
+      className="hidden sm:flex fixed flex-col border-r border-border bg-card/80 backdrop-blur-md"
       style={{ width, top: 56, height: "calc(100vh - 56px)", transition: "width 200ms ease" }}
     >
       <TooltipProvider delayDuration={200}>
