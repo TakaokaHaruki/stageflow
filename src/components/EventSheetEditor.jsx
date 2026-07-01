@@ -5,14 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Save, Loader2, FileText } from "lucide-react";
+import { Download, Save, Loader2, FileText, Copy } from "lucide-react";
 import { toast } from "sonner";
+import EventSheetTemplatePicker from "@/components/EventSheetTemplatePicker";
 
 export default function EventSheetEditor({ eventId }) {
   const queryClient = useQueryClient();
   const [customNotes, setCustomNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
 
   // Fetch existing sheet data
   const { data: sheets = [], isLoading } = useQuery({
@@ -45,6 +47,11 @@ export default function EventSheetEditor({ eventId }) {
 
   const handleSave = () => {
     saveMutation.mutate({ custom_notes: customNotes });
+  };
+
+  const handleCopyTemplate = (notes) => {
+    setCustomNotes(notes);
+    toast.success("過去の公演シートをコピーしました");
   };
 
   const handleExportPDF = async () => {
@@ -103,22 +110,37 @@ export default function EventSheetEditor({ eventId }) {
             />
           </div>
 
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-wrap gap-2 pt-2">
             <Button onClick={handleSave} disabled={saveMutation.isPending || isSaving}>
               <Save className="h-4 w-4 mr-2" />
               {saveMutation.isPending ? "保存中..." : "保存"}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleExportPDF}
               disabled={isGeneratingPDF}
             >
               <Download className="h-4 w-4 mr-2" />
               {isGeneratingPDF ? "生成中..." : "PDF ダウンロード"}
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowTemplatePicker(true)}
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              テンプレートからコピー
+            </Button>
           </div>
         </CardContent>
       </Card>
+
+      {showTemplatePicker && (
+        <EventSheetTemplatePicker
+          eventId={eventId}
+          onCopy={handleCopyTemplate}
+          onClose={() => setShowTemplatePicker(false)}
+        />
+      )}
     </div>
   );
 }
