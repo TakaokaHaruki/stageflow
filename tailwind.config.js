@@ -15,7 +15,8 @@ module.exports = {
   theme: {
   	extend: {
       fontFamily: {
-        noto: ['Noto Sans JP', 'sans-serif'],
+        montserrat: ['Montserrat', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
       },
   		borderRadius: {
   			lg: 'var(--radius)',
