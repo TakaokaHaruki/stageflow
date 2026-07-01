@@ -13,8 +13,7 @@ Deno.serve(async (req) => {
     }
 
     // Fetch event data
-    const events = await base44.entities.Event.filter({ id: eventId });
-    const event = events[0];
+    const event = await base44.entities.Event.get(eventId);
     if (!event) {
       return Response.json({ error: 'Event not found' }, { status: 404 });
     }
@@ -69,8 +68,8 @@ Deno.serve(async (req) => {
 
     const timeSlots = [
       { label: '先行', start: event.time_priority, end: event.time_priority_end },
-      { label: '開場', start: event.time_open, end: event.time_start },
-      { label: '開演', start: event.time_start, end: event.time_end },
+      { label: '開場', start: event.time_open, end: event.time_open_end },
+      { label: '開演', start: event.time_start, end: event.time_start_end },
       { label: '終演', start: event.time_end, end: event.time_end_end }
     ];
 
@@ -83,35 +82,16 @@ Deno.serve(async (req) => {
       }
     }
 
-    yPos += 5;
+    yPos += 10;
 
-    // Custom performance info
-    if (sheet?.performance_info) {
-      doc.setFont('helvetica', 'bold');
-      doc.text('【公演情報】', margin, yPos + 5);
-      yPos += 8;
-      doc.setFont('helvetica', 'normal');
-      
-      const infoLines = doc.splitTextToSize(sheet.performance_info, pageWidth - margin * 2);
-      for (const line of infoLines) {
-        if (yPos + 5 > pageHeight - 30) {
-          doc.addPage();
-          yPos = margin;
-        }
-        doc.text(line, margin, yPos + 5);
-        yPos += 6;
-      }
-      yPos += 5;
-    }
-
-    // Precautions
-    if (sheet?.precautions) {
+    // Custom notes
+    if (sheet?.custom_notes) {
       doc.setFont('helvetica', 'bold');
       doc.text('【注意事項】', margin, yPos + 5);
       yPos += 8;
       doc.setFont('helvetica', 'normal');
       
-      const noteLines = doc.splitTextToSize(sheet.precautions, pageWidth - margin * 2);
+      const noteLines = doc.splitTextToSize(sheet.custom_notes, pageWidth - margin * 2);
       for (const line of noteLines) {
         if (yPos + 5 > pageHeight - 30) {
           doc.addPage();
