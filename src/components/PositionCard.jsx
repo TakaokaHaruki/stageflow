@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Pencil, Minus, Plus, Lock, LockOpen, AlertCircle, AlertTriangle, X } from "lucide-react";
+import { Pencil, Minus, Plus, Lock, AlertCircle, AlertTriangle } from "lucide-react";
 import { getStaffDisplayName } from "@/lib/staffName";
 import RoleIcon from "@/components/RoleIcon";
 import { useStaffExperience } from "@/hooks/useStaffExperience";
@@ -93,28 +93,9 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, is
       </div>
       {isAdmin && (
         <div className="flex items-center gap-0.5 shrink-0">
-          {onToggleLock && (
-            <button
-              onClick={() => onToggleLock(name)}
-              className={`flex h-7 w-7 items-center justify-center rounded transition-colors sm:h-5 sm:w-5 ${isLocked ? "text-amber-500 hover:text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/40" : "text-muted-foreground hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20"}`}
-              title={isLocked ? "ロック解除" : "ロック（自動配置から除外）"}
-            >
-              {isLocked ? <Lock className="w-3 h-3" /> : <LockOpen className="w-3 h-3" />}
-            </button>
-          )}
           {onStaffEdit && staffData && (
             <button onClick={() => onStaffEdit(staffData, pos)} className="flex h-7 w-7 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors sm:h-5 sm:w-5" title="スタッフ編集">
               <Pencil className="w-3 h-3" />
-            </button>
-          )}
-          {isChief && onStaffRemove && (
-            <button
-              onClick={() => onStaffRemove(name, pos)}
-              className="flex h-7 w-7 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors sm:h-5 sm:w-5"
-              title="このポジションから削除"
-              disabled={isRemoving}
-            >
-              <X className="w-3 h-3" />
             </button>
           )}
         </div>

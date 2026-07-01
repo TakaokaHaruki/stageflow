@@ -799,6 +799,8 @@ export default function StaffDragDropManager({ eventId }) {
         <StaffEditModal
           staff={editingStaff.staff}
           pos={editingStaff.pos}
+          isLocked={isLocked(editingStaff.staff.name)}
+          onToggleLock={isAdmin ? toggleLock : undefined}
           onRemoveFromPosition={editingStaff.pos ? (posId, name) => {
             removeStaffFromPosition(posId, name);
             setEditingStaff(null);

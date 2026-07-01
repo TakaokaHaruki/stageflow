@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { X, Plus, UserMinus } from "lucide-react";
+import { X, Plus, UserMinus, Lock, LockOpen } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,7 @@ const PRESET_COLORS = [
   { label: "白", value: "#ffffff" },
 ];
 
-export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClose, onSaved }) {
+export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClose, onSaved, isLocked = false, onToggleLock }) {
   const [localName, setLocalName] = useState(staff.name);
   const [localAcastId, setLocalAcastId] = useState(staff.acast_id || "");
   const [localNote, setLocalNote] = useState(staff.note || "");
@@ -284,6 +284,20 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
             </div>
           </div>
         </div>
+        {onToggleLock && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onToggleLock(staff.name)}
+              className={`flex items-center gap-0.5 text-xs px-2 py-1 rounded-md border font-medium transition-colors ${isLocked ? "bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-300" : "border-border text-muted-foreground hover:border-amber-300 hover:text-amber-600"}`}
+              title={isLocked ? "ロック解除" : "ロック（自動配置から除外）"}
+            >
+              {isLocked ? <Lock className="w-3 h-3" /> : <LockOpen className="w-3 h-3" />}
+              {isLocked ? "固定中" : "固定"}
+            </button>
+            <span className="text-[11px] text-muted-foreground">自動配置から除外します</span>
+          </div>
+        )}
         <div className="mt-3">
           <StaffTrendSummary staffName={localName} />
         </div>
