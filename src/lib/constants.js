@@ -1,6 +1,9 @@
 // 時間帯の共通定数
 export const TIME_SLOTS = ["開場中", "開演中", "終演後"];
 
+// 一日通しモード用（時間帯区分なし）
+export const CONTINUOUS_SLOT = "通し";
+
 export const TIME_SLOT_STYLES = {
   "開場中": {
     header: "bg-amber-200 border-amber-400 text-amber-950 dark:bg-amber-800 dark:border-amber-500 dark:text-white",
@@ -19,5 +22,11 @@ export const TIME_SLOT_STYLES = {
     badge: "bg-slate-300 border-slate-500 text-slate-900 dark:bg-slate-600 dark:border-slate-400 dark:text-white",
     bg: "bg-slate-300 text-slate-900 border-slate-500 dark:bg-slate-600 dark:border-slate-400 dark:text-white",
     dot: "bg-slate-600",
+  },
+  "通し": {
+    header: "bg-emerald-200 border-emerald-400 text-emerald-950 dark:bg-emerald-800 dark:border-emerald-500 dark:text-white",
+    badge: "bg-emerald-200 border-emerald-400 text-emerald-950 dark:bg-emerald-800 dark:border-emerald-500 dark:text-white",
+    bg: "bg-emerald-200 text-emerald-950 border-emerald-400 dark:bg-emerald-800 dark:border-emerald-500 dark:text-white",
+    dot: "bg-emerald-600",
   },
 };

@@ -11,7 +11,7 @@ import StaffEditModal from "@/components/StaffEditModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePDFExport } from "@/hooks/usePDFExport";
-import { TIME_SLOTS, TIME_SLOT_STYLES } from "@/lib/constants";
+import { TIME_SLOTS, TIME_SLOT_STYLES, CONTINUOUS_SLOT } from "@/lib/constants";
 import { getStaffDisplayName } from "@/lib/staffName";
 import { unwrapFunctionResponse } from "@/lib/base44Response";
 import { loadEventById } from "@/lib/eventLoader";
@@ -35,7 +35,9 @@ export default function StaffDragDropManager({ eventId }) {
   const queryClient = useQueryClient();
   const { canEdit, canManageSettings, role } = useUserRole();
   const { record } = useOperationLog(eventId);
-  const [mobileSlot, setMobileSlot] = useState(TIME_SLOTS[0]);
+  const continuousMode = Boolean(event?.continuous_mode);
+  const activeSlots = continuousMode ? [CONTINUOUS_SLOT] : TIME_SLOTS;
+  const [mobileSlot, setMobileSlot] = useState(activeSlots[0]);
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -302,7 +304,7 @@ export default function StaffDragDropManager({ eventId }) {
   });
 
   const [showBulkAddModal, setShowBulkAddModal] = useState(false);
-  const openAdd = (slot) => { setDefaultSlot(slot); setShowBulkAddModal(true); };
+  const openAdd = (slot) => { setDefaultSlot(continuousMode ? CONTINUOUS_SLOT : slot); setShowBulkAddModal(true); };
 
   const handleStaffDragStart = (e, staffName) => {
     setDraggedStaff(staffName);
@@ -442,20 +444,27 @@ export default function StaffDragDropManager({ eventId }) {
     setDraggingPosId(null); setDragOverPosId(null);
   };
 
-  const grouped = TIME_SLOTS.reduce((acc, slot) => {
-    acc[slot] = positions.filter((p) => (p.time_slot || "開場中") === slot)
+  const grouped = activeSlots.reduce((acc, slot) => {
+    acc[slot] = (continuousMode ? positions : positions.filter((p) => (p.time_slot || "開場中") === slot))
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     return acc;
   }, {});
 
-  const unassigned = staffList
-    .map((staff) => {
-      const missingSlots = TIME_SLOTS.filter((slot) =>
-        !positions.some((p) => (p.time_slot || "開場中") === slot && (p.staff_names || []).includes(staff.name))
-      );
-      return { ...staff, missingSlots };
-    })
-    .filter((staff) => staff.missingSlots.length > 0);
+  const allAssignedNames = new Set(positions.flatMap((p) => [
+    ...(p.staff_names || []),
+    ...(p.staff_names_kamite || []),
+    ...(p.staff_names_shimote || []),
+  ]));
+  const unassigned = continuousMode
+    ? staffList.filter((s) => !allAssignedNames.has(s.name))
+    : staffList
+        .map((staff) => {
+          const missingSlots = TIME_SLOTS.filter((slot) =>
+            !positions.some((p) => (p.time_slot || "開場中") === slot && (p.staff_names || []).includes(staff.name))
+          );
+          return { ...staff, missingSlots };
+        })
+        .filter((staff) => staff.missingSlots.length > 0);
   const isAdmin = canEdit;
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
 
@@ -479,8 +488,8 @@ export default function StaffDragDropManager({ eventId }) {
         )}
       />
 
-      <div className="mb-1.5 grid grid-cols-4 gap-1 rounded-lg border border-border bg-muted/40 p-0.5 sm:hidden">
-        {TIME_SLOTS.map((slot) => (
+      <div className={`mb-1.5 ${continuousMode ? "grid-cols-2" : "grid-cols-4"} grid gap-1 rounded-lg border border-border bg-muted/40 p-0.5 sm:hidden`}>
+        {activeSlots.map((slot) => (
           <button
             key={slot}
             type="button"
@@ -505,13 +514,13 @@ export default function StaffDragDropManager({ eventId }) {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-1">
-        {TIME_SLOTS.map((slot) => {
+      <div className={`grid grid-cols-1 ${continuousMode ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-4"} gap-1`}>
+        {activeSlots.map((slot) => {
           const style = TIME_SLOT_STYLES[slot];
           const slotPositions = grouped[slot];
           const slotAssignedStaffNames = new Set(slotPositions.flatMap((p) => p.staff_names || []));
           const slotAssignedCount = staffList.filter((s) => slotAssignedStaffNames.has(s.name)).length;
-          const slotBorderClass = slot === "開場中" ? "border-amber-400 dark:border-amber-500" : slot === "開演中" ? "border-blue-400 dark:border-blue-500" : "border-slate-400 dark:border-slate-400";
+          const slotBorderClass = slot === "開場中" ? "border-amber-400 dark:border-amber-500" : slot === "開演中" ? "border-blue-400 dark:border-blue-500" : slot === "通し" ? "border-emerald-400 dark:border-emerald-500" : "border-slate-400 dark:border-slate-400";
           return (
             <div key={slot} className={`${mobileSlot === slot ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block ${slotBorderClass}`}>
               <div className={`flex items-center justify-between px-2 py-1 ${style.header}`}>

@@ -4,9 +4,11 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard } from "lucide-react";
+import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard, QrCode, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import QRCodeUpload from "@/components/QRCodeUpload";
+import QrCameraScanner from "@/components/QrCameraScanner";
 import StaffConfirmationModal from "@/components/StaffConfirmationModal";
 import ComplianceAgreementModal from "@/components/ComplianceAgreementModal";
 import EventTimeDisplay from "@/components/EventTimeDisplay";
@@ -15,12 +17,13 @@ import PortalMaintenance from "@/components/PortalMaintenance";
 const STORAGE_KEY = "crewly_acast_id";
 
 const TIME_SLOT_LABELS = {
+  "通し": { label: "通し", color: "bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-800 dark:text-emerald-400" },
   "開場中": { label: "開場中", color: "bg-blue-500/10 text-blue-600 border-blue-200 dark:border-blue-800 dark:text-blue-400" },
   "開演中": { label: "開演中", color: "bg-green-500/10 text-green-600 border-green-200 dark:border-green-800 dark:text-green-400" },
   "終演後": { label: "終演後", color: "bg-orange-500/10 text-orange-600 border-orange-200 dark:border-orange-800 dark:text-orange-400" },
 };
 
-const SLOT_ORDER = ["開場中", "開演中", "終演後"];
+const SLOT_ORDER = ["通し", "開場中", "開演中", "終演後"];
 
 export default function StaffPortal() {
   const navigate = useNavigate();
@@ -38,6 +41,9 @@ export default function StaffPortal() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showComplianceModal, setShowComplianceModal] = useState(false);
   const [portalDisabled, setPortalDisabled] = useState(false);
+  const [qrScanPosition, setQrScanPosition] = useState(null);
+  const [qrProcessing, setQrProcessing] = useState(false);
+  const [staffRoles, setStaffRoles] = useState([]);
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
 
@@ -76,6 +82,8 @@ export default function StaffPortal() {
       }
 
       const staff = allStaff[0];
+      const allRoles = [...new Set(allStaff.flatMap((s) => s.roles || []))];
+      setStaffRoles(allRoles);
 
       // Get today's events (public assignment_mode or staff_management_mode AND date === today JST)
       const allEvents = await base44.entities.Event.list("-date", 50);
@@ -181,7 +189,69 @@ export default function StaffPortal() {
     setPendingAuthData(null);
     setShowConfirmation(false);
     setShowComplianceModal(false);
+    setStaffRoles([]);
   }, []);
+
+  const isChief = staffRoles.includes("セクションチーフ");
+
+  const refreshPositions = useCallback(async () => {
+    if (!acastId || !staffName) return;
+    try {
+      const allStaff = await base44.entities.Staff.filter({ acast_id: acastId });
+      if (!allStaff || allStaff.length === 0) return;
+      const staff = allStaff[0];
+      const allEvents = await base44.entities.Event.list("-date", 50);
+      const now = new Date();
+      const jstOffset = 9 * 60;
+      const jstDate = new Date(now.getTime() + jstOffset * 60000);
+      const today = jstDate.toISOString().split("T")[0];
+      const activeEvents = allEvents.filter(
+        (e) => (e.assignment_mode === "public" || e.staff_management_mode === "public") && e.date === today
+      );
+      const allPositions = [];
+      for (const event of activeEvents) {
+        const eventPositions = await base44.entities.Position.filter({ event_id: event.id });
+        const myPositions = eventPositions.filter((pos) => {
+          const inMain = (pos.staff_names || []).includes(staff.name);
+          const inKamite = (pos.staff_names_kamite || []).includes(staff.name);
+          const inShimote = (pos.staff_names_shimote || []).includes(staff.name);
+          return inMain || inKamite || inShimote;
+        });
+        for (const pos of myPositions) {
+          allPositions.push({ ...pos, _eventName: event.name, _eventDate: event.date, _eventId: event.id });
+        }
+      }
+      setPositions(allPositions);
+      setEvents(activeEvents);
+    } catch (e) {
+      // silent refresh failure
+    }
+  }, [acastId, staffName]);
+
+  const handleQrScanSuccess = async (scannedData) => {
+    if (!qrScanPosition || !acastId) return;
+    setQrProcessing(true);
+    try {
+      const res = await base44.functions.invoke("addStaffByQr", {
+        chiefAcastId: acastId,
+        targetAcastId: scannedData.trim(),
+        positionId: qrScanPosition.id,
+        eventId: qrScanPosition._eventId,
+      });
+      const data = res?.data;
+      if (data?.error) {
+        toast.error(data.error);
+      } else if (data?.success) {
+        toast.success(`「${data.staffName}」さんを「${data.positionName}」に追加しました`);
+        await refreshPositions();
+      }
+    } catch (e) {
+      toast.error("追加に失敗しました");
+    } finally {
+      setQrProcessing(false);
+      setQrScanPosition(null);
+    }
+  };
 
   // Keep a ref of staffName for the portal polling callback
   const staffNameRef = useRef(staffName);
@@ -450,10 +520,44 @@ export default function StaffPortal() {
                           className="bg-card border border-border rounded-xl p-3.5"
                           style={pos.color ? { borderLeftColor: pos.color, borderLeftWidth: 3 } : {}}
                         >
-                          <div className="font-semibold text-sm">{pos.name}</div>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="font-semibold text-sm flex-1">{pos.name}</div>
+                            {isChief && (
+                              <button
+                                onClick={() => setQrScanPosition(pos)}
+                                className="flex items-center gap-1 text-[11px] font-medium text-primary border border-primary/30 bg-primary/5 px-2 py-1 rounded-lg hover:bg-primary/10 transition-colors shrink-0"
+                              >
+                                <QrCode className="w-3.5 h-3.5" />
+                                QR追加
+                              </button>
+                            )}
+                          </div>
                           {pos.notes && (
                             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{pos.notes}</p>
                           )}
+                          {/* 配置スタッフ一覧 */}
+                          {(() => {
+                            const allNames = pos.split_by_side
+                              ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
+                              : (pos.staff_names || []);
+                            if (allNames.length === 0) return null;
+                            return (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {allNames.map((name) => (
+                                  <span
+                                    key={name}
+                                    className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium ${
+                                      name === staffName
+                                        ? "bg-primary/15 text-primary border border-primary/30"
+                                        : "bg-muted text-muted-foreground"
+                                    }`}
+                                  >
+                                    {name}
+                                  </span>
+                                ))}
+                              </div>
+                            );
+                          })()}
                           {/* Side info */}
                           {pos.split_by_side && (
                             <div className="flex gap-2 mt-1.5">
@@ -464,6 +568,12 @@ export default function StaffPortal() {
                                 <span className="text-[11px] bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">下手側</span>
                               )}
                             </div>
+                          )}
+                          {pos.added_by && pos.added_at_jst && (
+                            <p className="text-[10px] text-muted-foreground mt-1.5">
+                              <UserPlus className="w-2.5 h-2.5 inline mr-0.5" />
+                              最終追加: {pos.added_by} ({pos.added_at_jst})
+                            </p>
                           )}
                         </div>
                       ))}
@@ -483,6 +593,14 @@ export default function StaffPortal() {
           </div>
         )}
       </div>
+
+      {qrScanPosition && (
+        <QrCameraScanner
+          onScan={handleQrScanSuccess}
+          onClose={() => !qrProcessing && setQrScanPosition(null)}
+          processing={qrProcessing}
+        />
+      )}
     </div>
   );
 }

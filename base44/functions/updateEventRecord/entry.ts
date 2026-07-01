@@ -6,6 +6,7 @@ const ALLOWED_FIELDS = [
   'time_open', 'time_open_end',
   'time_start', 'time_start_end',
   'time_end', 'time_end_end',
+  'continuous_mode',
 ];
 
 Deno.serve(async (req) => {

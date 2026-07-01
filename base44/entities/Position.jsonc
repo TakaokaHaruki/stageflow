@@ -20,7 +20,8 @@
       "enum": [
         "\u958b\u5834\u4e2d",
         "\u958b\u6f14\u4e2d",
-        "\u7d42\u6f14\u5f8c"
+        "\u7d42\u6f14\u5f8c",
+        "\u901a\u3057"
       ],
       "default": "\u958b\u5834\u4e2d",
       "description": "\u6642\u9593\u5e2f\u533a\u5206"
@@ -111,6 +112,14 @@
       "type": "number",
       "description": "\u8868\u793a\u9806",
       "default": 0
+    },
+    "added_by": {
+      "type": "string",
+      "description": "QR\u8aad\u53d6\u3067\u8ffd\u52a0\u3057\u305f\u30bb\u30af\u30b7\u30e7\u30f3\u30c1\u30fc\u30d5\u540d\uff08\u76f4\u8fd1\u8ffd\u52a0\u306e\u307f\u8a18\u9332\uff09"
+    },
+    "added_at_jst": {
+      "type": "string",
+      "description": "QR\u8aad\u53d6\u3067\u8ffd\u52a0\u3057\u305f\u65e5\u6642\uff08JST\u3001YYYY-MM-DD HH:mm\uff09"
     }
   },
   "required": [

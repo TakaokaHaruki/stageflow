@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveSelect } from "@/components/ui/responsive-select";
-import { X } from "lucide-react";
+import { X, CalendarClock } from "lucide-react";
 import { motion } from "framer-motion";
+import { Switch } from "@/components/ui/switch";
 
 export default function EventFormModal({ event, onClose, onSaved }) {
   const queryClient = useQueryClient();
@@ -24,6 +25,7 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     time_open: event?.time_open || "",
     time_start: event?.time_start || "",
     time_end: event?.time_end || "",
+    continuous_mode: event?.continuous_mode || false,
   });
   const [uploadingMap, setUploadingMap] = useState(false);
   const fileInputRef = useRef(null);
@@ -123,7 +125,8 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     prev.time_priority !== cur.time_priority || prev.time_priority_end !== cur.time_priority_end ||
     prev.time_open !== cur.time_open ||
     prev.time_start !== cur.time_start ||
-    prev.time_end !== cur.time_end;
+    prev.time_end !== cur.time_end ||
+    prev.continuous_mode !== cur.continuous_mode;
 
   useEffect(() => {
     if (!event || !form.name) return;
@@ -299,6 +302,23 @@ export default function EventFormModal({ event, onClose, onSaved }) {
             <Label>備考</Label>
             <Input className="mt-1" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="メモなど" />
           </div>
+          {event && (
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+              <div className="flex items-start gap-2">
+                <CalendarClock className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <Label className="cursor-pointer">一日通しモード</Label>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
+                    時間帯区分（開場中・開演中・終演後）を廃止し、一日通して同じポジションで管理します。大型フェス等に適しています。
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={form.continuous_mode}
+                onCheckedChange={(checked) => setForm({ ...form, continuous_mode: checked })}
+              />
+            </div>
+          )}
         </div>
         <div className="flex gap-2 mt-4">
           <Button variant="outline" className="flex-1" onClick={onClose}>閉じる</Button>

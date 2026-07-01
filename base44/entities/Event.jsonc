@@ -129,6 +129,11 @@
       ],
       "default": "edit",
       "description": "\u4f1a\u5834\u30de\u30c3\u30d7\u306e\u516c\u958b\u30e2\u30fc\u30c9 (edit=\u7de8\u96c6\u4e2d/\u975e\u516c\u958b\u3001public=\u95b2\u89a7\u516c\u958b)"
+    },
+    "continuous_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u4e00\u65e5\u901a\u3057\u30e2\u30fc\u30c9\uff08\u6642\u9593\u5e2f\u533a\u5206\u306a\u3057\u30fb\u5927\u578b\u30d5\u30a7\u30b9\u7b49\uff09"
     }
   },
   "required": [
