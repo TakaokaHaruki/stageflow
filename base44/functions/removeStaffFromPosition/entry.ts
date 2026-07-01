@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
       event_id: eventId,
       action_type: 'position_unassign',
       actor_name: chiefStaff.name,
-      actor_email: user.email || '',
+      actor_email: chiefStaff.acast_id || '',
       description: `${position.name} から ${staffName} を削除`,
       snapshot_before: snapshotBefore,
       snapshot_after: {
