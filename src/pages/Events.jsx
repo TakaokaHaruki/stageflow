@@ -145,7 +145,7 @@ export default function Events() {
       <GlobalBanner />
       {/* Sticky Header */}
       <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
-        <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
+        <div className="max-w-6xl mx-auto px-2 py-1.5 flex items-center gap-1.5">
           {isGuest && <BackButton to="/home" label="ホームへ戻る" />}
           <CrewlyLogo className="mr-1" administrator={role === "admin"} />
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">イベント一覧</h1>
@@ -167,7 +167,7 @@ export default function Events() {
           onDeleteAccount={() => setConfirmDeleteAccount(true)}
         />
         <div className="flex-1 min-w-0">
-      <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:pb-8">
+      <div className="max-w-6xl mx-auto px-2 py-2 pb-16 sm:pb-8">
       <UserRestrictionBanner role={role} />
 
         {isLoading ?
@@ -190,16 +190,16 @@ export default function Events() {
             )}
           </div> :
 
-        <div className="space-y-4 pb-6">
+        <div className="space-y-3 pb-6">
           {/* Search box */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
             <Input
               type="text"
               placeholder="イベント名または会場名で検索"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-8 h-8 text-sm"
             />
           </div>
 
@@ -214,13 +214,13 @@ export default function Events() {
             >
               {/* Date header */}
               {date !== "no-date" && (
-                <div className="font-bold text-base text-foreground border-b border-border pb-1 mb-2">
+                <div className="font-bold text-sm text-foreground border-b border-border pb-0.5 mb-1.5">
                   {format(new Date(date), "M 月 d 日（E）", { locale: ja })}
-                  {isToday(date) && <span className="ml-2 text-xs text-primary">（今日）</span>}
+                  {isToday(date) && <span className="ml-1.5 text-[10px] text-primary">（今日）</span>}
                 </div>
               )}
               {date === "no-date" && (
-                <div className="font-bold text-base text-foreground border-b border-border pb-1 mb-2">
+                <div className="font-bold text-sm text-foreground border-b border-border pb-0.5 mb-1.5">
                   日付未設定
                 </div>
               )}
@@ -230,17 +230,17 @@ export default function Events() {
                 <Link
                   key={event.id}
                   to={`/events/${event.id}`}
-                  className={`group block bg-card border rounded-lg px-2.5 py-1.5 hover:shadow-sm transition-all duration-200 ${
+                  className={`group block bg-card border rounded-md px-2 py-1 hover:shadow-sm transition-all duration-200 ${
                     isToday(date)
                       ? "border-primary hover:border-primary/60"
                       : "border-border hover:border-primary/40"
                   }`}>
-                  <div className="flex items-center justify-between gap-1.5">
+                  <div className="flex items-center justify-between gap-1">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <h2 className="text-sm font-semibold text-foreground truncate">{event.name}</h2>
+                        <h2 className="text-xs font-semibold text-foreground truncate">{event.name}</h2>
                       </div>
-                      <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                      <div className="flex flex-wrap gap-1.5 text-[10px] text-muted-foreground">
                         {event.date && (
                           <span className="flex items-center gap-0.5">
                             <Calendar className="w-2.5 h-2.5" />
@@ -262,18 +262,18 @@ export default function Events() {
                           <button
                             onClick={(e) => handleEdit(e, event)}
                             disabled={!canEdit}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を編集`}>
-                            <Pencil className="w-3 h-3" />
+                            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を編集`}>
+                            <Pencil className="w-2.5 h-2.5" />
                           </button>
                           <button
                             onClick={(e) => handleDelete(e, event.id, event.name)}
                             disabled={!canEdit}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を削除`}>
-                            <Trash2 className="w-3 h-3" />
+                            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を削除`}>
+                            <Trash2 className="w-2.5 h-2.5" />
                           </button>
                         </>
                       )}
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                   </div>
                 </Link>
