@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
     }
 
     // チーフの存在確認（asServiceRole を使用 - ポータルの未ログインユーザー対応）
-    const chiefStaff = await base44.asServiceRole.entities.Staff.filter({ event_id: eventId, acast_id: chiefAcastId }).first();
+    const chiefStaff = (await base44.asServiceRole.entities.Staff.filter({ event_id: eventId, acast_id: chiefAcastId }))[0];
     if (!chiefStaff) {
       return Response.json({ error: 'チーフが見つかりません' }, { status: 404 });
     }
