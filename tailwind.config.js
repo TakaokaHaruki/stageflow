@@ -15,8 +15,7 @@ module.exports = {
   theme: {
   	extend: {
       fontFamily: {
-        outfit: ['Outfit', 'sans-serif'],
-        jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
       },
   		borderRadius: {
   			lg: 'var(--radius)',

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,64 +6,64 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 210 20% 20%;
+    --background: 210 40% 98%;
+    --foreground: 217 33% 17%;
     --card: 0 0% 100%;
-    --card-foreground: 210 20% 20%;
+    --card-foreground: 217 33% 17%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 20% 20%;
-    --primary: 258 90% 66%;
+    --popover-foreground: 217 33% 17%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 250 100% 98%;
-    --secondary-foreground: 263 73% 23%;
-    --muted: 250 95% 96%;
-    --muted-foreground: 263 30% 45%;
-    --accent: 252 95% 86%;
-    --accent-foreground: 263 73% 23%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 217 33% 17%;
+    --muted: 214 32% 91%;
+    --muted-foreground: 217 20% 45%;
+    --accent: 213 94% 68%;
+    --accent-foreground: 217 33% 17%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 250 95% 94%;
-    --input: 250 95% 94%;
-    --ring: 258 90% 66%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
     --radius: 0.6rem;
-    --sidebar-background: 263 73% 23%;
-    --sidebar-foreground: 250 100% 96%;
-    --sidebar-primary: 258 90% 66%;
+    --sidebar-background: 217 33% 17%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 263 60% 30%;
-    --sidebar-accent-foreground: 250 100% 96%;
-    --sidebar-border: 263 60% 30%;
-    --sidebar-ring: 258 90% 66%;
+    --sidebar-accent: 217 33% 24%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 24%;
+    --sidebar-ring: 221 83% 53%;
   }
 
   .dark {
-    --background: 210 45% 12%;
-    --foreground: 210 15% 95%;
-    --card: 210 40% 16%;
-    --card-foreground: 210 15% 95%;
-    --popover: 210 40% 16%;
-    --popover-foreground: 210 15% 95%;
-    --primary: 258 90% 66%;
+    --background: 217 33% 10%;
+    --foreground: 210 40% 98%;
+    --card: 217 33% 14%;
+    --card-foreground: 210 40% 98%;
+    --popover: 217 33% 14%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 221 83% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 263 50% 25%;
-    --secondary-foreground: 250 100% 96%;
-    --muted: 263 40% 20%;
-    --muted-foreground: 250 30% 70%;
-    --accent: 252 80% 70%;
-    --accent-foreground: 263 73% 23%;
+    --secondary: 217 33% 20%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 18%;
+    --muted-foreground: 210 20% 65%;
+    --accent: 213 94% 68%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 263 40% 28%;
-    --input: 263 40% 28%;
-    --ring: 258 90% 66%;
-    --sidebar-background: 263 73% 12%;
-    --sidebar-foreground: 250 30% 85%;
-    --sidebar-primary: 258 90% 66%;
+    --border: 217 33% 24%;
+    --input: 217 33% 24%;
+    --ring: 221 83% 60%;
+    --sidebar-background: 217 40% 8%;
+    --sidebar-foreground: 210 20% 85%;
+    --sidebar-primary: 221 83% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 263 50% 18%;
-    --sidebar-accent-foreground: 250 100% 96%;
-    --sidebar-border: 263 50% 18%;
-    --sidebar-ring: 258 90% 66%;
+    --sidebar-accent: 217 33% 14%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 14%;
+    --sidebar-ring: 221 83% 60%;
   }
 }
 
@@ -72,12 +72,12 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-jakarta;
+    @apply bg-background text-foreground font-inter;
     overscroll-behavior: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-outfit;
+    @apply font-inter;
   }
 
   /* iOS compatibility */

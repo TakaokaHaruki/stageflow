@@ -17,7 +17,7 @@ export default function CrewlyLogo({ className = "", disableLink = false, admini
         className="shrink-0 group-hover:opacity-85 transition-opacity"
       >
         {/* Background rounded square */}
-        <rect width="26" height="26" rx="7" fill={administrator ? "hsl(335 72% 48%)" : "hsl(258 90% 66%)"} />
+        <rect width="26" height="26" rx="7" fill={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} />
 
         {/* "C" arc — open to the right, endpoints have dots */}
         {/* Arc: center (13,13), radius 6.5, from ~40° to ~320° */}
@@ -30,7 +30,7 @@ export default function CrewlyLogo({ className = "", disableLink = false, admini
         />
 
         {/* Pin dot at the bottom tip of the C */}
-        <circle cx="18.2" cy="17.7" r="1.6" fill={administrator ? "hsl(345 95% 78%)" : "hsl(252 95% 86%)"} />
+        <circle cx="18.2" cy="17.7" r="1.6" fill={administrator ? "hsl(345 95% 78%)" : "hsl(213 94% 68%)"} />
       </svg>
 
       {/* Logotype */}
