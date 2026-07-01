@@ -9,7 +9,7 @@ const COLLAPSED_WIDTH = 48;
 export const SIDEBAR_EXPANDED_WIDTH = EXPANDED_WIDTH;
 export const SIDEBAR_COLLAPSED_WIDTH = COLLAPSED_WIDTH;
 
-export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 56 }) {
+export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 56, extraNavItems }) {
   const [collapsed, setCollapsed] = useState(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -37,7 +37,7 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
     >
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
         <TooltipProvider delayDuration={200}>
-          <ul className="flex flex-col gap-0.5 px-1.5">
+          <ul className="flex flex-col gap-0.5 px-1.5 mb-2">
             {tabs.map(({ id, label, icon: Icon }) => {
               const isActive = activeTab === id;
               const button = (
@@ -75,6 +75,7 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
               return <li key={id}>{button}</li>;
             })}
           </ul>
+          {extraNavItems}
         </TooltipProvider>
       </nav>
 

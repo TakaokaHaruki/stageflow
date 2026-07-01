@@ -5,15 +5,18 @@ import { Link } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, ChevronRight, Trash2, Pencil, Search } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Trash2, Pencil, Search, Plus, TrendingUp, ShieldCheck, User, LogOut, LogIn } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import AdminUserModal from "@/components/AdminUserModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion } from "framer-motion";
+import ThemeToggle from "@/components/ThemeToggle";
+import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
+import { Button } from "@/components/ui/button";
 import EventFormModal from "@/components/EventFormModal";
 import EventPublishToggle from "@/components/EventPublishToggle";
-import EventsSidebar from "@/components/EventsSidebar";
+import SidebarNav from "@/components/SidebarNav";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import GlobalBanner from "@/components/GlobalBanner";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
@@ -29,7 +32,7 @@ export default function Events() {
   const [currentUser, setCurrentUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
-  const { canEdit, role, isGuest } = useUserRole();
+  const { canEdit, role, isGuest, isAdmin } = useUserRole();
 
   const { data: allEvents = [], isLoading, refetch } = useQuery({
     queryKey: ["events"],
@@ -153,20 +156,45 @@ export default function Events() {
       </div>
 
       <div className="sm:flex">
-        <EventsSidebar
-          canEdit={canEdit}
-          isAdmin={role === "admin"}
-          isGuest={isGuest}
-          currentUser={currentUser}
-          setCurrentUser={setCurrentUser}
-          onNewEvent={() => { setEditingEvent(null); setShowModal(true); }}
-          onAdminSettings={() => setShowAdminModal(true)}
-          onStaffTrends={() => navigate("/staff-trends")}
-          onLogout={() => base44.auth.logout()}
-          onLogin={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}
-          onDeleteAccount={() => setConfirmDeleteAccount(true)}
+        <SidebarNav
+          tabs={[
+            ...(canEdit ? [{ id: "new", label: "新規イベント", icon: Plus }] : []),
+            { id: "trends", label: "配置傾向", icon: TrendingUp },
+            ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
+          ]}
+          activeTab="events"
+          onSelectTab={(tabId) => {
+            if (tabId === "new") { setEditingEvent(null); setShowModal(true); }
+            if (tabId === "trends") navigate("/staff-trends");
+            if (tabId === "admin") setShowAdminModal(true);
+          }}
+          topOffset={56}
+          extraNavItems={
+            <>
+              <div className="border-t border-border p-1.5">
+                <ThemeToggle />
+              </div>
+              <div className="border-t border-border p-1.5 space-y-1.5">
+                {currentUser ? (
+                  <div className="flex items-center gap-2 px-1">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20">
+                      <User className="w-3 h-3 text-primary" />
+                    </div>
+                    <span className="flex-1 min-w-0 truncate text-[11px] font-medium">{getUserDisplayName(currentUser)}</span>
+                    <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
+                    <button onClick={() => setConfirmDeleteAccount(true)} className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-destructive" title="アカウント削除"><Trash2 className="h-3 w-3" /></button>
+                    <button onClick={() => base44.auth.logout()} className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-destructive" title="ログアウト"><LogOut className="h-3 w-3" /></button>
+                  </div>
+                ) : (
+                  <Button size="sm" variant="outline" className="gap-1 text-xs w-full" onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}>
+                    <LogIn className="w-3 h-3" />ログイン
+                  </Button>
+                )}
+              </div>
+            </>
+          }
         />
-        <div className="flex-1 min-w-0 sm:ml-[52px]">
+        <div className="flex-1 min-w-0">
       <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:pb-8">
       <UserRestrictionBanner role={role} />
 
