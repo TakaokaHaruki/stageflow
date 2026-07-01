@@ -210,7 +210,7 @@ export default function Events() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: groupIdx * 0.05 }}
-              className={`space-y-2 ${groupIdx > 0 ? "pt-4" : ""}`}
+              className="space-y-2"
             >
               {/* Date header */}
               {date !== "no-date" && (
