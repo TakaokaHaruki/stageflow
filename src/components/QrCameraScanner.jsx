@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import jsQR from "jsqr";
-import { X, Camera, RefreshCw, CheckCircle, ScanLine, ShieldCheck } from "lucide-react";
+import { X, Camera, RefreshCw, CheckCircle, ScanLine, ShieldCheck, Upload } from "lucide-react";
 import { motion } from "framer-motion";
+import QRCodeUpload from "@/components/QRCodeUpload";
 
 /**
- * カメラでA-CAST IDのQRコードをリアルタイム読取するコンポーネント
- * @param {function} onScan - QR読取成功時のコールバック（読取ったデータを渡す）
+ * カメラで A-CAST ID の QR コードをリアルタイム読取するコンポーネント
+ * @param {function} onScan - QR 読取成功時のコールバック（読取ったデータを渡す）
  * @param {function} onClose - 閉じるボタン
- * @param {boolean} processing - 処理中フラグ（trueの時はスキャンを一時停止）
+ * @param {boolean} processing - 処理中フラグ（true の時はスキャンを一時停止）
  */
 export default function QrCameraScanner({ onScan, onClose, processing = false }) {
   const videoRef = useRef(null);
@@ -17,6 +18,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
   const [phase, setPhase] = useState("ready"); // ready | starting | scanning | error
   const [error, setError] = useState("");
   const [scannedValue, setScannedValue] = useState(null);
+  const [mode, setMode] = useState("camera"); // camera | upload
 
   const stopCamera = useCallback(() => {
     if (rafRef.current) {
@@ -29,12 +31,12 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
     }
   }, []);
 
-  // ユーザージェスチャー内で直接 getUserMedia を呼ぶ（iOS/Android対応）
+  // ユーザージェスチャー内で直接 getUserMedia を呼ぶ（iOS/Android 対応）
   const startCamera = useCallback(async () => {
     setPhase("starting");
     setError("");
 
-    // iframe内（プレビュー環境等）では getUserMedia が権限ダイアログを出せず
+    // iframe 内（プレビュー環境等）では getUserMedia が権限ダイアログを出せず
     // 即座に NotAllowedError で拒否されるため、先に検知して新規タブへ誘導
     const inIframe = window.self !== window.top;
     if (inIframe) {
@@ -153,19 +155,46 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
       >
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
           <h3 className="text-sm font-bold flex items-center gap-1.5">
-            <Camera className="w-4 h-4 text-primary" />
-            QR読取
+            {mode === "camera" ? <Camera className="w-4 h-4 text-primary" /> : <Upload className="w-4 h-4 text-primary" />}
+            QR 読取
           </h3>
-          <button
-            onClick={onClose}
-            disabled={processing}
-            className="p-1.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-30"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setMode(mode === "camera" ? "upload" : "camera")}
+              className="text-xs text-primary hover:text-foreground transition-colors"
+              disabled={processing}
+            >
+              {mode === "camera" ? "アップロード" : "カメラ"}
+            </button>
+            <button
+              onClick={onClose}
+              disabled={processing}
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors disabled:opacity-30"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         <div className="relative bg-black aspect-square">
+          {/* アップロードモード */}
+          {mode === "upload" ? (
+            <div className="absolute inset-0 bg-card p-4">
+              <QRCodeUpload
+                onQRRead={(data) => {
+                  if (data) {
+                    setScannedValue(data);
+                    onScan(data);
+                  } else {
+                    setError("QR コードが検出されませんでした");
+                  }
+                }}
+                loading={processing}
+                error={error}
+              />
+            </div>
+          ) : (
+            <>
           {/* カメラ映像 */}
           {(phase === "scanning" || phase === "starting") && (
             <video
@@ -230,7 +259,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
                     <ScanLine className="w-8 h-8 text-primary" />
                   </div>
                 </div>
-                <p className="text-sm text-white font-medium mb-1">QRコードを読み取ります</p>
+                <p className="text-sm text-white font-medium mb-1">QR コードを読み取ります</p>
                 <p className="text-[11px] text-white/50 mb-5 leading-relaxed px-2">
                   下のボタンをタップすると<br />カメラの使用許可を求めます
                 </p>
@@ -280,7 +309,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
                 <>
                   <Camera className="w-10 h-10 text-white/40 mb-3" />
                   <p className="text-xs text-white/80 mb-3 leading-relaxed">
-                    カメラ機能に対応していません。<br />HTTPS接続が必要です。
+                    カメラ機能に対応していません。<br />HTTPS 接続が必要です。
                   </p>
                 </>
               ) : (
@@ -299,13 +328,17 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
           )}
 
           <canvas ref={canvasRef} className="hidden" />
+            </>
+          )}
         </div>
 
-        <div className="px-4 py-3">
+        <div className="px-4 py-3 border-t border-border">
           <p className="text-[11px] text-muted-foreground text-center">
             {scannedValue
               ? "データを処理しています..."
-              : "スタッフのA-CAST ID QRコードをカメラにかざしてください"}
+              : mode === "camera"
+                ? "スタッフの A-CAST ID QR コードをカメラにかざしてください"
+                : "スタッフの A-CAST ID QR コードの画像を選択してください"}
           </p>
           {scannedValue && !processing && (
             <button
@@ -313,7 +346,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
               className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs text-primary border border-border rounded-lg py-1.5 hover:bg-muted transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              別のQRを読み取る
+              別の QR を読み取る
             </button>
           )}
         </div>
@@ -329,13 +362,13 @@ function PermissionDeniedGuide({ onRetry }) {
 
   const steps = isIOS
     ? [
-        "Safariのアドレスバー横の「AA」または権限アイコンをタップ",
+        "Safari のアドレスバー横の「AA」または権限アイコンをタップ",
         "「設定」から「カメラ」をオンにする",
         "または 設定 › Safari › カメラ を「許可」に変更",
       ]
     : isAndroid
       ? [
-          "Chromeのアドレスバー横の権限アイコンをタップ",
+          "Chrome のアドレスバー横の権限アイコンをタップ",
           "「カメラ」を「許可」に変更",
           "または 設定 › アプリ › Chrome › 権限 › カメラ",
         ]
