@@ -129,12 +129,39 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           <h3 className="font-bold text-base">スタッフ編集</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="閉じる">
             <X className="w-4 h-4" />
           </button>
         </div>
+        {(onToggleLock || (pos && onRemoveFromPosition)) && (
+          <div className="flex gap-2 mb-3">
+            {pos && onRemoveFromPosition && (
+              <Button
+                variant="destructive"
+                className="flex-1 gap-1"
+                size="sm"
+                onClick={() => onRemoveFromPosition(pos.id, staff.name)}
+              >
+                <UserMinus className="w-3.5 h-3.5" />
+                このポジションから外す
+              </Button>
+            )}
+            {onToggleLock && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onToggleLock(staff.name)}
+                className={`flex-1 gap-1 ${isLocked ? "bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-300" : "border-border text-muted-foreground hover:border-amber-300 hover:text-amber-600"}`}
+                title={isLocked ? "ロック解除" : "ロック（自動配置から除外）"}
+              >
+                {isLocked ? <Lock className="w-3.5 h-3.5" /> : <LockOpen className="w-3.5 h-3.5" />}
+                {isLocked ? "固定中" : "固定"}
+              </Button>
+            )}
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-3">
           <div className="sm:col-span-2">
             <label className="text-xs font-medium text-muted-foreground">スタッフ名</label>
@@ -284,37 +311,12 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
             </div>
           </div>
         </div>
-        {onToggleLock && (
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onToggleLock(staff.name)}
-              className={`flex items-center gap-0.5 text-xs px-2 py-1 rounded-md border font-medium transition-colors ${isLocked ? "bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-300" : "border-border text-muted-foreground hover:border-amber-300 hover:text-amber-600"}`}
-              title={isLocked ? "ロック解除" : "ロック（自動配置から除外）"}
-            >
-              {isLocked ? <Lock className="w-3 h-3" /> : <LockOpen className="w-3 h-3" />}
-              {isLocked ? "固定中" : "固定"}
-            </button>
-            <span className="text-[11px] text-muted-foreground">自動配置から除外します</span>
-          </div>
-        )}
         <div className="mt-3">
           <StaffTrendSummary staffName={localName} />
         </div>
         <div className="flex gap-2 mt-4">
           <Button variant="outline" className="flex-1" size="sm" onClick={onClose}>閉じる</Button>
         </div>
-        {pos && onRemoveFromPosition && (
-          <Button
-            variant="destructive"
-            className="w-full mt-2 gap-1"
-            size="sm"
-            onClick={() => onRemoveFromPosition(pos.id, staff.name)}
-          >
-            <UserMinus className="w-3.5 h-3.5" />
-            このポジションから外す
-          </Button>
-        )}
       </motion.div>
     </motion.div>
   );
