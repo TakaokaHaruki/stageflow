@@ -644,6 +644,7 @@ export default function StaffPortal() {
           onScan={handleQrScanSuccess}
           onClose={() => !qrProcessing && setQrScanPosition(null)}
           processing={qrProcessing}
+          autoStart={true}
         />
       )}
 

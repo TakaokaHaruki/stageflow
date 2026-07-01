@@ -10,16 +10,23 @@ import QRCodeUpload from "@/components/QRCodeUpload";
  * @param {function} onClose - 閉じるボタン
  * @param {boolean} processing - 処理中フラグ（true の時はスキャンを一時停止）
  */
-export default function QrCameraScanner({ onScan, onClose, processing = false }) {
+export default function QrCameraScanner({ onScan, onClose, processing = false, autoStart = false }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const rafRef = useRef(null);
-  const [phase, setPhase] = useState("ready"); // ready | starting | scanning | error
+  const [phase, setPhase] = useState(autoStart ? "starting" : "ready"); // ready | starting | scanning | error
   const [cameraError, setCameraError] = useState("");
   const [uploadError, setUploadError] = useState("");
   const [scannedValue, setScannedValue] = useState(null);
   const [mode, setMode] = useState("camera"); // camera | upload
+
+  // autoStart が true の場合、マウント時にカメラを起動
+  useEffect(() => {
+    if (autoStart && phase === "starting") {
+      startCamera();
+    }
+  }, [autoStart, phase]);
 
   const stopCamera = useCallback(() => {
     if (rafRef.current) {
