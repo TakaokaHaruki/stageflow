@@ -334,7 +334,10 @@ export default function StaffDragDropManager({ eventId }) {
     const shimote = position.staff_names_shimote || [];
     if (currentStaffNames.includes(staffName) && (!position.split_by_side || !effectiveSide)) return;
     const slot = position.time_slot || "開場中";
-    const alreadyInSlot = positions.some(
+    const staff = staffList.find((s) => s.name === staffName);
+    const isSectionChief = (staff?.roles || []).includes("セクションチーフ");
+    const skipDupCheck = continuousMode && isSectionChief;
+    const alreadyInSlot = !skipDupCheck && positions.some(
       (p) => p.id !== positionId && (p.time_slot || "開場中") === slot && (p.staff_names || []).includes(staffName)
     );
     if (alreadyInSlot) return;
@@ -358,7 +361,7 @@ export default function StaffDragDropManager({ eventId }) {
         snapshot_after: { staff_names: nextStaffNames },
       },
     });
-  }, [positions, updatePositionMutation, record]);
+  }, [positions, staffList, continuousMode, updatePositionMutation, record]);
 
   const handleDropOnPosition = (e, positionId) => {
     e.preventDefault();
