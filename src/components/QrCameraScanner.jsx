@@ -15,9 +15,10 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const rafRef = useRef(null);
+  const [step, setStep] = useState("intro");
   const [error, setError] = useState("");
   const [scannedValue, setScannedValue] = useState(null);
-  const [isStarting, setIsStarting] = useState(true);
+  const [isStarting, setIsStarting] = useState(false);
 
   const stopCamera = useCallback(() => {
     if (rafRef.current) {
@@ -45,8 +46,10 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
         await video.play().catch(() => {});
       }
       setIsStarting(false);
+      setStep("scanning");
     } catch (err) {
       setIsStarting(false);
+      setStep("error");
       if (err?.name === "NotAllowedError") {
         setError("permission_denied");
       } else if (err?.name === "NotFoundError") {
@@ -59,7 +62,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
 
   // スキャンループ
   useEffect(() => {
-    if (isStarting || error || scannedValue || processing) return;
+    if (step !== "scanning" || isStarting || error || scannedValue || processing) return;
 
     const tick = () => {
       const video = videoRef.current;
@@ -93,13 +96,17 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
         rafRef.current = null;
       }
     };
-  }, [isStarting, error, scannedValue, processing, onScan]);
+  }, [step, isStarting, error, scannedValue, processing, onScan]);
 
   // クリーンアップ
   useEffect(() => {
-    startCamera();
     return () => stopCamera();
-  }, [startCamera, stopCamera]);
+  }, [stopCamera]);
+
+  const handleStartCamera = () => {
+    setStep("scanning");
+    startCamera();
+  };
 
   const handleRetry = () => {
     setScannedValue(null);
@@ -138,8 +145,25 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
         </div>
 
         <div className="relative bg-black aspect-square">
+          {/* 説明画面 */}
+          {step === "intro" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+              <Camera className="w-16 h-16 text-white/80 mb-4" />
+              <p className="text-sm text-white/90 leading-relaxed mb-6">
+                QRコードを読み取るために<br />カメラへのアクセスを求めます
+              </p>
+              <button
+                onClick={handleStartCamera}
+                className="flex items-center gap-2 text-sm text-white bg-primary px-8 py-2.5 rounded-xl font-medium"
+              >
+                <Camera className="w-4 h-4" />
+                カメラを起動する
+              </button>
+            </div>
+          )}
+
           {/* カメラ映像 */}
-          {!error && (
+          {step === "scanning" && (
             <video
               ref={videoRef}
               playsInline
@@ -149,7 +173,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
           )}
 
           {/* スキャン枠 */}
-          {!error && !scannedValue && (
+          {step === "scanning" && !scannedValue && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="relative w-56 h-56">
                 <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white/80 rounded-tl-lg" />
@@ -179,14 +203,14 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
           )}
 
           {/* 開始中 */}
-          {isStarting && !error && (
+          {isStarting && step === "scanning" && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
           )}
 
           {/* エラー */}
-          {error && (
+          {step === "error" && (
             <div className="absolute inset-0 bg-black flex flex-col items-center justify-center px-6 text-center">
               {error === "permission_denied" ? (
                 <CameraPermissionGuide onRetry={startCamera} />
