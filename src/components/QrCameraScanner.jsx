@@ -16,7 +16,8 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
   const streamRef = useRef(null);
   const rafRef = useRef(null);
   const [phase, setPhase] = useState("ready"); // ready | starting | scanning | error
-  const [error, setError] = useState("");
+  const [cameraError, setCameraError] = useState("");
+  const [uploadError, setUploadError] = useState("");
   const [scannedValue, setScannedValue] = useState(null);
   const [mode, setMode] = useState("camera"); // camera | upload
 
@@ -34,13 +35,13 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
   // ユーザージェスチャー内で直接 getUserMedia を呼ぶ（iOS/Android 対応）
   const startCamera = useCallback(async () => {
     setPhase("starting");
-    setError("");
+    setCameraError("");
 
     // iframe 内（プレビュー環境等）では getUserMedia が権限ダイアログを出せず
     // 即座に NotAllowedError で拒否されるため、先に検知して新規タブへ誘導
     const inIframe = window.self !== window.top;
     if (inIframe) {
-      setError("iframe_blocked");
+      setCameraError("iframe_blocked");
       setPhase("error");
       return;
     }
@@ -48,14 +49,14 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
     // HTTPS チェック - 本番環境で重要
     const isSecure = window.isSecureContext || window.location.protocol === "https:";
     if (!isSecure) {
-      setError("https_required");
+      setCameraError("https_required");
       setPhase("error");
       return;
     }
 
     // カメラ API のサポート確認
     if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
-      setError("no_media_devices");
+      setCameraError("no_media_devices");
       setPhase("error");
       return;
     }
@@ -65,7 +66,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
       try {
         const permissionStatus = await navigator.permissions.query({ name: "camera" });
         if (permissionStatus.state === "denied") {
-          setError("permission_denied");
+          setCameraError("permission_denied");
           setPhase("error");
           return;
         }
@@ -90,15 +91,15 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
     } catch (err) {
       console.error("Camera error:", err?.name, err?.message);
       if (err?.name === "NotAllowedError") {
-        setError("permission_denied");
+        setCameraError("permission_denied");
       } else if (err?.name === "NotFoundError") {
-        setError("カメラが見つかりません。");
+        setCameraError("カメラが見つかりません。");
       } else if (err?.name === "NotReadableError") {
-        setError("カメラが別のアプリで使用されています。");
+        setCameraError("カメラが別のアプリで使用されています。");
       } else if (err?.name === "OverconstrainedError") {
-        setError("カメラの制約条件を満たせませんでした。");
+        setCameraError("カメラの制約条件を満たせませんでした。");
       } else {
-        setError(`エラー：${err?.message || err?.name || "不明なエラー"}`);
+        setCameraError(`エラー：${err?.message || err?.name || "不明なエラー"}`);
       }
       setPhase("error");
     }
@@ -106,7 +107,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
 
   // スキャンループ
   useEffect(() => {
-    if (phase !== "scanning" || error || scannedValue || processing) return;
+    if (phase !== "scanning" || cameraError || scannedValue || processing) return;
 
     const tick = () => {
       const video = videoRef.current;
@@ -140,7 +141,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
         rafRef.current = null;
       }
     };
-  }, [phase, error, scannedValue, processing, onScan]);
+  }, [phase, cameraError, scannedValue, processing, onScan]);
 
   // アンマウント時にカメラ停止
   useEffect(() => {
@@ -149,8 +150,18 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
 
   const handleRetry = () => {
     setScannedValue(null);
-    setError("");
+    setCameraError("");
     startCamera();
+  };
+
+  const handleModeToggle = (newMode) => {
+    setMode(newMode);
+    // モード切替時に各モードのエラーをリセット
+    if (newMode === "camera") {
+      setCameraError("");
+    } else {
+      setUploadError("");
+    }
   };
 
   return (
@@ -176,7 +187,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
           </h3>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setMode(mode === "camera" ? "upload" : "camera")}
+              onClick={() => handleModeToggle(mode === "camera" ? "upload" : "camera")}
               className="text-xs text-primary hover:text-foreground transition-colors"
               disabled={processing}
             >
@@ -202,11 +213,11 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
                     setScannedValue(data);
                     onScan(data);
                   } else {
-                    setError("QR コードが検出されませんでした");
+                    setUploadError("QR コードが検出されませんでした");
                   }
                 }}
                 loading={processing}
-                error={error}
+                error={uploadError}
               />
             </div>
           ) : (
@@ -297,9 +308,9 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
           {/* エラー */}
           {phase === "error" && (
             <div className="absolute inset-0 bg-black flex flex-col items-center justify-center px-6 text-center">
-              {error === "permission_denied" ? (
+              {cameraError === "permission_denied" ? (
                 <PermissionDeniedGuide onRetry={startCamera} />
-              ) : error === "iframe_blocked" ? (
+              ) : cameraError === "iframe_blocked" ? (
                 <>
                   <Camera className="w-10 h-10 text-white/40 mb-3" />
                   <p className="text-xs text-white/80 mb-3 leading-relaxed">
@@ -314,14 +325,14 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
                     新しいタブで開く
                   </a>
                 </>
-              ) : error === "https_required" ? (
+              ) : cameraError === "https_required" ? (
                 <>
                   <Camera className="w-10 h-10 text-white/40 mb-3" />
                   <p className="text-xs text-white/80 mb-3 leading-relaxed">
                     カメラ機能には HTTPS 接続が必要です。<br />本番環境で動作します。
                   </p>
                 </>
-              ) : error === "no_media_devices" ? (
+              ) : cameraError === "no_media_devices" ? (
                 <>
                   <Camera className="w-10 h-10 text-white/40 mb-3" />
                   <p className="text-xs text-white/80 mb-3 leading-relaxed">
@@ -330,7 +341,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
                 </>
               ) : (
                 <>
-                  <p className="text-xs text-destructive-foreground bg-destructive rounded-lg px-3 py-2 mb-3">{error}</p>
+                  <p className="text-xs text-destructive-foreground bg-destructive rounded-lg px-3 py-2 mb-3">{cameraError}</p>
                   <button
                     onClick={startCamera}
                     className="flex items-center gap-1.5 text-xs text-white bg-primary px-3 py-1.5 rounded-lg"
@@ -363,6 +374,16 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
             >
               <RefreshCw className="w-3.5 h-3.5" />
               別の QR を読み取る
+            </button>
+          )}
+          {/* カメラモードのみエラー時のリトライ表示 */}
+          {phase === "error" && mode === "camera" && cameraError !== "permission_denied" && cameraError !== "iframe_blocked" && (
+            <button
+              onClick={handleRetry}
+              className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs text-primary border border-border rounded-lg py-1.5 hover:bg-muted transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              再試行
             </button>
           )}
         </div>
