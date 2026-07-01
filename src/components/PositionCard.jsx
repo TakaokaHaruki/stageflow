@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { Pencil, Minus, Plus, Lock, LockOpen, AlertCircle, AlertTriangle } from "lucide-react";
+import { Pencil, Minus, Plus, Lock, LockOpen, AlertCircle, AlertTriangle, X } from "lucide-react";
 import { getStaffDisplayName } from "@/lib/staffName";
 import RoleIcon from "@/components/RoleIcon";
 import { useStaffExperience } from "@/hooks/useStaffExperience";
 
 const SLOT_NOTE_KEY = { "開場中": "note_before", "開演中": "note_during", "終演後": "note_after" };
 
-function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, isLocked, isInexperienced, showSkills = false, side = null }) {
+function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, isChief, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, isLocked, isInexperienced, showSkills = false, side = null, isRemoving = false }) {
   const [showNotePopup, setShowNotePopup] = useState(false);
   const [notePopupPos, setNotePopupPos] = useState(null);
   const noteIconRef = useRef(null);
@@ -51,7 +51,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
     >
       <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-1 gap-y-0.5">
         {isLocked && <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />}
-        <span className="text-xs font-medium" style={{ color: nameColor }}>{displayName}</span>
+        <span className={`text-xs font-medium ${isRemoving ? "opacity-50" : ""}`} style={{ color: nameColor }}>{displayName}</span>
         {isAdmin && isInexperienced && (
           <span className="shrink-0" title="経験のないポジションです">
             <AlertTriangle className="w-3 h-3 text-amber-500" />
@@ -107,6 +107,16 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, dr
               <Pencil className="w-3 h-3" />
             </button>
           )}
+          {isChief && onStaffRemove && (
+            <button
+              onClick={() => onStaffRemove(name, pos)}
+              className="flex h-7 w-7 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors sm:h-5 sm:w-5"
+              title="このポジションから削除"
+              disabled={isRemoving}
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -137,7 +147,7 @@ export default function PositionCard({
     else statusBadge = { label: `超過${Math.abs(diff)}名`, cls: "bg-red-100 border-red-300 text-red-800 dark:bg-red-900/40 dark:border-red-700 dark:text-red-300" };
   }
 
-  const commonRowProps = { pos, staffList, maskStaffNames, draggable, isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock };
+  const commonRowProps = { pos, staffList, maskStaffNames, draggable, isAdmin, isChief: isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock };
   const showSkills = pos.time_slot === "終演後";
 
   return (

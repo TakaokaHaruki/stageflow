@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard, QrCode, UserPlus } from "lucide-react";
+import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard, QrCode, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import QRCodeUpload from "@/components/QRCodeUpload";
@@ -13,6 +13,7 @@ import StaffConfirmationModal from "@/components/StaffConfirmationModal";
 import ComplianceAgreementModal from "@/components/ComplianceAgreementModal";
 import EventTimeDisplay from "@/components/EventTimeDisplay";
 import PortalMaintenance from "@/components/PortalMaintenance";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const STORAGE_KEY = "crewly_acast_id";
 
@@ -44,6 +45,8 @@ export default function StaffPortal() {
   const [qrScanPosition, setQrScanPosition] = useState(null);
   const [qrProcessing, setQrProcessing] = useState(false);
   const [staffRoles, setStaffRoles] = useState([]);
+  const [pendingRemove, setPendingRemove] = useState(null); // {staffName, position}
+  const [removing, setRemoving] = useState(false);
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
 
@@ -190,7 +193,38 @@ export default function StaffPortal() {
     setShowConfirmation(false);
     setShowComplianceModal(false);
     setStaffRoles([]);
+    setPendingRemove(null);
+    setRemoving(false);
   }, []);
+
+  const handleStaffRemoveClick = (staffName, position) => {
+    setPendingRemove({ staffName, position });
+  };
+
+  const handleConfirmRemove = async () => {
+    if (!pendingRemove || !acastId) return;
+    setRemoving(true);
+    try {
+      const res = await base44.functions.invoke("removeStaffFromPosition", {
+        chiefAcastId: acastId,
+        staffName: pendingRemove.staffName,
+        positionId: pendingRemove.position.id,
+        eventId: pendingRemove.position._eventId,
+      });
+      const data = res?.data;
+      if (data?.error) {
+        toast.error(data.error);
+      } else if (data?.success) {
+        toast.success(`「${pendingRemove.staffName}」さんを「${pendingRemove.position.name}」から削除しました`);
+        await refreshPositions();
+      }
+    } catch (e) {
+      toast.error("削除に失敗しました");
+    } finally {
+      setRemoving(false);
+      setPendingRemove(null);
+    }
+  };
 
   const isChief = staffRoles.includes("セクションチーフ");
 
@@ -537,26 +571,39 @@ export default function StaffPortal() {
                           )}
                           {/* 配置スタッフ一覧 */}
                           {(() => {
-                            const allNames = pos.split_by_side
-                              ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
-                              : (pos.staff_names || []);
-                            if (allNames.length === 0) return null;
-                            return (
-                              <div className="mt-2 flex flex-wrap gap-1">
-                                {allNames.map((name) => (
+                          const allNames = pos.split_by_side
+                            ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
+                            : (pos.staff_names || []);
+                          if (allNames.length === 0) return null;
+                          return (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {allNames.map((name) => {
+                                const isRemovingThis = removing && pendingRemove?.staffName === name && pendingRemove?.position.id === pos.id;
+                                return (
                                   <span
                                     key={name}
-                                    className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium ${
+                                    className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1 ${
                                       name === staffName
                                         ? "bg-primary/15 text-primary border border-primary/30"
                                         : "bg-muted text-muted-foreground"
-                                    }`}
+                                    } ${isRemovingThis ? "opacity-50" : ""}`}
                                   >
                                     {name}
+                                    {isChief && name !== staffName && (
+                                      <button
+                                        onClick={() => handleStaffRemoveClick(name, pos)}
+                                        className="hover:text-destructive transition-colors"
+                                        title="このポジションから削除"
+                                        disabled={removing}
+                                      >
+                                        <X className="w-2.5 h-2.5" />
+                                      </button>
+                                    )}
                                   </span>
-                                ))}
-                              </div>
-                            );
+                                );
+                              })}
+                            </div>
+                          );
                           })()}
                           {/* Side info */}
                           {pos.split_by_side && (
@@ -599,6 +646,19 @@ export default function StaffPortal() {
           onScan={handleQrScanSuccess}
           onClose={() => !qrProcessing && setQrScanPosition(null)}
           processing={qrProcessing}
+        />
+      )}
+
+      {pendingRemove && (
+        <ConfirmDialog
+          open={true}
+          onConfirm={handleConfirmRemove}
+          onCancel={() => setPendingRemove(null)}
+          title="ポジションから削除"
+          description={`「${pendingRemove.staffName}」さんを「${pendingRemove.position.name}」から削除しますか？`}
+          confirmLabel="削除"
+          variant="destructive"
+          loading={removing}
         />
       )}
     </div>
