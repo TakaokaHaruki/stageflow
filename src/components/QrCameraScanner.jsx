@@ -43,6 +43,14 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
       return;
     }
 
+    // HTTPS チェック - 本番環境で重要
+    const isSecure = window.isSecureContext || window.location.protocol === "https:";
+    if (!isSecure) {
+      setError("https_required");
+      setPhase("error");
+      return;
+    }
+
     if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
       setError("no_media_devices");
       setPhase("error");
@@ -62,12 +70,17 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
       }
       setPhase("scanning");
     } catch (err) {
+      console.error("Camera error:", err?.name, err?.message);
       if (err?.name === "NotAllowedError") {
         setError("permission_denied");
       } else if (err?.name === "NotFoundError") {
         setError("カメラが見つかりません。");
+      } else if (err?.name === "NotReadableError") {
+        setError("カメラが別のアプリで使用されています。");
+      } else if (err?.name === "OverconstrainedError") {
+        setError("カメラの制約条件を満たせませんでした。");
       } else {
-        setError("カメラの起動に失敗しました。");
+        setError(`エラー：${err?.message || err?.name || "不明なエラー"}`);
       }
       setPhase("error");
     }
@@ -254,6 +267,13 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
                   >
                     新しいタブで開く
                   </a>
+                </>
+              ) : error === "https_required" ? (
+                <>
+                  <Camera className="w-10 h-10 text-white/40 mb-3" />
+                  <p className="text-xs text-white/80 mb-3 leading-relaxed">
+                    カメラ機能には HTTPS 接続が必要です。<br />本番環境で動作します。
+                  </p>
                 </>
               ) : error === "no_media_devices" ? (
                 <>
