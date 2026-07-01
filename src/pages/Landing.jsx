@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { LogIn, Eye } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { motion } from "framer-motion";
 import CrewlyLogo from "@/components/CrewlyLogo";
 
@@ -10,11 +10,6 @@ export default function Landing() {
   const navigate = useNavigate();
 
   // No auto-redirect for authenticated users on Landing page
-
-  const handleGuest = () => {
-    localStorage.setItem("guest_mode", "true");
-    navigate("/events");
-  };
 
   const handleLogin = () => {
     localStorage.removeItem("guest_mode");
@@ -51,10 +46,6 @@ export default function Landing() {
           <Button onClick={handleLogin} className="h-11 text-sm font-semibold gap-2">
             <LogIn className="w-4 h-4" />
             ログイン
-          </Button>
-          <Button onClick={handleGuest} variant="outline" className="h-11 text-sm gap-2">
-            <Eye className="w-4 h-4" />
-            ゲストとして閲覧
           </Button>
         </div>
 

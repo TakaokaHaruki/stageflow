@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, ChevronRight, Trash2, Pencil, Search, Plus, TrendingUp, ShieldCheck, User, LogOut, LogIn } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Trash2, Pencil, Search, Plus, ShieldCheck, User, LogOut, LogIn } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import AdminUserModal from "@/components/AdminUserModal";
@@ -159,13 +159,12 @@ export default function Events() {
         <SidebarNav
           tabs={[
           ...(canEdit ? [{ id: "new", label: "新規イベント", icon: Plus }] : []),
-          { id: "trends", label: "配置傾向", icon: TrendingUp },
+
           ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : [])]
           }
           activeTab="events"
           onSelectTab={(tabId) => {
             if (tabId === "new") {setEditingEvent(null);setShowModal(true);}
-            if (tabId === "trends") navigate("/staff-trends");
             if (tabId === "admin") setShowAdminModal(true);
           }}
           topOffset={56}
