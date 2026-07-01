@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, ChevronRight, Trash2, Pencil, TrendingUp, Search } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Trash2, Pencil, Search } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import AdminUserModal from "@/components/AdminUserModal";
@@ -149,12 +149,6 @@ export default function Events() {
           {isGuest && <BackButton to="/home" label="ホームへ戻る" />}
           <CrewlyLogo className="mr-1" administrator={role === "admin"} />
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">イベント一覧</h1>
-          <Link
-            to="/staff-trends"
-            className="ml-auto flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 border border-primary/30 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
-          >
-            <TrendingUp className="w-3.5 h-3.5" />配置傾向
-          </Link>
         </div>
       </div>
 
@@ -167,6 +161,7 @@ export default function Events() {
           setCurrentUser={setCurrentUser}
           onNewEvent={() => { setEditingEvent(null); setShowModal(true); }}
           onAdminSettings={() => setShowAdminModal(true)}
+          onStaffTrends={() => navigate("/staff-trends")}
           onLogout={() => base44.auth.logout()}
           onLogin={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}
           onDeleteAccount={() => setConfirmDeleteAccount(true)}
@@ -215,7 +210,7 @@ export default function Events() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: groupIdx * 0.05 }}
-              className="space-y-2"
+              className={`space-y-2 ${groupIdx > 0 ? "pt-4" : ""}`}
             >
               {/* Date header */}
               {date !== "no-date" && (

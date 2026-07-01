@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, ShieldCheck, LogOut, User, Trash2, LogIn, MoreHorizontal, X, ChevronLeft } from "lucide-react";
+import { Plus, ShieldCheck, LogOut, User, Trash2, LogIn, MoreHorizontal, X, ChevronLeft, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -9,7 +9,7 @@ const STORAGE_KEY = "crewly:events-sidebar:collapsed";
 const EXPANDED_WIDTH = 200;
 const COLLAPSED_WIDTH = 52;
 
-export default function EventsSidebar({ canEdit, isAdmin, isGuest, currentUser, setCurrentUser, onNewEvent, onAdminSettings, onLogout, onLogin, onDeleteAccount }) {
+export default function EventsSidebar({ canEdit, isAdmin, isGuest, currentUser, setCurrentUser, onNewEvent, onAdminSettings, onStaffTrends, onLogout, onLogin, onDeleteAccount }) {
   const [collapsed, setCollapsed] = useState(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -26,6 +26,7 @@ export default function EventsSidebar({ canEdit, isAdmin, isGuest, currentUser, 
 
   const actionItems = [
     ...(canEdit ? [{ id: "new", label: "新規イベント", icon: Plus, onClick: onNewEvent }] : []),
+    { id: "trends", label: "配置傾向", icon: TrendingUp, onClick: onStaffTrends },
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck, onClick: onAdminSettings }] : []),
   ];
 
@@ -131,6 +132,9 @@ export default function EventsSidebar({ canEdit, isAdmin, isGuest, currentUser, 
                   <Plus className="h-4 w-4 shrink-0" />新規イベント
                 </button>
               )}
+              <button type="button" onClick={() => { setMobileOpen(false); onStaffTrends(); }} className="flex w-full items-center gap-2 rounded-md px-2.5 py-2.5 text-left text-xs font-semibold text-foreground hover:bg-muted">
+                <TrendingUp className="h-4 w-4 shrink-0" />配置傾向
+              </button>
               {isAdmin && (
                 <button type="button" onClick={() => { setMobileOpen(false); onAdminSettings(); }} className="flex w-full items-center gap-2 rounded-md px-2.5 py-2.5 text-left text-xs font-semibold text-foreground hover:bg-muted">
                   <ShieldCheck className="h-4 w-4 shrink-0" />管理者設定

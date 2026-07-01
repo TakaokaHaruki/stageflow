@@ -25,6 +25,7 @@ export default function EventPublishToggle({ event, canEdit }) {
       await queryClient.cancelQueries({ queryKey: ["events"] });
       const previous = queryClient.getQueryData(["events"]);
       const nextMode = isPublic ? "edit" : "public";
+      const wasPublic = isPublic;
       queryClient.setQueryData(["events"], (old) =>
         (old || []).map((e) =>
           e.id === event.id
@@ -32,15 +33,15 @@ export default function EventPublishToggle({ event, canEdit }) {
             : e
         )
       );
-      return { previous };
+      return { previous, wasPublic };
     },
     onError: (_, __, context) => {
       queryClient.setQueryData(["events"], context?.previous);
       toast.error("公開設定の変更に失敗しました");
     },
-    onSuccess: () => {
+    onSuccess: (_, __, context) => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
-      toast.success(isPublic ? "非公開にしました" : "公開しました");
+      toast.success(context.wasPublic ? "非公開にしました" : "公開しました");
     },
   });
 
