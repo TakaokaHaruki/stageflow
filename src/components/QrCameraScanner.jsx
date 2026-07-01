@@ -112,7 +112,17 @@ export default function QrCameraScanner({ onScan, onClose, processing = false, a
     }
   }, []);
 
-  // スキャンループ
+
+
+  // processing が false になったら scannedValue をリセット（連続読み取りのため）
+  useEffect(() => {
+    if (!processing && scannedValue) {
+      setScannedValue(null);
+    }
+  }, [processing, scannedValue]);
+
+  // 読取後、一定間隔は再読取を防止（デバウンス）
+  const lastScanTimeRef = useRef(0);
   useEffect(() => {
     if (phase !== "scanning" || cameraError || processing) return;
 
@@ -132,8 +142,12 @@ export default function QrCameraScanner({ onScan, onClose, processing = false, a
             inversionAttempts: "dontInvert",
           });
           if (code && code.data) {
-            setScannedValue(code.data);
-            onScan(code.data);
+            const now = Date.now();
+            if (now - lastScanTimeRef.current >= 1500) {
+              lastScanTimeRef.current = now;
+              setScannedValue(code.data);
+              onScan(code.data);
+            }
             return;
           }
         }
@@ -149,13 +163,6 @@ export default function QrCameraScanner({ onScan, onClose, processing = false, a
       }
     };
   }, [phase, cameraError, processing, onScan]);
-
-  // processing が false になったら scannedValue をリセット（連続読み取りのため）
-  useEffect(() => {
-    if (!processing && scannedValue) {
-      setScannedValue(null);
-    }
-  }, [processing, scannedValue]);
 
   // アンマウント時にカメラ停止
   useEffect(() => {

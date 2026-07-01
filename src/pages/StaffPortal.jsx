@@ -16,6 +16,7 @@ import PortalMaintenance from "@/components/PortalMaintenance";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
 const STORAGE_KEY = "crewly_acast_id";
+const COMPLIANCE_STORAGE_PREFIX = "crewly_compliance_";
 
 const TIME_SLOT_LABELS = {
   "通し": { label: "通し", color: "bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-800 dark:text-emerald-400" },
@@ -118,14 +119,31 @@ export default function StaffPortal() {
         }
       }
 
+      // Check if already agreed to compliance for this staff/event combination
+      const agreedEvents = activeEvents.filter((event) => {
+        const key = `crewly_compliance_${staff.name}_${event.id}`;
+        return localStorage.getItem(key) === "true";
+      });
+      const needsAgreement = activeEvents.length > 0 && agreedEvents.length < activeEvents.length;
+
       // Store auth data temporarily and show confirmation modal
       setPendingAuthData({
         staffName: staff.name,
-        acastId: id
+        acastId: id,
+        eventId: activeEvents[0]?.id || null
       });
       setPositions(allPositions);
       setEvents(activeEvents);
-      setShowConfirmation(true);
+      
+      if (needsAgreement) {
+        setShowConfirmation(true);
+      } else {
+        // Already agreed, skip to login
+        setStaffName(staff.name);
+        localStorage.setItem(STORAGE_KEY, id);
+        setAcastId(id);
+        setPendingAuthData(null);
+      }
     } catch (e) {
       setError("データの取得に失敗しました。");
     } finally {
@@ -147,6 +165,11 @@ export default function StaffPortal() {
     setAcastId(pendingAuthData.acastId);
     setPendingAuthData(null);
     setShowComplianceModal(false);
+
+    // Mark compliance as agreed for all active events
+    events.forEach((e) => {
+      localStorage.setItem(`${COMPLIANCE_STORAGE_PREFIX}${pendingAuthData.staffName}_${e.id}`, "true");
+    });
   };
 
   const handleCancelModal = () => {
@@ -182,6 +205,7 @@ export default function StaffPortal() {
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
+    // Keep compliance agreements on logout
     setAcastId("");
     setStaffName(null);
     setPositions([]);
@@ -217,6 +241,7 @@ export default function StaffPortal() {
       } else if (data?.success) {
         toast.success(`「${pendingRemove.staffName}」さんを「${pendingRemove.position.name}」から削除しました`);
         await refreshPositions();
+        setPendingRemove(null);
       }
     } catch (e) {
       toast.error("削除に失敗しました");
@@ -263,6 +288,7 @@ export default function StaffPortal() {
 
   const handleQrScanSuccess = async (scannedData) => {
     if (!qrScanPosition || !acastId) return;
+    if (qrProcessing) return; // Prevent duplicate scans during processing
     setQrProcessing(true);
     try {
       const res = await base44.functions.invoke("addStaffByQr", {
@@ -277,6 +303,8 @@ export default function StaffPortal() {
       } else if (data?.success) {
         toast.success(`「${data.staffName}」さんを「${data.positionName}」に追加しました`);
         await refreshPositions();
+        // Add delay before allowing next scan
+        await new Promise((resolve) => setTimeout(resolve, 1500));
       }
     } catch (e) {
       toast.error("追加に失敗しました");
