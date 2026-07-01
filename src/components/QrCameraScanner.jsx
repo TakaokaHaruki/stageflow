@@ -34,9 +34,17 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
     setPhase("starting");
     setError("");
 
+    // iframe内（プレビュー環境等）では getUserMedia が権限ダイアログを出せず
+    // 即座に NotAllowedError で拒否されるため、先に検知して新規タブへ誘導
+    const inIframe = window.self !== window.top;
+    if (inIframe) {
+      setError("iframe_blocked");
+      setPhase("error");
+      return;
+    }
+
     if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
-      const inIframe = window.self !== window.top;
-      setError(inIframe ? "iframe_blocked" : "no_media_devices");
+      setError("no_media_devices");
       setPhase("error");
       return;
     }
