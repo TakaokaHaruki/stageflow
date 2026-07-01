@@ -171,6 +171,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
             <video
               ref={videoRef}
               playsInline
+              webkit-playsinline
               muted
               autoPlay
               className="absolute inset-0 w-full h-full object-cover"
