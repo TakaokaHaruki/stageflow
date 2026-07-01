@@ -15,8 +15,8 @@ module.exports = {
   theme: {
   	extend: {
       fontFamily: {
-        montserrat: ['Montserrat', 'sans-serif'],
-        inter: ['Inter', 'sans-serif'],
+        outfit: ['Outfit', 'sans-serif'],
+        jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
       },
   		borderRadius: {
   			lg: 'var(--radius)',
