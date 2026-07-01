@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import jsQR from "jsqr";
 import { X, Camera, RefreshCw, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import CameraPermissionGuide from "@/components/CameraPermissionGuide";
 
 /**
  * カメラでA-CAST IDのQRコードをリアルタイム読取するコンポーネント
@@ -47,7 +48,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
     } catch (err) {
       setIsStarting(false);
       if (err?.name === "NotAllowedError") {
-        setError("カメラの使用が許可されていません。ブラウザの設定を確認してください。");
+        setError("permission_denied");
       } else if (err?.name === "NotFoundError") {
         setError("カメラが見つかりません。");
       } else {
@@ -186,15 +187,21 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
 
           {/* エラー */}
           {error && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-              <p className="text-xs text-destructive-foreground bg-destructive rounded-lg px-3 py-2 mb-3">{error}</p>
-              <button
-                onClick={startCamera}
-                className="flex items-center gap-1.5 text-xs text-white bg-primary px-3 py-1.5 rounded-lg"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                再試行
-              </button>
+            <div className="absolute inset-0 bg-black flex flex-col items-center justify-center px-6 text-center">
+              {error === "permission_denied" ? (
+                <CameraPermissionGuide onRetry={startCamera} />
+              ) : (
+                <>
+                  <p className="text-xs text-destructive-foreground bg-destructive rounded-lg px-3 py-2 mb-3">{error}</p>
+                  <button
+                    onClick={startCamera}
+                    className="flex items-center gap-1.5 text-xs text-white bg-primary px-3 py-1.5 rounded-lg"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    再試行
+                  </button>
+                </>
+              )}
             </div>
           )}
 
