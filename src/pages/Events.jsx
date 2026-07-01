@@ -43,7 +43,7 @@ export default function Events() {
   // Group events by date and sort by date descending
   const groupedEvents = useMemo(() => {
     if (!allEvents || allEvents.length === 0) return [];
-    
+
     // Filter by search query first
     const filtered = allEvents.filter((event) => {
       const query = searchQuery.toLowerCase();
@@ -51,7 +51,7 @@ export default function Events() {
       const venueMatch = event.venue?.toLowerCase().includes(query);
       return nameMatch || venueMatch;
     });
-    
+
     // Sort by date descending (newest first)
     const sorted = [...filtered].sort((a, b) => {
       if (!a.date && !b.date) return 0;
@@ -59,7 +59,7 @@ export default function Events() {
       if (!b.date) return -1;
       return new Date(b.date) - new Date(a.date);
     });
-    
+
     // Group by date
     const groups = {};
     for (const event of sorted) {
@@ -69,15 +69,15 @@ export default function Events() {
       }
       groups[dateKey].push(event);
     }
-    
+
     // Convert to array and sort groups by date descending
-    return Object.entries(groups)
-      .sort((a, b) => {
-        if (a[0] === "no-date") return 1;
-        if (b[0] === "no-date") return -1;
-        return new Date(b[0]) - new Date(a[0]);
-      })
-      .map(([date, events]) => ({ date, events }));
+    return Object.entries(groups).
+    sort((a, b) => {
+      if (a[0] === "no-date") return 1;
+      if (b[0] === "no-date") return -1;
+      return new Date(b[0]) - new Date(a[0]);
+    }).
+    map(([date, events]) => ({ date, events }));
   }, [allEvents, searchQuery]);
 
   // Check if a date is today (JST)
@@ -158,25 +158,25 @@ export default function Events() {
       <div className="sm:flex">
         <SidebarNav
           tabs={[
-            ...(canEdit ? [{ id: "new", label: "新規イベント", icon: Plus }] : []),
-            { id: "trends", label: "配置傾向", icon: TrendingUp },
-            ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
-          ]}
+          ...(canEdit ? [{ id: "new", label: "新規イベント", icon: Plus }] : []),
+          { id: "trends", label: "配置傾向", icon: TrendingUp },
+          ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : [])]
+          }
           activeTab="events"
           onSelectTab={(tabId) => {
-            if (tabId === "new") { setEditingEvent(null); setShowModal(true); }
+            if (tabId === "new") {setEditingEvent(null);setShowModal(true);}
             if (tabId === "trends") navigate("/staff-trends");
             if (tabId === "admin") setShowAdminModal(true);
           }}
           topOffset={56}
           extraNavItems={
-            <>
+          <>
               <div className="border-t border-border p-1.5">
                 <ThemeToggle />
               </div>
               <div className="border-t border-border p-1.5 space-y-1.5">
-                {currentUser ? (
-                  <div className="flex items-center gap-2 px-1">
+                {currentUser ?
+              <div className="flex items-center gap-2 px-1">
                     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20">
                       <User className="w-3 h-3 text-primary" />
                     </div>
@@ -184,132 +184,132 @@ export default function Events() {
                     <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
                     <button onClick={() => setConfirmDeleteAccount(true)} className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-destructive" title="アカウント削除"><Trash2 className="h-3 w-3" /></button>
                     <button onClick={() => base44.auth.logout()} className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-destructive" title="ログアウト"><LogOut className="h-3 w-3" /></button>
-                  </div>
-                ) : (
-                  <Button size="sm" variant="outline" className="gap-1 text-xs w-full" onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}>
+                  </div> :
+
+              <Button size="sm" variant="outline" className="gap-1 text-xs w-full" onClick={() => {localStorage.removeItem("guest_mode");navigate("/login");}}>
                     <LogIn className="w-3 h-3" />ログイン
                   </Button>
-                )}
+              }
               </div>
             </>
-          }
-        />
+          } />
+        
         <div className="flex-1 min-w-0">
       <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:pb-8">
       <UserRestrictionBanner role={role} />
 
         {isLoading ?
-        <div className="flex justify-center py-20">
+            <div className="flex justify-center py-20">
             <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
           </div> :
-        groupedEvents.length === 0 ?
-        <div className="text-center py-24 text-muted-foreground">
+            groupedEvents.length === 0 ?
+            <div className="text-center py-24 text-muted-foreground">
             <Calendar className="w-14 h-14 mx-auto mb-4 opacity-20" />
-            {searchQuery ? (
+            {searchQuery ?
               <>
                 <p className="text-lg font-medium">該当するイベントがありません</p>
                 <p className="text-sm mt-1">検索条件を変更してください</p>
-              </>
-            ) : (
+              </> :
+
               <>
                 <p className="text-lg font-medium">イベントがありません</p>
                 <p className="text-sm mt-1">新規イベントを追加してください</p>
               </>
-            )}
+              }
           </div> :
 
-        <div className="space-y-4 pb-6">
+            <div className="space-y-4 pb-6">
           {/* Search box */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              type="text"
-              placeholder="イベント名または会場名で検索"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
+                  type="text"
+                  placeholder="イベント名または会場名で検索"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9" />
+                
           </div>
 
           {/* Grouped events */}
-          {groupedEvents.map(({ date, events: dateEvents }, groupIdx) => (
-            <motion.div
-              key={date}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: groupIdx * 0.05 }}
-              className="space-y-2"
-            >
+          {groupedEvents.map(({ date, events: dateEvents }, groupIdx) =>
+              <motion.div
+                key={date}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: groupIdx * 0.05 }}
+                className="space-y-2">
+                
               {/* Date header */}
-              {date !== "no-date" && (
-                <div className="font-bold text-base text-foreground border-b border-border pb-1 mb-2">
+              {date !== "no-date" &&
+                <div className="font-bold text-base text-foreground border-b border-border pb-1 mb-2 mr-2">
                   {format(new Date(date), "M 月 d 日（E）", { locale: ja })}
                   {isToday(date) && <span className="ml-2 text-xs text-primary">（今日）</span>}
                 </div>
-              )}
-              {date === "no-date" && (
+                }
+              {date === "no-date" &&
                 <div className="font-bold text-base text-foreground border-b border-border pb-1 mb-2">
                   日付未設定
                 </div>
-              )}
+                }
 
               {/* Event rows */}
-              {dateEvents.map((event) => (
+              {dateEvents.map((event) =>
                 <Link
                   key={event.id}
                   to={`/events/${event.id}`}
                   className={`group block bg-card border rounded-lg px-2.5 py-1.5 hover:shadow-sm transition-all duration-200 ${
-                    isToday(date)
-                      ? "border-primary hover:border-primary/60"
-                      : "border-border hover:border-primary/40"
-                  }`}>
+                  isToday(date) ?
+                  "border-primary hover:border-primary/60" :
+                  "border-border hover:border-primary/40"}`
+                  }>
                   <div className="flex items-center justify-between gap-1.5">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <h2 className="text-sm font-semibold text-foreground truncate">{event.name}</h2>
                       </div>
                       <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-                        {event.date && (
-                          <span className="flex items-center gap-0.5">
+                        {event.date &&
+                        <span className="flex items-center gap-0.5">
                             <Calendar className="w-2.5 h-2.5" />
                             {format(new Date(event.date), "M 月 d 日（E）", { locale: ja })}
                           </span>
-                        )}
-                        {event.venue && (
-                          <span className="flex items-center gap-0.5">
+                        }
+                        {event.venue &&
+                        <span className="flex items-center gap-0.5">
                             <MapPin className="w-2.5 h-2.5" />
                             {event.venue}
                           </span>
-                        )}
+                        }
                         <EventPublishToggle event={event} canEdit={canEdit} />
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center justify-end gap-0.5">
-                      {!isGuest && (
-                        <>
+                      {!isGuest &&
+                      <>
                           <button
-                            onClick={(e) => handleEdit(e, event)}
-                            disabled={!canEdit}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を編集`}>
+                          onClick={(e) => handleEdit(e, event)}
+                          disabled={!canEdit}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を編集`}>
                             <Pencil className="w-3 h-3" />
                           </button>
                           <button
-                            onClick={(e) => handleDelete(e, event.id, event.name)}
-                            disabled={!canEdit}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を削除`}>
+                          onClick={(e) => handleDelete(e, event.id, event.name)}
+                          disabled={!canEdit}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を削除`}>
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </>
-                      )}
+                      }
                       <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                   </div>
                 </Link>
-              ))}
+                )}
             </motion.div>
-          ))}
+              )}
         </div>
-        }
+            }
       </div>{/* end max-w container */}
         </div>{/* end flex-1 */}
       </div>{/* end sm:flex */}
