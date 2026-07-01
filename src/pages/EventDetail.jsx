@@ -63,19 +63,6 @@ export default function EventDetail() {
   const isPrivileged = isAdmin || isChief;
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Fetch tab-disabled configs for filtering
-  const { data: tabConfigs = [] } = useQuery({
-    queryKey: ["appConfig", "tab_control"],
-    queryFn: () => base44.entities.AppConfig.list(),
-    refetchInterval: 30000,
-    enabled: !isAdmin,
-  });
-  const disabledTabIds = isAdmin
-    ? []
-    : tabConfigs
-        .filter((c) => c.key?.startsWith("tab_disabled_") && c.value_bool)
-        .map((c) => c.key.replace("tab_disabled_", ""));
-
   const handleTabChange = (newTab, options) => {
     setTab(newTab, options);
   };
@@ -93,6 +80,19 @@ export default function EventDetail() {
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
+
+  // Fetch tab-disabled configs for filtering
+  const { data: tabConfigs = [] } = useQuery({
+    queryKey: ["appConfig", "tab_control"],
+    queryFn: () => base44.entities.AppConfig.list(),
+    refetchInterval: 30000,
+    enabled: !isAdmin,
+  });
+  const disabledTabIds = isAdmin
+    ? []
+    : tabConfigs
+        .filter((c) => c.key?.startsWith("tab_disabled_") && c.value_bool)
+        .map((c) => c.key.replace("tab_disabled_", ""));
 
   const { data: event, isLoading, refetch: refetchEvent } = useQuery({
     queryKey: ["event", eventId],
