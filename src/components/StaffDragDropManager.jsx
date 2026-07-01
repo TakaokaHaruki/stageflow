@@ -482,7 +482,7 @@ export default function StaffDragDropManager({ eventId }) {
       <SectionHeader
         icon={ClipboardList}
         title="配置表"
-        subtitle={continuousMode ? "一日通しモードです　各セクションチーフがスタッフを追加することができます" : undefined}
+        description={continuousMode ? "一日通しモードです　各セクションチーフがスタッフを追加することができます" : undefined}
         actions={(
           <>
           {canManageSettings && <PresetSelector eventId={eventId} compact positions={positions} />}
