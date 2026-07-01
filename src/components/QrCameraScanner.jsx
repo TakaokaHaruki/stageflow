@@ -53,10 +53,26 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
       return;
     }
 
+    // カメラ API のサポート確認
     if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
       setError("no_media_devices");
       setPhase("error");
       return;
+    }
+
+    // Android Chrome 向け：権限が事前にブロックされていないか確認
+    if (navigator.permissions) {
+      try {
+        const permissionStatus = await navigator.permissions.query({ name: "camera" });
+        if (permissionStatus.state === "denied") {
+          setError("permission_denied");
+          setPhase("error");
+          return;
+        }
+      } catch (permErr) {
+        // permissions API がサポートされていない場合は無視
+        console.log("Permissions API not supported:", permErr?.message);
+      }
     }
 
     try {
