@@ -1,27 +1,107 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useRef, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { MapPin, ImageOff, Pencil } from "lucide-react";
+import { MapPin, ImageOff, Pencil, Upload, Loader2, ImageIcon, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
 import PositionMapEditor from "@/components/PositionMapEditor";
+import { toast } from "sonner";
 
 export default function PositionMapViewer({ eventId, event }) {
   const { canEdit } = useUserRole();
+  const queryClient = useQueryClient();
   const [editMode, setEditMode] = useState(false);
   const [selectedPin, setSelectedPin] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
 
   const { data: positions = [], isLoading } = useQuery({
     queryKey: ["positions", eventId],
     queryFn: () => base44.entities.Position.filter({ event_id: eventId }),
   });
 
+  const handleMapUpload = useCallback(async (file) => {
+    if (!file || uploading) return;
+    setUploading(true);
+    try {
+      const res = await base44.integrations.Core.UploadFile({ file });
+      const fileUrl = res?.file_url;
+      if (!fileUrl) throw new Error("アップロードに失敗しました");
+      await base44.functions.invoke("updateEventRecord", {
+        eventId,
+        data: { map_image_url: fileUrl },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      await queryClient.invalidateQueries({ queryKey: ["events"] });
+      toast.success("マップ画像を更新しました");
+    } catch {
+      toast.error("マップ画像のアップロードに失敗しました");
+    } finally {
+      setUploading(false);
+    }
+  }, [eventId, uploading, queryClient]);
+
+  const handleMapDelete = useCallback(async () => {
+    if (uploading) return;
+    setUploading(true);
+    try {
+      await base44.functions.invoke("updateEventRecord", {
+        eventId,
+        data: { map_image_url: "" },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      await queryClient.invalidateQueries({ queryKey: ["events"] });
+      toast.success("マップ画像を削除しました");
+    } catch {
+      toast.error("マップ画像の削除に失敗しました");
+    } finally {
+      setUploading(false);
+    }
+  }, [eventId, uploading, queryClient]);
+
   if (!event?.map_image_url) {
+    if (canEdit) {
+      return (
+        <div className="space-y-3">
+          <div
+            className={`flex min-h-[40vh] flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-6 text-center transition-colors ${dragOver ? "border-primary bg-primary/5" : "border-border"}`}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleMapUpload(f); }}
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              {uploading ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <ImageIcon className="h-6 w-6 text-primary" />}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">会場マップ画像をアップロード</p>
+              <p className="mt-1 text-xs text-muted-foreground">PNG / JPEG / WebP に対応</p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleMapUpload(f); e.target.value = ""; }}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1 text-xs"
+              disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="h-3.5 w-3.5" />
+              {uploading ? "アップロード中..." : "画像を選択"}
+            </Button>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex min-h-[40vh] flex-col items-center justify-center gap-2 text-center text-muted-foreground">
         <ImageOff className="h-10 w-10 text-muted-foreground/50" />
         <p className="text-sm font-medium">マップ画像が設定されていません</p>
-        <p className="text-xs">管理設定からマップ画像をアップロードしてください。</p>
       </div>
     );
   }
@@ -55,9 +135,24 @@ export default function PositionMapViewer({ eventId, event }) {
   return (
     <div className="space-y-3">
       {canEdit && (
-        <div className="flex justify-end">
+        <div className="flex flex-wrap justify-end gap-1.5">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleMapUpload(f); e.target.value = ""; }}
+          />
+          <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+            {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
+            {uploading ? "処理中..." : "画像を変更"}
+          </Button>
+          <Button size="sm" variant="ghost" className="gap-1 text-xs text-destructive hover:text-destructive" onClick={handleMapDelete} disabled={uploading}>
+            <Trash2 className="h-3.5 w-3.5" />
+            削除
+          </Button>
           <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => setEditMode(true)}>
-            <Pencil className="h-3.5 w-3.5" />ピン位置を編集
+            <Pencil className="h-3.5 w-3.5" />ピン編集
           </Button>
         </div>
       )}
