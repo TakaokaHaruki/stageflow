@@ -107,7 +107,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
 
   // スキャンループ
   useEffect(() => {
-    if (phase !== "scanning" || cameraError || scannedValue || processing) return;
+    if (phase !== "scanning" || cameraError || processing) return;
 
     const tick = () => {
       const video = videoRef.current;
@@ -141,7 +141,14 @@ export default function QrCameraScanner({ onScan, onClose, processing = false })
         rafRef.current = null;
       }
     };
-  }, [phase, cameraError, scannedValue, processing, onScan]);
+  }, [phase, cameraError, processing, onScan]);
+
+  // processing が false になったら scannedValue をリセット（連続読み取りのため）
+  useEffect(() => {
+    if (!processing && scannedValue) {
+      setScannedValue(null);
+    }
+  }, [processing, scannedValue]);
 
   // アンマウント時にカメラ停止
   useEffect(() => {

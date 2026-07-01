@@ -3,11 +3,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { chiefAcastId, staffName, positionId, eventId } = await req.json();
 
     // 入力検証
@@ -15,8 +10,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: '必要なパラメータが不足しています' }, { status: 400 });
     }
 
-    // チーフの存在確認
-    const chiefStaff = await base44.entities.Staff.filter({ event_id: eventId, acast_id: chiefAcastId }).first();
+    // チーフの存在確認（asServiceRole を使用 - ポータルの未ログインユーザー対応）
+    const chiefStaff = await base44.asServiceRole.entities.Staff.filter({ event_id: eventId, acast_id: chiefAcastId }).first();
     if (!chiefStaff) {
       return Response.json({ error: 'チーフが見つかりません' }, { status: 404 });
     }
@@ -26,8 +21,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'セクションチーフの権限が必要です' }, { status: 403 });
     }
 
-    // 担当ポジションに所属しているか確認
-    const positions = await base44.entities.Position.filter({ event_id: eventId });
+    // 担当ポジションに所属しているか確認（asServiceRole を使用）
+    const positions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
     const chiefPosition = positions.find((p: any) => {
       const allStaff = [
         ...(p.staff_names || []),
@@ -41,8 +36,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: '担当ポジションに所属している必要があります' }, { status: 403 });
     }
 
-    // ポジションの取得
-    const position = await base44.entities.Position.get(positionId);
+    // ポジションの取得（asServiceRole を使用）
+    const position = await base44.asServiceRole.entities.Position.get(positionId);
     if (!position) {
       return Response.json({ error: 'ポジションが見つかりません' }, { status: 404 });
     }
@@ -71,13 +66,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: '指定されたスタッフはこのポジションに所属していません' }, { status: 404 });
     }
 
-    // ポジションを更新
-    await base44.entities.Position.update(positionId, updateData);
+    // ポジションを更新（asServiceRole を使用）
+    await base44.asServiceRole.entities.Position.update(positionId, updateData);
 
-    // 操作ログを記録
+    // 操作ログを記録（asServiceRole を使用）
     const now = new Date();
     const jstString = now.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', hour12: false }).replace(/\//g, '-');
-    await base44.entities.OperationLog.create({
+    await base44.asServiceRole.entities.OperationLog.create({
       event_id: eventId,
       action_type: 'position_unassign',
       actor_name: chiefStaff.name,

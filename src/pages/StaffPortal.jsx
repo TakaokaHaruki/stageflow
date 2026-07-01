@@ -222,7 +222,6 @@ export default function StaffPortal() {
       toast.error("削除に失敗しました");
     } finally {
       setRemoving(false);
-      setPendingRemove(null);
     }
   };
 
@@ -283,7 +282,6 @@ export default function StaffPortal() {
       toast.error("追加に失敗しました");
     } finally {
       setQrProcessing(false);
-      setQrScanPosition(null);
     }
   };
 
@@ -654,11 +652,9 @@ export default function StaffPortal() {
           open={true}
           onConfirm={handleConfirmRemove}
           onCancel={() => setPendingRemove(null)}
-          title="ポジションから削除"
-          description={`「${pendingRemove.staffName}」さんを「${pendingRemove.position.name}」から削除しますか？`}
+          message={`「${pendingRemove.staffName}」さんを「${pendingRemove.position.name}」から削除しますか？`}
           confirmLabel="削除"
-          variant="destructive"
-          loading={removing}
+          confirmVariant="destructive"
         />
       )}
     </div>
