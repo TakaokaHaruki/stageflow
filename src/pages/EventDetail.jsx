@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Map, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Map, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -84,6 +84,12 @@ export default function EventDetail() {
     setTabResetKey((key) => key + 1);
   };
 
+  // Reset section when switching between admin/settings tabs
+  useEffect(() => {
+    if (tab === "admin") setAdminSection("users");
+    if (tab === "settings") setSettingsSection("positions");
+  }, [tab]);
+
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
@@ -163,6 +169,7 @@ export default function EventDetail() {
         { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
         { id: "global_banner", label: "グローバル通知", icon: Bell },
         { id: "tab_control", label: "タブ制御", icon: LayoutTemplate },
+        { id: "staff_qr", label: "スタッフ QR 出力", icon: QrCode },
       ]
     : tab === "settings"
       ? [
