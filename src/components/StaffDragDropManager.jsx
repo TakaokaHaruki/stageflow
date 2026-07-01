@@ -567,7 +567,7 @@ export default function StaffDragDropManager({ eventId }) {
                           onStaffRemove={removeStaffFromPosition}
                           onStaffEdit={(staff, pos) => setEditingStaff({ staff, pos })}
                           onEdit={(p) => { setEditing(p); setShowModal(true); }}
-                          emptyLabel="スタッフをドラッグして配置"
+                          emptyLabel="スタッフを配置にドラッグ"
                           staffList={staffList}
                           requiredCount={pos.required_count ?? 0}
                           onRequiredCountChange={(v) => {

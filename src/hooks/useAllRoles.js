@@ -17,16 +17,25 @@ export function useAllRoles() {
     return map;
   }, [customRoles]);
 
+  const iconMap = useMemo(() => {
+    const map = {};
+    customRoles.forEach((r) => {
+      if (r.name && r.icon) map[r.name] = r.icon;
+    });
+    return map;
+  }, [customRoles]);
+
   const allRoles = useMemo(
     () => [
-      ...STAFF_ROLES.map((name) => ({ name, color: null, fixed: true })),
-      ...customRoles.map((r) => ({ name: r.name, color: r.color, fixed: false })),
+      ...STAFF_ROLES.map((name) => ({ name, color: null, icon: null, fixed: true })),
+      ...customRoles.map((r) => ({ name: r.name, color: r.color, icon: r.icon, fixed: false })),
     ],
     [customRoles]
   );
 
   const getBadgeClass = useMemo(() => (role) => getRoleBadgeClass(role, colorMap[role]), [colorMap]);
   const getIconColor = useMemo(() => (role) => getRoleIconColor(role, colorMap[role]), [colorMap]);
+  const getIconName = useMemo(() => (role) => iconMap[role] || null, [iconMap]);
 
-  return { allRoles, customRoles, colorMap, getBadgeClass, getIconColor, saveRoles };
+  return { allRoles, customRoles, colorMap, iconMap, getBadgeClass, getIconColor, getIconName, saveRoles };
 }

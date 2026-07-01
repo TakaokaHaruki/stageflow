@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, X, Tag, Shield, LayoutGrid } from "lucide-react";
+import { Plus, X, Tag, Shield, LayoutGrid, Smile } from "lucide-react";
 import { useCaptureTags } from "@/hooks/useCaptureTags";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import { usePositionCategories } from "@/hooks/usePositionCategories";
@@ -11,6 +11,9 @@ import { STAFF_ROLES, getRandomColorKey, CUSTOM_ROLE_COLOR_PRESETS, getRoleBadge
 import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
 import SectionHeader from "@/components/SectionHeader";
+import RoleIcon from "@/components/RoleIcon";
+import IconPickerModal from "@/components/IconPickerModal";
+import { resolveIcon } from "@/lib/iconCatalog";
 
 export default function TagManagement() {
   const { canManageSettings } = useUserRole();
@@ -20,6 +23,8 @@ export default function TagManagement() {
 
   const [tagInput, setTagInput] = useState("");
   const [roleInput, setRoleInput] = useState("");
+  const [roleIcon, setRoleIcon] = useState("");
+  const [showIconPicker, setShowIconPicker] = useState(false);
   const [categoryInput, setCategoryInput] = useState("");
 
   // --- 捕まりタグ ---
@@ -45,7 +50,7 @@ export default function TagManagement() {
   // --- 役割（カスタム） ---
   const roleAddMutation = useMutation({
     mutationFn: async (nextRoles) => saveRoles(nextRoles),
-    onSuccess: () => { setRoleInput(""); toast.success("役割を追加しました"); },
+    onSuccess: () => { setRoleInput(""); setRoleIcon(""); toast.success("役割を追加しました"); },
     onError: () => toast.error("追加に失敗しました"),
   });
   const roleRemoveMutation = useMutation({
@@ -57,7 +62,7 @@ export default function TagManagement() {
     const r = roleInput.trim();
     if (!r || allRoles.some((role) => role.name === r)) return;
     const colorKey = getRandomColorKey();
-    roleAddMutation.mutate([...customRoles, { name: r, color: colorKey }]);
+    roleAddMutation.mutate([...customRoles, { name: r, color: colorKey, icon: roleIcon || undefined }]);
   };
   const handleRemoveRole = (roleName) => {
     roleRemoveMutation.mutate(customRoles.filter((r) => r.name !== roleName));
@@ -105,6 +110,7 @@ export default function TagManagement() {
           ))}
           {customRoles.map((role) => (
             <span key={role.name} className={`inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full border font-medium ${getRoleBadgeClass(role.name, role.color)}`}>
+              <RoleIcon role={role.name} />
               {role.name}
               {canManageSettings && (
                 <button onClick={() => handleRemoveRole(role.name)} className="ml-0.5 hover:text-destructive transition-colors" aria-label="削除">
@@ -115,15 +121,26 @@ export default function TagManagement() {
           ))}
         </div>
         {canManageSettings && (
-          <div className="flex gap-1.5 mt-2">
+          <div className="flex flex-wrap gap-1.5 mt-2">
             <Input
               value={roleInput}
               onChange={(e) => setRoleInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); handleAddRole(); } }}
               placeholder="新しい役割名（色は自動割り当て）"
-              className="h-7 text-xs flex-1"
+              className="h-7 text-xs flex-1 min-w-[100px]"
             />
-            <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-0.5" onClick={handleAddRole} disabled={!roleInput.trim() || roleAddMutation.isPending}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-xs gap-0.5 shrink-0"
+              onClick={() => setShowIconPicker(true)}
+            >
+              {roleIcon
+                ? (() => { const I = resolveIcon(roleIcon); return I ? <I className="w-3 h-3" /> : <Smile className="w-3 h-3" />; })()
+                : <Smile className="w-3 h-3" />}
+              アイコン
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-0.5 shrink-0" onClick={handleAddRole} disabled={!roleInput.trim() || roleAddMutation.isPending}>
               <Plus className="w-3 h-3" />追加
             </Button>
           </div>
@@ -206,6 +223,14 @@ export default function TagManagement() {
           </div>
         )}
       </div>
+
+      {showIconPicker && (
+        <IconPickerModal
+          selectedIcon={roleIcon}
+          onSelect={setRoleIcon}
+          onClose={() => setShowIconPicker(false)}
+        />
+      )}
     </div>
   );
 }
