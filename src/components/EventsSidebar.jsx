@@ -33,11 +33,11 @@ export default function EventsSidebar({ canEdit, isAdmin, isGuest, currentUser, 
   const desktopSidebar = (
     <aside
       className="hidden sm:flex sticky self-start flex-col border-r border-border bg-card/80 backdrop-blur-md"
-      style={{ width, top: 52, height: "calc(100vh - 52px)", transition: "width 200ms ease" }}
+      style={{ width, top: 56, height: "calc(100vh - 56px)", transition: "width 200ms ease" }}
     >
       <TooltipProvider delayDuration={200}>
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-1 scrollbar-hide">
-          <ul className="flex flex-col gap-0.5 px-1">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
+          <ul className="flex flex-col gap-0.5 px-1.5">
             {actionItems.map(({ id, label, icon: Icon, onClick }) => {
               const button = (
                 <button
@@ -63,7 +63,7 @@ export default function EventsSidebar({ canEdit, isAdmin, isGuest, currentUser, 
           </ul>
       </nav>
 
-      <div className="border-t border-border p-1 space-y-1">
+      <div className="border-t border-border p-1.5 space-y-1.5">
         <div className={`flex ${collapsed ? "justify-center" : "items-center gap-2 px-1"}`}>
           <ThemeToggle />
           {!collapsed && <span className="text-xs text-muted-foreground">テーマ</span>}
@@ -100,7 +100,7 @@ export default function EventsSidebar({ canEdit, isAdmin, isGuest, currentUser, 
         )}
       </div>
 
-      <div className="border-t border-border p-1">
+      <div className="border-t border-border p-1.5">
         <button
           onClick={() => setCollapsed((c) => !c)}
           className="flex w-full items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
