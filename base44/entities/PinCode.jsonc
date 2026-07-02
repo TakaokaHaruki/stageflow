@@ -1,0 +1,41 @@
+{
+  "name": "PinCode",
+  "type": "object",
+  "properties": {
+    "acast_id": {
+      "type": "string",
+      "description": "\u30b9\u30bf\u30c3\u30d5\u306eA-CAST ID"
+    },
+    "pin_hash": {
+      "type": "string",
+      "description": "SHA-256\u30cf\u30c3\u30b7\u30e5\u5316\u3055\u308c\u305fPIN",
+      "default": ""
+    },
+    "reset_requested": {
+      "type": "boolean",
+      "description": "\u30ea\u30bb\u30c3\u30c8\u7533\u8acb\u30d5\u30e9\u30b0",
+      "default": false
+    },
+    "reset_requested_at_jst": {
+      "type": "string",
+      "description": "\u30ea\u30bb\u30c3\u30c8\u7533\u8acb\u65e5\u6642\uff08JST\uff09"
+    },
+    "created_at_jst": {
+      "type": "string",
+      "description": "PIN\u8a2d\u5b9a\u65e5\u6642\uff08JST\uff09"
+    }
+  },
+  "required": [
+    "acast_id"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

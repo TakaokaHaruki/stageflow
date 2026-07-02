@@ -15,6 +15,7 @@ import EventTimeDisplay from "@/components/EventTimeDisplay";
 import PortalMaintenance from "@/components/PortalMaintenance";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import AllPositionsModal from "@/components/AllPositionsModal";
+import ChiefPinModal from "@/components/ChiefPinModal";
 import { Phone } from "lucide-react";
 
 const STORAGE_KEY = "crewly_acast_id";
@@ -53,6 +54,7 @@ export default function StaffPortal() {
   const [removing, setRemoving] = useState(false);
   const [showAllPositions, setShowAllPositions] = useState(false);
   const [emergencyContacts, setEmergencyContacts] = useState([]);
+  const [showPinModal, setShowPinModal] = useState(false);
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
 
@@ -154,11 +156,14 @@ export default function StaffPortal() {
       });
       const needsAgreement = activeEvents.length > 0 && agreedEvents.length < activeEvents.length;
 
+      const isChiefUser = allRoles.includes("セクションチーフ");
+
       // Store auth data temporarily and show confirmation modal
       setPendingAuthData({
         staffName: staff.name,
         acastId: id,
-        eventId: activeEvents[0]?.id || null
+        eventId: activeEvents[0]?.id || null,
+        isChief: isChiefUser
       });
       setPositions(allPositions);
       setEvents(activeEvents);
@@ -167,10 +172,14 @@ export default function StaffPortal() {
         setShowConfirmation(true);
       } else {
         // Already agreed, skip to login
-        setStaffName(staff.name);
-        localStorage.setItem(STORAGE_KEY, id);
-        setAcastId(id);
-        setPendingAuthData(null);
+        if (isChiefUser) {
+          setShowPinModal(true);
+        } else {
+          setStaffName(staff.name);
+          localStorage.setItem(STORAGE_KEY, id);
+          setAcastId(id);
+          setPendingAuthData(null);
+        }
       }
     } catch (e) {
       setError("データの取得に失敗しました。");
@@ -187,17 +196,37 @@ export default function StaffPortal() {
 
   const handleConfirmAgreement = () => {
     if (!pendingAuthData) return;
-    
-    setStaffName(pendingAuthData.staffName);
-    localStorage.setItem(STORAGE_KEY, pendingAuthData.acastId);
-    setAcastId(pendingAuthData.acastId);
-    setPendingAuthData(null);
-    setShowComplianceModal(false);
 
     // Mark compliance as agreed for all active events
     events.forEach((e) => {
       localStorage.setItem(`${COMPLIANCE_STORAGE_PREFIX}${pendingAuthData.staffName}_${e.id}`, "true");
     });
+
+    setShowComplianceModal(false);
+
+    if (pendingAuthData.isChief) {
+      setShowPinModal(true);
+      return;
+    }
+
+    setStaffName(pendingAuthData.staffName);
+    localStorage.setItem(STORAGE_KEY, pendingAuthData.acastId);
+    setAcastId(pendingAuthData.acastId);
+    setPendingAuthData(null);
+  };
+
+  const handlePinSuccess = () => {
+    if (!pendingAuthData) return;
+    setStaffName(pendingAuthData.staffName);
+    localStorage.setItem(STORAGE_KEY, pendingAuthData.acastId);
+    setAcastId(pendingAuthData.acastId);
+    setPendingAuthData(null);
+    setShowPinModal(false);
+  };
+
+  const handlePinClose = () => {
+    setShowPinModal(false);
+    setPendingAuthData(null);
   };
 
   const handleCancelModal = () => {
@@ -249,6 +278,7 @@ export default function StaffPortal() {
     setPendingRemove(null);
     setRemoving(false);
     setEmergencyContacts([]);
+    setShowPinModal(false);
   }, []);
 
   const handleStaffRemoveClick = (staffName, position) => {
@@ -812,6 +842,15 @@ export default function StaffPortal() {
           acastId={acastId}
           isChief={isChief}
           onRefresh={refreshPositions}
+        />
+      )}
+
+      {showPinModal && pendingAuthData && (
+        <ChiefPinModal
+          acastId={pendingAuthData.acastId}
+          staffName={pendingAuthData.staffName}
+          onSuccess={handlePinSuccess}
+          onClose={handlePinClose}
         />
       )}
     </div>

@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Map, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Map, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -33,6 +33,7 @@ import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
 import EventSheetEditor from "@/components/EventSheetEditor";
 import EmergencyContactManager from "@/components/EmergencyContactManager";
+import PinCodeManager from "@/components/PinCodeManager";
 import WorkspaceDashboard from "@/components/workspace/WorkspaceDashboard";
 
 const tabVariants = {
@@ -184,6 +185,7 @@ export default function EventDetail() {
           ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
           { id: "tag_management", label: "タグ・役割管理", icon: Tag },
           { id: "emergency_contacts", label: "緊急連絡先", icon: Phone },
+          { id: "pin_management", label: "PIN管理", icon: KeyRound },
         ]
       : [];
   const activeManagementChild = tab === "admin" ? adminSection : settingsSection;
@@ -325,6 +327,7 @@ export default function EventDetail() {
             {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
             {tab === "settings" && settingsSection === "tag_management" && <TagManagement />}
             {tab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} />}
+            {tab === "settings" && settingsSection === "pin_management" && <PinCodeManager eventId={eventId} />}
             {tab === "map" && <PositionMapViewer eventId={eventId} event={event} />}
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
             {tab === "workspace" && <WorkspaceDashboard eventId={eventId} />}
