@@ -16,21 +16,29 @@ export default function QRCodeUpload({ onQRRead, loading, error }) {
       setPreviewUrl(imageDataUrl);
 
       const img = new Image();
-      img.src = imageDataUrl;
-      await new Promise((resolve) => {
+      await new Promise((resolve, reject) => {
         img.onload = resolve;
+        img.onerror = () => reject(new Error("画像の読み込みに失敗しました"));
+        img.src = imageDataUrl;
       });
 
       const canvas = canvasRef.current;
       if (!canvas) return;
 
       const ctx = canvas.getContext("2d");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
 
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      // Try decoding at original size first, then at scaled-up sizes for small/blurry QR codes
+      const scales = [1, 1.5, 2, 0.75, 0.5];
+      let code = null;
+
+      for (const scale of scales) {
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code) break;
+      }
 
       if (code) {
         onQRRead(code.data);
@@ -55,9 +63,14 @@ export default function QRCodeUpload({ onQRRead, loading, error }) {
   const handleFileSelect = async (file) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      throw new Error("画像ファイルを選択してください");
+      onQRRead(null);
+      return;
     }
-    await decodeQR(file);
+    try {
+      await decodeQR(file);
+    } catch (err) {
+      onQRRead(null);
+    }
   };
 
   const handleDrop = async (e) => {
@@ -103,7 +116,10 @@ export default function QRCodeUpload({ onQRRead, loading, error }) {
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => handleFileSelect(e.target.files[0])}
+          onChange={(e) => {
+            handleFileSelect(e.target.files[0]);
+            e.target.value = "";
+          }}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           disabled={loading}
         />
