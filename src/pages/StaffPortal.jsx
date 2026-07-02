@@ -641,7 +641,7 @@ export default function StaffPortal() {
                                 return (
                                   <div
                                     key={name}
-                                    className={`text-[11px] py-0.5 px-1 rounded font-medium flex items-center gap-1 text-muted-foreground ${isRemovingThis ? "opacity-50" : ""}`}
+                                    className={`text-sm py-0.5 px-1 rounded font-medium flex items-center gap-1 text-muted-foreground ${isRemovingThis ? "opacity-50" : ""}`}
                                   >
                                     <span className="text-muted-foreground/50">・</span>
                                     <span>{name}</span>
