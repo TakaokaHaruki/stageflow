@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Eye } from "lucide-react";
+import { X, Eye, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import QrCameraScanner from "@/components/QrCameraScanner";
 
 const TIME_SLOT_LABELS = {
   "通し": { label: "通し", color: "bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-800 dark:text-emerald-400" },
@@ -13,9 +15,11 @@ const TIME_SLOT_LABELS = {
 
 const SLOT_ORDER = ["通し", "開場中", "開演中", "終演後"];
 
-export default function AllPositionsModal({ open, onClose, events, staffName, staffRolesMap }) {
+export default function AllPositionsModal({ open, onClose, events, staffName, staffRolesMap, acastId, isChief, onRefresh }) {
   const [loading, setLoading] = useState(false);
   const [allPositions, setAllPositions] = useState([]);
+  const [qrScanPosition, setQrScanPosition] = useState(null);
+  const [qrProcessing, setQrProcessing] = useState(false);
 
   const fetchAll = useCallback(async () => {
     if (!events || events.length === 0) return;
@@ -40,6 +44,33 @@ export default function AllPositionsModal({ open, onClose, events, staffName, st
   useEffect(() => {
     if (open) fetchAll();
   }, [open, fetchAll]);
+
+  const handleQrScanSuccess = async (scannedData) => {
+    if (!qrScanPosition || !acastId) return;
+    if (qrProcessing) return;
+    setQrProcessing(true);
+    try {
+      const res = await base44.functions.invoke("addStaffByQr", {
+        chiefAcastId: acastId,
+        targetAcastId: scannedData.trim(),
+        positionId: qrScanPosition.id,
+        eventId: qrScanPosition._eventId,
+      });
+      const data = res?.data;
+      if (data?.error) {
+        toast.error(data.error);
+      } else if (data?.success) {
+        toast.success(`「${data.staffName}」さんを「${data.positionName}」に追加しました`);
+        await fetchAll();
+        onRefresh?.();
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+    } catch (e) {
+      toast.error("追加に失敗しました");
+    } finally {
+      setQrProcessing(false);
+    }
+  };
 
   const groupedByEvent = events.map((event) => {
     const eventPositions = allPositions.filter((p) => p._eventId === event.id);
@@ -132,22 +163,39 @@ export default function AllPositionsModal({ open, onClose, events, staffName, st
                                 style={!mine && pos.color ? { borderLeftColor: pos.color, borderLeftWidth: 3 } : {}}
                               >
                                 <div className="flex items-start justify-between gap-2">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="font-semibold text-sm">{pos.name}</span>
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <span className="font-bold text-sm">{pos.name}</span>
                                     {mine && (
-                                      <span className="text-[10px] font-bold text-primary-foreground bg-primary px-1.5 py-0.5 rounded-full">
+                                      <span className="text-[10px] font-bold text-primary-foreground bg-primary px-1.5 py-0.5 rounded-full shrink-0">
                                         担当
                                       </span>
                                     )}
                                   </div>
+                                  {isChief && (
+                                    <button
+                                      onClick={() => setQrScanPosition(pos)}
+                                      className="flex items-center gap-1 text-[11px] font-medium text-primary border border-primary/30 bg-primary/5 px-2 py-1.5 rounded-lg hover:bg-primary/10 active:scale-95 transition-all shrink-0 min-h-[36px]"
+                                    >
+                                      <QrCode className="w-3.5 h-3.5" />
+                                      QR追加
+                                    </button>
+                                  )}
                                 </div>
                                 {pos.split_by_side && (
                                   <span className="text-[10px] text-muted-foreground">上下分割</span>
                                 )}
                                 {chiefs.length > 0 && (
-                                  <p className="text-xs text-muted-foreground mt-0.5">
-                                    セクションチーフ: {chiefs.join("、")}
-                                  </p>
+                                  <div className="mt-1 flex flex-wrap gap-1">
+                                    {chiefs.map((chiefName) => (
+                                      <span
+                                        key={chiefName}
+                                        className="inline-flex items-center gap-0.5 text-xs font-bold px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
+                                      >
+                                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                        {chiefName}
+                                      </span>
+                                    ))}
+                                  </div>
                                 )}
                                 {pos.notes && (
                                   <p className="text-xs text-muted-foreground mt-1">{pos.notes}</p>
@@ -195,10 +243,19 @@ export default function AllPositionsModal({ open, onClose, events, staffName, st
 
             {/* Footer */}
             <div className="px-4 py-3 border-t border-border shrink-0">
-              <Button variant="outline" className="w-full" onClick={onClose}>閉じる</Button>
+              <Button variant="outline" className="w-full min-h-[44px]" onClick={() => { setQrScanPosition(null); onClose(); }}>閉じる</Button>
             </div>
           </motion.div>
         </motion.div>
+      )}
+
+      {qrScanPosition && (
+        <QrCameraScanner
+          onScan={handleQrScanSuccess}
+          onClose={() => !qrProcessing && setQrScanPosition(null)}
+          processing={qrProcessing}
+          autoStart={true}
+        />
       )}
     </AnimatePresence>
   );

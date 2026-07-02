@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Map, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Map, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -32,6 +32,7 @@ import SeatingMapViewer from "@/components/SeatingMapViewer";
 import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
 import EventSheetEditor from "@/components/EventSheetEditor";
+import EmergencyContactManager from "@/components/EmergencyContactManager";
 import WorkspaceDashboard from "@/components/workspace/WorkspaceDashboard";
 
 const tabVariants = {
@@ -182,6 +183,7 @@ export default function EventDetail() {
           { id: "event_sheet", label: "公演シート", icon: FileText },
           ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
           { id: "tag_management", label: "タグ・役割管理", icon: Tag },
+          { id: "emergency_contacts", label: "緊急連絡先", icon: Phone },
         ]
       : [];
   const activeManagementChild = tab === "admin" ? adminSection : settingsSection;
@@ -322,6 +324,7 @@ export default function EventDetail() {
             {tab === "settings" && settingsSection === "event_sheet" && <EventSheetEditor eventId={eventId} />}
             {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
             {tab === "settings" && settingsSection === "tag_management" && <TagManagement />}
+            {tab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} />}
             {tab === "map" && <PositionMapViewer eventId={eventId} event={event} />}
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
             {tab === "workspace" && <WorkspaceDashboard eventId={eventId} />}

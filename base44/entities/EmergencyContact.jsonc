@@ -1,0 +1,78 @@
+{
+  "name": "EmergencyContact",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "\u30a4\u30d9\u30f3\u30c8ID"
+    },
+    "role_title": {
+      "type": "string",
+      "description": "\u5f79\u8077\u540d\uff08\u4f8b\uff1a\u7d71\u62ec\u30c1\u30fc\u30d5\u3001\u6551\u8b77\u62c5\u5f53\u3001\u4f1a\u5834\u8cac\u4efb\u8005\uff09"
+    },
+    "name": {
+      "type": "string",
+      "description": "\u62c5\u5f53\u8005\u540d"
+    },
+    "phone": {
+      "type": "string",
+      "description": "\u96fb\u8a71\u756a\u53f7"
+    },
+    "order": {
+      "type": "number",
+      "description": "\u8868\u793a\u9806",
+      "default": 0
+    }
+  },
+  "required": [
+    "event_id",
+    "role_title",
+    "name",
+    "phone"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    },
+    "read": true,
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -15,6 +15,7 @@ import EventTimeDisplay from "@/components/EventTimeDisplay";
 import PortalMaintenance from "@/components/PortalMaintenance";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import AllPositionsModal from "@/components/AllPositionsModal";
+import { Phone } from "lucide-react";
 
 const STORAGE_KEY = "crewly_acast_id";
 const COMPLIANCE_STORAGE_PREFIX = "crewly_compliance_";
@@ -51,6 +52,7 @@ export default function StaffPortal() {
   const [pendingRemove, setPendingRemove] = useState(null); // {staffName, position}
   const [removing, setRemoving] = useState(false);
   const [showAllPositions, setShowAllPositions] = useState(false);
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
 
@@ -131,6 +133,19 @@ export default function StaffPortal() {
         }
       }
       setStaffRolesMap(rolesMap);
+
+      // Fetch emergency contacts for all active events
+      const allContacts = [];
+      for (const event of activeEvents) {
+        try {
+          const contacts = await base44.entities.EmergencyContact.filter({ event_id: event.id });
+          for (const c of contacts) {
+            allContacts.push({ ...c, _eventName: event.name });
+          }
+        } catch (_) {}
+      }
+      allContacts.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      setEmergencyContacts(allContacts);
 
       // Check if already agreed to compliance for this staff/event combination
       const agreedEvents = activeEvents.filter((event) => {
@@ -233,6 +248,7 @@ export default function StaffPortal() {
     setStaffRolesMap({});
     setPendingRemove(null);
     setRemoving(false);
+    setEmergencyContacts([]);
   }, []);
 
   const handleStaffRemoveClick = (staffName, position) => {
@@ -305,6 +321,19 @@ export default function StaffPortal() {
       setPositions(allPositions);
       setEvents(activeEvents);
       setStaffRolesMap(rolesMap);
+
+      // Refresh emergency contacts
+      const allContacts = [];
+      for (const event of activeEvents) {
+        try {
+          const contacts = await base44.entities.EmergencyContact.filter({ event_id: event.id });
+          for (const c of contacts) {
+            allContacts.push({ ...c, _eventName: event.name });
+          }
+        } catch (_) {}
+      }
+      allContacts.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      setEmergencyContacts(allContacts);
     } catch (e) {
       // silent refresh failure
     }
@@ -624,9 +653,17 @@ export default function StaffPortal() {
                             )}
                           </div>
                           {chiefs.length > 0 && (
-                            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                              セクションチーフ: {chiefs.join("、")}
-                            </p>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {chiefs.map((chiefName) => (
+                                <span
+                                  key={chiefName}
+                                  className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                  {chiefName}
+                                </span>
+                              ))}
+                            </div>
                           )}
                           {pos.notes && (
                             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{pos.notes}</p>
@@ -699,18 +736,49 @@ export default function StaffPortal() {
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1.5 text-xs"
+                className="gap-1.5 text-xs min-h-[44px]"
                 onClick={() => setShowAllPositions(true)}
               >
-                <Eye className="w-3.5 h-3.5" />全ポジションを見る
+                <Eye className="w-3.5 h-3.5" />全ポジションを見る（QR追加可）
               </Button>
             )}
             <div>
-              <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground" onClick={() => authenticate(acastId)}>
+              <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground min-h-[44px]" onClick={() => authenticate(acastId)}>
                 <RefreshCw className="w-3.5 h-3.5" />更新
               </Button>
             </div>
           </div>
+        )}
+
+        {/* Emergency contacts */}
+        {!loading && emergencyContacts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-2xl p-4"
+          >
+            <h3 className="font-bold text-sm text-rose-700 dark:text-rose-400 mb-2 flex items-center gap-1.5">
+              <Phone className="w-4 h-4" />緊急連絡先
+            </h3>
+            <div className="space-y-2">
+              {emergencyContacts.map((c) => (
+                <a
+                  key={c.id}
+                  href={`tel:${c.phone}`}
+                  className="flex items-center gap-2 bg-card border border-rose-200 dark:border-rose-900 rounded-xl p-2.5 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors active:scale-[0.98]"
+                >
+                  <div className="w-9 h-9 rounded-full bg-rose-500/10 flex items-center justify-center shrink-0">
+                    <Phone className="w-4 h-4 text-rose-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-rose-700 dark:text-rose-400">{c.role_title}</p>
+                    <p className="text-sm font-semibold truncate">{c.name}</p>
+                    <p className="text-xs text-muted-foreground">{c.phone}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </motion.div>
         )}
       </div>
 
@@ -741,6 +809,9 @@ export default function StaffPortal() {
           events={events}
           staffName={staffName}
           staffRolesMap={staffRolesMap}
+          acastId={acastId}
+          isChief={isChief}
+          onRefresh={refreshPositions}
         />
       )}
     </div>
