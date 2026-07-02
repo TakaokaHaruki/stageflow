@@ -32,6 +32,7 @@ import SeatingMapViewer from "@/components/SeatingMapViewer";
 import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
 import EventSheetEditor from "@/components/EventSheetEditor";
+import WorkspaceDashboard from "@/components/workspace/WorkspaceDashboard";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -151,6 +152,7 @@ export default function EventDetail() {
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
     { id: "map", label: "配置マップ", icon: Map },
     { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
+    { id: "workspace", label: "ワークスペース", icon: LayoutTemplate },
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ].filter((t) => isAdmin || !disabledTabIds.includes(t.id));
@@ -322,6 +324,7 @@ export default function EventDetail() {
             {tab === "settings" && settingsSection === "tag_management" && <TagManagement />}
             {tab === "map" && <PositionMapViewer eventId={eventId} event={event} />}
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
+            {tab === "workspace" && <WorkspaceDashboard eventId={eventId} />}
           </motion.div>
         </AnimatePresence>
       </div>
