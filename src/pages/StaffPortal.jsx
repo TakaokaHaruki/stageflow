@@ -784,7 +784,7 @@ export default function StaffPortal() {
 
         {!loading && groupedByEvent.length > 0 && (
           <div className="text-center mt-4 space-y-2">
-            {isChief && events.some((e) => e.continuous_mode === true && chiefEventIds.has(e.id)) && (
+            {isChief && chiefEventIds.size > 0 && (
               <Button
                 variant="outline"
                 size="sm"
