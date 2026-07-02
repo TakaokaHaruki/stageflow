@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard, QrCode, UserPlus, X } from "lucide-react";
+import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard, QrCode, UserPlus, X, Eye } from "lucide-react";
 import { toast } from "sonner";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import QRCodeUpload from "@/components/QRCodeUpload";
@@ -14,6 +14,7 @@ import ComplianceAgreementModal from "@/components/ComplianceAgreementModal";
 import EventTimeDisplay from "@/components/EventTimeDisplay";
 import PortalMaintenance from "@/components/PortalMaintenance";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import AllPositionsModal from "@/components/AllPositionsModal";
 
 const STORAGE_KEY = "crewly_acast_id";
 const COMPLIANCE_STORAGE_PREFIX = "crewly_compliance_";
@@ -49,6 +50,7 @@ export default function StaffPortal() {
   const [staffRolesMap, setStaffRolesMap] = useState({});
   const [pendingRemove, setPendingRemove] = useState(null); // {staffName, position}
   const [removing, setRemoving] = useState(false);
+  const [showAllPositions, setShowAllPositions] = useState(false);
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
 
@@ -692,10 +694,22 @@ export default function StaffPortal() {
         ))}
 
         {!loading && groupedByEvent.length > 0 && (
-          <div className="text-center mt-4">
-            <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground" onClick={() => authenticate(acastId)}>
-              <RefreshCw className="w-3.5 h-3.5" />更新
-            </Button>
+          <div className="text-center mt-4 space-y-2">
+            {isChief && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={() => setShowAllPositions(true)}
+              >
+                <Eye className="w-3.5 h-3.5" />全ポジションを見る
+              </Button>
+            )}
+            <div>
+              <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground" onClick={() => authenticate(acastId)}>
+                <RefreshCw className="w-3.5 h-3.5" />更新
+              </Button>
+            </div>
           </div>
         )}
       </div>
@@ -717,6 +731,16 @@ export default function StaffPortal() {
           message={`「${pendingRemove.staffName}」さんを「${pendingRemove.position.name}」から削除しますか？`}
           confirmLabel="削除"
           confirmVariant="destructive"
+        />
+      )}
+
+      {showAllPositions && (
+        <AllPositionsModal
+          open={showAllPositions}
+          onClose={() => setShowAllPositions(false)}
+          events={events}
+          staffName={staffName}
+          staffRolesMap={staffRolesMap}
         />
       )}
     </div>
