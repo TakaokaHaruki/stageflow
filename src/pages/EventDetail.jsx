@@ -327,7 +327,7 @@ export default function EventDetail() {
             {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
             {tab === "settings" && settingsSection === "tag_management" && <TagManagement />}
             {tab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} />}
-            {tab === "settings" && settingsSection === "pin_management" && <PinCodeManager eventId={eventId} />}
+            {tab === "settings" && settingsSection === "pin_management" && <PinCodeManager />}
             {tab === "map" && <PositionMapViewer eventId={eventId} event={event} />}
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
             {tab === "workspace" && <WorkspaceDashboard eventId={eventId} />}

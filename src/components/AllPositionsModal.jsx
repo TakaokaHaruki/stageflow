@@ -15,7 +15,7 @@ const TIME_SLOT_LABELS = {
 
 const SLOT_ORDER = ["通し", "開場中", "開演中", "終演後"];
 
-export default function AllPositionsModal({ open, onClose, events, staffName, staffRolesMap, acastId, isChief, chiefEventIds, onRefresh }) {
+export default function AllPositionsModal({ open, onClose, events, staffName, staffRolesMap, acastId, myChiefEventIds, onRefresh }) {
   const [loading, setLoading] = useState(false);
   const [allPositions, setAllPositions] = useState([]);
   const [qrScanPosition, setQrScanPosition] = useState(null);
@@ -171,7 +171,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, st
                                       </span>
                                     )}
                                   </div>
-                                  {isChief && chiefEventIds?.has(event.id) && event.continuous_mode === true && (
+                                  {myChiefEventIds?.has(event.id) && event.continuous_mode === true && (
                                     <button
                                       onClick={() => setQrScanPosition(pos)}
                                       className="flex items-center gap-1 text-[11px] font-medium text-primary border border-primary/30 bg-primary/5 px-2 py-1.5 rounded-lg hover:bg-primary/10 active:scale-95 transition-all shrink-0 min-h-[36px]"

@@ -6,7 +6,7 @@ import { ShieldCheck, KeyRound, AlertTriangle, RotateCcw, RefreshCw } from "luci
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
-export default function PinCodeManager({ eventId }) {
+export default function PinCodeManager() {
   const [staffList, setStaffList] = useState([]);
   const [pinCodes, setPinCodes] = useState({});
   const [loading, setLoading] = useState(true);
@@ -16,11 +16,18 @@ export default function PinCodeManager({ eventId }) {
     setLoading(true);
     try {
       const [staff, allPins] = await Promise.all([
-        base44.entities.Staff.filter({ event_id: eventId }),
+        base44.entities.Staff.list(),
         base44.entities.PinCode.list(),
       ]);
-      // Only show section chiefs
-      const chiefs = (staff || []).filter((s) => (s.roles || []).includes("セクションチーフ"));
+      // Only show section chiefs, dedupe by acast_id
+      const seen = new Set();
+      const chiefs = (staff || [])
+        .filter((s) => (s.roles || []).includes("セクションチーフ") && s.acast_id)
+        .filter((s) => {
+          if (seen.has(s.acast_id)) return false;
+          seen.add(s.acast_id);
+          return true;
+        });
       setStaffList(chiefs);
       const pinMap = {};
       for (const pin of allPins || []) {
@@ -32,7 +39,7 @@ export default function PinCodeManager({ eventId }) {
     } finally {
       setLoading(false);
     }
-  }, [eventId]);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -84,7 +91,7 @@ export default function PinCodeManager({ eventId }) {
   if (staffList.length === 0) {
     return (
       <div className="text-center py-12 text-sm text-muted-foreground">
-        このイベントにセクションチーフがいません
+        セクションチーフが登録されていません
       </div>
     );
   }

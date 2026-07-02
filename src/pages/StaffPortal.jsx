@@ -55,7 +55,7 @@ export default function StaffPortal() {
   const [showAllPositions, setShowAllPositions] = useState(false);
   const [emergencyContacts, setEmergencyContacts] = useState([]);
   const [showPinModal, setShowPinModal] = useState(false);
-  const [chiefEventIds, setChiefEventIds] = useState(new Set());
+  const [myChiefEventIds, setMyChiefEventIds] = useState(new Set());
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
 
@@ -115,7 +115,7 @@ export default function StaffPortal() {
       // Get positions for all active events where staff is assigned
       const allPositions = [];
       const rolesMap = {};
-      const eventChiefSet = new Set();
+      const myChiefSet = new Set();
       for (const event of activeEvents) {
         const [eventPositions, eventStaff] = await Promise.all([
           base44.entities.Position.filter({ event_id: event.id }),
@@ -126,8 +126,8 @@ export default function StaffPortal() {
             rolesMap[s.name] = [...new Set([...(rolesMap[s.name] || []), ...(s.roles || [])])];
           }
         }
-        if (eventStaff.some((s) => (s.roles || []).includes("セクションチーフ"))) {
-          eventChiefSet.add(event.id);
+        if (eventStaff.some((s) => s.name === staff.name && (s.roles || []).includes("セクションチーフ"))) {
+          myChiefSet.add(event.id);
         }
         const myPositions = eventPositions.filter((pos) => {
           const inMain = (pos.staff_names || []).includes(staff.name);
@@ -140,7 +140,7 @@ export default function StaffPortal() {
         }
       }
       setStaffRolesMap(rolesMap);
-      setChiefEventIds(eventChiefSet);
+      setMyChiefEventIds(myChiefSet);
 
       // Fetch emergency contacts for all active events
       const allContacts = [];
@@ -162,7 +162,7 @@ export default function StaffPortal() {
       });
       const needsAgreement = activeEvents.length > 0 && agreedEvents.length < activeEvents.length;
 
-      const isChiefUser = allRoles.includes("セクションチーフ");
+      const isChiefUser = myChiefSet.size > 0;
 
       // Store auth data temporarily and show confirmation modal
       setPendingAuthData({
@@ -285,7 +285,7 @@ export default function StaffPortal() {
     setRemoving(false);
     setEmergencyContacts([]);
     setShowPinModal(false);
-    setChiefEventIds(new Set());
+    setMyChiefEventIds(new Set());
   }, []);
 
   const handleStaffRemoveClick = (staffName, position) => {
@@ -317,8 +317,6 @@ export default function StaffPortal() {
     }
   };
 
-  const isChief = staffRoles.includes("セクションチーフ");
-
   const refreshPositions = useCallback(async () => {
     if (!acastId || !staffName) return;
     try {
@@ -335,7 +333,7 @@ export default function StaffPortal() {
       );
       const allPositions = [];
       const rolesMap = {};
-      const eventChiefSet = new Set();
+      const myChiefSet = new Set();
       for (const event of activeEvents) {
         const [eventPositions, eventStaff] = await Promise.all([
           base44.entities.Position.filter({ event_id: event.id }),
@@ -346,8 +344,8 @@ export default function StaffPortal() {
             rolesMap[s.name] = [...new Set([...(rolesMap[s.name] || []), ...(s.roles || [])])];
           }
         }
-        if (eventStaff.some((s) => (s.roles || []).includes("セクションチーフ"))) {
-          eventChiefSet.add(event.id);
+        if (eventStaff.some((s) => s.name === staff.name && (s.roles || []).includes("セクションチーフ"))) {
+          myChiefSet.add(event.id);
         }
         const myPositions = eventPositions.filter((pos) => {
           const inMain = (pos.staff_names || []).includes(staff.name);
@@ -362,7 +360,7 @@ export default function StaffPortal() {
       setPositions(allPositions);
       setEvents(activeEvents);
       setStaffRolesMap(rolesMap);
-      setChiefEventIds(eventChiefSet);
+      setMyChiefEventIds(myChiefSet);
 
       // Refresh emergency contacts
       const allContacts = [];
@@ -693,7 +691,7 @@ export default function StaffPortal() {
                           <>
                           <div className="flex items-start justify-between gap-2">
                             <div className="font-semibold text-sm flex-1">{pos.name}</div>
-                            {isChief && event.continuous_mode === true && chiefEventIds.has(event.id) && (
+                            {myChiefEventIds.has(event.id) && event.continuous_mode === true && (
                               <button
                                 onClick={() => setQrScanPosition(pos)}
                                 className="flex items-center gap-1 text-[11px] font-medium text-primary border border-primary/30 bg-primary/5 px-2 py-1 rounded-lg hover:bg-primary/10 transition-colors shrink-0"
@@ -723,7 +721,7 @@ export default function StaffPortal() {
                           {/* 配置スタッフ一覧 */}
                           {(() => {
                           const isContinuous = event.continuous_mode === true;
-                          const displayNames = isChief ? allNames : (isContinuous ? allNames : allNames.filter((n) => n === staffName));
+                          const displayNames = myChiefEventIds.has(event.id) ? allNames : (isContinuous ? allNames : allNames.filter((n) => n === staffName));
                           if (displayNames.length === 0) return null;
                           return (
                             <div className="mt-2 space-y-0.5">
@@ -736,7 +734,7 @@ export default function StaffPortal() {
                                   >
                                     <span className="text-muted-foreground/50">・</span>
                                     <span>{name}</span>
-                                    {isChief && event.continuous_mode === true && chiefEventIds.has(event.id) && name !== staffName && (
+                                    {myChiefEventIds.has(event.id) && event.continuous_mode === true && name !== staffName && (
                                       <button
                                         onClick={() => handleStaffRemoveClick(name, pos)}
                                         className="hover:text-destructive transition-colors"
@@ -784,7 +782,7 @@ export default function StaffPortal() {
 
         {!loading && groupedByEvent.length > 0 && (
           <div className="text-center mt-4 space-y-2">
-            {isChief && chiefEventIds.size > 0 && (
+            {myChiefEventIds.size > 0 && (
               <Button
                 variant="outline"
                 size="sm"
@@ -862,8 +860,7 @@ export default function StaffPortal() {
           staffName={staffName}
           staffRolesMap={staffRolesMap}
           acastId={acastId}
-          isChief={isChief}
-          chiefEventIds={chiefEventIds}
+          myChiefEventIds={myChiefEventIds}
           onRefresh={refreshPositions}
         />
       )}
