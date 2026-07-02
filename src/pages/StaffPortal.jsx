@@ -551,6 +551,15 @@ export default function StaffPortal() {
             </AnimatePresence>
           </div>
         </motion.div>
+
+        {showPinModal && pendingAuthData && (
+          <ChiefPinModal
+            acastId={pendingAuthData.acastId}
+            staffName={pendingAuthData.staffName}
+            onSuccess={handlePinSuccess}
+            onClose={handlePinClose}
+          />
+        )}
       </div>
       </>
     );
