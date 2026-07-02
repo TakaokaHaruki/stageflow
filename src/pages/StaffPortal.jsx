@@ -602,6 +602,13 @@ export default function StaffPortal() {
                           className="bg-card border border-border rounded-xl p-3.5"
                           style={pos.color ? { borderLeftColor: pos.color, borderLeftWidth: 3 } : {}}
                         >
+                          {(() => {
+                          const allNames = pos.split_by_side
+                            ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
+                            : (pos.staff_names || []);
+                          const chiefs = allNames.filter((n) => (staffRolesMap[n] || []).includes("セクションチーフ"));
+                          return (
+                          <>
                           <div className="flex items-start justify-between gap-2">
                             <div className="font-semibold text-sm flex-1">{pos.name}</div>
                             {isChief && (
@@ -614,19 +621,19 @@ export default function StaffPortal() {
                               </button>
                             )}
                           </div>
+                          {chiefs.length > 0 && (
+                            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                              セクションチーフ: {chiefs.join("、")}
+                            </p>
+                          )}
                           {pos.notes && (
                             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{pos.notes}</p>
                           )}
                           {/* 配置スタッフ一覧 */}
                           {(() => {
-                          const allNames = pos.split_by_side
-                            ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
-                            : (pos.staff_names || []);
-                          if (allNames.length === 0) return null;
                           const isContinuous = event.continuous_mode === true;
                           const displayNames = isContinuous ? allNames : allNames.filter((n) => n === staffName);
                           if (displayNames.length === 0) return null;
-                          const chiefs = allNames.filter((n) => (staffRolesMap[n] || []).includes("セクションチーフ"));
                           return (
                             <div className="mt-2 space-y-0.5">
                               {displayNames.map((name) => {
@@ -634,11 +641,7 @@ export default function StaffPortal() {
                                 return (
                                   <div
                                     key={name}
-                                    className={`text-[11px] py-0.5 px-1 rounded font-medium flex items-center gap-1 ${
-                                      name === staffName
-                                        ? "bg-primary/10 text-primary"
-                                        : "text-muted-foreground"
-                                    } ${isRemovingThis ? "opacity-50" : ""}`}
+                                    className={`text-[11px] py-0.5 px-1 rounded font-medium flex items-center gap-1 text-muted-foreground ${isRemovingThis ? "opacity-50" : ""}`}
                                   >
                                     <span className="text-muted-foreground/50">・</span>
                                     <span>{name}</span>
@@ -655,13 +658,10 @@ export default function StaffPortal() {
                                   </div>
                                 );
                               })}
-                              {chiefs.length > 0 && (
-                                <div className="text-[11px] text-muted-foreground flex items-center gap-1 pt-1">
-                                  <span>👑</span>
-                                  <span>チーフ: {chiefs.join("、")}</span>
-                                </div>
-                              )}
                             </div>
+                          );
+                          })()}
+                          </>
                           );
                           })()}
                           {/* Side info */}
