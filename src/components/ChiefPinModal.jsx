@@ -188,7 +188,7 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
         <input
           key={i}
           ref={(el) => (refs.current[i] = el)}
-          type="tel"
+          type="password"
           inputMode="numeric"
           maxLength={1}
           value={d}
