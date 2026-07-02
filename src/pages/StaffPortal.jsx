@@ -736,7 +736,7 @@ export default function StaffPortal() {
                                   >
                                     <span className="text-muted-foreground/50">・</span>
                                     <span>{name}</span>
-                                    {isChief && chiefEventIds.has(event.id) && name !== staffName && (
+                                    {isChief && event.continuous_mode === true && chiefEventIds.has(event.id) && name !== staffName && (
                                       <button
                                         onClick={() => handleStaffRemoveClick(name, pos)}
                                         className="hover:text-destructive transition-colors"
@@ -784,7 +784,7 @@ export default function StaffPortal() {
 
         {!loading && groupedByEvent.length > 0 && (
           <div className="text-center mt-4 space-y-2">
-            {isChief && chiefEventIds.size > 0 && (
+            {isChief && events.some((e) => e.continuous_mode === true && chiefEventIds.has(e.id)) && (
               <Button
                 variant="outline"
                 size="sm"
