@@ -55,6 +55,7 @@ export default function StaffPortal() {
   const [showAllPositions, setShowAllPositions] = useState(false);
   const [emergencyContacts, setEmergencyContacts] = useState([]);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [chiefEventIds, setChiefEventIds] = useState(new Set());
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
 
@@ -114,6 +115,7 @@ export default function StaffPortal() {
       // Get positions for all active events where staff is assigned
       const allPositions = [];
       const rolesMap = {};
+      const eventChiefSet = new Set();
       for (const event of activeEvents) {
         const [eventPositions, eventStaff] = await Promise.all([
           base44.entities.Position.filter({ event_id: event.id }),
@@ -123,6 +125,9 @@ export default function StaffPortal() {
           if (s.name) {
             rolesMap[s.name] = [...new Set([...(rolesMap[s.name] || []), ...(s.roles || [])])];
           }
+        }
+        if (eventStaff.some((s) => (s.roles || []).includes("セクションチーフ"))) {
+          eventChiefSet.add(event.id);
         }
         const myPositions = eventPositions.filter((pos) => {
           const inMain = (pos.staff_names || []).includes(staff.name);
@@ -135,6 +140,7 @@ export default function StaffPortal() {
         }
       }
       setStaffRolesMap(rolesMap);
+      setChiefEventIds(eventChiefSet);
 
       // Fetch emergency contacts for all active events
       const allContacts = [];
@@ -279,6 +285,7 @@ export default function StaffPortal() {
     setRemoving(false);
     setEmergencyContacts([]);
     setShowPinModal(false);
+    setChiefEventIds(new Set());
   }, []);
 
   const handleStaffRemoveClick = (staffName, position) => {
@@ -328,6 +335,7 @@ export default function StaffPortal() {
       );
       const allPositions = [];
       const rolesMap = {};
+      const eventChiefSet = new Set();
       for (const event of activeEvents) {
         const [eventPositions, eventStaff] = await Promise.all([
           base44.entities.Position.filter({ event_id: event.id }),
@@ -337,6 +345,9 @@ export default function StaffPortal() {
           if (s.name) {
             rolesMap[s.name] = [...new Set([...(rolesMap[s.name] || []), ...(s.roles || [])])];
           }
+        }
+        if (eventStaff.some((s) => (s.roles || []).includes("セクションチーフ"))) {
+          eventChiefSet.add(event.id);
         }
         const myPositions = eventPositions.filter((pos) => {
           const inMain = (pos.staff_names || []).includes(staff.name);
@@ -351,6 +362,7 @@ export default function StaffPortal() {
       setPositions(allPositions);
       setEvents(activeEvents);
       setStaffRolesMap(rolesMap);
+      setChiefEventIds(eventChiefSet);
 
       // Refresh emergency contacts
       const allContacts = [];
@@ -681,7 +693,7 @@ export default function StaffPortal() {
                           <>
                           <div className="flex items-start justify-between gap-2">
                             <div className="font-semibold text-sm flex-1">{pos.name}</div>
-                            {isChief && (
+                            {isChief && event.continuous_mode === true && chiefEventIds.has(event.id) && (
                               <button
                                 onClick={() => setQrScanPosition(pos)}
                                 className="flex items-center gap-1 text-[11px] font-medium text-primary border border-primary/30 bg-primary/5 px-2 py-1 rounded-lg hover:bg-primary/10 transition-colors shrink-0"
@@ -724,7 +736,7 @@ export default function StaffPortal() {
                                   >
                                     <span className="text-muted-foreground/50">・</span>
                                     <span>{name}</span>
-                                    {isChief && name !== staffName && (
+                                    {isChief && chiefEventIds.has(event.id) && name !== staffName && (
                                       <button
                                         onClick={() => handleStaffRemoveClick(name, pos)}
                                         className="hover:text-destructive transition-colors"
@@ -772,7 +784,7 @@ export default function StaffPortal() {
 
         {!loading && groupedByEvent.length > 0 && (
           <div className="text-center mt-4 space-y-2">
-            {isChief && (
+            {isChief && chiefEventIds.size > 0 && (
               <Button
                 variant="outline"
                 size="sm"
@@ -851,6 +863,7 @@ export default function StaffPortal() {
           staffRolesMap={staffRolesMap}
           acastId={acastId}
           isChief={isChief}
+          chiefEventIds={chiefEventIds}
           onRefresh={refreshPositions}
         />
       )}
