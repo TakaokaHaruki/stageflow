@@ -723,7 +723,7 @@ export default function StaffPortal() {
                           {/* 配置スタッフ一覧 */}
                           {(() => {
                           const isContinuous = event.continuous_mode === true;
-                          const displayNames = isContinuous ? allNames : allNames.filter((n) => n === staffName);
+                          const displayNames = isChief ? allNames : (isContinuous ? allNames : allNames.filter((n) => n === staffName));
                           if (displayNames.length === 0) return null;
                           return (
                             <div className="mt-2 space-y-0.5">
@@ -791,7 +791,7 @@ export default function StaffPortal() {
                 className="gap-1.5 text-xs min-h-[44px]"
                 onClick={() => setShowAllPositions(true)}
               >
-                <Eye className="w-3.5 h-3.5" />全ポジションを見る（QR追加可）
+                <Eye className="w-3.5 h-3.5" />全ポジションを見る
               </Button>
             )}
             <div>
