@@ -699,6 +699,7 @@ export default function StaffPortal() {
                                   className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
                                 >
                                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                  <span className="text-[10px] opacity-80">セクションチーフ</span>
                                   {chiefName}
                                 </span>
                               ))}

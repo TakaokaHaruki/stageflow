@@ -192,6 +192,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, st
                                         className="inline-flex items-center gap-0.5 text-xs font-bold px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
                                       >
                                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                        <span className="text-[10px] opacity-80">セクションチーフ</span>
                                         {chiefName}
                                       </span>
                                     ))}
