@@ -46,6 +46,7 @@ export default function StaffPortal() {
   const [qrScanPosition, setQrScanPosition] = useState(null);
   const [qrProcessing, setQrProcessing] = useState(false);
   const [staffRoles, setStaffRoles] = useState([]);
+  const [staffRolesMap, setStaffRolesMap] = useState({});
   const [pendingRemove, setPendingRemove] = useState(null); // {staffName, position}
   const [removing, setRemoving] = useState(false);
   const clickCountRef = useRef(0);
@@ -106,8 +107,17 @@ export default function StaffPortal() {
 
       // Get positions for all active events where staff is assigned
       const allPositions = [];
+      const rolesMap = {};
       for (const event of activeEvents) {
-        const eventPositions = await base44.entities.Position.filter({ event_id: event.id });
+        const [eventPositions, eventStaff] = await Promise.all([
+          base44.entities.Position.filter({ event_id: event.id }),
+          base44.entities.Staff.filter({ event_id: event.id }),
+        ]);
+        for (const s of eventStaff) {
+          if (s.name) {
+            rolesMap[s.name] = [...new Set([...(rolesMap[s.name] || []), ...(s.roles || [])])];
+          }
+        }
         const myPositions = eventPositions.filter((pos) => {
           const inMain = (pos.staff_names || []).includes(staff.name);
           const inKamite = (pos.staff_names_kamite || []).includes(staff.name);
@@ -118,6 +128,7 @@ export default function StaffPortal() {
           allPositions.push({ ...pos, _eventName: event.name, _eventDate: event.date, _eventId: event.id });
         }
       }
+      setStaffRolesMap(rolesMap);
 
       // Check if already agreed to compliance for this staff/event combination
       const agreedEvents = activeEvents.filter((event) => {
@@ -217,6 +228,7 @@ export default function StaffPortal() {
     setShowConfirmation(false);
     setShowComplianceModal(false);
     setStaffRoles([]);
+    setStaffRolesMap({});
     setPendingRemove(null);
     setRemoving(false);
   }, []);
@@ -267,8 +279,17 @@ export default function StaffPortal() {
         (e) => (e.assignment_mode === "public" || e.staff_management_mode === "public") && e.date === today
       );
       const allPositions = [];
+      const rolesMap = {};
       for (const event of activeEvents) {
-        const eventPositions = await base44.entities.Position.filter({ event_id: event.id });
+        const [eventPositions, eventStaff] = await Promise.all([
+          base44.entities.Position.filter({ event_id: event.id }),
+          base44.entities.Staff.filter({ event_id: event.id }),
+        ]);
+        for (const s of eventStaff) {
+          if (s.name) {
+            rolesMap[s.name] = [...new Set([...(rolesMap[s.name] || []), ...(s.roles || [])])];
+          }
+        }
         const myPositions = eventPositions.filter((pos) => {
           const inMain = (pos.staff_names || []).includes(staff.name);
           const inKamite = (pos.staff_names_kamite || []).includes(staff.name);
@@ -281,6 +302,7 @@ export default function StaffPortal() {
       }
       setPositions(allPositions);
       setEvents(activeEvents);
+      setStaffRolesMap(rolesMap);
     } catch (e) {
       // silent refresh failure
     }
@@ -601,20 +623,25 @@ export default function StaffPortal() {
                             ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
                             : (pos.staff_names || []);
                           if (allNames.length === 0) return null;
+                          const isContinuous = event.continuous_mode === true;
+                          const displayNames = isContinuous ? allNames : allNames.filter((n) => n === staffName);
+                          if (displayNames.length === 0) return null;
+                          const chiefs = allNames.filter((n) => (staffRolesMap[n] || []).includes("セクションチーフ"));
                           return (
-                            <div className="mt-2 flex flex-wrap gap-1">
-                              {allNames.map((name) => {
+                            <div className="mt-2 space-y-0.5">
+                              {displayNames.map((name) => {
                                 const isRemovingThis = removing && pendingRemove?.staffName === name && pendingRemove?.position.id === pos.id;
                                 return (
-                                  <span
+                                  <div
                                     key={name}
-                                    className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1 ${
+                                    className={`text-[11px] py-0.5 px-1 rounded font-medium flex items-center gap-1 ${
                                       name === staffName
-                                        ? "bg-primary/15 text-primary border border-primary/30"
-                                        : "bg-muted text-muted-foreground"
+                                        ? "bg-primary/10 text-primary"
+                                        : "text-muted-foreground"
                                     } ${isRemovingThis ? "opacity-50" : ""}`}
                                   >
-                                    {name}
+                                    <span className="text-muted-foreground/50">・</span>
+                                    <span>{name}</span>
                                     {isChief && name !== staffName && (
                                       <button
                                         onClick={() => handleStaffRemoveClick(name, pos)}
@@ -625,9 +652,15 @@ export default function StaffPortal() {
                                         <X className="w-2.5 h-2.5" />
                                       </button>
                                     )}
-                                  </span>
+                                  </div>
                                 );
                               })}
+                              {chiefs.length > 0 && (
+                                <div className="text-[11px] text-muted-foreground flex items-center gap-1 pt-1">
+                                  <span>👑</span>
+                                  <span>チーフ: {chiefs.join("、")}</span>
+                                </div>
+                              )}
                             </div>
                           );
                           })()}
