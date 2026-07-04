@@ -4,8 +4,9 @@ import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Users, AlertCircle, Pencil, UserCog, Download } from "lucide-react";
+import { Plus, Trash2, Users, AlertCircle, Pencil, UserCog, Download, Bug } from "lucide-react";
 import StaffScrapeModal from "@/components/StaffScrapeModal";
+import StaffCsvImportModal from "@/components/StaffCsvImportModal";
 import StaffEditModal from "@/components/StaffEditModal";
 import { TIME_SLOT_STYLES } from "@/lib/constants";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -25,6 +26,7 @@ export default function StaffManagement({ eventId }) {
   const [note, setNote] = useState("");
   const [editingStaff, setEditingStaff] = useState(null);
   const [showScrapeModal, setShowScrapeModal] = useState(false);
+  const [showCsvImport, setShowCsvImport] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const queryClient = useQueryClient();
   const { canEdit, canManageSettings, role } = useUserRole();
@@ -204,15 +206,27 @@ export default function StaffManagement({ eventId }) {
           </span>
         }
         actions={(
-          <Button
-            size="sm"
-            variant="outline"
-            className="gap-1 text-xs shrink-0"
-            onClick={() => canEdit && setShowScrapeModal(true)}
-            disabled={!canEdit}
-          >
-            <Download className="w-3 h-3" />点呼表から取得
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1 text-xs shrink-0"
+              onClick={() => canEdit && setShowCsvImport(true)}
+              disabled={!canEdit}
+              title="CSV一括登録（デバッグ）"
+            >
+              <Bug className="w-3 h-3" />CSV登録
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1 text-xs shrink-0"
+              onClick={() => canEdit && setShowScrapeModal(true)}
+              disabled={!canEdit}
+            >
+              <Download className="w-3 h-3" />点呼表から取得
+            </Button>
+          </div>
         )}
       />
 
@@ -327,6 +341,10 @@ export default function StaffManagement({ eventId }) {
 
       {showScrapeModal &&
       <StaffScrapeModal eventId={eventId} onClose={() => setShowScrapeModal(false)} />
+      }
+
+      {showCsvImport &&
+      <StaffCsvImportModal eventId={eventId} onClose={() => setShowCsvImport(false)} onImported={() => queryClient.invalidateQueries({ queryKey: ["staff", eventId] })} />
       }
 
       {editingStaff &&
