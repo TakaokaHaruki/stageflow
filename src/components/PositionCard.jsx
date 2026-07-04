@@ -112,6 +112,7 @@ export default function PositionCard({
   requiredCount = 0, onRequiredCountChange, occupiedInSlot = [],
   maskStaffNames = false,
   onPosDragStart, onPosDragEnd,
+  continuousMode = false,
 }) {
   const { hasExperience } = useStaffExperience();
   const splitBySide = Boolean(pos.split_by_side);
@@ -184,9 +185,13 @@ export default function PositionCard({
               </div>
             ))}
           </div>
-        ) : staffNames.length > 0 ? staffNames.map((name, i) => (
-          <StaffRow key={draggable ? `${pos.id}-${name}` : i} name={name} isLocked={lockedNames.includes(name)} isInexperienced={!hasExperience(name, pos.name, pos.category)} showSkills={showSkills} {...commonRowProps} />
-        )) : (
+        ) : staffNames.length > 0 ? (
+          <div className={continuousMode ? "grid grid-cols-2 divide-x divide-border/40" : ""}>
+            {staffNames.map((name, i) => (
+              <StaffRow key={draggable ? `${pos.id}-${name}` : i} name={name} isLocked={lockedNames.includes(name)} isInexperienced={!hasExperience(name, pos.name, pos.category)} showSkills={showSkills} {...commonRowProps} />
+            ))}
+          </div>
+        ) : (
           <div className="px-2 py-0.5 text-[11px] text-muted-foreground">{emptyLabel}</div>
         )}
       </div>

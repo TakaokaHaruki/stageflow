@@ -610,6 +610,7 @@ export default function StaffDragDropManager({ eventId }) {
                           lockedNames={lockedNames}
                           onPosDragStart={isAdmin ? (e) => handlePosDragStart(e, pos.id) : undefined}
                           onPosDragEnd={isAdmin ? handlePosDragEnd : undefined}
+                          continuousMode={continuousMode}
                         />
                       </div>
                     ))}
@@ -631,7 +632,7 @@ export default function StaffDragDropManager({ eventId }) {
             {unassigned.length === 0 ? (
               <p className="text-[11px] text-muted-foreground text-center py-1.5">未配置スタッフはいません</p>
             ) : (
-              <div className="grid gap-0.5">
+              <div className={`grid gap-0.5 ${continuousMode ? "grid-cols-2" : ""}`}>
                 {unassigned.map((s) => {
                   const displayName = getStaffDisplayName(s.name, shouldMaskStaffNames);
                   return (
@@ -648,6 +649,9 @@ export default function StaffDragDropManager({ eventId }) {
                       {s.note && <span className="text-[10px] text-muted-foreground">({s.note})</span>}
                     </div>
                     <div className="flex flex-wrap gap-1 mt-0.5">
+                      {(s.skills || []).map((skill) => (
+                        <span key={skill} className="text-[10px] px-1 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-medium">{skill}</span>
+                      ))}
                       {s.missingSlots.map((slot) => (
                         <span key={slot} className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${TIME_SLOT_STYLES[slot].header}`}>
                           {slot}未配置

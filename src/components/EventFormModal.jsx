@@ -302,23 +302,21 @@ export default function EventFormModal({ event, onClose, onSaved }) {
             <Label>備考</Label>
             <Input className="mt-1" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="メモなど" />
           </div>
-          {event && (
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
-              <div className="flex items-start gap-2">
-                <CalendarClock className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                <div>
-                  <Label className="cursor-pointer">一日通しモード</Label>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
-                    時間帯区分（開場中・開演中・終演後）を廃止し、一日通して同じポジションで管理します。大型フェス等に適しています。
-                  </p>
-                </div>
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+            <div className="flex items-start gap-2">
+              <CalendarClock className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <div>
+                <Label className="cursor-pointer">一日通しモード</Label>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
+                  時間帯区分（開場中・開演中・終演後）を廃止し、一日通して同じポジションで管理します。大型フェス等に適しています。
+                </p>
               </div>
-              <Switch
-                checked={form.continuous_mode}
-                onCheckedChange={(checked) => setForm({ ...form, continuous_mode: checked })}
-              />
             </div>
-          )}
+            <Switch
+              checked={form.continuous_mode}
+              onCheckedChange={(checked) => setForm({ ...form, continuous_mode: checked })}
+            />
+          </div>
         </div>
         <div className="flex gap-2 mt-4">
           <Button variant="outline" className="flex-1" onClick={onClose}>閉じる</Button>
