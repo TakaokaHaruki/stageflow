@@ -12,7 +12,6 @@ import { motion } from "framer-motion";
 import { useUserRole } from "@/hooks/useUserRole";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { useOperationLog } from "@/hooks/useOperationLog";
-import { useViewLog } from "@/hooks/useViewLog";
 import SectionHeader from "@/components/SectionHeader";
 
 const PRIORITY_STYLES = {
@@ -454,7 +453,6 @@ export default function AnnouncementManager({ eventId }) {
   const prevIdsRef = useRef(new Set());
   const { role, canEdit } = useUserRole();
   const { record } = useOperationLog(eventId);
-  const { record: recordView } = useViewLog(eventId);
 
   const { data: announcements = [], isLoading } = useQuery({
     queryKey: ["announcements", eventId],
@@ -536,7 +534,7 @@ export default function AnnouncementManager({ eventId }) {
               key={ann.id}
               ann={ann}
               onDelete={(ann) => deleteMutation.mutate(ann)}
-              onExpand={() => recordView({ view_type: "announcement_open", target_title: ann.title, target_id: ann.id })}
+              onExpand={() => {}}
             />
           ))}
         </div>

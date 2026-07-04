@@ -17,7 +17,7 @@ function normalizeSlot(slot) {
  * }
  */
 export function useStaffTrends() {
-  const { data = { tally: {}, recentEvents: [], positionsPerEvent: [] } } = useQuery({
+  const { data = { tally: {}, recentEvents: [], positionsPerEvent: [] }, isLoading, isFetching } = useQuery({
     queryKey: ["staffTrends"],
     queryFn: async () => {
       const events = await base44.entities.Event.list("-date", 200);
@@ -51,7 +51,7 @@ export function useStaffTrends() {
     refetchOnWindowFocus: false,
   });
 
-  return useMemo(() => data, [data]);
+  return useMemo(() => ({ ...data, isLoading, isFetching }), [data, isLoading, isFetching]);
 }
 
 export { SLOT_ORDER };

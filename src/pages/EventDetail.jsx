@@ -31,7 +31,6 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import SeatingMapViewer from "@/components/SeatingMapViewer";
 import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
-import EventSheetEditor from "@/components/EventSheetEditor";
 import EmergencyContactManager from "@/components/EmergencyContactManager";
 import PinCodeManager from "@/components/PinCodeManager";
 import WorkspaceDashboard from "@/components/workspace/WorkspaceDashboard";
@@ -170,7 +169,6 @@ export default function EventDetail() {
     ? [
         { id: "users", label: "ユーザー管理", icon: Users },
         { id: "operation_logs", label: "操作ログ", icon: FileText },
-        { id: "view_logs", label: "閲覧ログ", icon: Monitor },
         { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
         { id: "global_banner", label: "グローバル通知", icon: Bell },
         { id: "tab_control", label: "タブ制御", icon: LayoutTemplate },
@@ -181,7 +179,6 @@ export default function EventDetail() {
           { id: "positions", label: "ポジション設定", icon: Settings },
           { id: "presets", label: "ポジションプリセット", icon: ClipboardList },
           { id: "venues", label: "会場管理", icon: LayoutTemplate },
-          { id: "event_sheet", label: "公演シート", icon: FileText },
           ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
           { id: "tag_management", label: "タグ・役割管理", icon: Tag },
           { id: "emergency_contacts", label: "緊急連絡先", icon: Phone },
@@ -323,7 +320,6 @@ export default function EventDetail() {
             {tab === "settings" && settingsSection === "positions" && <PositionTypeManagement eventId={eventId} section="positions" />}
             {tab === "settings" && settingsSection === "presets" && <PositionTypeManagement eventId={eventId} section="presets" />}
             {tab === "settings" && settingsSection === "venues" && <VenueManager />}
-            {tab === "settings" && settingsSection === "event_sheet" && <EventSheetEditor eventId={eventId} />}
             {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
             {tab === "settings" && settingsSection === "tag_management" && <TagManagement />}
             {tab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} />}

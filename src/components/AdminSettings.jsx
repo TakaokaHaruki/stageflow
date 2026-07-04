@@ -1,5 +1,4 @@
 import ActivityLogViewer from "@/components/ActivityLogViewer";
-import ViewLogViewer from "@/components/ViewLogViewer";
 import UserRoleManager from "@/components/UserRoleManager";
 import PortalRestrictionManager from "@/components/PortalRestrictionManager";
 import GlobalBannerManager from "@/components/GlobalBannerManager";
@@ -11,7 +10,6 @@ export default function AdminSettings({ eventId, section = "users" }) {
     <div>
       {section === "users" && <UserRoleManager />}
       {section === "operation_logs" && <ActivityLogViewer eventId={eventId} />}
-      {section === "view_logs" && <ViewLogViewer eventId={eventId} />}
       {section === "portal_restriction" && <PortalRestrictionManager />}
       {section === "global_banner" && <GlobalBannerManager />}
       {section === "tab_control" && <TabControlManager />}

@@ -447,7 +447,15 @@ export default function StaffDragDropManager({ eventId }) {
     const [moved] = reordered.splice(fromIdx, 1);
     reordered.splice(toIdx, 0, moved);
     const updates = reordered.map((pos, idx) => ({ positionId: pos.id, data: { order: idx } }));
-    Promise.all(updates.map((u) => base44.functions.invoke("updatePositionSide", { action: "updatePositionFields", ...u }))).catch(() => {});
+    Promise.all(updates.map((u) => base44.functions.invoke("updatePositionSide", { action: "updatePositionFields", ...u })))
+      .then(() => {
+        record({
+          action_type: "position_reorder",
+          description: `「${slot}」のポジション順序を変更しました（「${moved.name}」を移動）`,
+          entity_type: "Position",
+        });
+      })
+      .catch(() => {});
     queryClient.setQueryData(["positions", eventId], (old) => {
       const others = old.filter((p) => (p.time_slot || "開場中") !== slot);
       return [...others, ...reordered.map((pos, idx) => ({ ...pos, order: idx }))];
@@ -593,6 +601,7 @@ export default function StaffDragDropManager({ eventId }) {
                           staffList={staffList}
                           requiredCount={pos.required_count ?? 0}
                           onRequiredCountChange={(v) => {
+                            const prevCount = pos.required_count ?? 0;
                             queryClient.setQueryData(["positions", eventId], (old) =>
                               old.map((p) => p.id === pos.id ? { ...p, required_count: v } : p)
                             );
@@ -600,6 +609,15 @@ export default function StaffDragDropManager({ eventId }) {
                               action: "updatePositionFields",
                               positionId: pos.id,
                               data: { required_count: v },
+                            }).then(() => {
+                              record({
+                                action_type: "event_update",
+                                description: `「${pos.name}」の必要人数を${prevCount}名→${v}名に変更しました`,
+                                entity_type: "Position",
+                                entity_id: pos.id,
+                                snapshot_before: { required_count: prevCount },
+                                snapshot_after: { required_count: v },
+                              });
                             }).catch(() => {});
                           }}
                           occupiedInSlot={[...new Set(

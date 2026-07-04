@@ -12,7 +12,8 @@ import { useStaffTrends } from "@/hooks/useStaffTrends";
  * API追加コールなし（useStaffTrends は React Query でキャッシュ共有）。
  */
 export function useStaffExperience() {
-  const { positionsPerEvent } = useStaffTrends();
+  const { positionsPerEvent, isLoading, isFetching } = useStaffTrends();
+  const isReady = !isLoading && !isFetching;
 
   const experienceMap = useMemo(() => {
     const map = {};
@@ -43,5 +44,5 @@ export function useStaffExperience() {
     };
   }, [experienceMap]);
 
-  return { hasExperience, experienceMap };
+  return { hasExperience, experienceMap, isReady };
 }

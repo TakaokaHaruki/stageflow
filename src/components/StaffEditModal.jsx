@@ -10,6 +10,7 @@ import { useCaptureTags } from "@/hooks/useCaptureTags";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import RoleIcon from "@/components/RoleIcon";
 import StaffTrendSummary from "@/components/StaffTrendSummary";
+import { useOperationLog } from "@/hooks/useOperationLog";
 
 const PRESET_COLORS = [
   { label: "デフォルト", value: "" },
@@ -38,6 +39,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
   const [noteTab, setNoteTab] = useState("all");
   const { tags: captureTags = [] } = useCaptureTags();
   const { allRoles, getBadgeClass } = useAllRoles();
+  const { record } = useOperationLog(staff.event_id);
   const prevDataRef = useRef({
     name: staff.name, acast_id: staff.acast_id || "", note: staff.note || "",
     note_before: staff.note_before || "", note_during: staff.note_during || "", note_after: staff.note_after || "",
@@ -108,6 +110,14 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
       updateMutation.mutate(nextData, {
         onSuccess: () => {
           toast.success("保存しました");
+          record({
+            action_type: "staff_update",
+            description: `スタッフ「${prevDataRef.current.name}」の情報を更新しました`,
+            entity_type: "Staff",
+            entity_id: staff.id,
+            snapshot_before: prevDataRef.current,
+            snapshot_after: nextData,
+          });
           prevDataRef.current = nextData;
         },
       });

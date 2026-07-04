@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, KeyRound, AlertTriangle, RotateCcw, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import SectionHeader from "@/components/SectionHeader";
 
 export default function PinCodeManager() {
   const [staffList, setStaffList] = useState([]);
@@ -98,20 +99,21 @@ export default function PinCodeManager() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-bold text-sm">セクションチーフ PIN管理</h3>
-          {pendingCount > 0 && (
-            <p className="text-xs text-rose-600 mt-0.5 flex items-center gap-1">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              リセット申請中: {pendingCount}件
-            </p>
-          )}
-        </div>
-        <Button variant="ghost" size="sm" className="gap-1.5" onClick={loadData}>
-          <RefreshCw className="w-3.5 h-3.5" />更新
-        </Button>
-      </div>
+      <SectionHeader
+        icon={KeyRound}
+        title="セクションチーフ PIN管理"
+        subtitle={pendingCount > 0 ? (
+          <span className="text-rose-600 flex items-center gap-1">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            リセット申請中: {pendingCount}件
+          </span>
+        ) : undefined}
+        actions={
+          <Button variant="ghost" size="sm" className="gap-1.5" onClick={loadData}>
+            <RefreshCw className="w-3.5 h-3.5" />更新
+          </Button>
+        }
+      />
 
       <div className="space-y-2">
         {staffList.map((staff, idx) => {

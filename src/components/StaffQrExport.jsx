@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { QrCode, Download } from "lucide-react";
 import { toast } from "sonner";
 import QRCode from "qrcode";
+import StaffQrPreviewModal from "@/components/StaffQrPreviewModal";
 
 export default function StaffQrExport({ eventId }) {
   const [generating, setGenerating] = useState(false);
+  const [previewStaff, setPreviewStaff] = useState(null);
 
   const generateQrImages = async (staffList) => {
     const canvasPromises = staffList.map((staff) => {
@@ -27,25 +29,6 @@ export default function StaffQrExport({ eventId }) {
     }));
   };
 
-  const handleExportSingleQr = async (staff) => {
-    try {
-      const canvas = await QRCode.toCanvas(staff.acast_id, {
-        width: 300,
-        margin: 2,
-      });
-      
-      const dataUrl = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.download = `${staff.name}_QR.png`;
-      link.href = dataUrl;
-      link.click();
-      
-      toast.success(`${staff.name} の QR コードをダウンロードしました`);
-    } catch (e) {
-      toast.error("QR コードの生成に失敗しました");
-    }
-  };
-
   const handleExportAllQr = async () => {
     if (!eventId) {
       toast.error("イベントが選択されていません");
@@ -64,7 +47,6 @@ export default function StaffQrExport({ eventId }) {
 
       const qrDataList = await generateQrImages(staffList);
 
-      // Create PDF-like layout on a single large canvas
       const qrWidth = 200;
       const qrHeight = 200;
       const padding = 40;
@@ -80,33 +62,27 @@ export default function StaffQrExport({ eventId }) {
       finalCanvas.height = totalHeight;
       const ctx = finalCanvas.getContext("2d");
 
-      // White background
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, totalWidth, totalHeight);
 
-      // Draw QR codes
       qrDataList.forEach(({ canvas, staff }, index) => {
         const col = index % cols;
         const row = Math.floor(index / cols);
         const x = col * (qrWidth + padding) + padding / 2;
         const y = row * (qrHeight + textHeight + padding) + padding / 2;
 
-        // Draw QR code
         ctx.drawImage(canvas, x, y, qrWidth, qrHeight);
 
-        // Draw staff name
         ctx.fillStyle = "#000000";
         ctx.font = "bold 16px 'Noto Sans JP', sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(staff.name, x + qrWidth / 2, y + qrHeight + 25);
         
-        // Draw A-CAST ID
         ctx.font = "12px 'Noto Sans JP', sans-serif";
         ctx.fillStyle = "#666666";
         ctx.fillText(staff.acast_id, x + qrWidth / 2, y + qrHeight + 45);
       });
 
-      // Download as PNG
       const dataUrl = finalCanvas.toDataURL("image/png");
       const link = document.createElement("a");
       link.download = `staff_qr_codes_${new Date().toISOString().split("T")[0]}.png`;
@@ -151,15 +127,18 @@ export default function StaffQrExport({ eventId }) {
         )}
       </div>
 
-      {/* Individual QR list */}
       {eventId && (
-        <StaffQrList eventId={eventId} onExportSingle={handleExportSingleQr} />
+        <StaffQrList eventId={eventId} onPreview={setPreviewStaff} />
+      )}
+
+      {previewStaff && (
+        <StaffQrPreviewModal staff={previewStaff} onClose={() => setPreviewStaff(null)} />
       )}
     </div>
   );
 }
 
-function StaffQrList({ eventId, onExportSingle }) {
+function StaffQrList({ eventId, onPreview }) {
   const [staffList, setStaffList] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -208,7 +187,7 @@ function StaffQrList({ eventId, onExportSingle }) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onExportSingle(staff)}
+            onClick={() => onPreview(staff)}
             className="gap-1.5"
           >
             <QrCode className="w-3.5 h-3.5" />
