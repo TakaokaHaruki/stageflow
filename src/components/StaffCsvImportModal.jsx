@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bug, Upload, X } from "lucide-react";
+import { Bug, Upload, X, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
@@ -86,6 +86,16 @@ export default function StaffCsvImportModal({ eventId, onClose, onImported }) {
           <button onClick={() => !importing && onClose()} className="text-muted-foreground hover:text-foreground p-1">
             <X className="w-4 h-4" />
           </button>
+        </div>
+
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-2.5 mb-3 flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-bold text-amber-700 dark:text-amber-400">⚠️ デバッグ機能</p>
+            <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 mt-0.5">
+              本機能は開発・テスト用のデバッグ機能です。本番運用時は使用しないでください。
+            </p>
+          </div>
         </div>
 
         <div className="mb-2">

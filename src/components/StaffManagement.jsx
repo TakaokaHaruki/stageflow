@@ -210,10 +210,10 @@ export default function StaffManagement({ eventId }) {
             <Button
               size="sm"
               variant="outline"
-              className="gap-1 text-xs shrink-0"
+              className="gap-1 text-xs shrink-0 border-amber-400/50 text-amber-600 hover:bg-amber-500/10"
               onClick={() => canEdit && setShowCsvImport(true)}
               disabled={!canEdit}
-              title="CSV一括登録（デバッグ）"
+              title="CSV一括登録（デバッグ機能）"
             >
               <Bug className="w-3 h-3" />CSV登録
             </Button>
