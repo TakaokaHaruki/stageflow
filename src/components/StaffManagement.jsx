@@ -29,7 +29,7 @@ export default function StaffManagement({ eventId }) {
   const [showCsvImport, setShowCsvImport] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const queryClient = useQueryClient();
-  const { canEdit, canManageSettings, role } = useUserRole();
+  const { canEdit, canManageSettings, role, isAdmin } = useUserRole();
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
   const { record } = useOperationLog(eventId);
   const { badges: historyBadges, isLoading: isLoadingBadges, isFetching: isFetchingBadges } = useStaffHistoryBadges(eventId);
@@ -207,16 +207,17 @@ export default function StaffManagement({ eventId }) {
         }
         actions={(
           <div className="flex items-center gap-1">
+            {isAdmin && (
             <Button
               size="sm"
               variant="outline"
               className="gap-1 text-xs shrink-0 border-amber-400/50 text-amber-600 hover:bg-amber-500/10"
-              onClick={() => canEdit && setShowCsvImport(true)}
-              disabled={!canEdit}
+              onClick={() => setShowCsvImport(true)}
               title="CSV一括登録（デバッグ機能）"
             >
               <Bug className="w-3 h-3" />CSV登録
             </Button>
+            )}
             <Button
               size="sm"
               variant="outline"
@@ -343,9 +344,12 @@ export default function StaffManagement({ eventId }) {
       <StaffScrapeModal eventId={eventId} onClose={() => setShowScrapeModal(false)} />
       }
 
-      {showCsvImport &&
+      {showCsvImport && isAdmin &&
       <StaffCsvImportModal eventId={eventId} onClose={() => setShowCsvImport(false)} onImported={() => queryClient.invalidateQueries({ queryKey: ["staff", eventId] })} />
       }
+      {!isAdmin && (
+        <p className="text-[10px] text-muted-foreground mt-1">※ CSV一括登録は管理者権限限定の機能です（チーフ権限では使用できません）</p>
+      )}
 
       {editingStaff &&
       <StaffEditModal
