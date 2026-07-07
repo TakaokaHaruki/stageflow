@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import EventFormModal from "@/components/EventFormModal";
 import EventPublishToggle from "@/components/EventPublishToggle";
 import SidebarNav from "@/components/SidebarNav";
+import EventsBottomBar from "@/components/EventsBottomBar";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import GlobalBanner from "@/components/GlobalBanner";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
@@ -335,6 +336,15 @@ export default function Events() {
         onCancel={() => setConfirmDeleteAccount(false)} />
 
       }
+
+      <EventsBottomBar
+        canEdit={canEdit}
+        isAdmin={isAdmin}
+        currentUser={currentUser}
+        onNewEvent={() => { setEditingEvent(null); setShowModal(true); }}
+        onAdminSettings={() => setShowAdminModal(true)}
+        onCurrentUserChange={setCurrentUser}
+      />
 
       {showAdminModal && <AdminUserModal onClose={() => setShowAdminModal(false)} />}
 
