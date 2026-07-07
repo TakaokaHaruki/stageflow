@@ -198,7 +198,7 @@ export default function EventDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative scrollbar-hide">
+    <div className="min-h-screen bg-background relative scrollbar-hide overflow-x-hidden">
       {isPulling && (
         <div className="fixed top-0 left-0 right-0 flex justify-center pt-2 z-30">
           <div className="w-6 h-6 border-3 border-primary/30 border-t-primary rounded-full animate-spin" style={{ opacity: pullDistance / 100 }} />
@@ -217,7 +217,7 @@ export default function EventDetail() {
           </div>
           <div className="order-2 min-w-0 basis-full flex-1 pl-10 sm:order-none sm:basis-auto sm:pl-0">
             <div className="flex items-baseline gap-2 min-w-0">
-              <h1 className="font-bold text-sm leading-snug truncate shrink-0">{event.name}</h1>
+              <h1 className="font-bold text-sm leading-snug truncate min-w-0">{event.name}</h1>
               {(event.time_priority || event.time_open || event.time_start || event.time_end) && (
                 <div className="text-xs text-muted-foreground flex flex-wrap gap-x-2 shrink-0">
                   {event.time_priority && <EventTimeDisplay eventDate={event.date} eventTime={event.time_priority} endTime={event.time_priority_end} label="先行" />}
