@@ -1,80 +1,37 @@
-import { useState, useRef, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { FileText } from "lucide-react";
+import { FileText, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import SectionHeader from "@/components/SectionHeader";
 import PositionTypeOverrideSection from "@/components/PositionTypeOverrideSection";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 
-const SLOT_ORDER = ["開場中", "開演中", "終演後"];
-const SLOT_COLORS = {
-  "開場中": "text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400",
-  "開演中": "text-green-600 bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400",
-  "終演後": "text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800 dark:text-orange-400",
-};
-
-function PositionNoteRow({ position }) {
-  const [notes, setNotes] = useState(position.notes || "");
-  const prevRef = useRef(position.notes || "");
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: async (value) => {
-      await base44.entities.Position.update(position.id, { notes: value });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["positions", position.event_id] });
-      toast.success("保存しました");
-    },
-    onError: () => toast.error("保存に失敗しました"),
-  });
-
-  useEffect(() => {
-    if (notes === prevRef.current) return;
-    const timer = setTimeout(() => {
-      mutation.mutate(notes, {
-        onSuccess: () => { prevRef.current = notes; }
-      });
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [notes]);
-
-  return (
-    <div className="flex items-center gap-2 py-2 border-b border-border last:border-0">
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium truncate">{position.name}</div>
-        {position.staff_names?.length > 0 && (
-          <div className="text-xs text-muted-foreground truncate mt-0.5">
-            {position.staff_names.join("、")}
-          </div>
-        )}
-      </div>
-      <div className="flex-1">
-        <Input
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="説明テキスト（スタッフに表示）"
-          className="h-7 text-xs"
-        />
-      </div>
-    </div>
-  );
-}
-
 export default function PositionNotesEditor({ eventId }) {
-  const { data: positions = [], isLoading } = useQuery({
-    queryKey: ["positions", eventId],
-    queryFn: () => base44.entities.Position.filter({ event_id: eventId }, "order"),
-  });
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [openAccordionIds, setOpenAccordionIds] = useState({});
 
-  const { data: positionTypes = [] } = useQuery({
+  const { data: positionTypes = [], isLoading } = useQuery({
     queryKey: ["positionTypes"],
     queryFn: () => base44.entities.PositionType.list(),
     select: (d) => [...d].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
     refetchInterval: LIVE_SYNC_INTERVAL,
   });
+
+  // Fetch override presence to show badges
+  const { data: overrides = [] } = useQuery({
+    queryKey: ["positionTypeOverrides", eventId],
+    queryFn: () => base44.entities.PositionTypeOverride.filter({ event_id: eventId }),
+    refetchInterval: LIVE_SYNC_INTERVAL,
+  });
+  const overrideNames = new Set(overrides.map((o) => o.position_type_name));
+
+  const useTabs = positionTypes.length <= 5;
+  const selected = positionTypes[selectedIdx];
+
+  const toggleAccordion = (id) => {
+    setOpenAccordionIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   if (isLoading) {
     return (
@@ -82,7 +39,7 @@ export default function PositionNotesEditor({ eventId }) {
         <SectionHeader
           icon={FileText}
           title="ポジション説明"
-          subtitle="各ポジションの説明テキストを入力してください。スタッフポータルで担当スタッフに表示されます。"
+          subtitle="ポジション属性ごとにイベント固有の説明文・資料を管理します。"
         />
         <div className="flex justify-center py-12">
           <div className="w-6 h-6 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -91,68 +48,127 @@ export default function PositionNotesEditor({ eventId }) {
     );
   }
 
-  if (positions.length === 0) {
+  if (positionTypes.length === 0) {
     return (
       <div>
         <SectionHeader
           icon={FileText}
           title="ポジション説明"
-          subtitle="各ポジションの説明テキストを入力してください。スタッフポータルで担当スタッフに表示されます。"
+          subtitle="ポジション属性ごとにイベント固有の説明文・資料を管理します。"
         />
         <div className="text-center py-12">
           <FileText className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">ポジションがまだ登録されていません</p>
+          <p className="text-sm text-muted-foreground">ポジション属性がまだ登録されていません</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">先にポジション属性を登録してください</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <SectionHeader
         icon={FileText}
         title="ポジション説明"
-        subtitle="各ポジションの説明テキストを入力してください。スタッフポータルで担当スタッフに表示されます。"
+        subtitle="ポジション属性ごとにイベント固有の説明文・資料を管理します。"
       />
-      {/* PositionType-level overrides */}
-      {positionTypes.length > 0 && (
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-            <FileText className="w-3.5 h-3.5 text-primary" />
-            ポジション属性ごとの説明・資料（イベント上書き）
+
+      {useTabs ? (
+        /* Tab navigation for ≤5 types */
+        <>
+          <div className="flex gap-1 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
+            {positionTypes.map((pt, idx) => {
+              const isActive = idx === selectedIdx;
+              const hasOverride = overrideNames.has(pt.name);
+              return (
+                <button
+                  key={pt.id}
+                  onClick={() => setSelectedIdx(idx)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 border ${
+                    isActive
+                      ? "bg-card border-border text-foreground shadow-sm"
+                      : "bg-transparent border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: pt.color || "#6366f1" }}
+                  />
+                  <span className="truncate max-w-[100px]">{pt.name}</span>
+                  {hasOverride && (
+                    <span className="text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400 px-1 py-0.5 rounded-full shrink-0">
+                      上書き
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
-          <p className="text-[11px] text-muted-foreground -mt-1">
-            基本設定（PositionType）を引き継ぎつつ、このイベント固有の内容で上書きできます。
-          </p>
-          {positionTypes.map((pt) => (
-            <PositionTypeOverrideSection key={pt.id} eventId={eventId} positionType={pt} />
-          ))}
+          {/* Selected content - always visible */}
+          {selected && (
+            <div className="bg-card border border-border rounded-xl p-3">
+              <div className="flex items-center gap-2 mb-3">
+                <span
+                  className="w-3 h-3 rounded-full shrink-0"
+                  style={{ backgroundColor: selected.color || "#6366f1" }}
+                />
+                <span className="font-semibold text-sm">{selected.name}</span>
+                {overrideNames.has(selected.name) && (
+                  <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400 px-1.5 py-0.5 rounded-full shrink-0">
+                    上書きあり
+                  </span>
+                )}
+              </div>
+              <PositionTypeOverrideSection eventId={eventId} positionType={selected} />
+            </div>
+          )}
+        </>
+      ) : (
+        /* Accordion for ≥6 types */
+        <div className="space-y-2">
+          {positionTypes.map((pt) => {
+            const isOpen = openAccordionIds[pt.id] ?? false;
+            const hasOverride = overrideNames.has(pt.name);
+            return (
+              <div key={pt.id} className="bg-card border border-border rounded-xl overflow-hidden">
+                <button
+                  onClick={() => toggleAccordion(pt.id)}
+                  className="w-full flex items-center gap-2 px-3 py-2.5"
+                >
+                  <span
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: pt.color || "#6366f1" }}
+                  />
+                  <span className="font-semibold text-sm flex-1 text-left truncate">{pt.name}</span>
+                  {hasOverride && (
+                    <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400 px-1.5 py-0.5 rounded-full shrink-0">
+                      上書きあり
+                    </span>
+                  )}
+                  <motion.span animate={{ rotate: isOpen ? 0 : -90 }} transition={{ duration: 0.15 }} className="inline-flex shrink-0">
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  </motion.span>
+                </button>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-3 pb-3 border-t border-border pt-3">
+                        <PositionTypeOverrideSection eventId={eventId} positionType={pt} />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
         </div>
       )}
-
-      {/* Position-level notes */}
-      <div className="pt-2 border-t border-border">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground mb-2">
-          <FileText className="w-3.5 h-3.5 text-muted-foreground" />
-          ポジション個別メモ
-        </div>
-        {SLOT_ORDER.map((slot) => {
-          const slotPositions = positions.filter((p) => p.time_slot === slot);
-          if (slotPositions.length === 0) return null;
-          return (
-            <div key={slot} className="bg-card border border-border rounded-xl overflow-hidden">
-              <div className={`px-3 py-2 text-xs font-semibold border-b ${SLOT_COLORS[slot]}`}>
-                {slot}
-              </div>
-              <div className="px-3">
-                {slotPositions.map((pos) => (
-                  <PositionNoteRow key={pos.id} position={pos} />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }
