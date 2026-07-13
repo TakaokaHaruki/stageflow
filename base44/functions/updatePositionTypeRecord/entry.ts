@@ -15,8 +15,8 @@ Deno.serve(async (req) => {
     const { action, id, data, updates } = await req.json();
 
     if (action === 'create') {
-      const record = await base44.asServiceRole.entities.PositionType.create(data);
-      return Response.json({ record });
+      const positionType = await base44.asServiceRole.entities.PositionType.create(data);
+      return Response.json({ positionType });
     }
 
     if (action === 'update') {

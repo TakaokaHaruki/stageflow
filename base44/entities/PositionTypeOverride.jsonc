@@ -1,0 +1,76 @@
+{
+  "name": "PositionTypeOverride",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "\u30a4\u30d9\u30f3\u30c8ID"
+    },
+    "position_type_name": {
+      "type": "string",
+      "description": "\u30dd\u30b8\u30b7\u30e7\u30f3\u5c5e\u6027\u540d\uff08PositionType.name\u3068\u4e00\u81f4\uff09"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u4e0a\u66f8\u304d\u8aac\u660e\u6587\uff08\u7a7a\u306e\u5834\u5408\u306f\u57fa\u672c\u5024\u3092\u53c2\u7167\uff09",
+      "default": ""
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "\u4e0a\u66f8\u304d\u8cc7\u6599\u30ea\u30b9\u30c8 [{type: file|url, label, url}]",
+      "default": []
+    }
+  },
+  "required": [
+    "event_id",
+    "position_type_name"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    },
+    "read": true,
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    }
+  }
+}

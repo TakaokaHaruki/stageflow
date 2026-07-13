@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { FileText } from "lucide-react";
 import SectionHeader from "@/components/SectionHeader";
+import PositionTypeOverrideSection from "@/components/PositionTypeOverrideSection";
+import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 
 const SLOT_ORDER = ["開場中", "開演中", "終演後"];
 const SLOT_COLORS = {
@@ -67,6 +69,13 @@ export default function PositionNotesEditor({ eventId }) {
     queryFn: () => base44.entities.Position.filter({ event_id: eventId }, "order"),
   });
 
+  const { data: positionTypes = [] } = useQuery({
+    queryKey: ["positionTypes"],
+    queryFn: () => base44.entities.PositionType.list(),
+    select: (d) => [...d].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+    refetchInterval: LIVE_SYNC_INTERVAL,
+  });
+
   if (isLoading) {
     return (
       <div>
@@ -105,22 +114,45 @@ export default function PositionNotesEditor({ eventId }) {
         title="ポジション説明"
         subtitle="各ポジションの説明テキストを入力してください。スタッフポータルで担当スタッフに表示されます。"
       />
-      {SLOT_ORDER.map((slot) => {
-        const slotPositions = positions.filter((p) => p.time_slot === slot);
-        if (slotPositions.length === 0) return null;
-        return (
-          <div key={slot} className="bg-card border border-border rounded-xl overflow-hidden">
-            <div className={`px-3 py-2 text-xs font-semibold border-b ${SLOT_COLORS[slot]}`}>
-              {slot}
-            </div>
-            <div className="px-3">
-              {slotPositions.map((pos) => (
-                <PositionNoteRow key={pos.id} position={pos} />
-              ))}
-            </div>
+      {/* PositionType-level overrides */}
+      {positionTypes.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+            <FileText className="w-3.5 h-3.5 text-primary" />
+            ポジション属性ごとの説明・資料（イベント上書き）
           </div>
-        );
-      })}
+          <p className="text-[11px] text-muted-foreground -mt-1">
+            基本設定（PositionType）を引き継ぎつつ、このイベント固有の内容で上書きできます。
+          </p>
+          {positionTypes.map((pt) => (
+            <PositionTypeOverrideSection key={pt.id} eventId={eventId} positionType={pt} />
+          ))}
+        </div>
+      )}
+
+      {/* Position-level notes */}
+      <div className="pt-2 border-t border-border">
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground mb-2">
+          <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+          ポジション個別メモ
+        </div>
+        {SLOT_ORDER.map((slot) => {
+          const slotPositions = positions.filter((p) => p.time_slot === slot);
+          if (slotPositions.length === 0) return null;
+          return (
+            <div key={slot} className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className={`px-3 py-2 text-xs font-semibold border-b ${SLOT_COLORS[slot]}`}>
+                {slot}
+              </div>
+              <div className="px-3">
+                {slotPositions.map((pos) => (
+                  <PositionNoteRow key={pos.id} position={pos} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

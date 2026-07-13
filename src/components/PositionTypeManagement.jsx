@@ -19,6 +19,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import SectionHeader from "@/components/SectionHeader";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import CategoryPicker from "@/components/CategoryPicker";
+import PositionTypeDescriptionEditor from "@/components/PositionTypeDescriptionEditor";
 
 const PRESET_COLORS = [
   "#6366f1", "#3b82f6", "#10b981", "#f59e0b",
@@ -333,6 +334,7 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
                   );
                 })}
               </div>
+              <PositionTypeDescriptionEditor positionType={pt} isAdmin={isAdmin} />
             </div>
           ))}
         </div>

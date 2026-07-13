@@ -16,6 +16,7 @@ import PortalMaintenance from "@/components/PortalMaintenance";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import AllPositionsModal from "@/components/AllPositionsModal";
 import ChiefPinModal from "@/components/ChiefPinModal";
+import PositionDetailExpand from "@/components/PositionDetailExpand";
 import { Phone } from "lucide-react";
 
 const STORAGE_KEY = "crewly_acast_id";
@@ -116,11 +117,21 @@ export default function StaffPortal() {
       const allPositions = [];
       const rolesMap = {};
       const myChiefSet = new Set();
+      const allPositionTypes = await base44.entities.PositionType.list();
+      const ptMap = {};
+      for (const pt of allPositionTypes) {
+        ptMap[pt.name] = { description: pt.description || "", resources: pt.resources || [] };
+      }
       for (const event of activeEvents) {
-        const [eventPositions, eventStaff] = await Promise.all([
+        const [eventPositions, eventStaff, eventOverrides] = await Promise.all([
           base44.entities.Position.filter({ event_id: event.id }),
           base44.entities.Staff.filter({ event_id: event.id }),
+          base44.entities.PositionTypeOverride.filter({ event_id: event.id }),
         ]);
+        const overrideMap = {};
+        for (const ov of (eventOverrides || [])) {
+          overrideMap[ov.position_type_name] = { description: ov.description || "", resources: ov.resources || [] };
+        }
         for (const s of eventStaff) {
           if (s.name) {
             rolesMap[s.name] = [...new Set([...(rolesMap[s.name] || []), ...(s.roles || [])])];
@@ -136,7 +147,11 @@ export default function StaffPortal() {
           return inMain || inKamite || inShimote;
         });
         for (const pos of myPositions) {
-          allPositions.push({ ...pos, _eventName: event.name, _eventDate: event.date, _eventId: event.id });
+          const base = ptMap[pos.name];
+          const override = overrideMap[pos.name];
+          const desc = override?.description || base?.description || "";
+          const res = (override?.resources?.length > 0 ? override.resources : base?.resources) || [];
+          allPositions.push({ ...pos, _eventName: event.name, _eventDate: event.date, _eventId: event.id, _detailDescription: desc, _detailResources: res });
         }
       }
       setStaffRolesMap(rolesMap);
@@ -334,11 +349,21 @@ export default function StaffPortal() {
       const allPositions = [];
       const rolesMap = {};
       const myChiefSet = new Set();
+      const allPositionTypes = await base44.entities.PositionType.list();
+      const ptMap = {};
+      for (const pt of allPositionTypes) {
+        ptMap[pt.name] = { description: pt.description || "", resources: pt.resources || [] };
+      }
       for (const event of activeEvents) {
-        const [eventPositions, eventStaff] = await Promise.all([
+        const [eventPositions, eventStaff, eventOverrides] = await Promise.all([
           base44.entities.Position.filter({ event_id: event.id }),
           base44.entities.Staff.filter({ event_id: event.id }),
+          base44.entities.PositionTypeOverride.filter({ event_id: event.id }),
         ]);
+        const overrideMap = {};
+        for (const ov of (eventOverrides || [])) {
+          overrideMap[ov.position_type_name] = { description: ov.description || "", resources: ov.resources || [] };
+        }
         for (const s of eventStaff) {
           if (s.name) {
             rolesMap[s.name] = [...new Set([...(rolesMap[s.name] || []), ...(s.roles || [])])];
@@ -354,7 +379,11 @@ export default function StaffPortal() {
           return inMain || inKamite || inShimote;
         });
         for (const pos of myPositions) {
-          allPositions.push({ ...pos, _eventName: event.name, _eventDate: event.date, _eventId: event.id });
+          const base = ptMap[pos.name];
+          const override = overrideMap[pos.name];
+          const desc = override?.description || base?.description || "";
+          const res = (override?.resources?.length > 0 ? override.resources : base?.resources) || [];
+          allPositions.push({ ...pos, _eventName: event.name, _eventDate: event.date, _eventId: event.id, _detailDescription: desc, _detailResources: res });
         }
       }
       setPositions(allPositions);
@@ -718,6 +747,7 @@ export default function StaffPortal() {
                           {pos.notes && (
                             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{pos.notes}</p>
                           )}
+                          <PositionDetailExpand description={pos._detailDescription} resources={pos._detailResources} />
                           {/* 配置スタッフ一覧 */}
                           {(() => {
                           const isContinuous = event.continuous_mode === true;
