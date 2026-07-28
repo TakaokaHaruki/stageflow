@@ -632,6 +632,13 @@ export default function StaffPortal() {
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <CrewlyLogo />
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => authenticate(acastId)}
+              className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              title="更新"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
             <div className="text-right">
               <div className="text-xs font-semibold leading-none">{staffName}</div>
               <div className="text-[10px] text-muted-foreground leading-none mt-0.5">スタッフ</div>
@@ -828,11 +835,6 @@ export default function StaffPortal() {
                 <Eye className="w-3.5 h-3.5" />全ポジションを見る
               </Button>
             )}
-            <div>
-              <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground min-h-[44px]" onClick={() => authenticate(acastId)}>
-                <RefreshCw className="w-3.5 h-3.5" />更新
-              </Button>
-            </div>
           </div>
         )}
 
