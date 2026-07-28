@@ -180,12 +180,22 @@ export default function StaffPortal() {
 
       const isChiefUser = myChiefSet.size > 0;
 
+      // Check if chief PIN auth is enabled
+      let pinAuthEnabled = true;
+      try {
+        const pinConfigs = await base44.entities.AppConfig.filter({ key: "chief_pin_auth_enabled" });
+        if (pinConfigs?.[0]) {
+          pinAuthEnabled = pinConfigs[0].value_bool !== false;
+        }
+      } catch (_) {}
+
       // Store auth data temporarily and show confirmation modal
       setPendingAuthData({
         staffName: staff.name,
         acastId: id,
         eventId: activeEvents[0]?.id || null,
-        isChief: isChiefUser
+        isChief: isChiefUser,
+        pinAuthEnabled
       });
       setPositions(allPositions);
       setEvents(activeEvents);
@@ -194,7 +204,7 @@ export default function StaffPortal() {
         setShowConfirmation(true);
       } else {
         // Already agreed, skip to login
-        if (isChiefUser) {
+        if (isChiefUser && pinAuthEnabled) {
           setShowPinModal(true);
         } else {
           setStaffName(staff.name);
@@ -226,7 +236,7 @@ export default function StaffPortal() {
 
     setShowComplianceModal(false);
 
-    if (pendingAuthData.isChief) {
+    if (pendingAuthData.isChief && pendingAuthData.pinAuthEnabled !== false) {
       setShowPinModal(true);
       return;
     }

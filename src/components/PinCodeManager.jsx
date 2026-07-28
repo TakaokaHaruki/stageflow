@@ -1,17 +1,46 @@
 import { useState, useEffect, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, KeyRound, AlertTriangle, RotateCcw, RefreshCw } from "lucide-react";
+import { ShieldCheck, ShieldOff, KeyRound, AlertTriangle, RotateCcw, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import SectionHeader from "@/components/SectionHeader";
 
+const AUTH_CONFIG_KEY = "chief_pin_auth_enabled";
+
+async function fetchAuthConfig() {
+  const configs = await base44.entities.AppConfig.filter({ key: AUTH_CONFIG_KEY });
+  return configs[0] || null;
+}
+
 export default function PinCodeManager() {
+  const queryClient = useQueryClient();
   const [staffList, setStaffList] = useState([]);
   const [pinCodes, setPinCodes] = useState({});
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(null);
+
+  const { data: authConfig, isLoading: authLoading } = useQuery({
+    queryKey: ["appConfig", AUTH_CONFIG_KEY],
+    queryFn: fetchAuthConfig,
+  });
+
+  const pinAuthEnabled = authConfig ? authConfig.value_bool !== false : true;
+
+  const authMutation = useMutation({
+    mutationFn: async (newValue) => {
+      if (authConfig) {
+        await base44.entities.AppConfig.update(authConfig.id, { value_bool: newValue });
+      } else {
+        await base44.entities.AppConfig.create({ key: AUTH_CONFIG_KEY, value_bool: newValue });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["appConfig", AUTH_CONFIG_KEY] });
+    },
+  });
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -114,6 +143,54 @@ export default function PinCodeManager() {
           </Button>
         }
       />
+
+      {/* PIN認証機能の有効/無効切り替え */}
+      <div className="mb-4 bg-card border border-border rounded-xl p-4 max-w-md">
+        {authLoading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+            複讀み込み中...
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 min-w-0">
+              {pinAuthEnabled ? (
+                <ShieldCheck className="w-5 h-5 text-green-500 shrink-0" />
+              ) : (
+                <ShieldOff className="w-5 h-5 text-muted-foreground shrink-0" />
+              )}
+              <div>
+                <div className="text-sm font-semibold">PIN認証機能</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {pinAuthEnabled ? "セクションチーフはログイン時にPIN入力が必須です" : "PIN認証は停止中です — チーフは直接ログインできます"}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => authMutation.mutate(!pinAuthEnabled)}
+              disabled={authMutation.isPending}
+              className={`relative shrink-0 inline-flex h-7 w-12 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                pinAuthEnabled ? "bg-primary" : "bg-input"
+              }`}
+              role="switch"
+              aria-checked={pinAuthEnabled}
+            >
+              <span
+                className={`pointer-events-none block h-6 w-6 rounded-full bg-background shadow-lg ring-0 transition-transform ${
+                  pinAuthEnabled ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {!pinAuthEnabled && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-800 px-3 py-2 max-w-md">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+          <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">PIN認証が無効です — セクションチーフはPINなしでログインできます</span>
+        </div>
+      )}
 
       <div className="space-y-2">
         {staffList.map((staff, idx) => {
