@@ -139,7 +139,7 @@ export default function Events() {
   };
 
   return (
-    <div className="min-h-screen bg-background safe-area-top safe-area-bottom relative scrollbar-hide overflow-x-hidden">
+    <div className="min-h-screen bg-background safe-area-bottom relative scrollbar-hide overflow-x-hidden">
       {/* Pull-to-refresh indicator */}
       {isPulling &&
       <div className="fixed top-0 left-0 right-0 flex justify-center pt-2 z-30">
