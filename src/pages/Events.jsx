@@ -153,46 +153,54 @@ export default function Events() {
           {isGuest && <BackButton to="/home" label="ホームへ戻る" />}
           <CrewlyLogo className="mr-1" administrator={role === "admin"} />
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">イベント一覧</h1>
+          <div className="ml-auto flex items-center gap-1">
+            <ThemeToggle />
+            {currentUser ? (
+              <div className="flex h-9 max-w-36 shrink-0 items-center gap-0.5 rounded-md bg-muted px-0.5 sm:h-7 sm:gap-1 sm:px-1">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-5 sm:w-5">
+                  <User className="w-3 h-3 text-primary" />
+                </div>
+                <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
+                <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
+                <button
+                  onClick={() => setConfirmDeleteAccount(true)}
+                  className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
+                  title="アカウント削削"
+                  aria-label="アカウント削除"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={() => base44.auth.logout()}
+                  className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
+                  title="ログアウト"
+                  aria-label="ログアウト"
+                >
+                  <LogOut className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <Button size="sm" variant="outline" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}>
+                <LogIn className="w-3 h-3" />ログイン
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="sm:flex">
         <SidebarNav
           tabs={[
-          ...(canEdit ? [{ id: "new", label: "新規イベント", icon: Plus }] : []),
-
-          ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : [])]
-          }
-          activeTab="events"
+            ...(canEdit ? [{ id: "new", label: "新規イベント", icon: Plus }] : []),
+            ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : [])
+          ]}
+          activeTab=""
           onSelectTab={(tabId) => {
-            if (tabId === "new") {setEditingEvent(null);setShowModal(true);}
+            if (tabId === "new") { setEditingEvent(null); setShowModal(true); }
             if (tabId === "admin") setShowAdminModal(true);
           }}
           topOffset={56}
-          extraNavItems={
-          <>
-              <div className="border-t border-border p-1.5">
-                <ThemeToggle />
-              </div>
-              <div className="border-t border-border p-1.5 space-y-1.5">
-                {currentUser ?
-              <div className="flex items-center gap-2 px-1">
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20">
-                      <User className="w-3 h-3 text-primary" />
-                    </div>
-                    <span className="flex-1 min-w-0 truncate text-[11px] font-medium">{getUserDisplayName(currentUser)}</span>
-                    <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
-                    <button onClick={() => setConfirmDeleteAccount(true)} className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-destructive" title="アカウント削除"><Trash2 className="h-3 w-3" /></button>
-                    <button onClick={() => base44.auth.logout()} className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-destructive" title="ログアウト"><LogOut className="h-3 w-3" /></button>
-                  </div> :
-
-              <Button size="sm" variant="outline" className="gap-1 text-xs w-full" onClick={() => {localStorage.removeItem("guest_mode");navigate("/login");}}>
-                    <LogIn className="w-3 h-3" />ログイン
-                  </Button>
-              }
-              </div>
-            </>
-          } />
+        />
         
         <div className="flex-1 min-w-0">
       <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:pb-8">
