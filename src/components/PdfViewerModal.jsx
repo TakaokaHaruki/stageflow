@@ -34,7 +34,17 @@ export default function PdfViewerModal({ fileUrl, fileName, onClose }) {
         const workerModule = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
         pdfjsLib.GlobalWorkerOptions.workerSrc = workerModule.default;
 
-        const pdf = await pdfjsLib.getDocument(fileUrl).promise;
+        // Fetch as ArrayBuffer first to avoid CORS issues with pdf.js worker
+        let pdf;
+        try {
+          const response = await fetch(fileUrl);
+          if (!response.ok) throw new Error("HTTP " + response.status);
+          const arrayBuffer = await response.arrayBuffer();
+          pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+        } catch (fetchErr) {
+          // Fallback: try direct URL load
+          pdf = await pdfjsLib.getDocument(fileUrl).promise;
+        }
         if (cancelled) return;
         pdfDocRef.current = pdf;
         setNumPages(pdf.numPages);
@@ -133,12 +143,21 @@ export default function PdfViewerModal({ fileUrl, fileName, onClose }) {
         )}
 
         {error && (
-          <div className="flex flex-col items-center gap-3 text-white/70">
-            <FileWarning className="w-10 h-10" />
-            <p className="text-sm">{error}</p>
-            <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">
-              新しいタブで開く
-            </a>
+          <div className="w-full h-full flex flex-col items-center">
+            <object
+              data={fileUrl}
+              type="application/pdf"
+              className="w-full h-full min-h-[60vh]"
+              aria-label={fileName || "PDF"}
+            >
+              <div className="flex flex-col items-center gap-3 text-white/70 pt-12">
+                <FileWarning className="w-10 h-10" />
+                <p className="text-sm">{error}</p>
+                <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">
+                  新しいタブで開く
+                </a>
+              </div>
+            </object>
           </div>
         )}
 
