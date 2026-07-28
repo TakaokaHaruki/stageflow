@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Map, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, Map, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -34,6 +34,7 @@ import TagManagement from "@/components/TagManagement";
 import EmergencyContactManager from "@/components/EmergencyContactManager";
 import PinCodeManager from "@/components/PinCodeManager";
 import WorkspaceDashboard from "@/components/workspace/WorkspaceDashboard";
+import SharedFileManager from "@/components/SharedFileManager";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -154,6 +155,7 @@ export default function EventDetail() {
     { id: "map", label: "配置マップ", icon: Map },
     { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
     { id: "workspace", label: "ワークスペース", icon: LayoutTemplate },
+    ...(isPrivileged ? [{ id: "files", label: "ファイル共有", icon: Paperclip }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ].filter((t) => isAdmin || !disabledTabIds.includes(t.id));
@@ -327,6 +329,7 @@ export default function EventDetail() {
             {tab === "map" && <PositionMapViewer eventId={eventId} event={event} />}
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
             {tab === "workspace" && <WorkspaceDashboard eventId={eventId} />}
+            {tab === "files" && <SharedFileManager eventId={eventId} showAll={true} />}
           </motion.div>
         </AnimatePresence>
       </div>

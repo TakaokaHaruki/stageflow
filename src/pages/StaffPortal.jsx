@@ -17,6 +17,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import AllPositionsModal from "@/components/AllPositionsModal";
 import ChiefPinModal from "@/components/ChiefPinModal";
 import PositionDetailExpand from "@/components/PositionDetailExpand";
+import StaffFileViewer from "@/components/StaffFileViewer";
 import { Phone } from "lucide-react";
 
 const STORAGE_KEY = "crewly_acast_id";
@@ -828,6 +829,11 @@ export default function StaffPortal() {
               </Button>
             </div>
           </div>
+        )}
+
+        {/* Shared files */}
+        {!loading && staffName && (
+          <StaffFileViewer events={events} staffName={staffName} staffRoles={staffRoles} />
         )}
 
         {/* Emergency contacts */}

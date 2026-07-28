@@ -7,6 +7,7 @@ import {
   Map,
   LayoutTemplate,
   FileText,
+  Paperclip,
   MoreHorizontal,
   X,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const PRIMARY_TABS = [
 
 const MORE_TABS = [
   { id: "pos_notes", label: "ポジション説明", icon: FileText, privileged: true },
+  { id: "files", label: "ファイル共有", icon: Paperclip, privileged: true },
   { id: "admin", label: "管理者設定", icon: ShieldCheck, admin: true },
   { id: "settings", label: "管理設定", icon: Settings, privileged: true },
 ];
