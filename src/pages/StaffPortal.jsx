@@ -668,25 +668,25 @@ export default function StaffPortal() {
           </motion.div>
         )}
 
-        {!loading && groupedByEvent.length > 0 && (
-          <div className="mb-4">
-            <h3 className="font-bold text-sm flex items-center gap-1.5">
-              <span className="bg-primary/10 text-primary rounded-lg p-1.5">
-                <MapPin className="w-4 h-4" />
-              </span>
-              あなたのポジション
-            </h3>
-          </div>
-        )}
-
-        {!loading && groupedByEvent.map(({ event, bySlot }, idx) => (
+        {!loading && groupedByEvent.map(({ event, bySlot }, idx) => {
+          const flatPositions = SLOT_ORDER.flatMap((slot) => bySlot[slot] || []);
+          if (flatPositions.length === 0) return null;
+          return (
           <motion.div
             key={event.id}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.06 }}
-            className="mb-6"
+            className="mb-4 bg-card border border-border rounded-2xl shadow-md p-4"
           >
+            {/* Section title */}
+            <h3 className="font-bold text-sm mb-3 flex items-center gap-1.5">
+              <span className="bg-primary/10 text-primary rounded-lg p-1.5">
+                <MapPin className="w-4 h-4" />
+              </span>
+              ポジション一覧
+            </h3>
+
             {/* Event header */}
             <div className="mb-3">
               <h2 className="font-bold text-base">{event.name}</h2>
@@ -704,7 +704,6 @@ export default function StaffPortal() {
                   </span>
                 )}
               </div>
-              {/* Event times */}
               {(event.time_priority || event.time_open || event.time_start || event.time_end) && (
                 <div className="flex flex-wrap gap-x-3 mt-1">
                   {event.time_priority && <EventTimeDisplay className="text-[11px] text-muted-foreground" eventDate={event.date} eventTime={event.time_priority} endTime={event.time_priority_end} label="先行" />}
@@ -715,122 +714,107 @@ export default function StaffPortal() {
               )}
             </div>
 
-            {/* Positions by time slot */}
-            <div className="space-y-2">
-              {SLOT_ORDER.map((slot) => {
-                const slotPositions = bySlot[slot];
-                if (!slotPositions || slotPositions.length === 0) return null;
-                const slotStyle = TIME_SLOT_LABELS[slot];
+            {/* Flat position list */}
+            <div>
+              {flatPositions.map((pos, posIdx) => {
+                const slotStyle = TIME_SLOT_LABELS[pos.time_slot] || TIME_SLOT_LABELS["通し"];
+                const allNames = pos.split_by_side
+                  ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
+                  : (pos.staff_names || []);
+                const chiefs = allNames.filter((n) => (staffRolesMap[n] || []).includes("セクションチーフ"));
+                const isLast = posIdx === flatPositions.length - 1;
                 return (
-                  <div key={slot}>
-                    <div className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border mb-1.5 ${slotStyle.color}`}>
+                  <div
+                    key={pos.id}
+                    className={`py-3 ${isLast ? "" : "border-b border-border"} ${posIdx === 0 ? "pt-0" : ""}`}
+                  >
+                    <div className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border mb-1.5 ${slotStyle.color}`}>
                       {slotStyle.label}
                     </div>
-                    <div className="space-y-1.5">
-                      {slotPositions.map((pos) => (
-                        <div
-                          key={pos.id}
-                          className="bg-card border border-border rounded-2xl shadow-md p-3.5"
-                          style={pos.color ? { borderLeftColor: pos.color, borderLeftWidth: 3 } : {}}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="font-semibold text-sm flex-1">{pos.name}</div>
+                      {myChiefEventIds.has(event.id) && event.continuous_mode === true && (
+                        <button
+                          onClick={() => setQrScanPosition(pos)}
+                          className="flex items-center gap-1 text-[11px] font-medium text-primary border border-primary/30 bg-primary/5 px-2 py-1 rounded-lg hover:bg-primary/10 transition-colors shrink-0"
                         >
-                          {(() => {
-                          const allNames = pos.split_by_side
-                            ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
-                            : (pos.staff_names || []);
-                          const chiefs = allNames.filter((n) => (staffRolesMap[n] || []).includes("セクションチーフ"));
-                          return (
-                          <>
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="font-semibold text-sm flex-1">{pos.name}</div>
-                            {myChiefEventIds.has(event.id) && event.continuous_mode === true && (
-                              <button
-                                onClick={() => setQrScanPosition(pos)}
-                                className="flex items-center gap-1 text-[11px] font-medium text-primary border border-primary/30 bg-primary/5 px-2 py-1 rounded-lg hover:bg-primary/10 transition-colors shrink-0"
-                              >
-                                <QrCode className="w-3.5 h-3.5" />
-                                QR追加
-                              </button>
-                            )}
-                          </div>
-                          {chiefs.length > 0 && (
-                            <div className="mt-1 flex flex-wrap gap-1">
-                              {chiefs.map((chiefName) => (
-                                <span
-                                  key={chiefName}
-                                  className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
-                                >
-                                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                                  <span className="text-[10px] opacity-80">セクションチーフ</span>
-                                  {chiefName}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                          {pos.notes && (
-                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{pos.notes}</p>
-                          )}
-                          <PositionDetailExpand description={pos._detailDescription} resources={pos._detailResources} />
-                          {/* 配置スタッフ一覧 */}
-                          {(() => {
-                          const isContinuous = event.continuous_mode === true;
-                          const displayNames = myChiefEventIds.has(event.id) ? allNames : (isContinuous ? allNames : allNames.filter((n) => n === staffName));
-                          if (displayNames.length === 0) return null;
-                          return (
-                            <div className="mt-2 space-y-0.5">
-                              {displayNames.map((name) => {
-                                const isRemovingThis = removing && pendingRemove?.staffName === name && pendingRemove?.position.id === pos.id;
-                                return (
-                                  <div
-                                    key={name}
-                                    className={`text-sm py-0.5 px-1 rounded font-bold flex items-center gap-1 text-foreground ${isRemovingThis ? "opacity-50" : ""}`}
-                                  >
-                                    <span className="text-muted-foreground/50">・</span>
-                                    <span>{name}</span>
-                                    {myChiefEventIds.has(event.id) && event.continuous_mode === true && name !== staffName && (
-                                      <button
-                                        onClick={() => handleStaffRemoveClick(name, pos)}
-                                        className="hover:text-destructive transition-colors"
-                                        title="このポジションから削除"
-                                        disabled={removing}
-                                      >
-                                        <X className="w-2.5 h-2.5" />
-                                      </button>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                          })()}
-                          </>
-                          );
-                          })()}
-                          {/* Side info */}
-                          {pos.split_by_side && (
-                            <div className="flex gap-2 mt-1.5">
-                              {(pos.staff_names_kamite || []).includes(staffName) && (
-                                <span className="text-[11px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">上手側</span>
-                              )}
-                              {(pos.staff_names_shimote || []).includes(staffName) && (
-                                <span className="text-[11px] bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">下手側</span>
-                              )}
-                            </div>
-                          )}
-                          {pos.added_by && pos.added_at_jst && (
-                            <p className="text-[10px] text-muted-foreground mt-1.5">
-                              <UserPlus className="w-2.5 h-2.5 inline mr-0.5" />
-                              最終追加: {pos.added_by} ({pos.added_at_jst})
-                            </p>
-                          )}
-                        </div>
-                      ))}
+                          <QrCode className="w-3.5 h-3.5" />
+                          QR追加
+                        </button>
+                      )}
                     </div>
+                    {chiefs.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {chiefs.map((chiefName) => (
+                          <span
+                            key={chiefName}
+                            className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                            <span className="text-[10px] opacity-80">セクションチーフ</span>
+                            {chiefName}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {pos.notes && (
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{pos.notes}</p>
+                    )}
+                    <PositionDetailExpand description={pos._detailDescription} resources={pos._detailResources} />
+                    {(() => {
+                    const isContinuous = event.continuous_mode === true;
+                    const displayNames = myChiefEventIds.has(event.id) ? allNames : (isContinuous ? allNames : allNames.filter((n) => n === staffName));
+                    if (displayNames.length === 0) return null;
+                    return (
+                      <div className="mt-2 space-y-0.5">
+                        {displayNames.map((name) => {
+                          const isRemovingThis = removing && pendingRemove?.staffName === name && pendingRemove?.position.id === pos.id;
+                          return (
+                            <div
+                              key={name}
+                              className={`text-sm py-0.5 px-1 rounded font-bold flex items-center gap-1 text-foreground ${isRemovingThis ? "opacity-50" : ""}`}
+                            >
+                              <span className="text-muted-foreground/50">・</span>
+                              <span>{name}</span>
+                              {myChiefEventIds.has(event.id) && event.continuous_mode === true && name !== staffName && (
+                                <button
+                                  onClick={() => handleStaffRemoveClick(name, pos)}
+                                  className="hover:text-destructive transition-colors"
+                                  title="このポジションから削除"
+                                  disabled={removing}
+                                >
+                                  <X className="w-2.5 h-2.5" />
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                    })()}
+                    {pos.split_by_side && (
+                      <div className="flex gap-2 mt-1.5">
+                        {(pos.staff_names_kamite || []).includes(staffName) && (
+                          <span className="text-[11px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">上手側</span>
+                        )}
+                        {(pos.staff_names_shimote || []).includes(staffName) && (
+                          <span className="text-[11px] bg-accent/10 text-accent px-2 py-0.5 rounded-full font-medium">下手側</span>
+                        )}
+                      </div>
+                    )}
+                    {pos.added_by && pos.added_at_jst && (
+                      <p className="text-[10px] text-muted-foreground mt-1.5">
+                        <UserPlus className="w-2.5 h-2.5 inline mr-0.5" />
+                        最終追加: {pos.added_by} ({pos.added_at_jst})
+                      </p>
+                    )}
                   </div>
                 );
               })}
             </div>
           </motion.div>
-        ))}
+          );
+        })}
 
         {!loading && groupedByEvent.length > 0 && (
           <div className="text-center mt-4 space-y-2">
@@ -862,17 +846,17 @@ export default function StaffPortal() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-6 bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-2xl p-4"
+            className="mt-6 bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-2xl shadow-md p-4"
           >
-            <h3 className="font-bold text-sm text-rose-700 dark:text-rose-400 mb-2 flex items-center gap-1.5">
+            <h3 className="font-bold text-sm text-rose-700 dark:text-rose-400 mb-3 flex items-center gap-1.5">
               <Phone className="w-4 h-4" />緊急連絡先
             </h3>
-            <div className="space-y-2">
-              {emergencyContacts.map((c) => (
+            <div>
+              {emergencyContacts.map((c, cIdx) => (
                 <a
                   key={c.id}
                   href={`tel:${c.phone}`}
-                  className="flex items-center gap-2 bg-card border border-rose-200 dark:border-rose-900 rounded-xl p-2.5 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors active:scale-[0.98]"
+                  className={`flex items-center gap-2 py-2.5 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors active:scale-[0.98] ${cIdx === emergencyContacts.length - 1 ? "" : "border-b border-rose-200 dark:border-rose-900"} ${cIdx === 0 ? "pt-0" : ""}`}
                 >
                   <div className="w-9 h-9 rounded-full bg-rose-500/10 flex items-center justify-center shrink-0">
                     <Phone className="w-4 h-4 text-rose-500" />

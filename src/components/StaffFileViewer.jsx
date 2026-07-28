@@ -86,7 +86,7 @@ export default function StaffFileViewer({ events, staffName, staffRoles }) {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-6"
+        className="mt-6 bg-card border border-border rounded-2xl shadow-md p-4"
       >
         <h3 className="font-bold text-sm mb-3 flex items-center gap-1.5">
           <span className="bg-primary/10 text-primary rounded-lg p-1.5">
@@ -94,9 +94,10 @@ export default function StaffFileViewer({ events, staffName, staffRoles }) {
           </span>
           配布資料
         </h3>
-        <div className="space-y-2">
-          {files.map((f) => {
+        <div>
+          {files.map((f, fIdx) => {
             const Icon = getFileIcon(f.file_url);
+            const isLast = fIdx === files.length - 1;
             return (
               <button
                 key={f.id}
@@ -109,7 +110,7 @@ export default function StaffFileViewer({ events, staffName, staffRoles }) {
               }
               setSelectedFile(f);
             }}
-                className="w-full flex items-start gap-3 bg-card border border-border rounded-2xl shadow-md p-3 hover:bg-muted/50 transition-colors active:scale-[0.98] text-left"
+                className={`w-full flex items-start gap-3 py-3 hover:bg-muted/50 transition-colors active:scale-[0.98] text-left ${isLast ? "" : "border-b border-border"} ${fIdx === 0 ? "pt-0" : ""}`}
               >
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <Icon className="w-4 h-4 text-primary" />
