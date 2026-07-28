@@ -668,6 +668,17 @@ export default function StaffPortal() {
           </motion.div>
         )}
 
+        {!loading && groupedByEvent.length > 0 && (
+          <div className="mb-4">
+            <h3 className="font-bold text-sm flex items-center gap-1.5">
+              <span className="bg-primary/10 text-primary rounded-lg p-1.5">
+                <MapPin className="w-4 h-4" />
+              </span>
+              あなたのポジション
+            </h3>
+          </div>
+        )}
+
         {!loading && groupedByEvent.map(({ event, bySlot }, idx) => (
           <motion.div
             key={event.id}
@@ -719,7 +730,7 @@ export default function StaffPortal() {
                       {slotPositions.map((pos) => (
                         <div
                           key={pos.id}
-                          className="bg-card border border-border rounded-xl p-3.5"
+                          className="bg-card border border-border rounded-2xl shadow-md p-3.5"
                           style={pos.color ? { borderLeftColor: pos.color, borderLeftWidth: 3 } : {}}
                         >
                           {(() => {

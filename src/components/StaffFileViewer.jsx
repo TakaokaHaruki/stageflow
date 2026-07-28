@@ -88,9 +88,11 @@ export default function StaffFileViewer({ events, staffName, staffRoles }) {
         animate={{ opacity: 1, y: 0 }}
         className="mt-6"
       >
-        <h3 className="font-bold text-sm mb-2 flex items-center gap-1.5">
-          <FolderOpen className="w-4 h-4 text-primary" />
-          共付資料
+        <h3 className="font-bold text-sm mb-3 flex items-center gap-1.5">
+          <span className="bg-primary/10 text-primary rounded-lg p-1.5">
+            <FolderOpen className="w-4 h-4" />
+          </span>
+          配布資料
         </h3>
         <div className="space-y-2">
           {files.map((f) => {
@@ -107,7 +109,7 @@ export default function StaffFileViewer({ events, staffName, staffRoles }) {
               }
               setSelectedFile(f);
             }}
-                className="w-full flex items-start gap-3 bg-card border border-border rounded-xl p-3 hover:bg-muted/50 transition-colors active:scale-[0.98] text-left"
+                className="w-full flex items-start gap-3 bg-card border border-border rounded-2xl shadow-md p-3 hover:bg-muted/50 transition-colors active:scale-[0.98] text-left"
               >
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <Icon className="w-4 h-4 text-primary" />
