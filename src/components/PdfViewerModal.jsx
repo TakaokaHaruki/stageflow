@@ -71,11 +71,14 @@ export default function PdfViewerModal({ fileUrl, fileName, onClose }) {
       const container = canvas.parentElement;
       const maxWidth = Math.min(container?.clientWidth || window.innerWidth - 32, 900);
       const baseViewport = page.getViewport({ scale: 1 });
-      const scale = Math.min(2.5, maxWidth / baseViewport.width);
-      const viewport = page.getViewport({ scale });
+      const cssScale = Math.min(2.5, maxWidth / baseViewport.width);
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      const viewport = page.getViewport({ scale: cssScale * dpr });
       const ctx = canvas.getContext("2d");
       canvas.width = viewport.width;
       canvas.height = viewport.height;
+      canvas.style.width = `${Math.round(baseViewport.width * cssScale)}px`;
+      canvas.style.height = `${Math.round(baseViewport.height * cssScale)}px`;
       const renderTask = page.render({ canvasContext: ctx, viewport });
       renderTaskRef.current = renderTask;
       await renderTask.promise;

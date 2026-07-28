@@ -98,7 +98,15 @@ export default function StaffFileViewer({ events, staffName, staffRoles }) {
             return (
               <button
                 key={f.id}
-                onClick={() => setSelectedFile(f)}
+                onClick={() => {
+              const isChief = (staffRoles || []).includes("セクションチーフ");
+              const isPdf = (f.file_url || "").toLowerCase().split("?")[0].endsWith(".pdf");
+              if (isChief && isPdf && f.file_url) {
+                window.open(f.file_url, "_blank");
+                return;
+              }
+              setSelectedFile(f);
+            }}
                 className="w-full flex items-start gap-3 bg-card border border-border rounded-xl p-3 hover:bg-muted/50 transition-colors active:scale-[0.98] text-left"
               >
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
