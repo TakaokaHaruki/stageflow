@@ -97,7 +97,7 @@ export default function PositionTypeDescriptionEditor({ positionType, isAdmin, a
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         disabled={!isAdmin}
-        placeholder="基本説明文（全イベント共通）"
+        placeholder="全イベント共通の説明文"
         className="text-xs min-h-[60px]"
       />
 

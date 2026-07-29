@@ -116,7 +116,7 @@ export default function PositionTypeOverrideSection({ eventId, positionType }) {
       setResources([]);
       descRef.current = "";
       resRef.current = [];
-      toast.success("上書きをクリアしました");
+      toast.success("クリアしました");
     } catch {
       toast.error("クリアに失敗しました");
     }
@@ -128,7 +128,7 @@ export default function PositionTypeOverrideSection({ eventId, positionType }) {
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <label className="text-xs font-semibold text-foreground">
-            上書き説明文{saving && <span className="text-primary/60 ml-1">（保存中…）</span>}
+            イベント固有の説明文{saving && <span className="text-primary/60 ml-1">（保存中…）</span>}
           </label>
           {hasOverride && (
             <Button
@@ -138,21 +138,21 @@ export default function PositionTypeOverrideSection({ eventId, positionType }) {
               className="h-6 px-2 text-[11px] text-muted-foreground hover:text-destructive"
             >
               <RotateCcw className="w-3 h-3 mr-1" />
-              上書きクリア
+              クリア
             </Button>
           )}
         </div>
         <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="イベント固有の説明文（空欄=共通値を使用）"
+          placeholder="未入力の場合は全イベント共通の情報が使用されます"
           className="text-xs min-h-[60px]"
         />
       </div>
 
       {/* Override resources */}
       <div>
-        <label className="text-xs font-semibold text-foreground mb-1.5 block">上書き資料</label>
+        <label className="text-xs font-semibold text-foreground mb-1.5 block">イベント固有の資料</label>
         {resources.length > 0 && (
           <div className="space-y-1 mb-2">
             {resources.map((res, idx) => (
