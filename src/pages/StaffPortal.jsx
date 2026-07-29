@@ -767,7 +767,7 @@ export default function StaffPortal() {
                     {pos.notes && (
                       <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{pos.notes}</p>
                     )}
-                    <PositionDetailExpand description={pos._detailDescription} resources={pos._detailResources} />
+                    <PositionDetailExpand description={pos._detailDescription} />
                     {(() => {
                     const isContinuous = event.continuous_mode === true;
                     const displayNames = myChiefEventIds.has(event.id) ? allNames : (isContinuous ? allNames : allNames.filter((n) => n === staffName));
@@ -840,7 +840,17 @@ export default function StaffPortal() {
 
         {/* Shared files */}
         {!loading && staffName && (
-          <StaffFileViewer events={events} staffName={staffName} staffRoles={staffRoles} />
+          <StaffFileViewer
+            events={events}
+            staffName={staffName}
+            staffRoles={staffRoles}
+            positionResources={positions.flatMap((pos) =>
+              (pos._detailResources || []).map((res) => ({
+                ...res,
+                _positionName: pos.name,
+              }))
+            )}
+          />
         )}
 
         {/* Emergency contacts */}

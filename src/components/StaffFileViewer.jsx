@@ -23,7 +23,7 @@ function getFileIcon(url) {
   return FileText;
 }
 
-export default function StaffFileViewer({ events, staffName, staffRoles }) {
+export default function StaffFileViewer({ events, staffName, staffRoles, positionResources }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -69,6 +69,15 @@ export default function StaffFileViewer({ events, staffName, staffRoles }) {
     return () => clearInterval(interval);
   }, [events, staffName, staffRoles]);
 
+  const positionFiles = (positionResources || []).map((r) => ({
+    id: `pos_${r._positionName}_${r.url}`,
+    title: r.label || r.url,
+    file_url: r.url,
+    _positionName: r._positionName,
+  }));
+
+  const allFiles = [...files, ...positionFiles];
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -77,7 +86,7 @@ export default function StaffFileViewer({ events, staffName, staffRoles }) {
     );
   }
 
-  if (files.length === 0) {
+  if (allFiles.length === 0) {
     return null;
   }
 
@@ -95,9 +104,9 @@ export default function StaffFileViewer({ events, staffName, staffRoles }) {
           配布資料
         </h3>
         <div>
-          {files.map((f, fIdx) => {
+          {allFiles.map((f, fIdx) => {
             const Icon = getFileIcon(f.file_url);
-            const isLast = fIdx === files.length - 1;
+            const isLast = fIdx === allFiles.length - 1;
             return (
               <button
                 key={f.id}
@@ -120,9 +129,11 @@ export default function StaffFileViewer({ events, staffName, staffRoles }) {
                   {f.description && (
                     <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{f.description}</p>
                   )}
-                  {f._eventName && (
+                  {f._positionName ? (
+                    <p className="text-[10px] text-muted-foreground/70 mt-0.5 truncate">{f._positionName} の資料</p>
+                  ) : f._eventName ? (
                     <p className="text-[10px] text-muted-foreground/70 mt-0.5 truncate">{f._eventName}</p>
-                  )}
+                  ) : null}
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
               </button>
