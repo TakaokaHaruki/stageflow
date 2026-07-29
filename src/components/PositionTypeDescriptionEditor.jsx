@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-export default function PositionTypeDescriptionEditor({ positionType, isAdmin }) {
+export default function PositionTypeDescriptionEditor({ positionType, isAdmin, alwaysOpen = false }) {
   const [expanded, setExpanded] = useState(false);
   const [description, setDescription] = useState(positionType.description || "");
   const [resources, setResources] = useState(positionType.resources || []);
@@ -88,6 +88,80 @@ export default function PositionTypeDescriptionEditor({ positionType, isAdmin })
     save(description, newRes);
   };
 
+  const editorContent = (
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5">
+      {saving && <span className="text-[10px] text-primary/60">保存中…</span>}
+      </div>
+      <Textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        disabled={!isAdmin}
+        placeholder="基本説明文（全イベント共通）"
+        className="text-xs min-h-[60px]"
+      />
+
+      {/* Resources list */}
+      {resources.length > 0 && (
+        <div className="space-y-1">
+          {resources.map((res, idx) => (
+            <div key={idx} className="flex items-center gap-1.5 bg-muted/40 rounded-md px-2 py-1">
+              {res.type === "file" ? (
+                <FileText className="w-3 h-3 text-muted-foreground shrink-0" />
+              ) : (
+                <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0" />
+              )}
+              <span className="text-[11px] flex-1 truncate">{res.label}</span>
+              {isAdmin && (
+                <button
+                  onClick={() => handleDeleteResource(idx)}
+                  className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {isAdmin ? (
+        <div className="space-y-1.5 pt-1 border-t border-border/50">
+          <label className="flex items-center gap-1.5 text-[10px] font-medium text-primary cursor-pointer hover:text-primary/80">
+            <Upload className="w-3 h-3" />
+            {uploading ? "アップロード中…" : "ファイル追加"}
+            <input type="file" onChange={handleFileUpload} className="hidden" disabled={uploading} />
+          </label>
+          <div className="flex gap-1">
+            <Input
+              value={urlLabel}
+              onChange={(e) => setUrlLabel(e.target.value)}
+              placeholder="リンク名"
+              className="h-6 text-[11px] flex-1"
+            />
+            <Input
+              value={urlValue}
+              onChange={(e) => setUrlValue(e.target.value)}
+              placeholder="https://..."
+              className="h-6 text-[11px] flex-1"
+            />
+            <Button size="sm" onClick={handleAddUrl} disabled={!urlValue.trim()} className="h-6 px-2 text-[10px] shrink-0">
+              <Plus className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        !description && resources.length === 0 && (
+          <p className="text-[10px] text-muted-foreground/50 text-center py-2">共通説明はまだ設定されていません</p>
+        )
+      )}
+    </div>
+  );
+
+  if (alwaysOpen) {
+    return editorContent;
+  }
+
   return (
     <div className="mt-1.5 pl-5">
       <button
@@ -108,66 +182,7 @@ export default function PositionTypeDescriptionEditor({ positionType, isAdmin })
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="mt-1.5 space-y-2">
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                disabled={!isAdmin}
-                placeholder="基本説明文（全イベント共通）"
-                className="text-xs min-h-[60px]"
-              />
-
-              {/* Resources list */}
-              {resources.length > 0 && (
-                <div className="space-y-1">
-                  {resources.map((res, idx) => (
-                    <div key={idx} className="flex items-center gap-1.5 bg-muted/40 rounded-md px-2 py-1">
-                      {res.type === "file" ? (
-                        <FileText className="w-3 h-3 text-muted-foreground shrink-0" />
-                      ) : (
-                        <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0" />
-                      )}
-                      <span className="text-[11px] flex-1 truncate">{res.label}</span>
-                      {isAdmin && (
-                        <button
-                          onClick={() => handleDeleteResource(idx)}
-                          className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {isAdmin && (
-                <div className="space-y-1.5 pt-1 border-t border-border/50">
-                  <label className="flex items-center gap-1.5 text-[10px] font-medium text-primary cursor-pointer hover:text-primary/80">
-                    <Upload className="w-3 h-3" />
-                    {uploading ? "アップロード中…" : "ファイル追加"}
-                    <input type="file" onChange={handleFileUpload} className="hidden" disabled={uploading} />
-                  </label>
-                  <div className="flex gap-1">
-                    <Input
-                      value={urlLabel}
-                      onChange={(e) => setUrlLabel(e.target.value)}
-                      placeholder="リンク名"
-                      className="h-6 text-[11px] flex-1"
-                    />
-                    <Input
-                      value={urlValue}
-                      onChange={(e) => setUrlValue(e.target.value)}
-                      placeholder="https://..."
-                      className="h-6 text-[11px] flex-1"
-                    />
-                    <Button size="sm" onClick={handleAddUrl} disabled={!urlValue.trim()} className="h-6 px-2 text-[10px] shrink-0">
-                      <Plus className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+            {editorContent}
           </motion.div>
         )}
       </AnimatePresence>

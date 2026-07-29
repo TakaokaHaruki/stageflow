@@ -5,11 +5,51 @@ import { FileText, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SectionHeader from "@/components/SectionHeader";
 import PositionTypeOverrideSection from "@/components/PositionTypeOverrideSection";
+import PositionTypeDescriptionEditor from "@/components/PositionTypeDescriptionEditor";
+import { useUserRole } from "@/hooks/useUserRole";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
+
+const overrideBadge = (
+  <span className="text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400 px-1 py-0.5 rounded-full shrink-0">
+    上書き
+  </span>
+);
+
+function TwoColumnContent({ eventId, positionType, hasOverride, isAdmin }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {/* 共通（全イベント） */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">共通</span>
+          <span className="text-[10px] text-muted-foreground">全イベント</span>
+        </div>
+        <PositionTypeDescriptionEditor positionType={positionType} isAdmin={isAdmin} alwaysOpen />
+      </div>
+
+      {/* 員別（このイベント） */}
+      <div className="space-y-2 md:border-l md:border-border md:pl-3">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400 px-1.5 py-0.5 rounded-full">
+            匡別
+          </span>
+          <span className="text-[10px] text-muted-foreground">このイベント</span>
+          {hasOverride && (
+            <span className="text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400 px-1 py-0.5 rounded-full">
+              上書きあり
+            </span>
+          )}
+        </div>
+        <PositionTypeOverrideSection eventId={eventId} positionType={positionType} />
+      </div>
+    </div>
+  );
+}
 
 export default function PositionNotesEditor({ eventId }) {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [openAccordionIds, setOpenAccordionIds] = useState({});
+  const { canEdit: isAdmin } = useUserRole();
 
   const { data: positionTypes = [], isLoading } = useQuery({
     queryKey: ["positionTypes"],
@@ -39,7 +79,7 @@ export default function PositionNotesEditor({ eventId }) {
         <SectionHeader
           icon={FileText}
           title="ポジション説明"
-          subtitle="ポジション属性ごとにイベント固有の説明文・資料を管理します。"
+          subtitle="ポジション属性ごとに共通・個別の説明文・資料を並行管理できます。"
         />
         <div className="flex justify-center py-12">
           <div className="w-6 h-6 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -54,7 +94,7 @@ export default function PositionNotesEditor({ eventId }) {
         <SectionHeader
           icon={FileText}
           title="ポジション説明"
-          subtitle="ポジション属性ごとにイベント固有の説明文・資料を管理します。"
+          subtitle="ポジション属性ごとに共通・個別の説明文・資料を並列管理できます。"
         />
         <div className="text-center py-12">
           <FileText className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
@@ -70,7 +110,7 @@ export default function PositionNotesEditor({ eventId }) {
       <SectionHeader
         icon={FileText}
         title="ポジション説明"
-        subtitle="ポジション属性ごとにイベント固有の説明文・資料を管理します。"
+        subtitle="ポジション属性ごとに共通・個別の説明文・資料を並列管理できます。"
       />
 
       {useTabs ? (
@@ -95,11 +135,7 @@ export default function PositionNotesEditor({ eventId }) {
                     style={{ backgroundColor: pt.color || "#6366f1" }}
                   />
                   <span className="truncate max-w-[100px]">{pt.name}</span>
-                  {hasOverride && (
-                    <span className="text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400 px-1 py-0.5 rounded-full shrink-0">
-                      上書き
-                    </span>
-                  )}
+                  {hasOverride && overrideBadge}
                 </button>
               );
             })}
@@ -113,13 +149,13 @@ export default function PositionNotesEditor({ eventId }) {
                   style={{ backgroundColor: selected.color || "#6366f1" }}
                 />
                 <span className="font-semibold text-sm">{selected.name}</span>
-                {overrideNames.has(selected.name) && (
-                  <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400 px-1.5 py-0.5 rounded-full shrink-0">
-                    上書きあり
-                  </span>
-                )}
               </div>
-              <PositionTypeOverrideSection eventId={eventId} positionType={selected} />
+              <TwoColumnContent
+                eventId={eventId}
+                positionType={selected}
+                hasOverride={overrideNames.has(selected.name)}
+                isAdmin={isAdmin}
+              />
             </div>
           )}
         </>
@@ -159,7 +195,12 @@ export default function PositionNotesEditor({ eventId }) {
                       className="overflow-hidden"
                     >
                       <div className="px-3 pb-3 border-t border-border pt-3">
-                        <PositionTypeOverrideSection eventId={eventId} positionType={pt} />
+                        <TwoColumnContent
+                          eventId={eventId}
+                          positionType={pt}
+                          hasOverride={hasOverride}
+                          isAdmin={isAdmin}
+                        />
                       </div>
                     </motion.div>
                   )}

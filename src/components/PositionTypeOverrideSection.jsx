@@ -122,31 +122,8 @@ export default function PositionTypeOverrideSection({ eventId, positionType }) {
     }
   };
 
-  const baseDesc = positionType.description || "";
-  const baseRes = positionType.resources || [];
-
   return (
-    <div className="space-y-3">
-      {/* Base info reference (read-only) */}
-      {(baseDesc || baseRes.length > 0) && (
-        <div className="bg-muted/40 rounded-lg p-3 space-y-1.5 border border-border">
-          <p className="text-[11px] font-semibold text-muted-foreground">基本設定（全イベント共通）</p>
-          {baseDesc && (
-            <p className="text-xs text-muted-foreground whitespace-pre-line leading-relaxed">{baseDesc}</p>
-          )}
-          {baseRes.length > 0 && (
-            <div className="space-y-1 pt-1">
-              {baseRes.map((res, idx) => (
-                <div key={idx} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  {res.type === "file" ? <FileText className="w-3 h-3 shrink-0" /> : <ExternalLink className="w-3 h-3 shrink-0" />}
-                  <span className="truncate">{res.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
+    <div className="space-y-2.5">
       {/* Override inputs */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
@@ -168,8 +145,8 @@ export default function PositionTypeOverrideSection({ eventId, positionType }) {
         <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="イベント固有の説明文（空欄=基本値を使用）"
-          className="text-sm min-h-[80px]"
+          placeholder="イベント固有の説明文（空欄=共通値を使用）"
+          className="text-xs min-h-[60px]"
         />
       </div>
 
@@ -177,45 +154,45 @@ export default function PositionTypeOverrideSection({ eventId, positionType }) {
       <div>
         <label className="text-xs font-semibold text-foreground mb-1.5 block">上書き資料</label>
         {resources.length > 0 && (
-          <div className="space-y-1.5 mb-2">
+          <div className="space-y-1 mb-2">
             {resources.map((res, idx) => (
-              <div key={idx} className="flex items-center gap-2 bg-muted/50 rounded-md px-2.5 py-1.5 border border-border">
+              <div key={idx} className="flex items-center gap-2 bg-muted/50 rounded-md px-2 py-1 border border-border">
                 {res.type === "file" ? (
-                  <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  <FileText className="w-3 h-3 text-muted-foreground shrink-0" />
                 ) : (
-                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  <ExternalLink className="w-3 h-3 text-muted-foreground shrink-0" />
                 )}
-                <span className="text-xs flex-1 truncate">{res.label}</span>
+                <span className="text-[11px] flex-1 truncate">{res.label}</span>
                 <button
                   onClick={() => handleDeleteResource(idx)}
                   className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-3 h-3" />
                 </button>
               </div>
             ))}
           </div>
         )}
-        <div className="space-y-2">
-          <label className="flex items-center gap-1.5 text-xs font-medium text-primary cursor-pointer hover:text-primary/80 w-fit">
-            <Upload className="w-3.5 h-3.5" />
+        <div className="space-y-1.5">
+          <label className="flex items-center gap-1.5 text-[10px] font-medium text-primary cursor-pointer hover:text-primary/80 w-fit">
+            <Upload className="w-3 h-3" />
             {uploading ? "アップロード中…" : "ファイル追加"}
             <input type="file" onChange={handleFileUpload} className="hidden" disabled={uploading} />
           </label>
-          <div className="flex gap-1.5">
+          <div className="flex gap-1">
             <Input
               value={urlLabel}
               onChange={(e) => setUrlLabel(e.target.value)}
               placeholder="リンク名"
-              className="h-7 text-xs flex-1"
+              className="h-6 text-[11px] flex-1"
             />
             <Input
               value={urlValue}
               onChange={(e) => setUrlValue(e.target.value)}
               placeholder="https://..."
-              className="h-7 text-xs flex-1"
+              className="h-6 text-[11px] flex-1"
             />
-            <Button size="sm" onClick={handleAddUrl} disabled={!urlValue.trim()} className="h-7 px-2 text-xs shrink-0">
+            <Button size="sm" onClick={handleAddUrl} disabled={!urlValue.trim()} className="h-6 px-2 text-[10px] shrink-0">
               <Plus className="w-3 h-3" />
             </Button>
           </div>
