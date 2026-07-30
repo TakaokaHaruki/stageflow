@@ -112,8 +112,14 @@ export default function StaffFileViewer({ events, staffName, staffRoles, positio
                 key={f.id}
                 onClick={() => {
               const isChief = (staffRoles || []).includes("セクションチーフ");
-              const isPdf = (f.file_url || "").toLowerCase().split("?")[0].endsWith(".pdf");
+              const nameForCheck = (f.file_name || f.title || "").toLowerCase();
+              const urlPath = (f.file_url || "").toLowerCase().split("?")[0];
+              const isPdf = nameForCheck.includes(".pdf") || urlPath.endsWith(".pdf");
               if (isChief && isPdf && f.file_url) {
+                window.open(f.file_url, "_blank");
+                return;
+              }
+              if (!isPdf && f.file_url) {
                 window.open(f.file_url, "_blank");
                 return;
               }
@@ -146,6 +152,7 @@ export default function StaffFileViewer({ events, staffName, staffRoles, positio
         <PdfViewerModal
           fileUrl={selectedFile.file_url}
           fileName={selectedFile.file_name || selectedFile.title}
+          forcePdf
           onClose={() => setSelectedFile(null)}
         />
       )}
