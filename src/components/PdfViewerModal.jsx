@@ -1,11 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, FileWarning, Loader2 } from "lucide-react";
-import * as pdfjsLib from "pdfjs-dist";
-// Vite ?url import resolves the worker file path correctly in both dev and production
-import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+import { X, FileWarning, ExternalLink } from "lucide-react";
 
 function getFileType(url, fileName, forcePdf) {
   if (forcePdf) return "pdf";
@@ -14,111 +9,6 @@ function getFileType(url, fileName, forcePdf) {
   if (/\.pdf$/i.test(lower)) return "pdf";
   if (fileName && /\.pdf/i.test(fileName.toLowerCase())) return "pdf";
   return "other";
-}
-
-function PdfCanvas({ fileUrl, onError }) {
-  const containerRef = useRef(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [renderedPages, setRenderedPages] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    const renderPdf = async () => {
-      setLoading(true);
-      setError(false);
-      setRenderedPages(0);
-      setTotalPages(0);
-      try {
-        const loadingTask = pdfjsLib.getDocument({ url: fileUrl });
-        // Timeout to prevent infinite loading if the worker fails silently
-        const timeout = setTimeout(() => {
-          loadingTask.destroy();
-        }, 20000);
-        const pdf = await loadingTask.promise;
-        clearTimeout(timeout);
-        if (cancelled) return;
-        setTotalPages(pdf.numPages);
-
-        const container = containerRef.current;
-        if (!container) return;
-        container.innerHTML = "";
-
-        const containerWidth = container.clientWidth || window.innerWidth;
-        const maxScale = 2.5;
-
-        for (let i = 1; i <= pdf.numPages; i++) {
-          if (cancelled) return;
-          const page = await pdf.getPage(i);
-          const baseViewport = page.getViewport({ scale: 1 });
-          const scale = Math.min(containerWidth / baseViewport.width, maxScale);
-          const dpr = window.devicePixelRatio || 1;
-          const renderScale = scale * dpr;
-          const viewport = page.getViewport({ scale: renderScale });
-
-          const canvas = document.createElement("canvas");
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          canvas.style.width = `${viewport.width / dpr}px`;
-          canvas.style.height = `${viewport.height / dpr}px`;
-          canvas.style.display = "block";
-          canvas.style.marginBottom = "6px";
-          canvas.style.boxShadow = "0 1px 3px rgba(0,0,0,0.12)";
-          canvas.style.borderRadius = "3px";
-          canvas.style.background = "white";
-          container.appendChild(canvas);
-
-          await page.render({
-            canvasContext: canvas.getContext("2d"),
-            viewport,
-          }).promise;
-          setRenderedPages(i);
-        }
-
-        if (!cancelled) setLoading(false);
-      } catch (err) {
-        console.error("PDF render error:", err);
-        if (!cancelled) {
-          setError(true);
-          onError?.();
-        }
-      }
-    };
-
-    renderPdf();
-    return () => { cancelled = true; };
-  }, [fileUrl]);
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-2 text-white/70">
-        <Loader2 className="w-8 h-8 animate-spin" />
-        {totalPages > 0
-          ? <p className="text-sm">{renderedPages} / {totalPages} ページ読み込み中</p>
-          : <p className="text-sm">PDFを読み込んでいます...</p>}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center gap-3 text-white/70 py-10">
-        <FileWarning className="w-10 h-10" />
-        <p className="text-sm">PDFの読み込みに失敗しました</p>
-        <a
-          href={fileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium"
-        >
-          ファイルを開く
-        </a>
-      </div>
-    );
-  }
-
-  return <div ref={containerRef} className="w-full mx-auto" style={{ maxWidth: "800px" }} />;
 }
 
 export default function PdfViewerModal({ fileUrl, fileName, forcePdf, onClose }) {
@@ -150,9 +40,24 @@ export default function PdfViewerModal({ fileUrl, fileName, forcePdf, onClose })
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto flex justify-center p-3">
+      <div className="flex-1 overflow-hidden flex flex-col p-3">
         {fileType === "pdf" && (
-          <PdfCanvas fileUrl={fileUrl} />
+          <div className="flex-1 flex flex-col min-h-0">
+            <iframe
+              src={fileUrl}
+              className="flex-1 w-full rounded-lg bg-white shadow-2xl"
+              title={fileName || "PDF"}
+            />
+            <a
+              href={fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-white/10 text-white text-sm font-medium hover:bg-white/20 transition-colors shrink-0"
+            >
+              <ExternalLink className="w-4 h-4" />
+              別タブで開く
+            </a>
+          </div>
         )}
 
         {fileType === "image" && (
