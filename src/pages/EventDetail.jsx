@@ -171,6 +171,7 @@ export default function EventDetail() {
         { id: "global_banner", label: "グローバル通知", icon: Bell },
         { id: "tab_control", label: "タブ制御", icon: LayoutTemplate },
         { id: "staff_qr", label: "スタッフ QR 出力", icon: QrCode },
+        { id: "pin_management", label: "PIN管理", icon: KeyRound },
       ]
     : tab === "settings"
       ? [
@@ -180,7 +181,6 @@ export default function EventDetail() {
           ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
           { id: "tag_management", label: "タグ・役割管理", icon: Tag },
           { id: "emergency_contacts", label: "緊急連絡先", icon: Phone },
-          { id: "pin_management", label: "PIN管理", icon: KeyRound },
         ]
       : [];
   const activeManagementChild = tab === "admin" ? adminSection : settingsSection;
@@ -321,7 +321,6 @@ export default function EventDetail() {
             {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
             {tab === "settings" && settingsSection === "tag_management" && <TagManagement />}
             {tab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} />}
-            {tab === "settings" && settingsSection === "pin_management" && <PinCodeManager />}
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
             {tab === "files" && <SharedFileManager eventId={eventId} showAll={true} />}
           </motion.div>

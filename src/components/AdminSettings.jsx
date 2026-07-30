@@ -4,6 +4,7 @@ import PortalRestrictionManager from "@/components/PortalRestrictionManager";
 import GlobalBannerManager from "@/components/GlobalBannerManager";
 import TabControlManager from "@/components/TabControlManager";
 import StaffQrExport from "@/components/StaffQrExport";
+import PinCodeManager from "@/components/PinCodeManager";
 
 export default function AdminSettings({ eventId, section = "users" }) {
   return (
@@ -14,6 +15,7 @@ export default function AdminSettings({ eventId, section = "users" }) {
       {section === "global_banner" && <GlobalBannerManager />}
       {section === "tab_control" && <TabControlManager />}
       {section === "staff_qr" && <StaffQrExport eventId={eventId} />}
+      {section === "pin_management" && <PinCodeManager />}
     </div>
   );
 }

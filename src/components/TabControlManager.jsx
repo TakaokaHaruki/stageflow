@@ -7,6 +7,8 @@ const TAB_CONFIGS = [
   { id: "staff", label: "スタッフ管理", key: "tab_disabled_staff" },
   { id: "dragdrop", label: "配置表", key: "tab_disabled_dragdrop" },
   { id: "seating_map", label: "客席配置図", key: "tab_disabled_seating_map" },
+  { id: "files", label: "配布資料", key: "tab_disabled_files" },
+  { id: "settings", label: "管理設定", key: "tab_disabled_settings" },
 ];
 
 export default function TabControlManager() {
