@@ -2,16 +2,18 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, FileWarning } from "lucide-react";
 
-function getFileType(url) {
+function getFileType(url, fileName, forcePdf) {
+  if (forcePdf) return "pdf";
   const lower = (url || "").toLowerCase().split("?")[0];
   if (/\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(lower)) return "image";
   if (/\.pdf$/i.test(lower)) return "pdf";
+  if (fileName && /\.pdf$/i.test(fileName.toLowerCase())) return "pdf";
   return "other";
 }
 
-export default function PdfViewerModal({ fileUrl, fileName, onClose }) {
+export default function PdfViewerModal({ fileUrl, fileName, forcePdf, onClose }) {
   const [loading, setLoading] = useState(true);
-  const fileType = getFileType(fileUrl);
+  const fileType = getFileType(fileUrl, fileName, forcePdf);
 
   useEffect(() => {
     setLoading(false);

@@ -676,6 +676,7 @@ export default function StaffPortal() {
           <PdfViewerModal
             fileUrl={loginHelpPdfUrl}
             fileName={loginHelpPdfName || "ログイン案内"}
+            forcePdf
             onClose={() => setShowLoginHelpPdf(false)}
           />
         )}
