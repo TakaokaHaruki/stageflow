@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { X, FileWarning, ExternalLink } from "lucide-react";
+import { X, FileWarning, ExternalLink, ZoomIn, ZoomOut, Maximize2, Hand } from "lucide-react";
 
 function getFileType(url, fileName, forcePdf) {
   if (forcePdf) return "pdf";
@@ -13,12 +13,75 @@ function getFileType(url, fileName, forcePdf) {
 
 export default function PdfViewerModal({ fileUrl, fileName, forcePdf, onClose }) {
   const fileType = getFileType(fileUrl, fileName, forcePdf);
+  const [scale, setScale] = useState(1);
+  const [zoomMode, setZoomMode] = useState(false);
+  const containerRef = useRef(null);
+  const touchState = useRef({ initialDistance: 0, initialScale: 1 });
+  const scaleRef = useRef(1);
+
+  useEffect(() => { scaleRef.current = scale; }, [scale]);
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  // Pinch-to-zoom touch handlers (active only in zoom mode)
+  useEffect(() => {
+    if (!zoomMode) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const getDistance = (touches) => {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        touchState.current.initialDistance = getDistance(e.touches);
+        touchState.current.initialScale = scaleRef.current;
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 2 && touchState.current.initialDistance > 0) {
+        e.preventDefault();
+        const ratio = getDistance(e.touches) / touchState.current.initialDistance;
+        const newScale = Math.max(0.5, Math.min(5, touchState.current.initialScale * ratio));
+        setScale(newScale);
+        scaleRef.current = newScale;
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (touchState.current.initialDistance > 0) {
+        touchState.current.initialDistance = 0;
+      }
+    };
+
+    container.addEventListener("touchstart", handleTouchStart, { passive: false });
+    container.addEventListener("touchmove", handleTouchMove, { passive: false });
+    container.addEventListener("touchend", handleTouchEnd, { passive: false });
+
+    return () => {
+      container.removeEventListener("touchstart", handleTouchStart);
+      container.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [zoomMode]);
+
+  const zoomIn = () => setScale((s) => Math.min(5, s + 0.25));
+  const zoomOut = () => setScale((s) => Math.max(0.5, s - 0.25));
+  const resetZoom = () => setScale(1);
+  const toggleZoomMode = () => {
+    setZoomMode((prev) => {
+      if (prev) setScale(1);
+      return !prev;
+    });
+  };
 
   return (
     <motion.div
@@ -31,23 +94,83 @@ export default function PdfViewerModal({ fileUrl, fileName, forcePdf, onClose })
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate pr-2">{fileName || "ファイル"}</p>
         </div>
+        {fileType === "pdf" && (
+          <div className="flex items-center gap-0.5 shrink-0">
+            <button
+              onClick={zoomOut}
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="縮小"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+            <span className="text-xs text-muted-foreground w-9 text-center tabular-nums">{Math.round(scale * 100)}%</span>
+            <button
+              onClick={zoomIn}
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="拡大"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
+            <button
+              onClick={resetZoom}
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="リセット"
+              title="100%にリセット"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+            <div className="w-px h-5 bg-border mx-0.5" />
+            <button
+              onClick={toggleZoomMode}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors shrink-0 ${zoomMode ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"}`}
+              aria-label="ピンチズーム切り替え"
+              title={zoomMode ? "ピンチズームON中" : "ピンチズームを有効化"}
+            >
+              <Hand className="w-4 h-4" />
+            </button>
+          </div>
+        )}
         <button
           onClick={onClose}
-          className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0 ml-1"
           aria-label="閉じる"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="flex-1 overflow-hidden flex flex-col p-3">
+      <div className="flex-1 overflow-auto flex justify-center p-3">
         {fileType === "pdf" && (
-          <div className="flex-1 flex flex-col min-h-0">
+          <div
+            ref={containerRef}
+            className="flex-1 flex flex-col min-h-0 relative"
+            style={{ touchAction: zoomMode ? "none" : "auto" }}
+          >
             <iframe
               src={fileUrl}
               className="flex-1 w-full rounded-lg bg-white shadow-2xl"
               title={fileName || "PDF"}
+              style={{
+                transform: `scale(${scale})`,
+                transformOrigin: "center center",
+                pointerEvents: zoomMode ? "none" : "auto",
+              }}
             />
+            {zoomMode && (
+              <>
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/70 text-white text-xs font-medium backdrop-blur-sm pointer-events-none whitespace-nowrap z-10">
+                  ✋ ピンチでズーム
+                </div>
+                <div className="absolute top-3 right-3 z-10">
+                  <button
+                    onClick={toggleZoomMode}
+                    className="px-3 py-1.5 rounded-full bg-black/70 text-white text-xs font-medium backdrop-blur-sm hover:bg-black/80 transition-colors"
+                  >
+                    終了
+                  </button>
+                </div>
+              </>
+            )}
             <a
               href={fileUrl}
               target="_blank"
