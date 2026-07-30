@@ -323,7 +323,7 @@ export default function SharedFileManager({ eventId, showAll = false }) {
     <div>
       <SectionHeader
         icon={Paperclip}
-        title="ファイル共有"
+        title="配布資料"
         actions={
           <Button size="sm" className="gap-1 h-8 text-xs px-2" onClick={() => setShowForm(true)}>
             <Plus className="w-3 h-3" />追加

@@ -151,7 +151,7 @@ export default function EventDetail() {
     { id: "staff", label: "スタッフ管理", icon: Users },
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
     { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
-    ...(isPrivileged ? [{ id: "files", label: "ファイル共有", icon: Paperclip }] : []),
+    ...(isPrivileged ? [{ id: "files", label: "配布資料", icon: Paperclip }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ].filter((t) => isAdmin || !disabledTabIds.includes(t.id));

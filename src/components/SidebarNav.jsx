@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
-import { ChevronLeft } from "lucide-react";
+import { useState } from "react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
-const STORAGE_KEY = "crewly:sidebar:collapsed";
 const EXPANDED_WIDTH = 168;
 const COLLAPSED_WIDTH = 48;
 
@@ -10,28 +8,14 @@ export const SIDEBAR_EXPANDED_WIDTH = EXPANDED_WIDTH;
 export const SIDEBAR_COLLAPSED_WIDTH = COLLAPSED_WIDTH;
 
 export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 56, extraNavItems }) {
-  const [collapsed, setCollapsed] = useState(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored === null) return true; // デフォルトで折りたたむ
-      return stored === "true";
-    } catch {
-      return true;
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, String(collapsed));
-    } catch {
-      // ignore
-    }
-  }, [collapsed]);
+  const [collapsed, setCollapsed] = useState(true);
 
   const width = collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH;
 
   return (
     <aside
+      onMouseEnter={() => setCollapsed(false)}
+      onMouseLeave={() => setCollapsed(true)}
       className="hidden sm:flex sticky self-start flex-col border-r border-border bg-card/80 backdrop-blur-md"
       style={{ width, top: topOffset, height: `calc(100vh - ${topOffset}px)`, transition: "width 200ms ease" }}
     >
@@ -42,7 +26,7 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
               const isActive = activeTab === id;
               const button = (
                 <button
-                  onClick={() => { onSelectTab(id); setCollapsed(true); }}
+                  onClick={() => onSelectTab(id)}
                   className={`relative flex w-full items-center gap-2.5 rounded-md py-2 pr-2 text-xs font-semibold transition-colors ${
                     collapsed ? "justify-center px-0" : "px-2.5"
                   } ${
@@ -78,20 +62,6 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
           {extraNavItems}
         </TooltipProvider>
       </nav>
-
-      <div className="border-t border-border p-1.5">
-        <button
-          onClick={() => setCollapsed((c) => !c)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          aria-label={collapsed ? "サイドバーを展開" : "サイドバーを折りたたむ"}
-        >
-          <ChevronLeft
-            className="h-4 w-4 transition-transform"
-            style={{ transform: collapsed ? "rotate(180deg)" : "none" }}
-          />
-          {!collapsed && <span>折りたたむ</span>}
-        </button>
-      </div>
     </aside>
   );
 }
