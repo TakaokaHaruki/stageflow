@@ -2,12 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { X, FileWarning, Loader2 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
+// Vite ?url import resolves the worker file path correctly in both dev and production
+import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-// Configure worker once — use import.meta.url so Vite resolves the worker file path
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).href;
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
 function getFileType(url, fileName, forcePdf) {
   if (forcePdf) return "pdf";
@@ -33,7 +31,13 @@ function PdfCanvas({ fileUrl, onError }) {
       setRenderedPages(0);
       setTotalPages(0);
       try {
-        const pdf = await pdfjsLib.getDocument({ url: fileUrl }).promise;
+        const loadingTask = pdfjsLib.getDocument({ url: fileUrl });
+        // Timeout to prevent infinite loading if the worker fails silently
+        const timeout = setTimeout(() => {
+          loadingTask.destroy();
+        }, 20000);
+        const pdf = await loadingTask.promise;
+        clearTimeout(timeout);
         if (cancelled) return;
         setTotalPages(pdf.numPages);
 
