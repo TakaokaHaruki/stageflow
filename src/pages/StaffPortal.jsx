@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard, QrCode, UserPlus, X, Eye } from "lucide-react";
+import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard, QrCode, UserPlus, X, Eye, ChevronDown, FileText } from "lucide-react";
 import { toast } from "sonner";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import QRCodeUpload from "@/components/QRCodeUpload";
@@ -18,6 +18,7 @@ import AllPositionsModal from "@/components/AllPositionsModal";
 import ChiefPinModal from "@/components/ChiefPinModal";
 import PositionDetailExpand from "@/components/PositionDetailExpand";
 import StaffFileViewer from "@/components/StaffFileViewer";
+import PdfViewerModal from "@/components/PdfViewerModal";
 import { Phone } from "lucide-react";
 
 const STORAGE_KEY = "crewly_acast_id";
@@ -58,6 +59,11 @@ export default function StaffPortal() {
   const [emergencyContacts, setEmergencyContacts] = useState([]);
   const [showPinModal, setShowPinModal] = useState(false);
   const [myChiefEventIds, setMyChiefEventIds] = useState(new Set());
+  const [loginHelpText, setLoginHelpText] = useState("");
+  const [loginHelpPdfUrl, setLoginHelpPdfUrl] = useState("");
+  const [loginHelpPdfName, setLoginHelpPdfName] = useState("");
+  const [loginHelpExpanded, setLoginHelpExpanded] = useState(false);
+  const [showLoginHelpPdf, setShowLoginHelpPdf] = useState(false);
   const clickCountRef = useRef(0);
   const resetTimerRef = useRef(null);
 
@@ -71,6 +77,17 @@ export default function StaffPortal() {
           setInitialized(true);
           return;
         }
+      } catch (_) {}
+      // Fetch login help configs
+      try {
+        const [textConfigs, pdfUrlConfigs, pdfNameConfigs] = await Promise.all([
+          base44.entities.AppConfig.filter({ key: "portal_login_help_text" }),
+          base44.entities.AppConfig.filter({ key: "portal_login_help_pdf_url" }),
+          base44.entities.AppConfig.filter({ key: "portal_login_help_pdf_name" }),
+        ]);
+        setLoginHelpText(textConfigs?.[0]?.value || "");
+        setLoginHelpPdfUrl(pdfUrlConfigs?.[0]?.value || "");
+        setLoginHelpPdfName(pdfNameConfigs?.[0]?.value || "");
       } catch (_) {}
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -600,6 +617,50 @@ export default function StaffPortal() {
               )}
             </AnimatePresence>
           </div>
+
+          {(loginHelpText || loginHelpPdfUrl) && (
+            <div className="mt-3">
+              <button
+                onClick={() => setLoginHelpExpanded(!loginHelpExpanded)}
+                className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-border bg-card text-sm font-medium hover:bg-muted/30 transition-colors"
+              >
+                <span className="flex items-center gap-1.5">
+                  📋 ログイン方法について
+                </span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${loginHelpExpanded ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {loginHelpExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 pt-3 pb-3 space-y-3">
+                      {loginHelpText && (
+                        <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
+                          {loginHelpText}
+                        </p>
+                      )}
+                      {loginHelpPdfUrl && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full gap-1.5"
+                          onClick={() => setShowLoginHelpPdf(true)}
+                        >
+                          <FileText className="w-4 h-4" />
+                          ログインでお困りの方はこちら
+                        </Button>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
         </motion.div>
 
         {showPinModal && pendingAuthData && (
@@ -608,6 +669,14 @@ export default function StaffPortal() {
             staffName={pendingAuthData.staffName}
             onSuccess={handlePinSuccess}
             onClose={handlePinClose}
+          />
+        )}
+
+        {showLoginHelpPdf && (
+          <PdfViewerModal
+            fileUrl={loginHelpPdfUrl}
+            fileName={loginHelpPdfName || "ログイン案内"}
+            onClose={() => setShowLoginHelpPdf(false)}
           />
         )}
       </div>

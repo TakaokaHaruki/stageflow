@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip, HelpCircle } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -172,6 +172,7 @@ export default function EventDetail() {
         { id: "tab_control", label: "タブ制御", icon: LayoutTemplate },
         { id: "staff_qr", label: "スタッフ QR 出力", icon: QrCode },
         { id: "pin_management", label: "PIN管理", icon: KeyRound },
+        { id: "login_help", label: "ログイン案内", icon: HelpCircle },
       ]
     : tab === "settings"
       ? [

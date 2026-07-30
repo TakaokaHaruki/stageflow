@@ -5,6 +5,7 @@ import GlobalBannerManager from "@/components/GlobalBannerManager";
 import TabControlManager from "@/components/TabControlManager";
 import StaffQrExport from "@/components/StaffQrExport";
 import PinCodeManager from "@/components/PinCodeManager";
+import LoginHelpManager from "@/components/LoginHelpManager";
 
 export default function AdminSettings({ eventId, section = "users" }) {
   return (
@@ -16,6 +17,7 @@ export default function AdminSettings({ eventId, section = "users" }) {
       {section === "tab_control" && <TabControlManager />}
       {section === "staff_qr" && <StaffQrExport eventId={eventId} />}
       {section === "pin_management" && <PinCodeManager />}
+      {section === "login_help" && <LoginHelpManager />}
     </div>
   );
 }
