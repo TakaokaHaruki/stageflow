@@ -625,7 +625,7 @@ export default function StaffPortal() {
                 className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-border bg-card text-sm font-medium hover:bg-muted/30 transition-colors"
               >
                 <span className="flex items-center gap-1.5">
-                  📋 ログイン方法について
+                  ログイン方法について
                 </span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${loginHelpExpanded ? "rotate-180" : ""}`} />
               </button>
