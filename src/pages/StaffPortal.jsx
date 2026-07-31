@@ -767,7 +767,7 @@ export default function StaffPortal() {
             {/* Event header */}
             <div className="mb-3">
               <h2 className="font-bold text-base">{event.name}</h2>
-              <div className="flex items-center gap-3 mt-0.5">
+              <div className="mt-0.5 space-y-0.5">
                 {event.date && (
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Clock className="w-3 h-3" />
