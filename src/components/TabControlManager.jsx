@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Switch } from "@/components/ui/switch";
 import { LayoutTemplate } from "lucide-react";
+import SectionHeader from "@/components/SectionHeader";
 
 const TAB_CONFIGS = [
   { id: "staff", label: "スタッフ管理", key: "tab_disabled_staff" },
@@ -40,18 +41,12 @@ export default function TabControlManager() {
     tabConfigs.find((c) => c.key === key)?.value_bool === true;
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-start gap-2">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
-          <LayoutTemplate className="w-4 h-4 text-primary" />
-        </div>
-        <div>
-          <h3 className="text-sm font-bold">タブ制御</h3>
-          <p className="text-xs text-muted-foreground">
-            全イベントのタブ表示を一括管理します（管理者・チーフは常に全タブ表示）
-          </p>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <SectionHeader
+        icon={LayoutTemplate}
+        title="タブ制御"
+        subtitle="全イベントのタブ表示を一括管理します（管理者・チーフは常に全タブ表示）"
+      />
       <div className="space-y-2.5">
         {TAB_CONFIGS.map(({ id, label, key }) => (
           <div

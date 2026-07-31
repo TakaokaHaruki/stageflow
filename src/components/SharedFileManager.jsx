@@ -320,7 +320,7 @@ export default function SharedFileManager({ eventId, showAll = false }) {
   });
 
   return (
-    <div>
+    <div className="space-y-4">
       <SectionHeader
         icon={Paperclip}
         title="配布資料"
@@ -331,7 +331,7 @@ export default function SharedFileManager({ eventId, showAll = false }) {
         }
       />
 
-      <div className="relative mb-2">
+      <div className="relative">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
         <Input
           value={searchQuery}

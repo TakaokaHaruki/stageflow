@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle, Trash2, Send } from "lucide-react";
+import SectionHeader from "@/components/SectionHeader";
 
 export default function GlobalBannerManager() {
   const queryClient = useQueryClient();
@@ -42,18 +43,12 @@ export default function GlobalBannerManager() {
   });
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-start gap-2">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-        </div>
-        <div>
-          <h3 className="text-sm font-bold">グローバル通知</h3>
-          <p className="text-xs text-muted-foreground">
-            イベント一覧・詳細ページ上部に表示されるバナーメッセージです
-          </p>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <SectionHeader
+        icon={AlertTriangle}
+        title="グローバル通知"
+        subtitle="イベント一覧・詳細ページ上部に表示されるバナーメッセージです"
+      />
       <Textarea
         placeholder="通知メッセージを入力..."
         value={message}

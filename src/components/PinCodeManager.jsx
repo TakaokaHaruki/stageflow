@@ -203,7 +203,7 @@ export default function PinCodeManager() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.03 }}
-              className={`flex items-center gap-3 bg-card border rounded-xl p-3 ${pin?.reset_requested ? "border-rose-300" : "border-border"}`}
+              className={`flex items-center gap-3 bg-card border rounded-xl p-4 ${pin?.reset_requested ? "border-rose-300" : "border-border"}`}
             >
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm truncate">{staff.name}</p>

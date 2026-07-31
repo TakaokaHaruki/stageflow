@@ -39,9 +39,9 @@ export default function PortalRestrictionManager() {
   };
 
   return (
-    <div>
+    <div className="space-y-4">
       <SectionHeader icon={ShieldOff} title="ポータルログイン制限" />
-      <div className="mt-3 bg-card border border-border rounded-xl p-4 max-w-md">
+      <div className="bg-card border border-border rounded-xl p-4 max-w-md">
         {isLoading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />

@@ -118,7 +118,7 @@ export default function EmergencyContactManager({ eventId }) {
       />
 
       {/* Add form */}
-      <form onSubmit={handleCreate} className="bg-card border border-border rounded-lg p-3 space-y-2">
+      <form onSubmit={handleCreate} className="bg-card border border-border rounded-lg p-4 space-y-2">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <Input
             value={newRole}
@@ -153,7 +153,7 @@ export default function EmergencyContactManager({ eventId }) {
         {contacts.map((c, idx) => (
           <div
             key={c.id}
-            className="bg-card border border-border rounded-lg p-3 flex items-center gap-2"
+            className="bg-card border border-border rounded-lg p-4 flex items-center gap-2"
           >
             {editingId === c.id ? (
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, Trash2, Save, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import SectionHeader from "@/components/SectionHeader";
 
 const KEYS = {
   TEXT: "portal_login_help_text",
@@ -101,17 +102,11 @@ export default function LoginHelpManager() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-2">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
-          <FileText className="w-4 h-4 text-primary" />
-        </div>
-        <div>
-          <h3 className="text-sm font-bold">ログイン案内</h3>
-          <p className="text-xs text-muted-foreground">
-            スタッフポータルのログイン画面に表示する案内バナーを設定します
-          </p>
-        </div>
-      </div>
+      <SectionHeader
+        icon={FileText}
+        title="ログイン案内"
+        subtitle="スタッフポータルのログイン画面に表示する案内バナーを設定します"
+      />
 
       <div>
         <label className="text-sm font-medium mb-1.5 block">テキスト説明文（任意）</label>
@@ -129,7 +124,7 @@ export default function LoginHelpManager() {
       <div>
         <label className="text-sm font-medium mb-1.5 block">案内PDF（任意）</label>
         {pdfUrl ? (
-          <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-card">
+          <div className="flex items-center gap-2 p-4 rounded-lg border border-border bg-card">
             <FileText className="w-5 h-5 text-primary shrink-0" />
             <span className="text-sm flex-1 truncate">{pdfName || "PDFファイル"}</span>
             <Button variant="ghost" size="sm" onClick={handleDeletePdf} className="text-destructive hover:text-destructive">
