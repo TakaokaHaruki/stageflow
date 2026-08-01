@@ -363,7 +363,7 @@ export default function StaffDragDropManager({ eventId }) {
     });
 
     // バラシ系ポジションへの配置で「バラシ」役割を自動付与（意図的な剥奪は管理者手動）
-    const isBarashiPosition = (position.name && (position.name.includes("バラシ") || position.name.includes("終演後突発"))) || position.category === "バラシ";
+    const isBarashiPosition = (position.name && (position.name.includes("バラシ") || position.name.includes("突発"))) || position.category === "バラシ";
     if (staff && isBarashiPosition && !(staff.roles || []).includes("バラシ")) {
       const newRoles = [...(staff.roles || []), "バラシ"];
       queryClient.setQueryData(["staff", eventId], (old = []) =>
