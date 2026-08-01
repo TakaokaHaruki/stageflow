@@ -59,6 +59,14 @@ const SLOT_COLORS = {
 
 const SLOT_NOTE_KEY = { '開場中': 'note_before', '開演中': 'note_during', '終演後': 'note_after' };
 
+// 役割バッジのスタイル（役割名 → [背景, 枠, テキスト]）
+const ROLE_BADGE_STYLES = {
+  'インカム': { bg: [255, 237, 213], border: [253, 186, 116], text: [154, 52, 18] },
+  'セクションチーフ': { bg: [243, 232, 255], border: [216, 180, 254], text: [107, 33, 168] },
+  'バラシ': { bg: [207, 250, 254], border: [103, 232, 249], text: [21, 94, 117] },
+};
+const ROLE_BADGE_DEFAULT = { bg: [241, 245, 249], border: [148, 163, 184], text: [51, 65, 85] };
+
 // A4縦・コンパクト設定
 const PAGE_W = 210;
 const PAGE_H = 297;
@@ -156,6 +164,26 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
     doc.setTextColor(3, 105, 161);
     doc.text(badgeText, cursorX + 0.8, badgeTextY);
     cursorX += badgeW + 0.8;
+    doc.setFontSize(STAFF_FONT_SIZE);
+  }
+
+  // 役割バッジ（着替・休憩の直後に描画）
+  const roles = staffData?.roles || [];
+  if (roles.length > 0) {
+    doc.setFontSize(5.5);
+    for (const role of roles) {
+      const roleText = String(role);
+      const style = ROLE_BADGE_STYLES[roleText] || ROLE_BADGE_DEFAULT;
+      const badgeW = doc.getTextWidth(roleText) + 1.5;
+      if (cursorX + badgeW > x + w) break;
+      doc.setFillColor(style.bg[0], style.bg[1], style.bg[2]);
+      doc.setDrawColor(style.border[0], style.border[1], style.border[2]);
+      doc.setLineWidth(0.15);
+      doc.roundedRect(cursorX, badgeTop, badgeW, badgeH, 0.4, 0.4, 'FD');
+      doc.setTextColor(style.text[0], style.text[1], style.text[2]);
+      doc.text(roleText, cursorX + 0.8, badgeTextY);
+      cursorX += badgeW + 0.8;
+    }
     doc.setFontSize(STAFF_FONT_SIZE);
   }
 

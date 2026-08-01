@@ -361,6 +361,24 @@ export default function StaffDragDropManager({ eventId }) {
         snapshot_after: { staff_names: nextStaffNames },
       },
     });
+
+    // バラシ系ポジションへの配置で「バラシ」役割を自動付与（意図的な剥奪は管理者手動）
+    const isBarashiPosition = (position.name && (position.name.includes("バラシ") || position.name.includes("終演後突発"))) || position.category === "バラシ";
+    if (staff && isBarashiPosition && !(staff.roles || []).includes("バラシ")) {
+      const newRoles = [...(staff.roles || []), "バラシ"];
+      queryClient.setQueryData(["staff", eventId], (old = []) =>
+        old.map((it) => it.id === staff.id ? { ...it, roles: newRoles } : it)
+      );
+      base44.functions.invoke("updateStaffRecord", { action: "update", staffId: staff.id, data: { roles: newRoles } }).catch(() => {});
+      record({
+        action_type: "staff_update",
+        description: `バラシ役割を自動付与：${staffName}`,
+        entity_type: "Staff",
+        entity_id: staff.id,
+        snapshot_before: { roles: staff.roles || [] },
+        snapshot_after: { roles: newRoles },
+      });
+    }
   }, [positions, staffList, continuousMode, updatePositionMutation, record]);
 
   const handleDropOnPosition = (e, positionId) => {
