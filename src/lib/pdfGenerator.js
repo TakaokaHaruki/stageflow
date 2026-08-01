@@ -2,8 +2,10 @@ let cachedFontBase64 = null;
 
 async function loadJapaneseFont() {
   if (cachedFontBase64) return cachedFontBase64;
+  // 環境依存文字・拡張漢字（崎・髙・濵 等）対応：Noto Sans JP 完全グリフカバレッジ（可変TTF・jsPDFはデフォルトインスタンスを描画）
+  // フォールバック：fontsource Noto Sans JP japanese サブセット（JIS第1・第2水準・従来動作）
   const urls = [
-    'https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-jp@latest/japanese-400-normal.ttf',
+    'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/Variable/TTF/Subset/NotoSansJP-VF.ttf',
     'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp@5.1.0/files/noto-sans-jp-japanese-400-normal.ttf',
   ];
   let lastError;
