@@ -456,8 +456,7 @@ export async function generatePositionPDF(data, filename) {
     drawTimelineTable(doc, data.positions || [], data.staff || []);
   } else {
     drawTitle(doc, data.event || {});
-    const columnsBottom = drawColumns(doc, data.positions || [], data.staff || []);
-    drawUnassigned(doc, data.positions || [], data.staff || [], columnsBottom);
+    drawColumns(doc, data.positions || [], data.staff || []);
   }
 
   doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
