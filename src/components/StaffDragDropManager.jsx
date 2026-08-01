@@ -480,7 +480,12 @@ export default function StaffDragDropManager({ eventId }) {
     : staffList
         .map((staff) => {
           const missingSlots = TIME_SLOTS.filter((slot) =>
-            !positions.some((p) => (p.time_slot || "開場中") === slot && (p.staff_names || []).includes(staff.name))
+            !positions.some((p) => {
+              if ((p.time_slot || "開場中") !== slot) return false;
+              return (p.staff_names || []).includes(staff.name) ||
+                (p.staff_names_kamite || []).includes(staff.name) ||
+                (p.staff_names_shimote || []).includes(staff.name);
+            })
           );
           return { ...staff, missingSlots };
         })
@@ -701,7 +706,11 @@ export default function StaffDragDropManager({ eventId }) {
               const nameColor = s.color || undefined;
               const slotAssignments = TIME_SLOTS.map((slot) => ({
                 slot,
-                positions: positions.filter((p) => (p.time_slot || "開場中") === slot && (p.staff_names || []).includes(s.name)),
+                positions: positions.filter((p) => (p.time_slot || "開場中") === slot && (
+                (p.staff_names || []).includes(s.name) ||
+                (p.staff_names_kamite || []).includes(s.name) ||
+                (p.staff_names_shimote || []).includes(s.name)
+              )),
               })).filter((sa) => sa.positions.length > 0);
               return (
                 <div key={s.id} className="flex items-start gap-2 px-2 py-1">
