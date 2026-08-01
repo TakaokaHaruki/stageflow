@@ -113,8 +113,9 @@ export default function PositionCard({
   maskStaffNames = false,
   onPosDragStart, onPosDragEnd,
   continuousMode = false,
+  eventId = null,
 }) {
-  const { hasExperience, isReady } = useStaffExperience();
+  const { hasExperience, isReady } = useStaffExperience(eventId);
   const splitBySide = Boolean(pos.split_by_side);
   const kamiteStaffNames = pos.staff_names_kamite || [];
   const shimoteStaffNames = pos.staff_names_shimote || [];

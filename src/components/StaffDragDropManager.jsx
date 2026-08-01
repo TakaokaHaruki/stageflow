@@ -588,6 +588,7 @@ export default function StaffDragDropManager({ eventId }) {
                       >
                         <PositionCard
                           pos={pos}
+                          eventId={eventId}
                           isAdmin={isAdmin}
                           draggable={true}
                           draggedStaff={draggedStaff}

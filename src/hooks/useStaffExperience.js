@@ -11,9 +11,10 @@ import { useStaffTrends } from "@/hooks/useStaffTrends";
  *
  * API追加コールなし（useStaffTrends は React Query でキャッシュ共有）。
  */
-export function useStaffExperience() {
-  const { positionsPerEvent, isLoading, isFetching } = useStaffTrends();
-  const isReady = !isLoading && !isFetching;
+export function useStaffExperience(eventId) {
+  const { positionsPerEvent, isLoading } = useStaffTrends(eventId);
+  // isReady は初回ロード完了のみブロック（isFetching は除外し、キャッシュがあれば即時判定）
+  const isReady = !isLoading;
 
   const experienceMap = useMemo(() => {
     const map = {};
@@ -27,7 +28,7 @@ export function useStaffExperience() {
         names.forEach((n) => {
           if (!map[n]) map[n] = { positionNames: new Set(), categories: new Set() };
           if (posName) map[n].positionNames.add(posName);
-          if (category) map[n].categories.add(category);
+          if (category && category !== "") map[n].categories.add(category);
         });
       });
     });
@@ -39,7 +40,7 @@ export function useStaffExperience() {
       const exp = experienceMap[staffName];
       if (!exp) return false;
       if (positionName && exp.positionNames.has(positionName)) return true;
-      if (category && exp.categories.has(category)) return true;
+      if (category && category !== "" && exp.categories.has(category)) return true;
       return false;
     };
   }, [experienceMap]);

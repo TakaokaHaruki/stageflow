@@ -16,14 +16,18 @@ function normalizeSlot(slot) {
  *   recentEvents: Event[]
  * }
  */
-export function useStaffTrends() {
+export function useStaffTrends(eventId) {
   const { data = { tally: {}, recentEvents: [], positionsPerEvent: [] }, isLoading, isFetching } = useQuery({
-    queryKey: ["staffTrends"],
+    queryKey: ["staffTrends", eventId || null],
     queryFn: async () => {
       const events = await base44.entities.Event.list("-date", 200);
-      const recentEvents = (events || []).slice(0, 10);
+      // 現在のイベントを除外して過去履歴のみを対象にする
+      const recentEvents = (eventId
+        ? (events || []).filter((e) => e.id !== eventId)
+        : events || []
+      ).slice(0, 10);
 
-      if (recentEvents.length === 0) return { tally: {}, recentEvents: [] };
+      if (recentEvents.length === 0) return { tally: {}, recentEvents: [], positionsPerEvent: [] };
 
       const positionsPerEvent = await Promise.all(
         recentEvents.map((e) => base44.entities.Position.filter({ event_id: e.id }))
