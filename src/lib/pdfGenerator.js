@@ -1,33 +1,41 @@
-let cachedFontBase64 = null;
+let cachedFontBase64 = null;       // 変数TTF（400・フルカバレッジ・髙対応）
+let cachedMediumFontBase64 = null; // fontsource 500 woff（Medium）
 
-async function loadJapaneseFont() {
-  if (cachedFontBase64) return cachedFontBase64;
-  // 環境依存文字・拡張漢字（崎・髙・濵 等）対応：Noto Sans JP 完全グリフカバレッジ（可変TTF・jsPDFはデフォルトインスタンスを描画）
-  // フォールバック：fontsource Noto Sans JP japanese サブセット（JIS第1・第2水準・従来動作）
-  const urls = [
-    'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/Variable/TTF/Subset/NotoSansJP-VF.ttf',
-    'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp@5.1.0/files/noto-sans-jp-japanese-400-normal.ttf',
-  ];
-  let lastError;
-  for (const url of urls) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const buffer = await res.arrayBuffer();
-      let binary = '';
-      const bytes = new Uint8Array(buffer);
-      const chunkSize = 0x8000;
-      for (let i = 0; i < bytes.length; i += chunkSize) {
-        const chunk = bytes.subarray(i, i + chunkSize);
-        binary += String.fromCharCode.apply(null, chunk);
-      }
-      cachedFontBase64 = btoa(binary);
-      return cachedFontBase64;
-    } catch (err) {
-      lastError = err;
-    }
+function arrayBufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode.apply(null, chunk);
   }
-  throw new Error('フォントの読み込みに失敗しました: ' + (lastError?.message || ''));
+  return btoa(binary);
+}
+
+async function fetchFontBase64(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return arrayBufferToBase64(await res.arrayBuffer());
+}
+
+// 2フォント読み込み:
+//  - full: 変数TTF（400・フルカバレッジ・髙などの環境依存文字対応）。髙含みテキスト用および Medium 取得失敗時のフォールバック。
+//  - medium: fontsource Noto Sans JP 500 woff（Medium・JIS第1・第2水準）。髙は含まないため full で補完。
+async function loadJapaneseFont() {
+  if (!cachedFontBase64) {
+    try {
+      cachedFontBase64 = await fetchFontBase64('https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/Variable/TTF/Subset/NotoSansJP-VF.ttf');
+    } catch (e) { /* full 取得失敗時は medium のみで続行 */ }
+  }
+  if (!cachedMediumFontBase64) {
+    try {
+      cachedMediumFontBase64 = await fetchFontBase64('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp@5.1.0/files/noto-sans-jp-japanese-500-normal.woff');
+    } catch (e) { /* medium 取得失敗時は full のみで続行 */ }
+  }
+  if (!cachedFontBase64 && !cachedMediumFontBase64) {
+    throw new Error('フォントの読み込みに失敗しました');
+  }
+  return { full: cachedFontBase64, medium: cachedMediumFontBase64 };
 }
 
 function hexToRgb(hex) {
@@ -80,6 +88,8 @@ const STAFF_FONT_SIZE = 7;
 const STAFF_LINE_H = 3.8;
 const CARD_PADDING_V = 1;   // スタッフエリア上下パディング合計
 const SIDE_HEADER_H = 3.5;
+const CHECKBOX_SIZE = 2.2;
+const CHECKBOX_GAP = 0.5;
 
 function getColWidth() {
   return (PAGE_W - 2 * MARGIN - 2 * COL_GAP) / 3;
@@ -116,6 +126,13 @@ function drawTitle(doc, event) {
 function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   if (y + STAFF_LINE_H > cardBottom - 0.3) return false;
   const textY = y + STAFF_LINE_H * 0.78;
+  const nameX = x + CHECKBOX_SIZE + CHECKBOX_GAP;
+
+  // 手書きチェック用空欄ボックス（枠線のみ）— 名前の左側
+  const boxY = y + (STAFF_LINE_H - CHECKBOX_SIZE) / 2;
+  doc.setDrawColor(120, 120, 120);
+  doc.setLineWidth(0.15);
+  doc.rect(x, boxY, CHECKBOX_SIZE, CHECKBOX_SIZE, 'S');
 
   doc.setFontSize(STAFF_FONT_SIZE);
   doc.setFont('NotoSansJP', 'normal');
@@ -126,9 +143,9 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   } else {
     doc.setTextColor(15, 23, 42);
   }
-  doc.text(name, x, textY);
+  doc.text(name, nameX, textY);
 
-  let cursorX = x + doc.getTextWidth(name) + 1;
+  let cursorX = nameX + doc.getTextWidth(name) + 1;
 
   const slotNoteKey = SLOT_NOTE_KEY[slot];
   const slotNote = slotNoteKey ? staffData?.[slotNoteKey] : null;
@@ -476,15 +493,62 @@ function drawTimelineTable(doc, positions, staff) {
 
 export async function generatePositionPDF(data, filename) {
   const { jsPDF } = await import('jspdf');
-  const fontBase64 = await loadJapaneseFont();
+  const { full: fullFontBase64, medium: mediumFontBase64 } = await loadJapaneseFont();
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  doc.addFileToVFS('NotoSansJP.ttf', fontBase64);
-  doc.addFont('NotoSansJP.ttf', 'NotoSansJP', 'normal');
-  doc.setFont('NotoSansJP');
+
+  // フォント登録
+  // NotoSansJP: Medium(500) をデフォルト。medium 未取得時は full(400) をデフォルト。
+  const hasMedium = Boolean(mediumFontBase64);
+  const hasFull = Boolean(fullFontBase64);
+  if (hasMedium) {
+    doc.addFileToVFS('NotoSansJPM.woff', mediumFontBase64);
+    doc.addFont('NotoSansJPM.woff', 'NotoSansJP', 'normal');
+  } else if (hasFull) {
+    doc.addFileToVFS('NotoSansJPFull.ttf', fullFontBase64);
+    doc.addFont('NotoSansJPFull.ttf', 'NotoSansJP', 'normal');
+  }
+  // NotoSansJPFull: フルカバレッジ(400・髙対応)。Medium をデフォルトにする場合のみ別名登録し、髙含みテキストに使用。
+  const fullFontName = hasFull && hasMedium ? 'NotoSansJPFull' : null;
+  if (fullFontName) {
+    doc.addFileToVFS('NotoSansJPFull.ttf', fullFontBase64);
+    doc.addFont('NotoSansJPFull.ttf', fullFontName, 'normal');
+  }
+
+  const TAKA = '髙';
+  function useFontForText(text) {
+    if (fullFontName && text && String(text).includes(TAKA)) {
+      doc.setFont(fullFontName, 'normal'); // 髙: フルカバレッジ(400)
+    } else {
+      doc.setFont('NotoSansJP', 'normal'); // それ以外: Medium(500)
+    }
+  }
+
+  // doc.text / getTextWidth をラップ: ポジションPDFは髙の有無でフォント切替、タイムラインは従来(400)を維持
+  let pdfMode = 'position';
+  const origText = doc.text.bind(doc);
+  doc.text = function (text, x, y, options) {
+    if (pdfMode === 'timeline') {
+      if (fullFontName) doc.setFont(fullFontName, 'normal'); else doc.setFont('NotoSansJP', 'normal');
+    } else {
+      useFontForText(text);
+    }
+    return origText(text, x, y, options);
+  };
+  const origGetTextWidth = doc.getTextWidth.bind(doc);
+  doc.getTextWidth = function (text) {
+    if (pdfMode === 'timeline') {
+      if (fullFontName) doc.setFont(fullFontName, 'normal'); else doc.setFont('NotoSansJP', 'normal');
+    } else {
+      useFontForText(text);
+    }
+    return origGetTextWidth(text);
+  };
 
   if (data.type === 'timeline') {
+    pdfMode = 'timeline';
     drawTimelineTable(doc, data.positions || [], data.staff || []);
   } else {
+    pdfMode = 'position';
     drawTitle(doc, data.event || {});
     drawColumns(doc, data.positions || [], data.staff || []);
   }
