@@ -143,6 +143,23 @@ const SLOT_COLORS = {
 
 const SLOT_NOTE_KEY = { '開場中': 'note_before', '開演中': 'note_during', '終演後': 'note_after' };
 
+// スロット → イベント時刻フィールド対応（開場中=開場時間, 開演中=開演時間, 終演後=終演時間）
+const SLOT_TIME_FIELDS = {
+  '開場中': ['time_open', 'time_open_end'],
+  '開演中': ['time_start', 'time_start_end'],
+  '終演後': ['time_end', 'time_end_end'],
+};
+
+function formatSlotTimeRange(event, slot) {
+  const fields = SLOT_TIME_FIELDS[slot];
+  if (!fields || !event) return '';
+  const start = event[fields[0]];
+  const end = event[fields[1]];
+  if (!start && !end) return '';
+  if (start && end) return `${start}〜${end}`;
+  return start || end;
+}
+
 // 役割バッジのスタイル（役割名 → [背景, 枠, テキスト]）
 const ROLE_BADGE_STYLES = {
   'インカム': { bg: [255, 237, 213], border: [253, 186, 116], text: [154, 52, 18] },
@@ -158,7 +175,7 @@ const MARGIN = 5;
 const COL_GAP = 2.5;
 const CARD_GAP = 1.2;
 const TITLE_H = 12;
-const COL_HEADER_H = 6;
+const COL_HEADER_H = 8.5;
 const CARD_HEADER_H = 5.5;
 const STAFF_FONT_SIZE = 7;
 const STAFF_LINE_H = 3.8;
@@ -363,15 +380,16 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
 }
 
 // カラムヘッダーをY座標指定で描画
-function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, startY) {
+function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, startY) {
   const colors = SLOT_COLORS[slot];
-  const colHeaderTextY = startY + COL_HEADER_H * 0.72;
+  const line1Y = startY + 3.2;
+  const line2Y = startY + 6.8;
 
   doc.setDrawColor(...colors.border); doc.setLineWidth(0.4); doc.setFillColor(...colors.headerBg);
   doc.roundedRect(x, startY, colW, COL_HEADER_H, 1.5, 1.5, 'FD');
 
   doc.setFontSize(9); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...colors.headerText);
-  doc.text(slot, x + 2.5, colHeaderTextY);
+  doc.text(slot, x + 2.5, line1Y);
 
   doc.setFontSize(6);
   const numCards = slotPositions.length;
@@ -387,12 +405,19 @@ function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, startY) {
   });
   const slotAssignedCount = (staff || []).filter(s => slotAssignedNames.has(s.name)).length;
   const infoText = `${numCards}件  設定:${slotRequiredCount}名  配置:${slotAssignedCount}名`;
-  doc.text(infoText, x + colW - 2, colHeaderTextY, { align: 'right' });
+  doc.text(infoText, x + colW - 2, line1Y, { align: 'right' });
+
+  // 時間帯（開場時刻など）
+  const timeRange = formatSlotTimeRange(event, slot);
+  if (timeRange) {
+    doc.setFontSize(6); doc.setTextColor(...colors.headerText);
+    doc.text(timeRange, x + 2.5, line2Y);
+  }
 
   return startY + COL_HEADER_H + 1.5;
 }
 
-function drawColumns(doc, positions, staff) {
+function drawColumns(doc, positions, staff, event) {
   const colW = getColWidth();
   const colStartY = MARGIN + TITLE_H;
   const pageBottom = PAGE_H - MARGIN;
@@ -456,7 +481,7 @@ function drawColumns(doc, positions, staff) {
       const pageCards = slotPages[slot][pageIdx] || [];
 
       // ヘッダーは全ページで描画
-      let cardY = drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, colStartY);
+      let cardY = drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, colStartY);
 
       if (pageCards.length === 0) {
         if (pageIdx === 0 && slotPositions.length === 0) {
@@ -626,7 +651,7 @@ export async function generatePositionPDF(data, filename) {
   } else {
     pdfMode = 'position';
     drawTitle(doc, data.event || {});
-    drawColumns(doc, data.positions || [], data.staff || []);
+    drawColumns(doc, data.positions || [], data.staff || [], data.event || {});
   }
 
   doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
