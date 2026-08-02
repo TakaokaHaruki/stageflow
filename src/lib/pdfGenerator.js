@@ -18,6 +18,80 @@ async function fetchFontBase64(url) {
   return arrayBufferToBase64(await res.arrayBuffer());
 }
 
+async function fetchArrayBuffer(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.arrayBuffer();
+}
+
+// woff → TTF 変換（ブラウザ版jsPDFがwoffのメタデータをパースできないため）
+// woffのDEFLATE圧縮テーブルをDecompressionStreamで展開し、sfnt(TTF)に再構築
+async function woffToTtfArrayBuffer(woffBuffer) {
+  const dv = new DataView(woffBuffer);
+  const flavor = dv.getUint32(4);
+  const numTables = dv.getUint16(12);
+  const tables = [];
+  let off = 44;
+  for (let i = 0; i < numTables; i++) {
+    tables.push({
+      tag: dv.getUint32(off),
+      offset: dv.getUint32(off + 4),
+      compLength: dv.getUint32(off + 8),
+      origLength: dv.getUint32(off + 12),
+      origChecksum: dv.getUint32(off + 16),
+    });
+    off += 20;
+  }
+  const decompressed = {};
+  for (const t of tables) {
+    const compData = woffBuffer.slice(t.offset, t.offset + t.compLength);
+    if (t.compLength === t.origLength) {
+      decompressed[t.tag] = new Uint8Array(compData);
+    } else {
+      const ds = new DecompressionStream('deflate');
+      const stream = new Blob([compData]).stream().pipeThrough(ds);
+      const out = await new Response(stream).arrayBuffer();
+      decompressed[t.tag] = new Uint8Array(out);
+    }
+  }
+  let searchRange = 1, entrySelector = 0;
+  while (searchRange * 2 <= numTables) { searchRange *= 2; entrySelector++; }
+  searchRange *= 16;
+  const rangeShift = numTables * 16 - searchRange;
+  const headerSize = 12;
+  const dirSize = numTables * 16;
+  let dataStart = headerSize + dirSize;
+  const records = [];
+  let cursor = dataStart;
+  for (const t of tables) {
+    const data = decompressed[t.tag];
+    const paddedLen = Math.ceil(data.length / 4) * 4;
+    records.push({ tag: t.tag, checksum: t.origChecksum, offset: cursor, length: data.length, data, paddedLen });
+    cursor += paddedLen;
+  }
+  const ttf = new Uint8Array(cursor);
+  const ttfDv = new DataView(ttf.buffer);
+  ttfDv.setUint32(0, flavor);
+  ttfDv.setUint16(4, numTables);
+  ttfDv.setUint16(6, searchRange);
+  ttfDv.setUint16(8, entrySelector);
+  ttfDv.setUint16(10, rangeShift);
+  let rOff = 12;
+  for (const r of records) {
+    ttfDv.setUint32(rOff, r.tag);
+    ttfDv.setUint32(rOff + 4, r.checksum);
+    ttfDv.setUint32(rOff + 8, r.offset);
+    ttfDv.setUint32(rOff + 12, r.length);
+    rOff += 16;
+  }
+  let dOff = dataStart;
+  for (const r of records) {
+    ttf.set(r.data, dOff);
+    dOff += r.paddedLen;
+  }
+  return ttf.buffer;
+}
+
 // 2フォント読み込み:
 //  - full: 変数TTF（400・フルカバレッジ・髙などの環境依存文字対応）。髙含みテキスト用および Medium 取得失敗時のフォールバック。
 //  - medium: fontsource Noto Sans JP 500 woff（Medium・JIS第1・第2水準）。髙は含まないため full で補完。
@@ -29,8 +103,10 @@ async function loadJapaneseFont() {
   }
   if (!cachedMediumFontBase64) {
     try {
-      cachedMediumFontBase64 = await fetchFontBase64('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp@5.1.0/files/noto-sans-jp-japanese-500-normal.woff');
-    } catch (e) { /* medium 取得失敗時は full のみで続行 */ }
+      const woffBuffer = await fetchArrayBuffer('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp@5.1.0/files/noto-sans-jp-japanese-500-normal.woff');
+      const ttfBuffer = await woffToTtfArrayBuffer(woffBuffer);
+      cachedMediumFontBase64 = arrayBufferToBase64(ttfBuffer);
+    } catch (e) { /* woff→TTF変換失敗時は full のみで続行 */ }
   }
   if (!cachedFontBase64 && !cachedMediumFontBase64) {
     throw new Error('フォントの読み込みに失敗しました');
@@ -501,8 +577,8 @@ export async function generatePositionPDF(data, filename) {
   const hasMedium = Boolean(mediumFontBase64);
   const hasFull = Boolean(fullFontBase64);
   if (hasMedium) {
-    doc.addFileToVFS('NotoSansJPM.woff', mediumFontBase64);
-    doc.addFont('NotoSansJPM.woff', 'NotoSansJP', 'normal');
+    doc.addFileToVFS('NotoSansJPM.ttf', mediumFontBase64);
+    doc.addFont('NotoSansJPM.ttf', 'NotoSansJP', 'normal');
   } else if (hasFull) {
     doc.addFileToVFS('NotoSansJPFull.ttf', fullFontBase64);
     doc.addFont('NotoSansJPFull.ttf', 'NotoSansJP', 'normal');
@@ -515,7 +591,7 @@ export async function generatePositionPDF(data, filename) {
   }
 
   const TAKA = '髙';
-  function useFontForText(text) {
+  function selectFontForText(text) {
     if (fullFontName && text && String(text).includes(TAKA)) {
       doc.setFont(fullFontName, 'normal'); // 髙: フルカバレッジ(400)
     } else {
@@ -530,7 +606,7 @@ export async function generatePositionPDF(data, filename) {
     if (pdfMode === 'timeline') {
       if (fullFontName) doc.setFont(fullFontName, 'normal'); else doc.setFont('NotoSansJP', 'normal');
     } else {
-      useFontForText(text);
+      selectFontForText(text);
     }
     return origText(text, x, y, options);
   };
@@ -539,7 +615,7 @@ export async function generatePositionPDF(data, filename) {
     if (pdfMode === 'timeline') {
       if (fullFontName) doc.setFont(fullFontName, 'normal'); else doc.setFont('NotoSansJP', 'normal');
     } else {
-      useFontForText(text);
+      selectFontForText(text);
     }
     return origGetTextWidth(text);
   };
