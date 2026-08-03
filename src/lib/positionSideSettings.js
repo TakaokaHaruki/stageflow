@@ -132,11 +132,13 @@ export function applyPositionSideSettingsToPositions(positions, positionTypes, s
     const saved = positionSettings[position.id] || {};
     const splitByType = typeSettings[position.name];
     const splitBySide = Boolean(saved.split_by_side ?? splitByType ?? position.split_by_side);
+    // DB実データ（Position本体）を第一優先：キャッシュのstaff_names_kamite/shimoteは
+    // 古い可能性があるため参照せず、split_by_sideフラグの解決のみsavedを参照する。
     return {
       ...position,
       split_by_side: splitBySide,
-      staff_names_kamite: saved.staff_names_kamite || position.staff_names_kamite || [],
-      staff_names_shimote: saved.staff_names_shimote || position.staff_names_shimote || [],
+      staff_names_kamite: position.staff_names_kamite || [],
+      staff_names_shimote: position.staff_names_shimote || [],
     };
   });
 }

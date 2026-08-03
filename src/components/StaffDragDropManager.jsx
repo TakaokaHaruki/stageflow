@@ -163,6 +163,13 @@ export default function StaffDragDropManager({ eventId }) {
       queryClient.setQueryData(["positionSideSettings", eventId], context?.previousSideSettings);
     },
     onSuccess: (result, _vars, context) => {
+      // 成功レスポンスのpositionでQueryClientのpositionsキャッシュを即時更新
+      // （invalidateQueriesの再フェッチ前にも正しいデータが表示されるようにする）
+      if (result?.position) {
+        queryClient.setQueryData(["positions", eventId], (old = []) =>
+          old.map((p) => p.id === result.position.id ? { ...p, ...result.position } : p)
+        );
+      }
       if (result?.sideSettings) {
         queryClient.setQueryData(["positionSideSettings", eventId], rememberPositionSideSettings(eventId, result.sideSettings));
       }

@@ -177,20 +177,28 @@ Deno.serve(async (req) => {
           .map((field) => [field, body[field]])
       );
 
-      const splitBySide = Object.prototype.hasOwnProperty.call(body, 'split_by_side')
-        ? Boolean(body.split_by_side)
-        : false;
+      // split_by_side / staff_names_kamite / staff_names_shimote がbodyに含まれない場合、
+      // DBの現在値を保持してデフォルトfalse/空配列での上書きを防ぐ
+      const hasSplitInBody = Object.prototype.hasOwnProperty.call(body, 'split_by_side');
+      const hasKamiteInBody = Object.prototype.hasOwnProperty.call(body, 'staff_names_kamite');
+      const hasShimoteInBody = Object.prototype.hasOwnProperty.call(body, 'staff_names_shimote');
+      const hasStaffNamesInBody = Object.prototype.hasOwnProperty.call(body, 'staff_names');
 
-      const kamite = body.staff_names_kamite ? unique(body.staff_names_kamite) : [];
-      const shimote = body.staff_names_shimote ? unique(body.staff_names_shimote) : [];
+      const needCurrent = !hasSplitInBody || !hasKamiteInBody || !hasShimoteInBody || !hasStaffNamesInBody;
+      const current = needCurrent
+        ? await base44.asServiceRole.entities.Position.get(positionId).catch(() => null)
+        : null;
+
+      const splitBySide = hasSplitInBody ? Boolean(body.split_by_side) : Boolean(current?.split_by_side);
+      const kamite = hasKamiteInBody ? unique(body.staff_names_kamite) : unique(current?.staff_names_kamite || []);
+      const shimote = hasShimoteInBody ? unique(body.staff_names_shimote) : unique(current?.staff_names_shimote || []);
 
       let staffNames;
       if (splitBySide) {
         staffNames = unique([...kamite, ...shimote]);
-      } else if (Object.prototype.hasOwnProperty.call(body, 'staff_names')) {
+      } else if (hasStaffNamesInBody) {
         staffNames = unique(body.staff_names);
       } else {
-        const current = await base44.asServiceRole.entities.Position.get(positionId);
         staffNames = unique(current?.staff_names || []);
       }
 
