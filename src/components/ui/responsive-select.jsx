@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Select,
   SelectContent,
@@ -27,6 +27,7 @@ export function ResponsiveSelect({
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -36,6 +37,22 @@ export function ResponsiveSelect({
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const container = scrollRef.current;
+    if (!container) return;
+    const selected = container.querySelector('[data-selected="true"]');
+    if (!selected) return;
+    const timer = setTimeout(() => {
+      const cRect = container.getBoundingClientRect();
+      const sRect = selected.getBoundingClientRect();
+      if (cRect.height === 0) return;
+      const delta = sRect.top - cRect.top - (cRect.height - sRect.height) / 2;
+      container.scrollTop += delta;
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
 
   if (isMobile) {
     return (
@@ -55,10 +72,11 @@ export function ResponsiveSelect({
             <DrawerHeader>
               <DrawerTitle>{label}</DrawerTitle>
             </DrawerHeader>
-            <div className="px-4 pb-6 space-y-2">
+            <div ref={scrollRef} className="px-4 pb-6 space-y-2 max-h-[60vh] overflow-y-auto">
               {options.map((option) => (
                 <button
                   key={option.value}
+                  data-selected={value === option.value ? "true" : "false"}
                   onClick={() => {
                     onValueChange(option.value);
                     setIsOpen(false);
