@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PanelLeftClose, PanelLeft } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 const EXPANDED_WIDTH = 168;
@@ -19,6 +20,24 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
       className="hidden sm:flex sticky self-start flex-col border-r border-border bg-card/80 backdrop-blur-md"
       style={{ width, top: topOffset, height: `calc(100vh - ${topOffset}px)`, transition: "width 200ms ease" }}
     >
+      <div className="flex justify-end px-1.5 pt-1.5">
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setCollapsed(true)}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                aria-label="サイドバーを閉じる"
+              >
+                {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="font-medium">
+              {collapsed ? "サイドバーを開く" : "サイドバーを閉じる"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
         <TooltipProvider delayDuration={200}>
           <ul className="flex flex-col gap-0.5 px-1.5 mb-2">
