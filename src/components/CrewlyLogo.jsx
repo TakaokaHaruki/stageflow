@@ -7,7 +7,7 @@ export default function CrewlyLogo({ className = "", disableLink = false, admini
     : { to: "/", className: `flex items-center gap-1 select-none shrink-0 group ${className}`, "aria-label": "Crewly トップへ" };
   return (
     <Wrapper {...wrapperProps}>
-      {/* SVG mark: converging dots — staff coordinating around a central pivot */}
+      {/* SVG mark: node network — central ring hub linked to three outer nodes */}
       <svg
         width="26"
         height="26"
@@ -16,20 +16,20 @@ export default function CrewlyLogo({ className = "", disableLink = false, admini
         xmlns="http://www.w3.org/2000/svg"
         className="shrink-0 group-hover:opacity-85 transition-opacity"
       >
-        {/* Connecting lines from outer dots to the central pivot */}
-        <g stroke={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} strokeWidth="1.6" strokeLinecap="round">
-          <line x1="13" y1="5" x2="13" y2="13" />
-          <line x1="5" y1="18" x2="13" y2="13" />
-          <line x1="21" y1="18" x2="13" y2="13" />
+        {/* Connecting lines from the central ring to each outer node */}
+        <g stroke={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} strokeWidth="1.5" strokeLinecap="round">
+          <line x1="4.5" y1="13" x2="11" y2="13" />
+          <line x1="15" y1="13" x2="20" y2="6.5" />
+          <line x1="15" y1="13" x2="20" y2="19.5" />
         </g>
 
-        {/* Outer dots (triangle formation) */}
-        <circle cx="13" cy="5" r="2" fill={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} />
-        <circle cx="5" cy="18" r="2" fill={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} />
-        <circle cx="21" cy="18" r="2" fill={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} />
+        {/* Outer solid nodes */}
+        <circle cx="4.5" cy="13" r="2.4" fill={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} />
+        <circle cx="20" cy="6.5" r="2.4" fill={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} />
+        <circle cx="20" cy="19.5" r="2.4" fill={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} />
 
-        {/* Central pivot */}
-        <circle cx="13" cy="13" r="2.8" fill={administrator ? "hsl(345 95% 78%)" : "hsl(213 94% 68%)"} />
+        {/* Central open ring (hub) */}
+        <circle cx="13" cy="13" r="2.6" stroke={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} strokeWidth="1.8" fill="none" />
       </svg>
 
       {/* Logotype */}
