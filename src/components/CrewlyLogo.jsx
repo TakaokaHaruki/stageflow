@@ -7,7 +7,7 @@ export default function CrewlyLogo({ className = "", disableLink = false, admini
     : { to: "/", className: `flex items-center gap-1 select-none shrink-0 group ${className}`, "aria-label": "Crewly トップへ" };
   return (
     <Wrapper {...wrapperProps}>
-      {/* SVG mark: "C" with a pin dot at the tail */}
+      {/* SVG mark: converging dots — staff coordinating around a central pivot */}
       <svg
         width="26"
         height="26"
@@ -16,21 +16,20 @@ export default function CrewlyLogo({ className = "", disableLink = false, admini
         xmlns="http://www.w3.org/2000/svg"
         className="shrink-0 group-hover:opacity-85 transition-opacity"
       >
-        {/* Background rounded square */}
-        <rect width="26" height="26" rx="7" fill={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} />
+        {/* Connecting lines from outer dots to the central pivot */}
+        <g stroke={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} strokeWidth="1.6" strokeLinecap="round">
+          <line x1="13" y1="5" x2="13" y2="13" />
+          <line x1="5" y1="18" x2="13" y2="13" />
+          <line x1="21" y1="18" x2="13" y2="13" />
+        </g>
 
-        {/* "C" arc — open to the right, endpoints have dots */}
-        {/* Arc: center (13,13), radius 6.5, from ~40° to ~320° */}
-        <path
-          d="M 18.2 8.3 A 6.5 6.5 0 1 0 18.2 17.7"
-          stroke="white"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          fill="none"
-        />
+        {/* Outer dots (triangle formation) */}
+        <circle cx="13" cy="5" r="2" fill={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} />
+        <circle cx="5" cy="18" r="2" fill={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} />
+        <circle cx="21" cy="18" r="2" fill={administrator ? "hsl(335 72% 48%)" : "hsl(221 83% 53%)"} />
 
-        {/* Pin dot at the bottom tip of the C */}
-        <circle cx="18.2" cy="17.7" r="1.6" fill={administrator ? "hsl(345 95% 78%)" : "hsl(213 94% 68%)"} />
+        {/* Central pivot */}
+        <circle cx="13" cy="13" r="2.8" fill={administrator ? "hsl(345 95% 78%)" : "hsl(213 94% 68%)"} />
       </svg>
 
       {/* Logotype */}
