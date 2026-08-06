@@ -14,7 +14,8 @@ import {
   rememberPositionSideSettings,
 } from "@/lib/positionSideSettings";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
-import { X, Check, Plus } from "lucide-react";
+import { X, Check, Plus, Trash2 } from "lucide-react";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
 import { useCaptureTags } from "@/hooks/useCaptureTags";
@@ -26,7 +27,7 @@ const PRESET_COLORS = [
   "#ef4444", "#8b5cf6", "#06b6d4", "#f97316",
 ];
 
-export default function PositionFormModal({ position, eventId, defaultTimeSlot = "開場中", continuousMode = false, onClose, onSaved }) {
+export default function PositionFormModal({ position, eventId, defaultTimeSlot = "開場中", continuousMode = false, onClose, onSaved, onDelete }) {
   const [form, setForm] = useState({
     name: position?.name || "",
     time_slot: position?.time_slot || (continuousMode ? "通し" : defaultTimeSlot),
@@ -44,6 +45,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     event_id: eventId,
   });
   const [skillInput, setSkillInput] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const { tags: captureTags = [] } = useCaptureTags();
   const { allRoles, getBadgeClass } = useAllRoles();
 
@@ -462,6 +464,15 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
         </div>
 
         <div className="flex gap-2 mt-6">
+          {position && (
+            <Button
+              variant="outline"
+              className="text-destructive hover:text-destructive border-destructive/40 hover:border-destructive"
+              onClick={() => setConfirmDelete(true)}
+            >
+              <Trash2 className="w-4 h-4" />削除
+            </Button>
+          )}
           <Button variant="outline" className="flex-1" onClick={onClose}>閉じる</Button>
           {!position && (
             <Button
@@ -479,6 +490,17 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
           )}
         </div>
       </motion.div>
+      {confirmDelete && (
+        <ConfirmDialog
+          message={`「${position?.name || "ポジション"}」を削除しますか？`}
+          onConfirm={() => {
+            onDelete?.(position);
+            setConfirmDelete(false);
+            onClose();
+          }}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
     </motion.div>
   );
 }

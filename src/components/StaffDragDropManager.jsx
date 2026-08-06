@@ -851,6 +851,7 @@ export default function StaffDragDropManager({ eventId }) {
       {showModal && (
         <PositionFormModal position={editing} eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode}
           onClose={() => setShowModal(false)}
+          onDelete={(pos) => { deleteMutation.mutate({ id: pos.id }); setShowModal(false); }}
           onSaved={(saved) => {
             queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
             if (!editing) {
