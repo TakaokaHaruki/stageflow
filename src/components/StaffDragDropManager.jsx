@@ -571,6 +571,16 @@ export default function StaffDragDropManager({ eventId }) {
           const slotPositions = grouped[slot];
           const slotAssignedStaffNames = new Set(slotPositions.flatMap((p) => p.staff_names || []));
           const slotAssignedCount = staffList.filter((s) => slotAssignedStaffNames.has(s.name)).length;
+          const slotRequiredTotal = slotPositions.reduce((sum, p) => {
+            if (continuousMode) return sum + (p.required_count ?? 0);
+            const pt = positionTypes.find((t) => t.name === p.name);
+            let c;
+            if (slot === "開場中") c = pt?.required_count_before;
+            else if (slot === "開演中") c = pt?.required_count_during;
+            else if (slot === "終演後") c = pt?.required_count_after;
+            if (!c) c = p.required_count ?? pt?.required_count ?? 0;
+            return sum + (c ?? 0);
+          }, 0);
           const slotBorderClass = slot === "開場中" ? "border-amber-400 dark:border-amber-500" : slot === "開演中" ? "border-blue-400 dark:border-blue-500" : slot === "通し" ? "border-emerald-400 dark:border-emerald-500" : "border-slate-400 dark:border-slate-400";
           return (
             <div key={slot} className={`${currentMobileSlot === slot ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block ${continuousMode ? "sm:col-span-2" : ""} ${slotBorderClass}`}>
@@ -578,6 +588,7 @@ export default function StaffDragDropManager({ eventId }) {
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-xs">{slot}</span>
                   <span className="text-[10px] opacity-70 flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />配置：{slotAssignedCount}/{staffList.length}名</span>
+                  <span className="text-[10px] opacity-50">（必要合計：{slotRequiredTotal}）</span>
                 </div>
                 {isAdmin && (
                   <DropdownMenu>
