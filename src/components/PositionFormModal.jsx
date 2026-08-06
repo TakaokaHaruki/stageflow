@@ -245,25 +245,23 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="text-base font-bold">{position ? "ポジション編集" : "ポジション追加"}</h2>
-          <div className="flex items-center gap-1">
-            {position && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2"
-                onClick={() => setConfirmDelete(true)}
-                aria-label="ポジションを削除"
-              >
-                <Trash2 className="w-4 h-4" />削除
-              </Button>
-            )}
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="閉じる">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="閉じる">
+            <X className="w-5 h-5" />
+          </button>
         </div>
+        {position && (
+          <Button
+            variant="destructive"
+            className="w-full gap-1 mb-3"
+            size="sm"
+            onClick={() => setConfirmDelete(true)}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            このポジションを削除
+          </Button>
+        )}
 
         <div className="space-y-3">
           {/* Position type selector */}
