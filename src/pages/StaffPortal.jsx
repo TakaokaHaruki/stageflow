@@ -810,7 +810,7 @@ export default function StaffPortal() {
                     </div>
                     <div className="flex items-start justify-between gap-2">
                       <div className="font-semibold text-sm flex-1">{pos.name}</div>
-                      {myChiefEventIds.has(event.id) && event.continuous_mode === true && (
+                      {myChiefEventIds.has(event.id) && (
                         <button
                           onClick={() => setQrScanPosition(pos)}
                           className="flex items-center gap-1 text-[11px] font-medium text-primary border border-primary/30 bg-primary/5 px-2 py-1 rounded-lg hover:bg-primary/10 transition-colors shrink-0"
