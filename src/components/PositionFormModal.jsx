@@ -247,9 +247,22 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
       >
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-bold">{position ? "ポジション編集" : "ポジション追加"}</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="閉じる">
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {position && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2"
+                onClick={() => setConfirmDelete(true)}
+                aria-label="ポジションを削除"
+              >
+                <Trash2 className="w-4 h-4" />削除
+              </Button>
+            )}
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="閉じる">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         <div className="space-y-3">
@@ -464,15 +477,6 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
         </div>
 
         <div className="flex gap-2 mt-6">
-          {position && (
-            <Button
-              variant="outline"
-              className="text-destructive hover:text-destructive border-destructive/40 hover:border-destructive"
-              onClick={() => setConfirmDelete(true)}
-            >
-              <Trash2 className="w-4 h-4" />削除
-            </Button>
-          )}
           <Button variant="outline" className="flex-1" onClick={onClose}>閉じる</Button>
           {!position && (
             <Button
