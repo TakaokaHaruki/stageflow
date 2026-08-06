@@ -15,6 +15,7 @@ import {
 } from "@/lib/positionSideSettings";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { X, Check, Plus } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
 import { useCaptureTags } from "@/hooks/useCaptureTags";
 import { useAllRoles } from "@/hooks/useAllRoles";
@@ -281,6 +282,19 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
                     { value: "終演後", label: "終演後" },
                   ]}
               placeholder="時間帯を選択"
+            />
+          </div>
+
+          {/* 上手下手 split toggle */}
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2">
+            <div className="min-w-0">
+              <Label className="cursor-pointer">上手 / 下手 で分ける</Label>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{"ON にするとスタッフを上手・下手別に配置できます"}</p>
+            </div>
+            <Switch
+              checked={form.split_by_side}
+              onCheckedChange={(v) => handleSplitBySideToggle(v)}
+              aria-label="上手下手で分ける"
             />
           </div>
 
