@@ -251,7 +251,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
                                       </>
                                     ) : (
                                       allNames.map((name) => {
-                                        const canRemove = event.continuous_mode === true && chiefs.includes(staffName) && name !== staffName;
+                                        const canRemove = chiefs.includes(staffName) && name !== staffName;
                                         const isRemovingThis = removing && pendingRemove?.staffName === name && pendingRemove?.position.id === pos.id;
                                         return (
                                           <div

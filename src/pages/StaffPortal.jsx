@@ -843,7 +843,7 @@ export default function StaffPortal() {
                             >
                               <span className="text-muted-foreground/50">・</span>
                               <span>{name}</span>
-                              {event.continuous_mode === true && name !== staffName && chiefs.includes(staffName) && (
+                              {name !== staffName && chiefs.includes(staffName) && (
                                 <button
                                   onClick={() => handleStaffRemoveClick(name, pos)}
                                   className="hover:text-destructive transition-colors"
