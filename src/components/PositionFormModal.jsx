@@ -42,7 +42,11 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     required_skills: position?.required_skills || [],
     required_roles: position?.required_roles || [],
     category: position?.category || "",
-    chief_names: position?.chief_names?.length ? position.chief_names : (position?.chief_name ? [position.chief_name] : []),
+    chief_names: (() => {
+      const assigned = position?.staff_names || [];
+      const candidates = position?.chief_names?.length ? position.chief_names : (position?.chief_name ? [position.chief_name] : []);
+      return candidates.filter((n) => assigned.includes(n));
+    })(),
     event_id: eventId,
   });
   const [skillInput, setSkillInput] = useState("");
