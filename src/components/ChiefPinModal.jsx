@@ -250,9 +250,9 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
               {mode === "setup"
                 ? showConfirmStep
                   ? "確認のため同じPINを入力してください"
-                  : `${staffName}さん、セクションチーフ認証用の4桁PINを設定してください`
+                  : `${staffName}さん、チーフ認証用の4桁PINを設定してください`
                 : mode === "verify"
-                  ? "セクションチーフ認証用のPINを入力してください"
+                  ? "チーフ認証用のPINを入力してください"
                   : mode === "locked"
                     ? "試行回数を超えました。リセット申請してください"
                     : "管理者にリセット申請を送信しました"}

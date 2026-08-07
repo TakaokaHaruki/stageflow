@@ -16,30 +16,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'チーフが見つかりません' }, { status: 404 });
     }
 
-    // セクションチーフ役割の確認
-    if (!chiefStaff.roles?.includes('セクションチーフ')) {
-      return Response.json({ error: 'セクションチーフの権限が必要です' }, { status: 403 });
-    }
-
-    // 担当ポジションに所属しているか確認（asServiceRole を使用）
-    const positions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
-    const chiefPosition = positions.find((p: any) => {
-      const allStaff = [
-        ...(p.staff_names || []),
-        ...(p.staff_names_kamite || []),
-        ...(p.staff_names_shimote || []),
-      ];
-      return allStaff.includes(chiefStaff.name);
-    });
-
-    if (!chiefPosition) {
-      return Response.json({ error: '担当ポジションに所属している必要があります' }, { status: 403 });
-    }
-
     // ポジションの取得（asServiceRole を使用）
     const position = await base44.asServiceRole.entities.Position.get(positionId);
     if (!position) {
       return Response.json({ error: 'ポジションが見つかりません' }, { status: 404 });
+    }
+
+    // チーフ権限を確認（chief_name ベース）
+    if (!position.chief_name || position.chief_name !== chiefStaff.name) {
+      return Response.json({ error: 'このポジションの担当チーフではありません' }, { status: 403 });
     }
 
     // 操作ログ用のスナップショット（削除前）

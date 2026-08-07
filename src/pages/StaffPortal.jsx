@@ -52,7 +52,6 @@ export default function StaffPortal() {
   const [qrScanPosition, setQrScanPosition] = useState(null);
   const [qrProcessing, setQrProcessing] = useState(false);
   const [staffRoles, setStaffRoles] = useState([]);
-  const [staffRolesMap, setStaffRolesMap] = useState({});
   const [pendingRemove, setPendingRemove] = useState(null); // {staffName, position}
   const [removing, setRemoving] = useState(false);
   const [showAllPositions, setShowAllPositions] = useState(false);
@@ -133,7 +132,6 @@ export default function StaffPortal() {
 
       // Get positions for all active events where staff is assigned
       const allPositions = [];
-      const rolesMap = {};
       const myChiefSet = new Set();
       const allPositionTypes = await base44.entities.PositionType.list();
       const ptMap = {};
@@ -150,12 +148,7 @@ export default function StaffPortal() {
         for (const ov of (eventOverrides || [])) {
           overrideMap[ov.position_type_name] = { description: ov.description || "", resources: ov.resources || [] };
         }
-        for (const s of eventStaff) {
-          if (s.name) {
-            rolesMap[s.name] = [...new Set([...(rolesMap[s.name] || []), ...(s.roles || [])])];
-          }
-        }
-        if (eventStaff.some((s) => s.name === staff.name && (s.roles || []).includes("セクションチーフ"))) {
+        if (eventPositions.some((p) => p.chief_name === staff.name)) {
           myChiefSet.add(event.id);
         }
         const myPositions = eventPositions.filter((pos) => {
@@ -172,7 +165,6 @@ export default function StaffPortal() {
           allPositions.push({ ...pos, _eventName: event.name, _eventDate: event.date, _eventId: event.id, _detailDescription: desc, _detailResources: res });
         }
       }
-      setStaffRolesMap(rolesMap);
       setMyChiefEventIds(myChiefSet);
 
       // Fetch emergency contacts for all active events
@@ -323,7 +315,6 @@ export default function StaffPortal() {
     setShowConfirmation(false);
     setShowComplianceModal(false);
     setStaffRoles([]);
-    setStaffRolesMap({});
     setPendingRemove(null);
     setRemoving(false);
     setEmergencyContacts([]);
@@ -375,7 +366,6 @@ export default function StaffPortal() {
         (e) => (e.assignment_mode === "public" || e.staff_management_mode === "public") && e.date === today
       );
       const allPositions = [];
-      const rolesMap = {};
       const myChiefSet = new Set();
       const allPositionTypes = await base44.entities.PositionType.list();
       const ptMap = {};
@@ -392,12 +382,7 @@ export default function StaffPortal() {
         for (const ov of (eventOverrides || [])) {
           overrideMap[ov.position_type_name] = { description: ov.description || "", resources: ov.resources || [] };
         }
-        for (const s of eventStaff) {
-          if (s.name) {
-            rolesMap[s.name] = [...new Set([...(rolesMap[s.name] || []), ...(s.roles || [])])];
-          }
-        }
-        if (eventStaff.some((s) => s.name === staff.name && (s.roles || []).includes("セクションチーフ"))) {
+        if (eventPositions.some((p) => p.chief_name === staff.name)) {
           myChiefSet.add(event.id);
         }
         const myPositions = eventPositions.filter((pos) => {
@@ -416,7 +401,6 @@ export default function StaffPortal() {
       }
       setPositions(allPositions);
       setEvents(activeEvents.filter((e) => allPositions.some((p) => p._eventId === e.id)));
-      setStaffRolesMap(rolesMap);
       setMyChiefEventIds(myChiefSet);
 
       // Refresh emergency contacts
@@ -798,7 +782,7 @@ export default function StaffPortal() {
                 const allNames = pos.split_by_side
                   ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
                   : (pos.staff_names || []);
-                const chiefs = allNames.filter((n) => (staffRolesMap[n] || []).includes("セクションチーフ"));
+                const chiefs = pos.chief_name ? [pos.chief_name] : [];
                 const isLast = posIdx === flatPositions.length - 1;
                 return (
                   <div
@@ -828,7 +812,7 @@ export default function StaffPortal() {
                             className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                            <span className="text-[10px] opacity-80">セクションチーフ</span>
+                            <span className="text-[10px] opacity-80">チーフ</span>
                             {chiefName}
                           </span>
                         ))}
@@ -981,7 +965,6 @@ export default function StaffPortal() {
           onClose={() => setShowAllPositions(false)}
           events={events}
           staffName={staffName}
-          staffRolesMap={staffRolesMap}
           acastId={acastId}
           myChiefEventIds={myChiefEventIds}
           onRefresh={refreshPositions}

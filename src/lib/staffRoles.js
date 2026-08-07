@@ -1,5 +1,5 @@
 // 役割の定義とスタイルマッピング
-export const STAFF_ROLES = ["インカム", "セクションチーフ", "バラシ"];
+export const STAFF_ROLES = ["インカム", "バラシ"];
 
 export const ROLE_BADGE_STYLES = {
   "インカム": "bg-orange-100 border-orange-300 text-orange-700 dark:bg-orange-900/40 dark:border-orange-700 dark:text-orange-300",

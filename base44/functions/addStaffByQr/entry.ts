@@ -28,12 +28,7 @@ Deno.serve(async (req) => {
     }
     const chief = chiefStaffList[0];
 
-    // セクションチーフ権限を確認
-    if (!(chief.roles || []).includes('セクションチーフ')) {
-      return Response.json({ error: 'セクションチーフ権限がありません' }, { status: 403 });
-    }
-
-    // ポジションを取得してチーフが担当しているか確認
+    // ポジションを取得してチーフ権限を確認（chief_name ベース）
     let position;
     try {
       position = await base44.asServiceRole.entities.Position.get(positionId);
@@ -44,11 +39,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'ポジションが見つかりません' }, { status: 404 });
     }
 
-    const chiefInPosition = (position.staff_names || []).includes(chief.name)
-      || (position.staff_names_kamite || []).includes(chief.name)
-      || (position.staff_names_shimote || []).includes(chief.name);
-
-    if (!chiefInPosition) {
+    if (!position.chief_name || position.chief_name !== chief.name) {
       return Response.json({ error: 'このポジションの担当チーフではありません' }, { status: 403 });
     }
 
