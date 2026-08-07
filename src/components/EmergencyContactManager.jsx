@@ -8,10 +8,13 @@ import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
 import SectionHeader from "@/components/SectionHeader";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import EventLockBanner from "@/components/EventLockBanner";
+import { LOCK_TOOLTIP_TEXT } from "@/lib/eventLock";
 
-export default function EmergencyContactManager({ eventId }) {
+export default function EmergencyContactManager({ eventId, isLocked = false }) {
   const queryClient = useQueryClient();
   const { canEdit } = useUserRole();
+  const editable = canEdit && !isLocked;
   const [newRole, setNewRole] = useState("");
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
@@ -117,6 +120,8 @@ export default function EmergencyContactManager({ eventId }) {
         subtitle="当日の緊急連絡先を登録します。スタッフポータルに表示されます。"
       />
 
+      {isLocked && <EventLockBanner />}
+
       {/* Add form */}
       <form onSubmit={handleCreate} className="bg-card border border-border rounded-lg p-4 space-y-2">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -140,7 +145,7 @@ export default function EmergencyContactManager({ eventId }) {
             className="h-9"
           />
         </div>
-        <Button type="submit" size="sm" className="gap-1 w-full sm:w-auto" disabled={createMutation.isPending}>
+        <Button type="submit" size="sm" className="gap-1 w-full sm:w-auto" disabled={!editable || createMutation.isPending} title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>
           <Plus className="w-3.5 h-3.5" />追加
         </Button>
       </form>
@@ -169,16 +174,18 @@ export default function EmergencyContactManager({ eventId }) {
               <>
                 <div className="flex flex-col gap-0.5">
                   <button
-                    onClick={() => reorderMutation.mutate({ id: c.id, direction: "up" })}
-                    disabled={idx === 0}
-                    className="text-muted-foreground hover:text-foreground disabled:opacity-30"
+                    onClick={() => editable && reorderMutation.mutate({ id: c.id, direction: "up" })}
+                    disabled={!editable || idx === 0}
+                    className="text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none"
+                    title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}
                   >
                     <ArrowUp className="w-3.5 h-3.5" />
                   </button>
                   <button
-                    onClick={() => reorderMutation.mutate({ id: c.id, direction: "down" })}
-                    disabled={idx === contacts.length - 1}
-                    className="!text-muted-foreground hover:text-foreground disabled:opacity-30"
+                    onClick={() => editable && reorderMutation.mutate({ id: c.id, direction: "down" })}
+                    disabled={!editable || idx === contacts.length - 1}
+                    className="!text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none"
+                    title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}
                   >
                     <ArrowDown className="w-3.5 h-3.5" />
                   </button>
@@ -191,8 +198,8 @@ export default function EmergencyContactManager({ eventId }) {
                   </a>
                 </div>
                 <div className="flex gap-1 shrink-0">
-                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => startEdit(c)}>編集</Button>
-                  <Button size="sm" variant="ghost" className="h-7 text-destructive" onClick={() => setPendingDelete(c)}>
+                  <Button size="sm" variant="outline" className="h-7 text-xs" disabled={!editable} onClick={() => editable && startEdit(c)} title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>編集</Button>
+                  <Button size="sm" variant="ghost" className="h-7 text-destructive" disabled={!editable} onClick={() => editable && setPendingDelete(c)} title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>

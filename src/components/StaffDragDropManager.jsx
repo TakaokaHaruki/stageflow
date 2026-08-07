@@ -30,10 +30,13 @@ import PresetSelector from "@/components/PresetSelector";
 import AutoAssignModal from "@/components/AutoAssignModal";
 import BulkDeleteDialog from "@/components/BulkDeleteDialog";
 import SectionHeader from "@/components/SectionHeader";
+import EventLockBanner from "@/components/EventLockBanner";
+import { LOCK_TOOLTIP_TEXT } from "@/lib/eventLock";
 
-export default function StaffDragDropManager({ eventId }) {
+export default function StaffDragDropManager({ eventId, isLocked = false }) {
   const queryClient = useQueryClient();
   const { canEdit, canManageSettings, role } = useUserRole();
+  const editable = canEdit && !isLocked;
   const { record } = useOperationLog(eventId);
   const [mobileSlot, setMobileSlot] = useState(null);
 
@@ -72,7 +75,7 @@ export default function StaffDragDropManager({ eventId }) {
     }
   }, [continuousMode]);
 
-  const { lockedNames, isLocked, toggleLock, clearAllLocks } = useLockedStaff(eventId, event ?? null);
+  const { lockedNames, isLocked: isStaffLocked, toggleLock, clearAllLocks } = useLockedStaff(eventId, event ?? null);
 
   const { data: presets = [] } = useQuery({
     queryKey: ["positionPresets"],
@@ -208,7 +211,7 @@ export default function StaffDragDropManager({ eventId }) {
 
   useEffect(() => {
     const isDragging = Boolean(draggedStaff || draggingPosId);
-    if (!canEdit || !isDragging) {
+    if (!editable || !isDragging) {
       stopAutoScroll();
       return undefined;
     }
@@ -253,7 +256,7 @@ export default function StaffDragDropManager({ eventId }) {
       window.removeEventListener("dragend", stopAutoScroll);
       stopAutoScroll();
     };
-  }, [draggedStaff, draggingPosId, canEdit, stopAutoScroll]);
+  }, [draggedStaff, draggingPosId, editable, stopAutoScroll]);
 
   // 一括削除: スタッフのみクリア
   const handleBulkClearStaff = async (slot) => {
@@ -515,7 +518,7 @@ export default function StaffDragDropManager({ eventId }) {
           return { ...staff, missingSlots };
         })
         .filter((staff) => staff.missingSlots.length > 0);
-  const isAdmin = canEdit;
+  const isAdmin = editable;
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
 
   return (
@@ -526,9 +529,9 @@ export default function StaffDragDropManager({ eventId }) {
         description={continuousMode ? "一日通しモードです　各セクションチーフがスタッフを追加することができます" : undefined}
         actions={(
           <>
-          {canManageSettings && <PresetSelector eventId={eventId} compact positions={positions} />}
+          {canManageSettings && !isLocked && <PresetSelector eventId={eventId} compact positions={positions} />}
           {canEdit && (
-            <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 shrink-0" onClick={() => setShowAutoAssign(true)} disabled={positions.length === 0}>
+            <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 shrink-0" onClick={() => editable && setShowAutoAssign(true)} disabled={!editable || positions.length === 0} title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>
               <Wand2 className="w-3 h-3" />自動配置
             </Button>
           )}
@@ -538,6 +541,8 @@ export default function StaffDragDropManager({ eventId }) {
           </>
         )}
       />
+
+      {isLocked && <div className="mb-1.5"><EventLockBanner /></div>}
 
       <div className={`mb-1.5 ${continuousMode ? "grid-cols-2" : "grid-cols-4"} grid gap-1 rounded-lg border border-border bg-muted/40 p-0.5 sm:hidden`}>
         {activeSlots.map((slot) => (
@@ -590,6 +595,11 @@ export default function StaffDragDropManager({ eventId }) {
                   <span className="text-[10px] opacity-70 flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />配置：{slotAssignedCount}/{staffList.length}名</span>
                   <span className="text-[10px] opacity-50">（必要合計：{slotRequiredTotal}）</span>
                 </div>
+                {canEdit && isLocked && (
+                  <button disabled className="flex min-h-8 items-center gap-0.5 rounded bg-white/40 px-1.5 text-[11px] font-medium text-muted-foreground/60 sm:min-h-0 sm:py-0.5 sm:text-[10px] select-none cursor-not-allowed" title={LOCK_TOOLTIP_TEXT}>
+                    編集<ChevronDown className="w-2.5 h-2.5" />
+                  </button>
+                )}
                 {isAdmin && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -789,11 +799,11 @@ export default function StaffDragDropManager({ eventId }) {
                       <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                         <button
                           onClick={() => toggleLock(s.name)}
-                          className={`flex items-center gap-0.5 text-[11px] px-1.5 py-0.5 rounded border transition-colors ${isLocked(s.name) ? "bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-300" : "border-border text-muted-foreground hover:border-amber-300 hover:text-amber-600"}`}
-                          title={isLocked(s.name) ? "ロック解除" : "ロック（自動配置から除外）"}
+                          className={`flex items-center gap-0.5 text-[11px] px-1.5 py-0.5 rounded border transition-colors ${isStaffLocked(s.name) ? "bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-300" : "border-border text-muted-foreground hover:border-amber-300 hover:text-amber-600"}`}
+                          title={isStaffLocked(s.name) ? "ロック解除" : "ロック（自動配置から除外）"}
                         >
-                          {isLocked(s.name) ? <Lock className="w-2.5 h-2.5" /> : <LockOpen className="w-2.5 h-2.5" />}
-                          {isLocked(s.name) ? "固定中" : "固定"}
+                          {isStaffLocked(s.name) ? <Lock className="w-2.5 h-2.5" /> : <LockOpen className="w-2.5 h-2.5" />}
+                          {isStaffLocked(s.name) ? "固定中" : "固定"}
                         </button>
                         <label className="flex items-center gap-1 cursor-pointer select-none">
                           <input
@@ -868,7 +878,7 @@ export default function StaffDragDropManager({ eventId }) {
         <StaffEditModal
           staff={editingStaff.staff}
           pos={editingStaff.pos}
-          isLocked={isLocked(editingStaff.staff.name)}
+          isLocked={isStaffLocked(editingStaff.staff.name)}
           onToggleLock={isAdmin ? toggleLock : undefined}
           onRemoveFromPosition={editingStaff.pos ? (posId, name) => {
             removeStaffFromPosition(posId, name);

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { eventLockResponse } from '../../shared/eventLock.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -23,6 +24,8 @@ Deno.serve(async (req) => {
       if (!data?.event_id || !data?.name) {
         return Response.json({ error: 'event_id and name are required' }, { status: 400 });
       }
+      const lockResp = await eventLockResponse(base44, data.event_id, user);
+      if (lockResp) return lockResp;
       const staff = await base44.asServiceRole.entities.Staff.create(data);
       return Response.json({ staff });
     }
@@ -35,6 +38,9 @@ Deno.serve(async (req) => {
       const previousStaff = await base44.asServiceRole.entities.Staff.get(staffId).catch(() => null);
       const oldName = previousStaff?.name;
       const oldEventId = previousStaff?.event_id;
+
+      const lockResp = await eventLockResponse(base44, oldEventId, user);
+      if (lockResp) return lockResp;
 
       let staff;
       try {
@@ -88,6 +94,9 @@ Deno.serve(async (req) => {
       if (!staffId) {
         return Response.json({ error: 'staffId is required' }, { status: 400 });
       }
+      const existing = await base44.asServiceRole.entities.Staff.get(staffId).catch(() => null);
+      const lockResp = await eventLockResponse(base44, existing?.event_id, user);
+      if (lockResp) return lockResp;
       await base44.asServiceRole.entities.Staff.delete(staffId);
       return Response.json({ success: true });
     }

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { eventLockResponse, eventLockResponseByPosition } from '../../shared/eventLock.ts';
 
 const unique = (items = []) => [...new Set(items.filter(Boolean))];
 const ALLOWED_UPDATE_FIELDS = ['order', 'required_count', 'notes', 'color', 'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote', 'category', 'chief_name', 'chief_names'];
@@ -32,6 +33,8 @@ Deno.serve(async (req) => {
       if (!position || !position.name || !position.time_slot) {
         return Response.json({ error: 'position with name and time_slot is required' }, { status: 400 });
       }
+      const lockResp = await eventLockResponse(base44, eventId, user);
+      if (lockResp) return lockResp;
       const created = await base44.asServiceRole.entities.Position.create({ ...position, event_id: eventId });
       return Response.json({ position: created });
     }
@@ -42,6 +45,8 @@ Deno.serve(async (req) => {
       if (!Array.isArray(positions) || positions.length === 0) {
         return Response.json({ error: 'positions array is required' }, { status: 400 });
       }
+      const lockResp = await eventLockResponse(base44, eventId, user);
+      if (lockResp) return lockResp;
       const created = await Promise.all(
         positions.map((p) => base44.asServiceRole.entities.Position.create({ ...p, event_id: eventId }))
       );
@@ -54,6 +59,8 @@ Deno.serve(async (req) => {
       if (!positionId) {
         return Response.json({ error: 'positionId is required' }, { status: 400 });
       }
+      const lockResp = await eventLockResponseByPosition(base44, positionId, user);
+      if (lockResp) return lockResp;
       try {
         await base44.asServiceRole.entities.Position.delete(positionId);
       } catch (delErr) {
@@ -71,6 +78,8 @@ Deno.serve(async (req) => {
       if (!Array.isArray(positionIds) || positionIds.length === 0) {
         return Response.json({ error: 'positionIds array is required' }, { status: 400 });
       }
+      const lockResp = positionIds[0] ? await eventLockResponseByPosition(base44, positionIds[0], user) : null;
+      if (lockResp) return lockResp;
       await Promise.all(positionIds.map((id) => base44.asServiceRole.entities.Position.delete(id)));
       return Response.json({ ok: true });
     }
@@ -81,6 +90,8 @@ Deno.serve(async (req) => {
       if (!positionId || !data) {
         return Response.json({ error: 'positionId and data are required' }, { status: 400 });
       }
+      const lockResp = await eventLockResponseByPosition(base44, positionId, user);
+      if (lockResp) return lockResp;
       const filteredData = Object.fromEntries(
         Object.entries(data).filter(([key]) => ALLOWED_UPDATE_FIELDS.includes(key))
       );
@@ -102,6 +113,9 @@ Deno.serve(async (req) => {
       if (!positionTypeId || !positionTypeName) {
         return Response.json({ error: 'positionTypeId and positionTypeName are required' }, { status: 400 });
       }
+
+      const lockResp = await eventLockResponse(base44, eventId, user);
+      if (lockResp) return lockResp;
 
       const splitBySide = Boolean(split_by_side);
       const positions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
@@ -165,6 +179,9 @@ Deno.serve(async (req) => {
       if (!positionId) {
         return Response.json({ error: 'positionId is required' }, { status: 400 });
       }
+
+      const lockResp = await eventLockResponseByPosition(base44, positionId, user);
+      if (lockResp) return lockResp;
 
       const allowedFields = [
         'name', 'time_slot', 'notes', 'color', 'category',

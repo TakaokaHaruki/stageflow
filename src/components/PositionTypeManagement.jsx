@@ -19,13 +19,15 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import SectionHeader from "@/components/SectionHeader";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import CategoryPicker from "@/components/CategoryPicker";
+import EventLockBanner from "@/components/EventLockBanner";
+import { LOCK_TOOLTIP_TEXT } from "@/lib/eventLock";
 
 const PRESET_COLORS = [
   "#6366f1", "#3b82f6", "#10b981", "#f59e0b",
   "#ef4444", "#8b5cf6", "#06b6d4", "#f97316",
 ];
 
-export default function PositionTypeManagement({ eventId, section = "positions" }) {
+export default function PositionTypeManagement({ eventId, section = "positions", isLocked = false }) {
   const [name, setName] = useState("");
   const [color, setColor] = useState(PRESET_COLORS[0]);
   const [category, setCategory] = useState("");
@@ -33,7 +35,8 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
   const [draggingId, setDraggingId] = useState(null);
   const [dragOverId, setDragOverId] = useState(null);
   const queryClient = useQueryClient();
-  const { canEdit: isAdmin } = useUserRole();
+  const { canEdit } = useUserRole();
+  const isAdmin = canEdit && !isLocked;
   const { record } = useOperationLog(eventId);
   const { allRoles, getBadgeClass } = useAllRoles();
 
@@ -256,12 +259,14 @@ export default function PositionTypeManagement({ eventId, section = "positions" 
                   style={{ backgroundColor: c }} />
               ))}
             </div>
-            <Button onClick={handleAdd} disabled={!isAdmin || !name.trim() || createMutation.isPending} size="sm" className="gap-1 h-7 shrink-0">
+            <Button onClick={handleAdd} disabled={!isAdmin || !name.trim() || createMutation.isPending} size="sm" className="gap-1 h-7 shrink-0" title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>
               <Plus className="w-3 h-3" />追加
             </Button>
           </div>
         </div>
       </div>
+
+      {isLocked && <div className="mb-2"><EventLockBanner /></div>}
 
       {/* List */}
       {isLoading ? (

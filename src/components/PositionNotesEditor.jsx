@@ -8,6 +8,7 @@ import PositionTypeOverrideSection from "@/components/PositionTypeOverrideSectio
 import PositionTypeDescriptionEditor from "@/components/PositionTypeDescriptionEditor";
 import { useUserRole } from "@/hooks/useUserRole";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
+import EventLockBanner from "@/components/EventLockBanner";
 
 const SUBTITLE = "イベント固有の説明文・資料の記載を未入力の場合は全イベント共通の情報が使用されます";
 
@@ -37,10 +38,11 @@ function TwoColumnContent({ eventId, positionType, isAdmin }) {
   );
 }
 
-export default function PositionNotesEditor({ eventId }) {
+export default function PositionNotesEditor({ eventId, isLocked = false }) {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [openAccordionIds, setOpenAccordionIds] = useState({});
-  const { canEdit: isAdmin } = useUserRole();
+  const { canEdit } = useUserRole();
+  const isAdmin = canEdit && !isLocked;
 
   const { data: positionTypes = [], isLoading } = useQuery({
     queryKey: ["positionTypes"],
@@ -103,6 +105,8 @@ export default function PositionNotesEditor({ eventId }) {
         title="ポジション説明"
         subtitle={SUBTITLE}
       />
+
+      {isLocked && <EventLockBanner />}
 
       {useTabs ? (
         /* Tab navigation for ≤5 types */

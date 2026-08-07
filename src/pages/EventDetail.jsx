@@ -33,6 +33,7 @@ import TagManagement from "@/components/TagManagement";
 import EmergencyContactManager from "@/components/EmergencyContactManager";
 import PinCodeManager from "@/components/PinCodeManager";
 import SharedFileManager from "@/components/SharedFileManager";
+import { isEventLocked } from "@/lib/eventLock";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -146,6 +147,8 @@ export default function EventDetail() {
       </div>
     );
   }
+
+  const eventLocked = !isAdmin && isEventLocked(event);
 
   const desktopTabs = [
     { id: "staff", label: "スタッフ管理", icon: Users },
@@ -309,22 +312,22 @@ export default function EventDetail() {
             animate="animate"
             exit="exit"
           >
-            {tab === "staff" && <StaffManagement eventId={eventId} />}
-            {tab === "dragdrop" && <StaffDragDropManager eventId={eventId} />}
+            {tab === "staff" && <StaffManagement eventId={eventId} isLocked={eventLocked} />}
+            {tab === "dragdrop" && <StaffDragDropManager eventId={eventId} isLocked={eventLocked} />}
             {tab === "admin" && (
               <AdminSettings
                 eventId={eventId}
                 section={adminSection}
               />
             )}
-            {tab === "settings" && settingsSection === "positions" && <PositionTypeManagement eventId={eventId} section="positions" />}
+            {tab === "settings" && settingsSection === "positions" && <PositionTypeManagement eventId={eventId} section="positions" isLocked={eventLocked} />}
             {tab === "settings" && settingsSection === "presets" && <PositionTypeManagement eventId={eventId} section="presets" />}
             {tab === "settings" && settingsSection === "venues" && <VenueManager />}
-            {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} />}
+            {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} isLocked={eventLocked} />}
             {tab === "settings" && settingsSection === "tag_management" && <TagManagement />}
-            {tab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} />}
+            {tab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} isLocked={eventLocked} />}
             {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
-            {tab === "files" && <SharedFileManager eventId={eventId} showAll={true} />}
+            {tab === "files" && <SharedFileManager eventId={eventId} showAll={true} isLocked={eventLocked} />}
           </motion.div>
         </AnimatePresence>
       </div>

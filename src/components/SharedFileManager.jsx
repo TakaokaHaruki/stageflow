@@ -11,6 +11,8 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import SectionHeader from "@/components/SectionHeader";
 import { useAllRoles } from "@/hooks/useAllRoles";
+import EventLockBanner from "@/components/EventLockBanner";
+import { LOCK_TOOLTIP_TEXT } from "@/lib/eventLock";
 
 const VISIBILITY_BADGES = {
   public: { label: "全員公開", className: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700" },
@@ -272,7 +274,7 @@ function FileFormModal({ eventId, roles, staffNames, file, onClose, onSaved }) {
   );
 }
 
-export default function SharedFileManager({ eventId, showAll = false }) {
+export default function SharedFileManager({ eventId, showAll = false, isLocked = false }) {
   const [showForm, setShowForm] = useState(false);
   const [editingFile, setEditingFile] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -325,11 +327,13 @@ export default function SharedFileManager({ eventId, showAll = false }) {
         icon={Paperclip}
         title="配布資料"
         actions={
-          <Button size="sm" className="gap-1 h-8 text-xs px-2" onClick={() => setShowForm(true)}>
+          <Button size="sm" className="gap-1 h-8 text-xs px-2" disabled={isLocked} onClick={() => !isLocked && setShowForm(true)} title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>
             <Plus className="w-3 h-3" />追加
           </Button>
         }
       />
+
+      {isLocked && <div className="pb-2"><EventLockBanner /></div>}
 
       <div className="relative">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
@@ -404,14 +408,18 @@ export default function SharedFileManager({ eventId, showAll = false }) {
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button
-                    onClick={() => setEditingFile(f)}
-                    className="p-1 rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors"
+                    onClick={() => !isLocked && setEditingFile(f)}
+                    disabled={isLocked}
+                    className="p-1 rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                    title={isLocked ? LOCK_TOOLTIP_TEXT : "編集"}
                   >
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                   <button
-                    onClick={() => setConfirmDelete(f)}
-                    className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
+                    onClick={() => !isLocked && setConfirmDelete(f)}
+                    disabled={isLocked}
+                    className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                    title={isLocked ? LOCK_TOOLTIP_TEXT : "削除"}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>

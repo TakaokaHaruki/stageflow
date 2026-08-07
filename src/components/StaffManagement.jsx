@@ -20,8 +20,10 @@ import { useStaffHistoryBadges } from "@/hooks/useStaffHistoryBadges";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import RoleIcon from "@/components/RoleIcon";
 import SectionHeader from "@/components/SectionHeader";
+import EventLockBanner from "@/components/EventLockBanner";
+import { LOCK_TOOLTIP_TEXT } from "@/lib/eventLock";
 
-export default function StaffManagement({ eventId }) {
+export default function StaffManagement({ eventId, isLocked = false }) {
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
   const [editingStaff, setEditingStaff] = useState(null);
@@ -30,6 +32,7 @@ export default function StaffManagement({ eventId }) {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const queryClient = useQueryClient();
   const { canEdit, canManageSettings, role, isAdmin } = useUserRole();
+  const editable = canEdit && !isLocked;
   const shouldMaskStaffNames = role !== "admin" && role !== "chief";
   const { record } = useOperationLog(eventId);
   const { badges: historyBadges, isLoading: isLoadingBadges, isFetching: isFetchingBadges } = useStaffHistoryBadges(eventId);
@@ -167,7 +170,7 @@ export default function StaffManagement({ eventId }) {
   });
 
   const handleAdd = () => {
-    if (!canEdit || !name.trim()) return;
+    if (!editable || !name.trim()) return;
     createMutation.mutate({ event_id: eventId, name: name.trim(), note: note.trim() });
   };
 
@@ -222,14 +225,17 @@ export default function StaffManagement({ eventId }) {
               size="sm"
               variant="outline"
               className="gap-1 text-xs shrink-0"
-              onClick={() => canEdit && setShowScrapeModal(true)}
-              disabled={!canEdit}
+              onClick={() => editable && setShowScrapeModal(true)}
+              disabled={!editable}
+              title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}
             >
               <Download className="w-3 h-3" />点呼表から取得
             </Button>
           </div>
         )}
       />
+
+      {isLocked && <div className="mb-1.5"><EventLockBanner /></div>}
 
       {/* Add form */}
       <div className="bg-card border border-border rounded-lg p-1 mb-1.5">
@@ -239,17 +245,17 @@ export default function StaffManagement({ eventId }) {
             onChange={(e) => setName(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="スタッフ名"
-            disabled={!canEdit}
+            disabled={!editable}
             className="col-span-2 h-9 min-w-0 flex-1 text-sm sm:col-span-1 sm:h-8" />
           
           <Input
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="備考"
-            disabled={!canEdit}
+            disabled={!editable}
             className="h-9 min-w-0 text-sm sm:h-8 sm:w-24" />
           
-          <Button onClick={handleAdd} disabled={!canEdit || !name.trim() || createMutation.isPending} size="sm" className="gap-0.5 shrink-0">
+          <Button onClick={handleAdd} disabled={!editable || !name.trim() || createMutation.isPending} size="sm" className="gap-0.5 shrink-0" title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>
             <Plus className="w-3 h-3" />追加
           </Button>
         </div>
@@ -328,10 +334,10 @@ export default function StaffManagement({ eventId }) {
                       )}
                     </div>
                   </div>
-                  <button onClick={() => canEdit && setEditingStaff(staff)} disabled={!canEdit} className="flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-6 sm:w-6" title="編集" aria-label={`${displayName}を編集`}>
+                  <button onClick={() => editable && setEditingStaff(staff)} disabled={!editable} className="flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-6 sm:w-6" title={isLocked ? LOCK_TOOLTIP_TEXT : "編集"} aria-label={`${displayName}を編集`}>
                     <Pencil className="w-3 h-3" />
                   </button>
-                  <button onClick={() => canEdit && setConfirmDelete({ id: staff.id, name: staff.name })} disabled={!canEdit} className="flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-6 sm:w-6" title="削除" aria-label={`${displayName}を削除`}>
+                  <button onClick={() => editable && setConfirmDelete({ id: staff.id, name: staff.name })} disabled={!editable} className="flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-6 sm:w-6" title={isLocked ? LOCK_TOOLTIP_TEXT : "削除"} aria-label={`${displayName}を削除`}>
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
