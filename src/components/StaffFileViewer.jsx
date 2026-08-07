@@ -111,14 +111,9 @@ export default function StaffFileViewer({ events, staffName, staffRoles, positio
               <button
                 key={f.id}
                 onClick={() => {
-              const isChief = (staffRoles || []).includes("セクションチーフ");
               const nameForCheck = (f.file_name || f.title || "").toLowerCase();
               const urlPath = (f.file_url || "").toLowerCase().split("?")[0];
               const isPdf = nameForCheck.includes(".pdf") || urlPath.endsWith(".pdf");
-              if (isChief && isPdf && f.file_url) {
-                window.open(f.file_url, "_blank");
-                return;
-              }
               if (!isPdf && f.file_url) {
                 window.open(f.file_url, "_blank");
                 return;
