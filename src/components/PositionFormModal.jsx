@@ -42,6 +42,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     required_skills: position?.required_skills || [],
     required_roles: position?.required_roles || [],
     category: position?.category || "",
+    chief_name: position?.chief_name || "",
     event_id: eventId,
   });
   const [skillInput, setSkillInput] = useState("");
@@ -141,6 +142,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     prev.split_by_side !== cur.split_by_side ||
     prev.color !== cur.color ||
     prev.category !== cur.category ||
+    prev.chief_name !== cur.chief_name ||
     JSON.stringify(prev.required_skills) !== JSON.stringify(cur.required_skills) ||
     JSON.stringify(prev.required_roles) !== JSON.stringify(cur.required_roles);
 
@@ -376,6 +378,19 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
             {form.staff_names.length > 0 && (
               <p className="text-xs text-muted-foreground mt-1.5">{form.staff_names.length}名選択中</p>
             )}
+          </div>
+
+          <div>
+            <Label>担当チーフ</Label>
+            <ResponsiveSelect
+              value={form.chief_name}
+              onValueChange={(v) => setForm({ ...form, chief_name: v === "__none__" ? "" : v })}
+              options={[
+                { value: "__none__", label: "なし" },
+                ...staffList.map((s) => ({ value: s.name, label: s.name })),
+              ]}
+              placeholder="なし"
+            />
           </div>
 
           <div>
