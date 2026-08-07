@@ -39,11 +39,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'ポジションが見つかりません' }, { status: 404 });
     }
 
-    const positionChiefs = (position.chief_names && position.chief_names.length > 0)
-      ? position.chief_names
-      : (position.chief_name ? [position.chief_name] : []);
-    if (!positionChiefs.includes(chief.name)) {
-      return Response.json({ error: 'このポジションの担当チーフではありません' }, { status: 403 });
+    // チーフ権限を確認（同一イベント内のいずれかのポジションの chief_names に含まれること）
+    const eventAllPositions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
+    const isChiefInEvent = (eventAllPositions || []).some((p) => {
+      const chiefs = (p.chief_names && p.chief_names.length > 0)
+        ? p.chief_names
+        : (p.chief_name ? [p.chief_name] : []);
+      return chiefs.includes(chief.name);
+    });
+    if (!isChiefInEvent) {
+      return Response.json({ error: 'このイベントの担当チーフではありません' }, { status: 403 });
     }
 
     // 対象スタッフを取得
