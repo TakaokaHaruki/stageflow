@@ -5,6 +5,7 @@ import { X, Eye, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import QrCameraScanner from "@/components/QrCameraScanner";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const TIME_SLOT_LABELS = {
   "通し": { label: "通し", color: "bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-800 dark:text-emerald-400" },
@@ -20,6 +21,8 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
   const [allPositions, setAllPositions] = useState([]);
   const [qrScanPosition, setQrScanPosition] = useState(null);
   const [qrProcessing, setQrProcessing] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState(null);
+  const [removing, setRemoving] = useState(false);
 
   const fetchAll = useCallback(async () => {
     if (!events || events.length === 0) return;
@@ -44,6 +47,36 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
   useEffect(() => {
     if (open) fetchAll();
   }, [open, fetchAll]);
+
+  const handleStaffRemoveClick = (staffName, position) => {
+    setPendingRemove({ staffName, position });
+  };
+
+  const handleConfirmRemove = async () => {
+    if (!pendingRemove || !acastId) return;
+    setRemoving(true);
+    try {
+      const res = await base44.functions.invoke("removeStaffFromPosition", {
+        chiefAcastId: acastId,
+        staffName: pendingRemove.staffName,
+        positionId: pendingRemove.position.id,
+        eventId: pendingRemove.position._eventId,
+      });
+      const data = res?.data;
+      if (data?.error) {
+        toast.error(data.error);
+      } else if (data?.success) {
+        toast.success(`「${pendingRemove.staffName}」さんを「${pendingRemove.position.name}」から削除しました`);
+        await fetchAll();
+        onRefresh?.();
+        setPendingRemove(null);
+      }
+    } catch (e) {
+      toast.error("削除に失敗しました");
+    } finally {
+      setRemoving(false);
+    }
+  };
 
   const handleQrScanSuccess = async (scannedData) => {
     if (!qrScanPosition || !acastId) return;
@@ -171,7 +204,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
                                       </span>
                                     )}
                                   </div>
-                                  {myChiefEventIds?.has(event.id) && event.continuous_mode === true && (
+                                  {myChiefEventIds?.has(event.id) && (
                                     <button
                                       onClick={() => setQrScanPosition(pos)}
                                       className="flex items-center gap-1 text-[11px] font-medium text-primary border border-primary/30 bg-primary/5 px-2 py-1.5 rounded-lg hover:bg-primary/10 active:scale-95 transition-all shrink-0 min-h-[36px]"
@@ -217,17 +250,31 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
                                         )}
                                       </>
                                     ) : (
-                                      allNames.map((name) => (
-                                        <div
-                                          key={name}
-                                          className={`text-sm py-0.5 px-1 rounded font-bold flex items-center gap-1 ${
-                                            name === staffName ? "text-primary" : "text-foreground"
-                                          }`}
-                                        >
-                                          <span className="text-muted-foreground/50">・</span>
-                                          <span>{name}</span>
-                                        </div>
-                                      ))
+                                      allNames.map((name) => {
+                                        const canRemove = event.continuous_mode === true && chiefs.includes(staffName) && name !== staffName;
+                                        const isRemovingThis = removing && pendingRemove?.staffName === name && pendingRemove?.position.id === pos.id;
+                                        return (
+                                          <div
+                                            key={name}
+                                            className={`text-sm py-0.5 px-1 rounded font-bold flex items-center gap-1 ${
+                                              name === staffName ? "text-primary" : "text-foreground"
+                                            } ${isRemovingThis ? "opacity-50" : ""}`}
+                                          >
+                                            <span className="text-muted-foreground/50">・</span>
+                                            <span>{name}</span>
+                                            {canRemove && (
+                                              <button
+                                                onClick={() => handleStaffRemoveClick(name, pos)}
+                                                className="hover:text-destructive transition-colors"
+                                                title="このポジションから削除"
+                                                disabled={removing}
+                                              >
+                                                <X className="w-2.5 h-2.5" />
+                                              </button>
+                                            )}
+                                          </div>
+                                        );
+                                      })
                                     )}
                                   </div>
                                 )}
@@ -256,6 +303,17 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
           onClose={() => !qrProcessing && setQrScanPosition(null)}
           processing={qrProcessing}
           autoStart={true}
+        />
+      )}
+
+      {pendingRemove && (
+        <ConfirmDialog
+          open={true}
+          onConfirm={handleConfirmRemove}
+          onCancel={() => setPendingRemove(null)}
+          message={`「${pendingRemove.staffName}」さんを「${pendingRemove.position.name}」から削除しますか？`}
+          confirmLabel="削除"
+          confirmVariant="destructive"
         />
       )}
     </AnimatePresence>
