@@ -157,9 +157,10 @@ export default function PositionCard({
         )}
         {statusBadge && <span className={`text-[10px] font-semibold px-1 py-0.5 rounded border ${statusBadge.cls}`}>{statusBadge.label}</span>}
         {(() => {
-          const chiefs = (pos.chief_names && pos.chief_names.length > 0)
+          const chiefCandidates = (pos.chief_names && pos.chief_names.length > 0)
             ? pos.chief_names
             : (pos.chief_name ? [pos.chief_name] : []);
+          const chiefs = chiefCandidates.filter((c) => staffNames.includes(c));
           if (chiefs.length === 0) return null;
           return (
             <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shrink-0">
