@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { X, FileWarning, ExternalLink, ZoomIn, ZoomOut, Maximize2, Hand } from "lucide-react";
+import PdfCanvasViewer from "@/components/PdfCanvasViewer";
 
 function getFileType(url, fileName, forcePdf) {
   if (forcePdf) return "pdf";
@@ -139,23 +140,14 @@ export default function PdfViewerModal({ fileUrl, fileName, forcePdf, onClose })
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto flex justify-center p-3">
+      <div className="flex-1 overflow-auto flex flex-col items-center p-3">
         {fileType === "pdf" && (
           <div
             ref={containerRef}
-            className="flex-1 flex flex-col min-h-0 relative"
+            className="w-full max-w-3xl flex flex-col relative"
             style={{ touchAction: zoomMode ? "none" : "auto" }}
           >
-            <iframe
-              src={fileUrl}
-              className="flex-1 w-full rounded-lg bg-white shadow-2xl"
-              title={fileName || "PDF"}
-              style={{
-                transform: `scale(${scale})`,
-                transformOrigin: "center center",
-                pointerEvents: zoomMode ? "none" : "auto",
-              }}
-            />
+            <PdfCanvasViewer fileUrl={fileUrl} zoomScale={scale} />
             {zoomMode && (
               <>
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/70 text-white text-xs font-medium backdrop-blur-sm pointer-events-none whitespace-nowrap z-10">
