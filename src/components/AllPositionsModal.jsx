@@ -153,7 +153,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
                             const allNames = pos.split_by_side
                               ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
                               : (pos.staff_names || []);
-                            const chiefs = pos.chief_name ? [pos.chief_name] : [];
+                            const chiefs = (pos.chief_names && pos.chief_names.length > 0) ? pos.chief_names : (pos.chief_name ? [pos.chief_name] : []);
                             const kamite = pos.staff_names_kamite || [];
                             const shimote = pos.staff_names_shimote || [];
                             return (

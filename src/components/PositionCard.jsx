@@ -156,12 +156,18 @@ export default function PositionCard({
           <span className="text-[10px] text-muted-foreground">{assignedCount}名</span>
         )}
         {statusBadge && <span className={`text-[10px] font-semibold px-1 py-0.5 rounded border ${statusBadge.cls}`}>{statusBadge.label}</span>}
-        {pos.chief_name && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-            チーフ：{pos.chief_name}
-          </span>
-        )}
+        {(() => {
+          const chiefs = (pos.chief_names && pos.chief_names.length > 0)
+            ? pos.chief_names
+            : (pos.chief_name ? [pos.chief_name] : []);
+          if (chiefs.length === 0) return null;
+          return (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+              チーフ：{chiefs.join("・")}
+            </span>
+          );
+        })()}
         {pos.notes && <span className="text-[10px] text-muted-foreground truncate flex-1">{pos.notes}</span>}
         {onEdit && (
           <div className="flex gap-1 ml-auto flex-shrink-0">

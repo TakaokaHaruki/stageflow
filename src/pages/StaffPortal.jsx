@@ -148,7 +148,10 @@ export default function StaffPortal() {
         for (const ov of (eventOverrides || [])) {
           overrideMap[ov.position_type_name] = { description: ov.description || "", resources: ov.resources || [] };
         }
-        if (eventPositions.some((p) => p.chief_name === staff.name)) {
+        if (eventPositions.some((p) => {
+          const chiefs = (p.chief_names && p.chief_names.length > 0) ? p.chief_names : (p.chief_name ? [p.chief_name] : []);
+          return chiefs.includes(staff.name);
+        })) {
           myChiefSet.add(event.id);
         }
         const myPositions = eventPositions.filter((pos) => {
@@ -382,7 +385,10 @@ export default function StaffPortal() {
         for (const ov of (eventOverrides || [])) {
           overrideMap[ov.position_type_name] = { description: ov.description || "", resources: ov.resources || [] };
         }
-        if (eventPositions.some((p) => p.chief_name === staff.name)) {
+        if (eventPositions.some((p) => {
+          const chiefs = (p.chief_names && p.chief_names.length > 0) ? p.chief_names : (p.chief_name ? [p.chief_name] : []);
+          return chiefs.includes(staff.name);
+        })) {
           myChiefSet.add(event.id);
         }
         const myPositions = eventPositions.filter((pos) => {
@@ -782,7 +788,7 @@ export default function StaffPortal() {
                 const allNames = pos.split_by_side
                   ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
                   : (pos.staff_names || []);
-                const chiefs = pos.chief_name ? [pos.chief_name] : [];
+                const chiefs = (pos.chief_names && pos.chief_names.length > 0) ? pos.chief_names : (pos.chief_name ? [pos.chief_name] : []);
                 const isLast = posIdx === flatPositions.length - 1;
                 return (
                   <div

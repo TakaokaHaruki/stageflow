@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const unique = (items = []) => [...new Set(items.filter(Boolean))];
-const ALLOWED_UPDATE_FIELDS = ['order', 'required_count', 'notes', 'color', 'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote', 'category', 'chief_name'];
+const ALLOWED_UPDATE_FIELDS = ['order', 'required_count', 'notes', 'color', 'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote', 'category', 'chief_name', 'chief_names'];
 
 Deno.serve(async (req) => {
   try {
@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
       const allowedFields = [
         'name', 'time_slot', 'notes', 'color', 'category',
         'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote',
-        'required_count', 'order', 'chief_name',
+        'required_count', 'order', 'chief_name', 'chief_names',
       ];
       const extraFields = Object.fromEntries(
         allowedFields

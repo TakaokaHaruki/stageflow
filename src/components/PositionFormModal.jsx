@@ -42,7 +42,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     required_skills: position?.required_skills || [],
     required_roles: position?.required_roles || [],
     category: position?.category || "",
-    chief_name: position?.chief_name || "",
+    chief_names: position?.chief_names?.length ? position.chief_names : (position?.chief_name ? [position.chief_name] : []),
     event_id: eventId,
   });
   const [skillInput, setSkillInput] = useState("");
@@ -142,7 +142,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     prev.split_by_side !== cur.split_by_side ||
     prev.color !== cur.color ||
     prev.category !== cur.category ||
-    prev.chief_name !== cur.chief_name ||
+    JSON.stringify(prev.chief_names) !== JSON.stringify(cur.chief_names) ||
     JSON.stringify(prev.required_skills) !== JSON.stringify(cur.required_skills) ||
     JSON.stringify(prev.required_roles) !== JSON.stringify(cur.required_roles);
 
@@ -187,6 +187,25 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
         staff_names: exists
           ? f.staff_names.filter((n) => n !== staffName)
           : [...f.staff_names, staffName],
+        chief_names: exists
+          ? (f.chief_names || []).filter((n) => n !== staffName)
+          : (f.chief_names || []),
+      };
+    });
+  };
+
+  const toggleChief = (staffName) => {
+    setForm((f) => {
+      const assigned = f.split_by_side
+        ? [...new Set([...(f.staff_names_kamite || []), ...(f.staff_names_shimote || [])])]
+        : (f.staff_names || []);
+      if (!assigned.includes(staffName)) return f;
+      const exists = (f.chief_names || []).includes(staffName);
+      return {
+        ...f,
+        chief_names: exists
+          ? (f.chief_names || []).filter((n) => n !== staffName)
+          : [...(f.chief_names || []), staffName],
       };
     });
   };
@@ -381,16 +400,42 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
           </div>
 
           <div>
-            <Label>担当チーフ</Label>
-            <ResponsiveSelect
-              value={form.chief_name}
-              onValueChange={(v) => setForm({ ...form, chief_name: v === "__none__" ? "" : v })}
-              options={[
-                { value: "__none__", label: "なし" },
-                ...staffList.map((s) => ({ value: s.name, label: s.name })),
-              ]}
-              placeholder="なし"
-            />
+            <Label>担当チーフ（複数選択可・このポジションの所属スタッフから）</Label>
+            {(() => {
+              const assignedNames = form.split_by_side
+                ? [...new Set([...(form.staff_names_kamite || []), ...(form.staff_names_shimote || [])])]
+                : (form.staff_names || []);
+              if (assignedNames.length === 0) {
+                return <p className="text-xs text-muted-foreground mt-1.5">先に担当スタッフを選択してください</p>;
+              }
+              return (
+                <div className="mt-1.5 border border-border rounded-lg overflow-hidden max-h-40 overflow-y-auto">
+                  {assignedNames.map((name) => {
+                    const selected = (form.chief_names || []).includes(name);
+                    return (
+                      <button
+                        key={`chief-${name}`}
+                        type="button"
+                        onClick={() => toggleChief(name)}
+                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left border-b border-border/50 last:border-b-0 transition-colors ${
+                          selected ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-medium" : "hover:bg-muted/50"
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${
+                          selected ? "bg-indigo-500 border-indigo-500" : "border-border"
+                        }`}>
+                          {selected && <Check className="w-2.5 h-2.5 text-white" />}
+                        </div>
+                        <span className="min-w-0 truncate">{name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+            {(form.chief_names || []).length > 0 && (
+              <p className="text-xs text-muted-foreground mt-1.5">{(form.chief_names || []).length}名選択中</p>
+            )}
           </div>
 
           <div>

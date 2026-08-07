@@ -39,7 +39,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'ポジションが見つかりません' }, { status: 404 });
     }
 
-    if (!position.chief_name || position.chief_name !== chief.name) {
+    const positionChiefs = (position.chief_names && position.chief_names.length > 0)
+      ? position.chief_names
+      : (position.chief_name ? [position.chief_name] : []);
+    if (!positionChiefs.includes(chief.name)) {
       return Response.json({ error: 'このポジションの担当チーフではありません' }, { status: 403 });
     }
 

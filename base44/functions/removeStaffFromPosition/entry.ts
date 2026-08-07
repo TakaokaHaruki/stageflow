@@ -22,8 +22,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'ポジションが見つかりません' }, { status: 404 });
     }
 
-    // チーフ権限を確認（chief_name ベース）
-    if (!position.chief_name || position.chief_name !== chiefStaff.name) {
+    // チーフ権限を確認（chief_names ベース・旧 chief_name はフォールバック）
+    const positionChiefs = (position.chief_names && position.chief_names.length > 0)
+      ? position.chief_names
+      : (position.chief_name ? [position.chief_name] : []);
+    if (!positionChiefs.includes(chiefStaff.name)) {
       return Response.json({ error: 'このポジションの担当チーフではありません' }, { status: 403 });
     }
 
@@ -44,6 +47,10 @@ Deno.serve(async (req) => {
     }
     if (position.staff_names_shimote?.includes(staffName)) {
       updateData.staff_names_shimote = position.staff_names_shimote.filter((name: string) => name !== staffName);
+    }
+    // 削除対象がチーフに設定されている場合は chief_names からも除去
+    if (position.chief_names?.includes(staffName)) {
+      updateData.chief_names = position.chief_names.filter((name: string) => name !== staffName);
     }
 
     // 更新が何もない場合はエラー

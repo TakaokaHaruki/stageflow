@@ -113,6 +113,14 @@
       "description": "\u62c5\u5f53\u30bb\u30af\u30b7\u30e7\u30f3\u30c1\u30fc\u30d5\u540d\uff08\u30dd\u30b8\u30b7\u30e7\u30f3\u5358\u4f4d\u306e\u8cac\u4efb\u8005\uff09",
       "default": ""
     },
+    "chief_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u62c5\u5f53\u30bb\u30af\u30b7\u30e7\u30f3\u30c1\u30fc\u30d5\u540d\u30ea\u30b9\u30c8\uff08\u8907\u6570\u9078\u629e\u53ef\u30fb\u30dd\u30b8\u30b7\u30e7\u30f3\u6240\u5c5e\u30b9\u30bf\u30c3\u30d5\u304b\u3089\u9078\u629e\uff09",
+      "default": []
+    },
     "order": {
       "type": "number",
       "description": "\u8868\u793a\u9806",
