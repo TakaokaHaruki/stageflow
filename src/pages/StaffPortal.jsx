@@ -215,8 +215,8 @@ export default function StaffPortal() {
         pinAuthEnabled
       });
       setPositions(allPositions);
-      setEvents(activeEvents);
-      
+      setEvents(activeEvents.filter((e) => allPositions.some((p) => p._eventId === e.id)));
+
       if (needsAgreement) {
         setShowConfirmation(true);
       } else {
@@ -415,7 +415,7 @@ export default function StaffPortal() {
         }
       }
       setPositions(allPositions);
-      setEvents(activeEvents);
+      setEvents(activeEvents.filter((e) => allPositions.some((p) => p._eventId === e.id)));
       setStaffRolesMap(rolesMap);
       setMyChiefEventIds(myChiefSet);
 
