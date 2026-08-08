@@ -650,12 +650,24 @@ export async function generatePositionPDF(data, filename) {
     doc.addFont('NotoSansJPFull.ttf', fullFontName, 'normal');
   }
 
-  const TAKA = '髙';
+  // JIS第1・第2水準外の文字（髙・﨑・CJK互換漢字・拡張Aなど）はフルカバレッジフォントへフォールバック
+  function needsFullFont(text) {
+    if (!text) return false;
+    const s = String(text);
+    for (const ch of s) {
+      const c = ch.codePointAt(0);
+      if (c === 0x9AD9) return true;                        // 髙
+      if (c >= 0xF900 && c <= 0xFAFF) return true;           // CJK互換漢字（﨑 U+FA11 等）
+      if (c >= 0x3400 && c <= 0x4DBF) return true;           // CJK拡張A
+      if (c >= 0xFE30 && c <= 0xFE4F) return true;          // CJK互換形式
+    }
+    return false;
+  }
   function selectFontForText(text) {
-    if (fullFontName && text && String(text).includes(TAKA)) {
-      doc.setFont(fullFontName, 'normal'); // 髙: フルカバレッジ(400)
+    if (fullFontName && needsFullFont(text)) {
+      doc.setFont(fullFontName, 'normal'); // フルカバレッジ(400)
     } else {
-      doc.setFont('NotoSansJP', 'normal'); // それ以外: Medium(500)
+      doc.setFont('NotoSansJP', 'normal'); // Medium(500)
     }
   }
 
