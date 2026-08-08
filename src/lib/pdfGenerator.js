@@ -183,6 +183,13 @@ const CARD_PADDING_V = 1;   // スタッフエリア上下パディング合計
 const SIDE_HEADER_H = 3.5;
 const CHECKBOX_SIZE = 2.2;
 const CHECKBOX_GAP = 0.5;
+const CHIEF_LINE_H = 3.4; // チーフ印字行の高さ（チーフがある場合のみ）
+
+function getChiefs(pos) {
+  return (pos.chief_names && pos.chief_names.length > 0)
+    ? pos.chief_names
+    : (pos.chief_name ? [pos.chief_name] : []);
+}
 
 function getColWidth() {
   return (PAGE_W - 2 * MARGIN - 2 * COL_GAP) / 3;
@@ -198,7 +205,8 @@ function calcCardHeight(pos) {
     ? Math.max((pos.staff_names_kamite || []).length, (pos.staff_names_shimote || []).length)
     : (pos.staff_names || []).length;
   const extraH = splitBySide ? SIDE_HEADER_H : 0;
-  return CARD_HEADER_H + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + CARD_PADDING_V;
+  const chiefH = getChiefs(pos).length > 0 ? CHIEF_LINE_H : 0;
+  return CARD_HEADER_H + chiefH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + CARD_PADDING_V;
 }
 
 function drawTitle(doc, event) {
@@ -340,8 +348,25 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
   if (posName !== (pos.name || '') && posName.length > 0) posName = posName.slice(0, -1) + '…';
   doc.text(posName, x + 5, headerTextY);
 
-  const staffY = y + CARD_HEADER_H + 0.3;
+  const chiefs = getChiefs(pos);
+  const chiefH = chiefs.length > 0 ? CHIEF_LINE_H : 0;
+  let staffY = y + CARD_HEADER_H + 0.3;
   const cardBottom = y + cardH;
+
+  // チーフ印字（ヘッダー直下）
+  if (chiefs.length > 0) {
+    const chiefY = y + CARD_HEADER_H;
+    doc.setFontSize(5.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(107, 33, 168);
+    const chiefText = `チーフ: ${chiefs.join('・')}`;
+    let chiefDisplay = chiefText;
+    const maxChiefW = w - 3;
+    while (maxChiefW > 0 && doc.getTextWidth(chiefDisplay) > maxChiefW && chiefDisplay.length > 1) {
+      chiefDisplay = chiefDisplay.slice(0, -1);
+    }
+    if (chiefDisplay !== chiefText && chiefDisplay.length > 0) chiefDisplay = chiefDisplay.slice(0, -1) + '…';
+    doc.text(chiefDisplay, x + 2.5, chiefY + 2.2);
+    staffY = chiefY + chiefH + 0.3;
+  }
 
   if (splitBySide) {
     const halfW = w / 2;
