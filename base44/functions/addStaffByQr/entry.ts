@@ -61,48 +61,71 @@ Deno.serve(async (req) => {
     }
     const target = targetStaffList[0];
 
-    // 既に配置済みかチェック
+    // 対象ポジションの現在状態
     const currentNames = position.staff_names || [];
     const currentKamite = position.staff_names_kamite || [];
     const currentShimote = position.staff_names_shimote || [];
     const splitBySide = Boolean(position.split_by_side);
 
-    if (splitBySide) {
-      if (currentKamite.includes(target.name) || currentShimote.includes(target.name)) {
-        return Response.json({ error: `${target.name}さんは既に配置済みです`, alreadyAssigned: true }, { status: 409 });
-      }
-    } else {
-      if (currentNames.includes(target.name)) {
-        return Response.json({ error: `${target.name}さんは既に配置済みです`, alreadyAssigned: true }, { status: 409 });
-      }
+    const inTarget = splitBySide
+      ? (currentKamite.includes(target.name) || currentShimote.includes(target.name))
+      : currentNames.includes(target.name);
+
+    // 同一イベント内の他ポジションに既に配置されているか検索（移動対象）
+    const otherPositions = (eventAllPositions || []).filter((p) => p.id !== positionId);
+    const removeFrom = otherPositions.filter((p) => {
+      const inMain = (p.staff_names || []).includes(target.name);
+      const inKamite = (p.staff_names_kamite || []).includes(target.name);
+      const inShimote = (p.staff_names_shimote || []).includes(target.name);
+      return inMain || inKamite || inShimote;
+    });
+
+    // 既に読み取りポジションに配置済み ＆ 他ポジションにも属していない → 操作不要
+    if (inTarget && removeFrom.length === 0) {
+      return Response.json({ error: `${target.name}さんは既にこのポジションに配置済みです`, alreadyAssigned: true }, { status: 409 });
     }
 
-    // スタッフをポジションに追加
     const loggedAt = getJstNow();
-    let updateData;
 
-    if (splitBySide) {
-      // split_by_side の場合は上手（デフォルト）に追加
-      const nextKamite = [...currentKamite, target.name];
-      const nextShimote = currentShimote;
-      const nextStaffNames = unique([...nextKamite, ...nextShimote]);
-      updateData = {
-        staff_names: nextStaffNames,
-        staff_names_kamite: nextKamite,
-        staff_names_shimote: nextShimote,
-        added_by: chief.name,
-        added_at_jst: loggedAt,
-      };
-    } else {
-      const nextStaffNames = [...currentNames, target.name];
-      updateData = {
-        staff_names: nextStaffNames,
-        added_by: chief.name,
-        added_at_jst: loggedAt,
-      };
+    // 他ポジションから削除（移動元）
+    for (const p of removeFrom) {
+      const pNames = (p.staff_names || []).filter((n) => n !== target.name);
+      const pKamite = (p.staff_names_kamite || []).filter((n) => n !== target.name);
+      const pShimote = (p.staff_names_shimote || []).filter((n) => n !== target.name);
+      await base44.asServiceRole.entities.Position.update(p.id, {
+        staff_names: pNames,
+        staff_names_kamite: pKamite,
+        staff_names_shimote: pShimote,
+      });
     }
 
-    await base44.asServiceRole.entities.Position.update(positionId, updateData);
+    // 読み取りポジションに追加（既にいる場合はスキップ）
+    let updateData;
+    if (!inTarget) {
+      if (splitBySide) {
+        // split_by_side の場合は上手（デフォルト）に追加
+        const nextKamite = [...currentKamite, target.name];
+        const nextShimote = currentShimote;
+        const nextStaffNames = unique([...nextKamite, ...nextShimote]);
+        updateData = {
+          staff_names: nextStaffNames,
+          staff_names_kamite: nextKamite,
+          staff_names_shimote: nextShimote,
+          added_by: chief.name,
+          added_at_jst: loggedAt,
+        };
+      } else {
+        const nextStaffNames = [...currentNames, target.name];
+        updateData = {
+          staff_names: nextStaffNames,
+          added_by: chief.name,
+          added_at_jst: loggedAt,
+        };
+      }
+      await base44.asServiceRole.entities.Position.update(positionId, updateData);
+    }
+
+    const movedFromNames = removeFrom.map((p) => p.name);
 
     // 操作ログを記録
     try {
@@ -110,7 +133,9 @@ Deno.serve(async (req) => {
         event_id: eventId,
         action_type: 'position_assign',
         actor_name: chief.name,
-        description: `「${target.name}」を「${position.name}」に追加しました（QR読取 by ${chief.name}）`,
+        description: movedFromNames.length > 0
+          ? `「${target.name}」を「${movedFromNames.join('、')}」から「${position.name}」に移動しました（QR読取 by ${chief.name}）`
+          : `「${target.name}」を「${position.name}」に追加しました（QR読取 by ${chief.name}）`,
         entity_type: 'Position',
         entity_id: positionId,
         logged_at_jst: loggedAt,
@@ -119,8 +144,9 @@ Deno.serve(async (req) => {
           staff_names_kamite: currentKamite,
           staff_names_shimote: currentShimote,
           split_by_side: splitBySide,
+          moved_from: movedFromNames,
         },
-        snapshot_after: updateData,
+        snapshot_after: updateData || {},
       });
     } catch (logErr) {
       console.error('OperationLog save failed (non-critical)', logErr);
@@ -132,6 +158,8 @@ Deno.serve(async (req) => {
       positionName: position.name,
       addedBy: chief.name,
       addedAt: loggedAt,
+      moved: movedFromNames.length > 0,
+      movedFrom: movedFromNames,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

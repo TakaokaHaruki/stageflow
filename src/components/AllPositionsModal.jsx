@@ -93,7 +93,10 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
       if (data?.error) {
         toast.error(data.error);
       } else if (data?.success) {
-        toast.success(`「${data.staffName}」さんを「${data.positionName}」に追加しました`);
+        const msg = data.moved
+          ? `「${data.staffName}」さんを「${data.positionName}」に移動しました`
+          : `「${data.staffName}」さんを「${data.positionName}」に追加しました`;
+        toast.success(msg);
         await fetchAll();
         onRefresh?.();
         await new Promise((resolve) => setTimeout(resolve, 1500));
