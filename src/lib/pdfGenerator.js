@@ -176,14 +176,14 @@ const COL_GAP = 2.5;
 const CARD_GAP = 1.2;
 const TITLE_H = 12;
 const COL_HEADER_H = 8.5;
-const CARD_HEADER_H = 5.5;
-const STAFF_FONT_SIZE = 7;
-const STAFF_LINE_H = 3.8;
+const CARD_HEADER_H = 5;
+const STAFF_FONT_SIZE = 6;
+const STAFF_LINE_H = 3.3;
 const CARD_PADDING_V = 1;   // スタッフエリア上下パディング合計
-const SIDE_HEADER_H = 3.5;
-const CHECKBOX_SIZE = 2.2;
-const CHECKBOX_GAP = 0.5;
-const CHIEF_LINE_H = 3.4; // チーフ印字行の高さ（チーフがある場合のみ）
+const SIDE_HEADER_H = 3;
+const CHECKBOX_SIZE = 2;
+const CHECKBOX_GAP = 0.4;
+const CHIEF_LINE_H = 3.2; // チーフ印字行の高さ（チーフがある場合のみ）
 
 function getChiefs(pos) {
   return (pos.chief_names && pos.chief_names.length > 0)
@@ -334,12 +334,12 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
   doc.setFillColor(r, g, b);
   doc.circle(x + 2.2, y + CARD_HEADER_H / 2, 0.9, 'F');
 
-  doc.setFontSize(6); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(100, 116, 139);
+  doc.setFontSize(5.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(100, 116, 139);
   const countText = requiredCount > 0 ? `${assignedCount}/${requiredCount}名` : `${assignedCount}名`;
   doc.text(countText, x + w - 1.5, headerTextY, { align: 'right' });
   const countTextW = doc.getTextWidth(countText);
 
-  doc.setFontSize(8); doc.setTextColor(15, 23, 42);
+  doc.setFontSize(7); doc.setTextColor(15, 23, 42);
   let posName = pos.name || '';
   const maxNameW = (x + w - 1.5 - countTextW - 1.5) - (x + 5);
   while (maxNameW > 0 && doc.getTextWidth(posName) > maxNameW && posName.length > 1) {
@@ -353,19 +353,29 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
   let staffY = y + CARD_HEADER_H + 0.3;
   const cardBottom = y + cardH;
 
-  // チーフ印字（ヘッダー直下）
+  // チーフ印字（ヘッダー直下・バッジ風）
   if (chiefs.length > 0) {
     const chiefY = y + CARD_HEADER_H;
-    doc.setFontSize(5.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(107, 33, 168);
-    const chiefText = `チーフ: ${chiefs.join('・')}`;
-    let chiefDisplay = chiefText;
-    const maxChiefW = w - 3;
-    while (maxChiefW > 0 && doc.getTextWidth(chiefDisplay) > maxChiefW && chiefDisplay.length > 1) {
-      chiefDisplay = chiefDisplay.slice(0, -1);
+    const pillH = CHIEF_LINE_H - 0.9;
+    const pillY = chiefY + 0.35;
+    const pillX = x + 2.5;
+    const maxPillW = w - 5;
+    let chiefText = `チーフ ${chiefs.join('・')}`;
+    doc.setFontSize(5.5);
+    while (maxPillW > 0 && doc.getTextWidth(chiefText) + 3 > maxPillW && chiefText.length > 1) {
+      chiefText = chiefText.slice(0, -1);
     }
-    if (chiefDisplay !== chiefText && chiefDisplay.length > 0) chiefDisplay = chiefDisplay.slice(0, -1) + '…';
-    doc.text(chiefDisplay, x + 2.5, chiefY + 2.2);
-    staffY = chiefY + chiefH + 0.3;
+    if (chiefText !== `チーフ ${chiefs.join('・')}` && chiefText.length > 0) {
+      chiefText = chiefText.slice(0, -1) + '…';
+    }
+    const pillW = Math.min(doc.getTextWidth(chiefText) + 3, maxPillW);
+    doc.setFillColor(243, 232, 255); doc.setDrawColor(216, 180, 254); doc.setLineWidth(0.2);
+    doc.roundedRect(pillX, pillY, pillW, pillH, 0.6, 0.6, 'FD');
+    doc.setFillColor(126, 34, 206);
+    doc.circle(pillX + 1.3, pillY + pillH / 2, 0.5, 'F');
+    doc.setTextColor(107, 33, 168);
+    doc.text(chiefText, pillX + 2.2, pillY + pillH * 0.72);
+    staffY = chiefY + CHIEF_LINE_H + 0.3;
   }
 
   if (splitBySide) {
