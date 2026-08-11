@@ -16,6 +16,7 @@ import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor"
 import { Button } from "@/components/ui/button";
 import EventFormModal from "@/components/EventFormModal";
 import EventPublishToggle from "@/components/EventPublishToggle";
+import EventListItem from "@/components/EventListItem";
 import SidebarNav from "@/components/SidebarNav";
 import EventsBottomBar from "@/components/EventsBottomBar";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
@@ -262,58 +263,18 @@ export default function Events() {
                 }
 
               {/* Event rows */}
-              {dateEvents.map((event) =>
-                <Link
+              {dateEvents.map((event) => (
+                <EventListItem
                   key={event.id}
-                  to={`/events/${event.id}`}
-                  className={`group block bg-card border rounded-lg px-2.5 py-1.5 hover:shadow-sm transition-all duration-200 ${
-                  isToday(date) ?
-                  "border-primary hover:border-primary/60" :
-                  "border-border hover:border-primary/40"}`
-                  }>
-                  <div className="flex items-center justify-between gap-1.5">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <h2 className="text-sm font-semibold text-foreground truncate">{event.name}</h2>
-                      </div>
-                      <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-                        {event.date &&
-                        <span className="flex items-center gap-0.5">
-                            <Calendar className="w-2.5 h-2.5" />
-                            {format(new Date(event.date), "M 月 d 日（E）", { locale: ja })}
-                          </span>
-                        }
-                        {event.venue &&
-                        <span className="flex items-center gap-0.5">
-                            <MapPin className="w-2.5 h-2.5" />
-                            {event.venue}
-                          </span>
-                        }
-                        <EventPublishToggle event={event} canEdit={canEdit} />
-                      </div>
-                    </div>
-                    <div className="flex shrink-0 items-center justify-end gap-0.5">
-                      {!isGuest &&
-                      <>
-                          <button
-                          onClick={(e) => handleEdit(e, event)}
-                          disabled={!canEdit}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を編集`}>
-                            <Pencil className="w-3 h-3" />
-                          </button>
-                          <button
-                          onClick={(e) => handleDelete(e, event.id, event.name)}
-                          disabled={!canEdit}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none" aria-label={`${event.name} を削除`}>
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </>
-                      }
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </div>
-                </Link>
-                )}
+                  event={event}
+                  isToday={isToday(date)}
+                  isAdmin={isAdmin}
+                  canEdit={canEdit}
+                  isGuest={isGuest}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
             </motion.div>
               )}
         </div>

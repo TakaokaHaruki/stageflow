@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-const ALLOWED_FIELDS = ['line_notify_enabled', 'line_group_id', 'active_preset_id'];
+const ALLOWED_FIELDS = ['line_notify_enabled', 'line_group_id', 'active_preset_id', 'admin_only'];
+
+// admin_only は管理者のみ操作可能
+const ADMIN_ONLY_FIELDS = ['admin_only'];
 
 Deno.serve(async (req) => {
   try {
@@ -20,6 +23,9 @@ Deno.serve(async (req) => {
     }
     if (!ALLOWED_FIELDS.includes(field)) {
       return Response.json({ error: `Invalid field: ${field}` }, { status: 400 });
+    }
+    if (ADMIN_ONLY_FIELDS.includes(field) && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const event = await base44.asServiceRole.entities.Event.update(eventId, { [field]: value ?? null });

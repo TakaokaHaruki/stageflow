@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip, HelpCircle, Database } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip, HelpCircle, Database, Lock } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -148,6 +148,25 @@ export default function EventDetail() {
     );
   }
 
+  if (event.admin_only && !isAdmin) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center">
+        <div className="w-full max-w-sm">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/20">
+            <Lock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+          </div>
+          <h1 className="text-lg font-bold">閲覧する権限がありません</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            このイベントは管理者専用モードが有効になっています。
+          </p>
+          <Button className="mt-6" onClick={() => { window.location.href = "/events"; }}>
+            一覧へ戻る
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const eventLocked = !isAdmin && isEventLocked(event);
 
   const desktopTabs = [
@@ -170,6 +189,7 @@ export default function EventDetail() {
     ? [
         { id: "users", label: "ユーザー管理", icon: Users },
         { id: "operation_logs", label: "操作ログ", icon: FileText },
+        { id: "access_restriction", label: "アクセス制限", icon: Lock },
         { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
         { id: "global_banner", label: "グローバル通知", icon: Bell },
         { id: "tab_control", label: "タブ制御", icon: LayoutTemplate },

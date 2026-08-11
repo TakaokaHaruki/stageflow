@@ -1,6 +1,7 @@
 import ActivityLogViewer from "@/components/ActivityLogViewer";
 import UserRoleManager from "@/components/UserRoleManager";
 import PortalRestrictionManager from "@/components/PortalRestrictionManager";
+import AccessRestrictionManager from "@/components/AccessRestrictionManager";
 import GlobalBannerManager from "@/components/GlobalBannerManager";
 import TabControlManager from "@/components/TabControlManager";
 import StaffQrExport from "@/components/StaffQrExport";
@@ -13,6 +14,7 @@ export default function AdminSettings({ eventId, section = "users" }) {
     <div>
       {section === "users" && <UserRoleManager />}
       {section === "operation_logs" && <ActivityLogViewer eventId={eventId} />}
+      {section === "access_restriction" && <AccessRestrictionManager eventId={eventId} />}
       {section === "portal_restriction" && <PortalRestrictionManager />}
       {section === "global_banner" && <GlobalBannerManager />}
       {section === "tab_control" && <TabControlManager />}
