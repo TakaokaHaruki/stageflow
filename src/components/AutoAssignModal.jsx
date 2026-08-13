@@ -5,6 +5,9 @@ import { AlertTriangle, Wand2, X, ChevronRight, Lock, LockOpen, ChevronDown } fr
 import { TIME_SLOTS, TIME_SLOT_STYLES, CONTINUOUS_SLOT } from "@/lib/constants";
 import { useAllRoles } from "@/hooks/useAllRoles";
 
+// 開演中（本番）の過去配置回数にかける重み。他の時間帯より強く優先させる。
+const MAIN_SLOT_WEIGHT = 3;
+
 // スタッフがポジションの必要スキルにどれだけマッチするかのスコア（0〜）
 function skillMatchScore(staff, pos) {
   const required = pos.required_skills || [];
@@ -21,103 +24,224 @@ function roleMatchScore(staff, pos) {
   return requiredRoles.filter((r) => staffRoles.includes(r)).length;
 }
 
-// セクションチーフを持つスタッフを優先するためのスコア
-function chiefPriority(staff) {
-  return (staff.roles || []).includes("セクションチーフ") ? 1 : 0;
+// ポジション名 → category のマップを現在の positions から構築
+function buildPosNameCategoryMap(positions) {
+  const map = {};
+  (positions || []).forEach((p) => {
+    if (p.category) map[p.name] = p.category;
+  });
+  return map;
 }
 
-export function computeAutoAssign(positions, staffList) {
+// 条件①: 同一ポジション名への過去配置回数スコア（開演中は MAIN_SLOT_WEIGHT 倍）
+function samePosScore(staff, pos, slot, tally) {
+  const count = ((tally[staff.name] || {})[slot] || {})[pos.name] || 0;
+  return count * (slot === "開演中" ? MAIN_SLOT_WEIGHT : 1);
+}
+
+// 条件②: 同一 category（属性）への過去配置回数スコア（同一ポジション名を除く）
+function categoryScore(staff, pos, slot, tally, posNameCategory) {
+  const cat = pos.category || posNameCategory[pos.name];
+  if (!cat) return 0;
+  const slotTally = (tally[staff.name] || {})[slot] || {};
+  let total = 0;
+  for (const [pn, cnt] of Object.entries(slotTally)) {
+    if (pn === pos.name) continue;
+    if (posNameCategory[pn] === cat) total += cnt;
+  }
+  return total;
+}
+
+// 条件4: クロスタイムスロット共通配置 — 同一ポジション名が複数時間帯に存在するか検出しグループ化
+function detectCommonGroups(positions) {
+  const byName = {};
+  (positions || []).forEach((p) => {
+    (byName[p.name] ||= []).push(p);
+  });
+  return Object.values(byName).filter(
+    (ps) => new Set(ps.map((p) => p.time_slot || "開場中")).size > 1
+  );
+}
+
+/**
+ * 自動配置を計算する。
+ * @param {Array} positions 対象イベントのポジション一覧
+ * @param {Array} staffList ロック除外済みの割り当て候補スタッフ一覧
+ * @param {Object} tally useStaffTrends の { [staffName]: { [slot]: { [posName]: count } } }
+ * @returns {{ plan: Object, warnings: Array, reasons: Object }}
+ *   plan:    { [posId]: [staffName, ...] }
+ *   reasons: { [posId]: { [staffName]: { slot, samePosCount, categoryCount, isMainSlot } } }
+ */
+export function computeAutoAssign(positions, staffList, tally = {}) {
   const plan = {};
   const warnings = [];
+  const reasons = {};
+  const posNameCategory = buildPosNameCategoryMap(positions);
 
-  // 派生: ポジションに含まれる全 time_slot を抽出（通しモード含む）
   const positionSlots = [...new Set(positions.map((p) => p.time_slot || "開場中"))];
   const activeSlots = positionSlots.length > 0 ? positionSlots : TIME_SLOTS;
 
-  activeSlots.forEach((slot) => {
-    const slotPositions = positions
-      .filter((p) => (p.time_slot || "開場中") === slot)
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  // slot -> Set(staffName): 既存配置＋自動配置を含む「その時間帯で既に配置済み」の集合
+  const assignedInSlot = {};
+  activeSlots.forEach((sl) => { assignedInSlot[sl] = new Set(); });
+  (positions || []).forEach((p) => {
+    const slot = p.time_slot || "開場中";
+    (p.staff_names || []).forEach((n) => assignedInSlot[slot]?.add(n));
+  });
 
-    if (slotPositions.length === 0) return;
+  const countUnassigned = (staff) =>
+    activeSlots.filter((sl) => !assignedInSlot[sl].has(staff.name)).length;
 
-    const alreadyAssignedInSlot = new Set(
-      slotPositions.flatMap((p) => p.staff_names || [])
+  const candidatesForSlot = (slot) =>
+    staffList.filter((s) => !assignedInSlot[slot].has(s.name));
+
+  function addToPlan(pos, name, slot) {
+    (plan[pos.id] ||= []).push(name);
+    (reasons[pos.id] ||= {})[name] = {
+      slot,
+      samePosCount: ((tally[name] || {})[slot] || {})[pos.name] || 0,
+      categoryCount: categoryScore({ name }, pos, slot, tally, posNameCategory),
+      isMainSlot: slot === "開演中",
+    };
+    assignedInSlot[slot].add(name);
+  }
+
+  // レキシカルソート比較関数: ①同一pos回数 → ②同カテゴリ回数 → ③スキル/役割 → ④未配置スロット数(均等)
+  const cmp = (a, b, pos, slot) => {
+    const sA = samePosScore(a, pos, slot, tally);
+    const sB = samePosScore(b, pos, slot, tally);
+    if (sA !== sB) return sB - sA;
+    const cA = categoryScore(a, pos, slot, tally, posNameCategory);
+    const cB = categoryScore(b, pos, slot, tally, posNameCategory);
+    if (cA !== cB) return cB - cA;
+    const rA = roleMatchScore(a, pos) + skillMatchScore(a, pos);
+    const rB = roleMatchScore(b, pos) + skillMatchScore(b, pos);
+    if (rA !== rB) return rB - rA;
+    return countUnassigned(b) - countUnassigned(a);
+  };
+
+  // --- Phase 0: クロスタイムスロット共通配置（条件4） ---
+  detectCommonGroups(positions).forEach((group) => {
+    const commonCount = Math.max(...group.map((p) => p.required_count || 0));
+    if (commonCount <= 0) return;
+    const groupSlots = [...new Set(group.map((p) => p.time_slot || "開場中"))];
+
+    // 共通メンバーは全時間帯でフリーである必要がある
+    let candidates = staffList.filter((s) =>
+      groupSlots.every((sl) => !assignedInSlot[sl].has(s.name))
     );
-
-    const unassignedInSlot = staffList.filter(
-      (s) => !alreadyAssignedInSlot.has(s.name)
-    );
-
-    if (unassignedInSlot.length === 0) return;
-
-    // 未配置スロット数が多い人を優先（均等配置）
-    const countUnassigned = (staff) =>
-      activeSlots.filter(
-        (sl) => !positions.some(
-          (p) => (p.time_slot || "開場中") === sl && (p.staff_names || []).includes(staff.name)
-        )
-      ).length;
-
-    const slotPlan = {};
-    const assignedThisRound = new Set();
-
-    slotPositions.forEach((pos) => {
-      slotPlan[pos.id] = [];
+    // クロススロットスコア: 各時間帯の同一pos回数（開演中は重み付き）の総和
+    const crossScore = (staff) => {
+      let total = 0;
+      group.forEach((p) => {
+        const slot = p.time_slot || "開場中";
+        const cnt = ((tally[staff.name] || {})[slot] || {})[p.name] || 0;
+        total += cnt * (slot === "開演中" ? MAIN_SLOT_WEIGHT : 1);
+      });
+      return total;
+    };
+    const crossCat = (staff) => {
+      let total = 0;
+      group.forEach((p) => {
+        total += categoryScore(staff, p, p.time_slot || "開場中", tally, posNameCategory);
+      });
+      return total;
+    };
+    candidates.sort((a, b) => {
+      const sa = crossScore(a), sb = crossScore(b);
+      if (sa !== sb) return sb - sa;
+      const ca = crossCat(a), cb = crossCat(b);
+      if (ca !== cb) return cb - ca;
+      const ra = group.reduce((acc, p) => acc + roleMatchScore(a, p) + skillMatchScore(a, p), 0);
+      const rb = group.reduce((acc, p) => acc + roleMatchScore(b, p) + skillMatchScore(b, p), 0);
+      if (ra !== rb) return rb - ra;
+      return countUnassigned(b) - countUnassigned(a);
     });
 
-    // ポジションごとにスキルマッチを考慮して割り当て
-    slotPositions.forEach((pos) => {
-      if ((pos.required_count ?? 0) === 0) return;
-      const needed = (pos.required_count ?? 0) - (pos.staff_names || []).length;
-      if (needed <= 0) return;
-
-      // このポジション未割り当てのスタッフを役割マッチ→スキルマッチ→均等順でソート
-      const candidates = unassignedInSlot
-        .filter((s) => !assignedThisRound.has(s.name))
-        .sort((a, b) => {
-          const roleDiff = roleMatchScore(b, pos) - roleMatchScore(a, pos);
-          if (roleDiff !== 0) return roleDiff;
-          const scoreDiff = skillMatchScore(b, pos) - skillMatchScore(a, pos);
-          if (scoreDiff !== 0) return scoreDiff;
-          return countUnassigned(b) - countUnassigned(a);
-        });
-
-      let filled = 0;
-      for (const staff of candidates) {
-        if (filled >= needed) break;
-        slotPlan[pos.id].push(staff.name);
-        assignedThisRound.add(staff.name);
-        filled++;
-      }
-    });
-
-    Object.entries(slotPlan).forEach(([posId, names]) => {
-      if (names.length > 0) {
-        plan[posId] = names;
-      }
-    });
-
-    slotPositions.forEach((pos) => {
-      if ((pos.required_count ?? 0) === 0) return;
-      const totalAfter =
-        (pos.staff_names || []).length + (slotPlan[pos.id] || []).length;
-      if (totalAfter < (pos.required_count ?? 0)) {
-        warnings.push({ slot, posName: pos.name, required: pos.required_count, actual: totalAfter });
+    const commonMembers = candidates.slice(0, commonCount);
+    group.forEach((p) => {
+      const slot = p.time_slot || "開場中";
+      const need = p.required_count || 0;
+      const take = Math.min(commonMembers.length, need);
+      for (let i = 0; i < take; i++) {
+        addToPlan(p, commonMembers[i].name, slot);
       }
     });
   });
 
-  return { plan, warnings };
+  // --- Phase 1 & 2: 開演中を優先 → 残り時間帯（条件5・条件1〜3） ---
+  const slotOrder = activeSlots.includes("開演中")
+    ? ["開演中", ...activeSlots.filter((sl) => sl !== "開演中")]
+    : activeSlots;
+
+  slotOrder.forEach((slot) => {
+    const slotPositions = (positions || [])
+      .filter((p) => (p.time_slot || "開場中") === slot)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    if (slotPositions.length === 0) return;
+
+    slotPositions.forEach((pos) => {
+      const already = (pos.staff_names || []).length + (plan[pos.id] || []).length;
+      const needed = (pos.required_count ?? 0) - already;
+      if (needed <= 0) return;
+      const candidates = candidatesForSlot(slot)
+        .filter((s) => !(plan[pos.id] || []).includes(s.name))
+        .sort((a, b) => cmp(a, b, pos, slot));
+      let filled = 0;
+      for (const staff of candidates) {
+        if (filled >= needed) break;
+        addToPlan(pos, staff.name, slot);
+        filled++;
+      }
+    });
+  });
+
+  // warnings
+  activeSlots.forEach((slot) => {
+    (positions || [])
+      .filter((p) => (p.time_slot || "開場中") === slot)
+      .forEach((pos) => {
+        if ((pos.required_count ?? 0) === 0) return;
+        const totalAfter = (pos.staff_names || []).length + (plan[pos.id] || []).length;
+        if (totalAfter < (pos.required_count ?? 0)) {
+          warnings.push({ slot, posName: pos.name, required: pos.required_count, actual: totalAfter });
+        }
+      });
+  });
+
+  return { plan, warnings, reasons };
 }
 
-export default function AutoAssignModal({ positions, staffList, lockedNames = [], onConfirm, onCancel, onClearLocks }) {
+// 配置根拠バッジのクラス
+function trendBadgeClass(reason) {
+  if (!reason) return null;
+  const { samePosCount, categoryCount, isMainSlot } = reason;
+  if (samePosCount > 0) {
+    return isMainSlot
+      ? "bg-purple-100 dark:bg-purple-900/40 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300"
+      : "bg-blue-100 dark:bg-blue-900/40 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300";
+  }
+  if (categoryCount > 0) {
+    return "bg-green-100 dark:bg-green-900/40 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300";
+  }
+  return "bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400";
+}
+
+function trendBadgeText(reason) {
+  if (!reason) return null;
+  const { samePosCount, categoryCount, isMainSlot } = reason;
+  if (samePosCount > 0) return isMainSlot ? `開演中 ${samePosCount}回` : `傾向あり ${samePosCount}回`;
+  if (categoryCount > 0) return "属性一致";
+  return "傾向なし";
+}
+
+export default function AutoAssignModal({ positions, staffList, lockedNames = [], tally = {}, onConfirm, onCancel, onClearLocks }) {
   const [lockedSectionOpen, setLockedSectionOpen] = useState(false);
   const { getBadgeClass } = useAllRoles();
 
   // ロック中スタッフを除外して計算
   const freeStaffList = staffList.filter((s) => !lockedNames.includes(s.name));
-  const { plan, warnings } = computeAutoAssign(positions, freeStaffList);
+  const { plan, warnings, reasons } = computeAutoAssign(positions, freeStaffList, tally);
 
   const totalAssignments = Object.values(plan).reduce((s, arr) => s + arr.length, 0);
 
@@ -262,9 +386,17 @@ export default function AutoAssignModal({ positions, staffList, lockedNames = []
                         const matchedRoles = posObj && staffObj
                           ? (posObj.required_roles || []).filter((r) => (staffObj.roles || []).includes(r))
                           : [];
+                        const reason = reasons[posId]?.[name];
+                        const badgeClass = trendBadgeClass(reason);
+                        const badgeText = trendBadgeText(reason);
                         return (
                           <div key={`${posName}-${name}`} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 text-xs">
                             <span className="font-medium text-foreground">{name}</span>
+                            {badgeText && badgeClass && (
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${badgeClass}`}>
+                                {badgeText}
+                              </span>
+                            )}
                             {matchedRoles.map((r) => (
                               <span key={r} className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${getBadgeClass(r)}`}>
                                 {r}

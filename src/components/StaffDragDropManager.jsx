@@ -28,6 +28,7 @@ import {
 } from "@/lib/positionSideSettings";
 import PresetSelector from "@/components/PresetSelector";
 import AutoAssignModal from "@/components/AutoAssignModal";
+import { useStaffTrends } from "@/hooks/useStaffTrends";
 import BulkDeleteDialog from "@/components/BulkDeleteDialog";
 import SectionHeader from "@/components/SectionHeader";
 import EventLockBanner from "@/components/EventLockBanner";
@@ -76,6 +77,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   }, [continuousMode]);
 
   const { lockedNames, isLocked: isStaffLocked, toggleLock, clearAllLocks } = useLockedStaff(eventId, event ?? null);
+  const { tally: staffTrends } = useStaffTrends(eventId);
 
   const { data: presets = [] } = useQuery({
     queryKey: ["positionPresets"],
@@ -898,6 +900,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           positions={positions}
           staffList={staffList}
           lockedNames={lockedNames}
+          tally={staffTrends}
           onClearLocks={clearAllLocks}
           onCancel={() => setShowAutoAssign(false)}
           onConfirm={async (plan) => {
