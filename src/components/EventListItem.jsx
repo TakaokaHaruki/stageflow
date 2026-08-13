@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, MapPin, ChevronRight, Trash2, Pencil, Lock } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Trash2, Pencil, Lock, Copy } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import EventPublishToggle from "@/components/EventPublishToggle";
+import CloneEventModal from "@/components/CloneEventModal";
 
 export default function EventListItem({ event, isToday, isAdmin, canEdit, isGuest, onEdit, onDelete }) {
+  const [showClone, setShowClone] = useState(false);
   const restricted = Boolean(event.admin_only) && !isAdmin;
 
   const content = (
@@ -33,6 +36,13 @@ export default function EventListItem({ event, isToday, isAdmin, canEdit, isGues
         <div className="flex shrink-0 items-center justify-end gap-0.5">
           {!isGuest && (
             <>
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowClone(true); }}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-sky-600 hover:bg-sky-500/10 transition-colors select-none"
+                aria-label={`${event.name} をコピーして新規作成`}
+                title="コピーして新規作成">
+                <Copy className="w-3 h-3" />
+              </button>
               <button
                 onClick={(e) => onEdit(e, event)}
                 disabled={!canEdit}
@@ -72,12 +82,17 @@ export default function EventListItem({ event, isToday, isAdmin, canEdit, isGues
   }
 
   return (
-    <Link
-      to={`/events/${event.id}`}
-      className={`group block bg-card border rounded-lg px-2.5 py-1.5 hover:shadow-sm transition-all duration-200 ${
-        isToday ? "border-primary hover:border-primary/60" : "border-border hover:border-primary/40"
-      }`}>
-      {content}
-    </Link>
+    <>
+      <Link
+        to={`/events/${event.id}`}
+        className={`group block bg-card border rounded-lg px-2.5 py-1.5 hover:shadow-sm transition-all duration-200 ${
+          isToday ? "border-primary hover:border-primary/60" : "border-border hover:border-primary/40"
+        }`}>
+        {content}
+      </Link>
+      {showClone && (
+        <CloneEventModal sourceEvent={event} onClose={() => setShowClone(false)} />
+      )}
+    </>
   );
 }
