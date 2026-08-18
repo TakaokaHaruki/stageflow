@@ -5,14 +5,14 @@ import { motion } from "framer-motion";
 export default function BulkDeleteDialog({ slot, count, onClearStaff, onDeletePositions, onCancel }) {
   return (
     <motion.div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-md p-2"
+      className="fixed inset-0 z-[60] h-[100dvh] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-md p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.18 }}
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-4"
+        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-4 max-h-[90dvh] overflow-y-auto"
         initial={{ y: 30, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}

@@ -187,7 +187,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false, a
 
   return (
     <motion.div
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-md"
+      className="fixed inset-0 z-[60] h-[100dvh] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-md p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

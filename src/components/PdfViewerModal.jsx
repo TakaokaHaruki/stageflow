@@ -86,7 +86,7 @@ export default function PdfViewerModal({ fileUrl, fileName, forcePdf, onClose })
 
   return (
     <motion.div
-      className="fixed inset-0 z-[70] flex flex-col bg-black/85 backdrop-blur-sm"
+      className="fixed inset-0 z-[70] h-[100dvh] flex flex-col bg-black/85 backdrop-blur-sm"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -140,7 +140,7 @@ export default function PdfViewerModal({ fileUrl, fileName, forcePdf, onClose })
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto flex flex-col items-center p-3">
+      <div className="flex-1 overflow-auto flex flex-col items-center p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {fileType === "pdf" && (
           <div
             ref={containerRef}

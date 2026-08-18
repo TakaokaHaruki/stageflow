@@ -5,14 +5,14 @@ import UserRoleManager from "@/components/UserRoleManager";
 export default function AdminUserModal({ onClose }) {
   return (
     <motion.div
-      className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-2 overflow-hidden"
+      className="fixed inset-0 h-[100dvh] bg-black/50 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.18 }}
       onClick={onClose}
     >
       <motion.div
-        className="bg-card w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[85vh] flex flex-col"
+        className="bg-card w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[85dvh] flex flex-col"
         initial={{ y: 36, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}

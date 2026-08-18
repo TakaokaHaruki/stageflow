@@ -5,13 +5,13 @@ import { AlertCircle, Smartphone, Clock, CheckCircle, X } from "lucide-react";
 export default function StaffConfirmationModal({ staffName, onConfirm, onClose }) {
   return (
     <motion.div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+      className="fixed inset-0 h-[100dvh] bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="bg-card border border-border rounded-2xl shadow-xl max-w-md w-full p-6"
+        className="bg-card border border-border rounded-2xl shadow-xl max-w-md w-full p-6 max-h-[90dvh] overflow-y-auto"
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ delay: 0.1 }}
