@@ -2,19 +2,14 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { BookmarkPlus, X } from "lucide-react";
+import { BookmarkPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TIME_SLOTS, CONTINUOUS_SLOT } from "@/lib/constants";
-import { motion } from "framer-motion";
 import { useOperationLog } from "@/hooks/useOperationLog";
+import ModalShell, { ModalHeader, ModalFooter } from "@/components/ModalShell";
 
 /**
  * 現在のイベントのポジション構成をプリセットとして保存するモーダル。
- *
- * Props:
- *   positions       - 現在のイベントのポジション配列
- *   positionTypes   - 全PositionType配列
- *   onClose         - 閉じるコールバック
  */
 export default function SaveAsPresetModal({ positions, positionTypes, eventId, continuousMode = false, onClose }) {
   const queryClient = useQueryClient();
@@ -23,7 +18,6 @@ export default function SaveAsPresetModal({ positions, positionTypes, eventId, c
   const [description, setDescription] = useState("");
   const activeSlots = continuousMode ? [CONTINUOUS_SLOT] : TIME_SLOTS;
 
-  // ポジション名 → PositionType ID へのマッピング
   const buildSlotPositions = () => {
     const result = {};
     for (const slot of activeSlots) {
@@ -71,77 +65,56 @@ export default function SaveAsPresetModal({ positions, positionTypes, eventId, c
   }).filter(Boolean);
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[60] h-[100dvh] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-md p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.18 }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <motion.div
-        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm max-h-[90dvh] overflow-y-auto"
-        initial={{ y: 30, opacity: 0, scale: 0.98 }}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
-        transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-      >
-        {/* ヘッダー */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <div className="flex items-center gap-2">
-            <BookmarkPlus className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold">現在の配置をプリセット保存</span>
-          </div>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted text-muted-foreground">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <ModalShell onClose={onClose} maxWidth="max-w-sm">
+      <ModalHeader
+        icon={<BookmarkPlus className="w-5 h-5 text-primary" />}
+        title="現在の配置をプリセット保存"
+        onClose={onClose}
+      />
 
-        {/* サマリ */}
-        <div className="px-4 py-2 bg-muted/40 border-b border-border">
-          <p className="text-[11px] text-muted-foreground">
-            登録対象：{totalPositions}ポジション（{slotSummary.join("　")}）
-          </p>
-          {totalPositions === 0 && (
-            <p className="text-[11px] text-destructive mt-0.5">ポジションが登録されていません。</p>
-          )}
-        </div>
+      <div className="bg-muted/40 rounded-lg p-3 mb-4">
+        <p className="text-[11px] text-muted-foreground">
+          登録対象：{totalPositions}ポジション（{slotSummary.join("　")}）
+        </p>
+        {totalPositions === 0 && (
+          <p className="text-[11px] text-destructive mt-0.5">ポジションが登録されていません。</p>
+        )}
+      </div>
 
-        {/* フォーム */}
-        <div className="px-4 py-3 space-y-3">
-          <div>
-            <label className="text-xs font-medium text-foreground mb-1 block">プリセット名 <span className="text-destructive">*</span></label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="例：通常配置、大型イベント用"
-              className="w-full text-sm border border-input rounded-lg px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-foreground mb-1 block">説明（任意）</label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="例：3時間帯フル配置"
-              className="w-full text-sm border border-input rounded-lg px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
+      <div className="space-y-3">
+        <div>
+          <label className="text-xs font-medium text-foreground mb-1 block">プリセット名 <span className="text-destructive">*</span></label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="例：通常配置、大型イベント用"
+            className="w-full text-sm border border-input rounded-lg px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+          />
         </div>
+        <div>
+          <label className="text-xs font-medium text-foreground mb-1 block">説明（任意）</label>
+          <input
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="例：3時間帯フル配置"
+            className="w-full text-sm border border-input rounded-lg px-3 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+      </div>
 
-        {/* フッター */}
-        <div className="flex gap-2 px-4 pb-4">
-          <Button variant="outline" className="flex-1" onClick={onClose}>キャンセル</Button>
-          <Button
-            className="flex-1 gap-1"
-            disabled={!name.trim() || totalPositions === 0 || saveMutation.isPending}
-            onClick={() => saveMutation.mutate()}
-          >
-            <BookmarkPlus className="w-3.5 h-3.5" />
-            {saveMutation.isPending ? "保存中..." : "保存"}
-          </Button>
-        </div>
-      </motion.div>
-    </motion.div>
+      <ModalFooter>
+        <Button variant="outline" className="flex-1" onClick={onClose}>キャンセル</Button>
+        <Button
+          className="flex-1 gap-1"
+          disabled={!name.trim() || totalPositions === 0 || saveMutation.isPending}
+          onClick={() => saveMutation.mutate()}
+        >
+          <BookmarkPlus className="w-3.5 h-3.5" />
+          {saveMutation.isPending ? "保存中..." : "保存"}
+        </Button>
+      </ModalFooter>
+    </ModalShell>
   );
 }

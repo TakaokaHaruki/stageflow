@@ -187,7 +187,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false, a
 
   return (
     <motion.div
-      className="fixed inset-0 z-[60] h-[100dvh] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-md p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+      className="fixed inset-0 z-[100] h-[100dvh] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -195,7 +195,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false, a
       onClick={(e) => { if (e.target === e.currentTarget && !processing) onClose(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+        className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-sm overflow-hidden"
         initial={{ y: 40, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         exit={{ y: 40, opacity: 0 }}

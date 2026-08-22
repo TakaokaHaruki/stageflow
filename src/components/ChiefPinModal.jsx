@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Lock, AlertCircle, RefreshCw, KeyRound } from "lucide-react";
+import ModalShell from "@/components/ModalShell";
 import { toast } from "sonner";
 
 async function sha256(text) {
@@ -211,19 +212,7 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
   }
 
   return (
-    <AnimatePresence>
-      <motion.div
-        className="fixed inset-0 z-[70] h-[100dvh] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-md p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
-        <motion.div
-          className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-6 max-h-[90dvh] overflow-y-auto"
-          initial={{ y: 30, opacity: 0, scale: 0.98 }}
-          animate={{ y: 0, opacity: 1, scale: 1 }}
-          transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-        >
+    <ModalShell onClose={onClose} maxWidth="max-w-sm">
           {/* Header */}
           <div className="flex flex-col items-center text-center mb-5">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
@@ -381,8 +370,6 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
               </Button>
             </>
           )}
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+    </ModalShell>
   );
 }

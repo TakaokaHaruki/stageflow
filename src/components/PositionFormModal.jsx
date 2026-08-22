@@ -258,14 +258,14 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
 
   return (
     <motion.div
-      className="fixed inset-0 z-[60] h-[100dvh] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-md p-2 pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:pb-2"
+      className="fixed inset-0 z-[100] h-[100dvh] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.18 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md p-4 max-h-[calc(100dvh-5rem)] sm:max-h-[92dvh] overflow-y-auto scrollbar-hide"
+        className="bg-card border border-border rounded-2xl shadow-xl w-full sm:max-w-md p-6 max-h-[90dvh] overflow-y-auto scrollbar-hide"
         initial={{ y: 34, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}

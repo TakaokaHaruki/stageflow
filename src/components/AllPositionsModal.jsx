@@ -128,7 +128,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[60] h-[100dvh] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+          className="fixed inset-0 z-[100] h-[100dvh] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -136,7 +136,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
           onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
           <motion.div
-            className="bg-background w-full max-w-lg max-h-[90dvh] rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col"
+            className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-lg max-h-[90dvh] flex flex-col"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
