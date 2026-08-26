@@ -178,14 +178,18 @@ export default function EventDetail() {
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ].filter((t) => isAdmin || !disabledTabIds.includes(t.id));
 
+  // URL の ?tab= に直接アクセスしても、権限のないタブは表示しない
+  const allowedTabIds = desktopTabs.map((t) => t.id);
+  const activeTab = allowedTabIds.includes(tab) ? tab : "staff";
+
   const managementTabs = desktopTabs
     .filter(({ id }) => id === "settings" || id === "admin")
     .map((item) => ({
       ...item,
       label: item.id === "admin" ? "管理者設定" : "管理設定",
     }));
-  const isManagementTab = managementTabs.some(({ id }) => id === tab);
-  const activeManagementChildren = tab === "admin"
+  const isManagementTab = managementTabs.some(({ id }) => id === activeTab);
+  const activeManagementChildren = activeTab === "admin"
     ? [
         { id: "users", label: "ユーザー管理", icon: Users },
         { id: "operation_logs", label: "操作ログ", icon: FileText },
@@ -198,7 +202,7 @@ export default function EventDetail() {
         { id: "login_help", label: "ログイン案内", icon: HelpCircle },
         { id: "data_maintenance", label: "データメンテナンス", icon: Database },
       ]
-    : tab === "settings"
+    : activeTab === "settings"
       ? [
           { id: "positions", label: "ポジション設定", icon: Settings },
           { id: "presets", label: "ポジションプリセット", icon: ClipboardList },
@@ -208,7 +212,7 @@ export default function EventDetail() {
           { id: "emergency_contacts", label: "緊急連絡先", icon: Phone },
         ]
       : [];
-  const activeManagementChild = tab === "admin" ? adminSection : settingsSection;
+  const activeManagementChild = activeTab === "admin" ? adminSection : settingsSection;
 
   const selectManagementChild = (childId) => {
     if (tab === "admin") setAdminSection(childId);
@@ -216,8 +220,8 @@ export default function EventDetail() {
   };
 
   const selectTab = (childId) => {
-    if (tab === childId) handleActiveTabReset();
-    handleTabChange(childId, tab === childId ? { replace: true, reset: true } : undefined);
+    if (activeTab === childId) handleActiveTabReset();
+    handleTabChange(childId, activeTab === childId ? { replace: true, reset: true } : undefined);
   };
 
   return (
@@ -295,7 +299,7 @@ export default function EventDetail() {
 
       {/* 2-column layout: sidebar + content (PC only) */}
       <div className="sm:flex">
-        <SidebarNav tabs={desktopTabs} activeTab={tab} onSelectTab={selectTab} topOffset={topBarHeight} />
+        <SidebarNav tabs={desktopTabs} activeTab={activeTab} onSelectTab={selectTab} topOffset={topBarHeight} />
         <div className="flex-1 min-w-0">
           {/* Child tab bar */}
           {isManagementTab && (
@@ -326,28 +330,28 @@ export default function EventDetail() {
         <UserRestrictionBanner role={role} />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={`${tab}-${activeManagementChild || "main"}-${tabResetKey}`}
+            key={`${activeTab}-${activeManagementChild || "main"}-${tabResetKey}`}
             variants={tabVariants}
             initial="initial"
             animate="animate"
             exit="exit"
           >
-            {tab === "staff" && <StaffManagement eventId={eventId} isLocked={eventLocked} />}
-            {tab === "dragdrop" && <StaffDragDropManager eventId={eventId} isLocked={eventLocked} />}
-            {tab === "admin" && (
+            {activeTab === "staff" && <StaffManagement eventId={eventId} isLocked={eventLocked} />}
+            {activeTab === "dragdrop" && <StaffDragDropManager eventId={eventId} isLocked={eventLocked} />}
+            {activeTab === "admin" && (
               <AdminSettings
                 eventId={eventId}
                 section={adminSection}
               />
             )}
-            {tab === "settings" && settingsSection === "positions" && <PositionTypeManagement eventId={eventId} section="positions" isLocked={eventLocked} />}
-            {tab === "settings" && settingsSection === "presets" && <PositionTypeManagement eventId={eventId} section="presets" />}
-            {tab === "settings" && settingsSection === "venues" && <VenueManager />}
-            {tab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} isLocked={eventLocked} />}
-            {tab === "settings" && settingsSection === "tag_management" && <TagManagement />}
-            {tab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} isLocked={eventLocked} />}
-            {tab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
-            {tab === "files" && <SharedFileManager eventId={eventId} showAll={true} isLocked={eventLocked} />}
+            {activeTab === "settings" && settingsSection === "positions" && <PositionTypeManagement eventId={eventId} section="positions" isLocked={eventLocked} />}
+            {activeTab === "settings" && settingsSection === "presets" && <PositionTypeManagement eventId={eventId} section="presets" />}
+            {activeTab === "settings" && settingsSection === "venues" && <VenueManager />}
+            {activeTab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} isLocked={eventLocked} />}
+            {activeTab === "settings" && settingsSection === "tag_management" && <TagManagement />}
+            {activeTab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} isLocked={eventLocked} />}
+            {activeTab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
+            {activeTab === "files" && <SharedFileManager eventId={eventId} showAll={true} isLocked={eventLocked} />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -374,7 +378,7 @@ export default function EventDetail() {
       {/* Bottom Tab Navigation - Mobile Only */}
       <div className="sm:hidden">
         <BottomTabBar
-          activeTab={tab}
+          activeTab={activeTab}
           onTabChange={handleTabChange}
           onActiveTabReset={handleActiveTabReset}
           isPrivileged={isPrivileged}
