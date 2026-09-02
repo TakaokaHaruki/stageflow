@@ -197,6 +197,9 @@ export default function EventDetail() {
       ]
     : activeTab === "settings"
       ? [
+          { id: "positions", label: "ポジション設定", icon: Settings },
+          { id: "presets", label: "ポジションプリセット", icon: ClipboardList },
+          { id: "tag_management", label: "タグ・役割管理", icon: Tag },
           { id: "pos_notes", label: "ポジション説明", icon: FileText },
           { id: "side_split", label: "上手/下手分割", icon: Settings },
           { id: "preset_apply", label: "プリセット適用", icon: ClipboardList },
@@ -335,6 +338,9 @@ export default function EventDetail() {
                 section={adminSection}
               />
             )}
+            {activeTab === "settings" && settingsSection === "positions" && <PositionTypeManagement eventId={eventId} section="positions" isLocked={eventLocked} />}
+            {activeTab === "settings" && settingsSection === "presets" && <PositionTypeManagement eventId={eventId} section="presets" />}
+            {activeTab === "settings" && settingsSection === "tag_management" && <TagManagement />}
             {activeTab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} isLocked={eventLocked} />}
             {activeTab === "settings" && settingsSection === "side_split" && <PositionTypeManagement eventId={eventId} section="positions" mode="event-side" isLocked={eventLocked} />}
             {activeTab === "settings" && settingsSection === "preset_apply" && <PositionTypeManagement eventId={eventId} section="presets" mode="event-apply" />}
