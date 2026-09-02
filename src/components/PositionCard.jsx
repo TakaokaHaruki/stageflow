@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Pencil, Minus, Plus, Lock, AlertCircle, AlertTriangle } from "lucide-react";
-import { getStaffDisplayName } from "@/lib/staffName";
+import { getStaffDisplayName, getStaffColor } from "@/lib/staffName";
 import RoleIcon from "@/components/RoleIcon";
 import { useStaffExperience } from "@/hooks/useStaffExperience";
 
@@ -12,7 +12,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, is
   const noteIconRef = useRef(null);
   const staffData = staffList.find((s) => s.name === name);
   const displayName = getStaffDisplayName(name, maskStaffNames);
-  const nameColor = staffData?.color || undefined;
+  const nameColor = getStaffColor(staffData);
   const slotNoteKey = SLOT_NOTE_KEY[pos.time_slot];
   const slotNote = slotNoteKey ? staffData?.[slotNoteKey] : null;
   const displayNote = slotNote || staffData?.note;

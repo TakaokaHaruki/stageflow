@@ -8,7 +8,7 @@ import PositionCard from "@/components/PositionCard.jsx";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePDFExport } from "@/hooks/usePDFExport";
 import { TIME_SLOTS, TIME_SLOT_STYLES } from "@/lib/constants";
-import { getStaffDisplayName } from "@/lib/staffName";
+import { getStaffDisplayName, getStaffColor } from "@/lib/staffName";
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 
@@ -150,7 +150,7 @@ export default function StaffList({ eventId }) {
                   <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-[10px] shrink-0">
                     {displayName.charAt(0)}
                   </div>
-                  <span className="text-xs font-medium">{displayName}</span>
+                  <span className="text-xs font-medium" style={{ color: getStaffColor(s) }}>{displayName}</span>
                   {s.note && <span className="text-[10px] text-muted-foreground">{s.note}</span>}
                 </div>
                 );

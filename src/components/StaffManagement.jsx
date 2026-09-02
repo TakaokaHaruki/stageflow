@@ -11,7 +11,7 @@ import StaffEditModal from "@/components/StaffEditModal";
 import { TIME_SLOT_STYLES } from "@/lib/constants";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useUserRole } from "@/hooks/useUserRole";
-import { getStaffDisplayName } from "@/lib/staffName";
+import { getStaffDisplayName, getStaffColor } from "@/lib/staffName";
 
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
@@ -285,7 +285,7 @@ export default function StaffManagement({ eventId, isLocked = false }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1 flex-wrap">
-                      <p className="font-medium text-xs" style={{ color: staff.color || undefined }}>{displayName}</p>
+                      <p className="font-medium text-xs" style={{ color: getStaffColor(staff) }}>{displayName}</p>
                       {staff.note && <span className="text-[10px] text-muted-foreground">({staff.note})</span>}
                       {(staff.roles || []).map((role) => (
                         <span key={role} className={`inline-flex items-center gap-0.5 text-[10px] px-1 rounded border font-medium ${getBadgeClass(role)}`}>
