@@ -46,14 +46,20 @@ Deno.serve(async (req) => {
           await base44.asServiceRole.entities.Staff.create({ 
             event_id: eventId, 
             name: staff.name,
-            acast_id: staff.acast_id || null
+            acast_id: staff.acast_id || null,
+            gender: staff.gender || ""
           });
           addedStaff.push(staff.name);
         } else {
-          // 同名スタッフが既に存在する場合、acast_id が未設定なら更新
+          // 同名スタッフが既に存在する場合、acast_id が未設定なら更新、gender が未設定なら更新
           const existing = existingStaff.find((s) => s.name === staff.name);
-          if (existing && staff.acast_id && !existing.acast_id) {
-            await base44.asServiceRole.entities.Staff.update(existing.id, { acast_id: staff.acast_id });
+          if (existing) {
+            const updates = {};
+            if (staff.acast_id && !existing.acast_id) updates.acast_id = staff.acast_id;
+            if (staff.gender && !existing.gender) updates.gender = staff.gender;
+            if (Object.keys(updates).length > 0) {
+              await base44.asServiceRole.entities.Staff.update(existing.id, updates);
+            }
           }
         }
       }

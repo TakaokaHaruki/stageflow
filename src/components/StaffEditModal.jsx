@@ -27,6 +27,7 @@ const PRESET_COLORS = [
 export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClose, onSaved, isLocked = false, onToggleLock }) {
   const [localName, setLocalName] = useState(staff.name);
   const [localAcastId, setLocalAcastId] = useState(staff.acast_id || "");
+  const [localGender, setLocalGender] = useState(staff.gender || "");
   const [localNote, setLocalNote] = useState(staff.note || "");
   const [localNoteBefore, setLocalNoteBefore] = useState(staff.note_before || "");
   const [localNoteDuring, setLocalNoteDuring] = useState(staff.note_during || "");
@@ -41,7 +42,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
   const { allRoles, getBadgeClass } = useAllRoles();
   const { record } = useOperationLog(staff.event_id);
   const prevDataRef = useRef({
-    name: staff.name, acast_id: staff.acast_id || "", note: staff.note || "",
+    name: staff.name, acast_id: staff.acast_id || "", gender: staff.gender || "", note: staff.note || "",
     note_before: staff.note_before || "", note_during: staff.note_during || "", note_after: staff.note_after || "",
     color: staff.color || "", skills: staff.skills || [], roles: staff.roles || []
   });
@@ -97,13 +98,13 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
     const skillsChanged = JSON.stringify(localSkills) !== JSON.stringify(prev.skills);
     const rolesChanged = JSON.stringify(localRoles) !== JSON.stringify(prev.roles);
     if (
-      localName === prev.name && localAcastId === prev.acast_id && localNote === prev.note &&
+      localName === prev.name && localAcastId === prev.acast_id && localGender === prev.gender && localNote === prev.note &&
       localNoteBefore === prev.note_before && localNoteDuring === prev.note_during && localNoteAfter === prev.note_after &&
       localColor === prev.color && !skillsChanged && !rolesChanged
     ) return;
     const timer = setTimeout(() => {
       const nextData = {
-        name: localName.trim(), acast_id: localAcastId.trim(), note: localNote.trim(),
+        name: localName.trim(), acast_id: localAcastId.trim(), gender: localGender, note: localNote.trim(),
         note_before: localNoteBefore.trim(), note_during: localNoteDuring.trim(), note_after: localNoteAfter.trim(),
         color: localColor, skills: localSkills, roles: localRoles
       };
@@ -123,7 +124,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
       });
     }, 500);
     return () => clearTimeout(timer);
-  }, [localName, localAcastId, localNote, localNoteBefore, localNoteDuring, localNoteAfter, localColor, localSkills, localRoles]);
+  }, [localName, localAcastId, localGender, localNote, localNoteBefore, localNoteDuring, localNoteAfter, localColor, localSkills, localRoles]);
 
   return (
     <motion.div
@@ -180,6 +181,29 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
           <div>
             <label className="text-xs font-medium text-muted-foreground">A-CAST ID</label>
             <Input value={localAcastId} onChange={(e) => setLocalAcastId(e.target.value)} className="mt-1" placeholder="例：AC-12345" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">性別</label>
+            <div className="mt-1.5 flex gap-1.5">
+              {["男", "女"].map((g) => {
+                const active = localGender === g;
+                return (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setLocalGender(active ? "" : g)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${active ? (g === "男" ? "bg-blue-100 border-blue-300 text-blue-700" : "bg-rose-100 border-rose-300 text-rose-700") : "border-border text-muted-foreground hover:border-primary/50"}`}
+                  >
+                    {g}
+                  </button>
+                );
+              })}
+              {localGender && (
+                <button type="button" onClick={() => setLocalGender("")} className="px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground">
+                  未設定
+                </button>
+              )}
+            </div>
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground">備考</label>

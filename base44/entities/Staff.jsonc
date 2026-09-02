@@ -14,6 +14,16 @@
       "type": "string",
       "description": "A\u30ad\u30e3\u30b9\u30c8ID\uff08\u30b9\u30bf\u30c3\u30d5\u30dd\u30fc\u30bf\u30eb\u8a8d\u8a3c\u7528\uff09"
     },
+    "gender": {
+      "type": "string",
+      "enum": [
+        "\u7537",
+        "\u5973",
+        ""
+      ],
+      "default": "",
+      "description": "\u6027\u5225\uff08\u7537/\u5973\u3001\u672a\u8a2d\u5b9a\u53ef\uff09"
+    },
     "note": {
       "type": "string",
       "description": "\u5099\u8003\uff08\u5171\u901a\uff09"

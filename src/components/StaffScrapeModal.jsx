@@ -16,6 +16,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
   const [result, setResult] = useState(null);
   const [staffList, setStaffList] = useState(null);
   const [checked, setChecked] = useState({});
+  const [genders, setGenders] = useState({});
   const [existingNames, setExistingNames] = useState(new Set());
   // which tab triggered Phase2 (to return to correct tab)
   const [sourceTab, setSourceTab] = useState("history");
@@ -59,11 +60,14 @@ export default function StaffScrapeModal({ eventId, onClose }) {
         setStaffList(data.staffList);
         const EXCLUDED_TYPES = ['ケータ', 'ケータリング', 'ランナー'];
         const initChecked = {};
+        const initGenders = {};
         data.staffList.forEach((s, i) => {
           const isExcludedType = EXCLUDED_TYPES.some(t => s.type?.includes(t));
           initChecked[i] = isExcludedType ? false : (s.defaultChecked && !fetchedExistingNames.has(s.name));
+          initGenders[i] = "";
         });
         setChecked(initChecked);
+        setGenders(initGenders);
       }
     } catch (err) {
       setError(err?.response?.data?.error || err.message || "取得中にエラーが発生しました");
@@ -83,10 +87,14 @@ export default function StaffScrapeModal({ eventId, onClose }) {
   };
 
   const handleSave = async () => {
-    const selectedStaff = staffList.filter((_, i) => checked[i]).map((s) => ({
-      name: s.name,
-      acast_id: s.acast_id || null
-    }));
+    const selectedStaff = staffList
+      .map((s, i) => ({ s, i }))
+      .filter(({ i }) => checked[i])
+      .map(({ s, i }) => ({
+        name: s.name,
+        acast_id: s.acast_id || null,
+        gender: genders[i] || ""
+      }));
     if (selectedStaff.length === 0) { setError("スタッフが選択されていません"); return; }
     setLoading(true);
     setError(null);
@@ -255,6 +263,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
                     <tr>
                       <th className="w-8 px-2 py-2 text-center font-medium text-muted-foreground">✓</th>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">氏名</th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">性別</th>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">種別</th>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">メモ</th>
                     </tr>
@@ -277,6 +286,23 @@ export default function StaffScrapeModal({ eventId, onClose }) {
                           <td className="px-3 py-2 font-medium">
                             {staff.name}
                             {isRegistered && <span className="ml-1.5 text-[10px] text-muted-foreground border border-border px-1 py-0.5 rounded">登録済</span>}
+                          </td>
+                          <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex gap-1">
+                              {["男", "女"].map((g) => {
+                                const active = genders[i] === g;
+                                return (
+                                  <button
+                                    key={g}
+                                    type="button"
+                                    onClick={() => setGenders((prev) => ({ ...prev, [i]: active ? "" : g }))}
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${active ? (g === "男" ? "bg-blue-100 border-blue-300 text-blue-700" : "bg-rose-100 border-rose-300 text-rose-700") : "border-border text-muted-foreground hover:border-primary/50"}`}
+                                  >
+                                    {g}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </td>
                           <td className="px-3 py-2 text-muted-foreground">
                             {staff.type && (
