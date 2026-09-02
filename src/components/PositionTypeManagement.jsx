@@ -19,6 +19,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import SectionHeader from "@/components/SectionHeader";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import CategoryPicker from "@/components/CategoryPicker";
+import GenderToggle from "@/components/GenderToggle";
 import EventLockBanner from "@/components/EventLockBanner";
 import { LOCK_TOOLTIP_TEXT } from "@/lib/eventLock";
 
@@ -31,6 +32,7 @@ export default function PositionTypeManagement({ eventId, section = "positions",
   const [name, setName] = useState("");
   const [color, setColor] = useState(PRESET_COLORS[0]);
   const [category, setCategory] = useState("");
+  const [recommendedGender, setRecommendedGender] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
   const [dragOverId, setDragOverId] = useState(null);
@@ -73,6 +75,7 @@ export default function PositionTypeManagement({ eventId, section = "positions",
       setName("");
       setColor(PRESET_COLORS[0]);
       setCategory("");
+      setRecommendedGender("");
       const created = result?.data?.positionType || result?.positionType;
       record({
         action_type: "position_type_add",
@@ -104,6 +107,7 @@ export default function PositionTypeManagement({ eventId, section = "positions",
       name: name.trim(),
       color,
       category: category || "",
+      recommended_gender: recommendedGender || "",
       required_count: 0,
       required_count_before: 0,
       required_count_during: 0,
@@ -200,6 +204,13 @@ export default function PositionTypeManagement({ eventId, section = "positions",
     base44.functions.invoke("updatePositionTypeRecord", { action: "update", id: pt.id, data: { category: nextCategory } }).catch(() => {});
   };
 
+  const handleGenderChange = (pt, nextGender) => {
+    queryClient.setQueryData(["positionTypes"], (old = []) =>
+      old.map((p) => p.id === pt.id ? { ...p, recommended_gender: nextGender } : p)
+    );
+    base44.functions.invoke("updatePositionTypeRecord", { action: "update", id: pt.id, data: { recommended_gender: nextGender } }).catch(() => {});
+  };
+
   const handleToggleRole = (pt, role) => {
     const current = pt.required_roles || [];
     const next = current.includes(role) ? current.filter((r) => r !== role) : [...current, role];
@@ -257,6 +268,10 @@ export default function PositionTypeManagement({ eventId, section = "positions",
           <Input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={handleKeyDown}
             placeholder="ポジション名（例：メイン受付A）" className="h-8 text-sm" />
           <CategoryPicker value={category} onChange={setCategory} />
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-muted-foreground shrink-0">推奨:</span>
+            <GenderToggle value={recommendedGender} onChange={setRecommendedGender} disabled={!isAdmin} />
+          </div>
           <div className="flex items-center gap-1.5">
             <div className="flex gap-1 flex-1">
               {PRESET_COLORS.map((c) => (
@@ -333,6 +348,16 @@ export default function PositionTypeManagement({ eventId, section = "positions",
                     disabled={!isAdmin}
                   />
                 </div>
+              </div>
+              )}
+              {showCrud && (
+              <div className="flex flex-wrap items-center gap-1 mt-1.5 pl-5">
+                <span className="text-[10px] text-muted-foreground mr-0.5">推奨:</span>
+                <GenderToggle
+                  value={pt.recommended_gender || ""}
+                  onChange={(v) => handleGenderChange(pt, v)}
+                  disabled={!isAdmin}
+                />
               </div>
               )}
               {showCrud && (

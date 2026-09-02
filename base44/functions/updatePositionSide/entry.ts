@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
       if (lockResp) return lockResp;
 
       const allowedFields = [
-        'name', 'time_slot', 'notes', 'color', 'category',
+        'name', 'time_slot', 'notes', 'color', 'category', 'recommended_gender',
         'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote',
         'required_count', 'order', 'chief_name', 'chief_names',
       ];

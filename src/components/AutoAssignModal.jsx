@@ -24,6 +24,13 @@ function roleMatchScore(staff, pos) {
   return requiredRoles.filter((r) => staffRoles.includes(r)).length;
 }
 
+// ポジションの推奨性別とスタッフの性別が一致するか（最優先基準）
+function genderMatchScore(staff, pos) {
+  const rec = pos.recommended_gender;
+  if (!rec) return 0;
+  return staff.gender === rec ? 1 : 0;
+}
+
 // ポジション名 → category のマップを現在の positions から構築
 function buildPosNameCategoryMap(positions) {
   const map = {};
@@ -106,8 +113,11 @@ export function computeAutoAssign(positions, staffList, tally = {}) {
     assignedInSlot[slot].add(name);
   }
 
-  // レキシカルソート比較関数: ①同一pos回数 → ②同カテゴリ回数 → ③スキル/役割 → ④未配置スロット数(均等)
+  // レキシカルソート比較関数: ①推奨性別一致 → ②同一pos回数 → ③同カテゴリ回数 → ④スキル/役割 → ⑤未配置スロット数(均等)
   const cmp = (a, b, pos, slot) => {
+    const gA = genderMatchScore(a, pos);
+    const gB = genderMatchScore(b, pos);
+    if (gA !== gB) return gB - gA;
     const sA = samePosScore(a, pos, slot, tally);
     const sB = samePosScore(b, pos, slot, tally);
     if (sA !== sB) return sB - sA;
@@ -147,7 +157,11 @@ export function computeAutoAssign(positions, staffList, tally = {}) {
       });
       return total;
     };
+    const crossGender = (staff) =>
+      group.reduce((acc, p) => acc + genderMatchScore(staff, p), 0);
     candidates.sort((a, b) => {
+      const ga = crossGender(a), gb = crossGender(b);
+      if (ga !== gb) return gb - ga;
       const sa = crossScore(a), sb = crossScore(b);
       if (sa !== sb) return sb - sa;
       const ca = crossCat(a), cb = crossCat(b);

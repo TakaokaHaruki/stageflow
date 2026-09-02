@@ -21,6 +21,7 @@ import { motion } from "framer-motion";
 import { useCaptureTags } from "@/hooks/useCaptureTags";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import CategoryPicker from "@/components/CategoryPicker";
+import GenderToggle from "@/components/GenderToggle";
 
 const PRESET_COLORS = [
   "#6366f1", "#3b82f6", "#10b981", "#f59e0b",
@@ -42,6 +43,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     required_skills: position?.required_skills || [],
     required_roles: position?.required_roles || [],
     category: position?.category || "",
+    recommended_gender: position?.recommended_gender || "",
     chief_names: (() => {
       const assigned = position?.staff_names || [];
       const candidates = position?.chief_names?.length ? position.chief_names : (position?.chief_name ? [position.chief_name] : []);
@@ -146,6 +148,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     prev.split_by_side !== cur.split_by_side ||
     prev.color !== cur.color ||
     prev.category !== cur.category ||
+    prev.recommended_gender !== cur.recommended_gender ||
     JSON.stringify(prev.chief_names) !== JSON.stringify(cur.chief_names) ||
     JSON.stringify(prev.required_skills) !== JSON.stringify(cur.required_skills) ||
     JSON.stringify(prev.required_roles) !== JSON.stringify(cur.required_roles);
@@ -243,14 +246,20 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     if (pt) {
       const nextSplit = Boolean(pt.split_by_side);
       setForm((f) => {
+        const inherit = {
+          name: pt.name,
+          color: pt.color || f.color,
+          category: pt.category || f.category,
+          recommended_gender: pt.recommended_gender || "",
+        };
         if (nextSplit === f.split_by_side) {
-          return { ...f, name: pt.name, color: pt.color || f.color, category: pt.category || f.category };
+          return { ...f, ...inherit };
         }
         if (nextSplit) {
-          return { ...f, name: pt.name, color: pt.color || f.color, category: pt.category || f.category, split_by_side: true, staff_names_kamite: [...f.staff_names], staff_names_shimote: [] };
+          return { ...f, ...inherit, split_by_side: true, staff_names_kamite: [...f.staff_names], staff_names_shimote: [] };
         } else {
           const merged = [...new Set([...f.staff_names_kamite, ...f.staff_names_shimote])];
-          return { ...f, name: pt.name, color: pt.color || f.color, category: pt.category || f.category, split_by_side: false, staff_names: merged, staff_names_kamite: [], staff_names_shimote: [] };
+          return { ...f, ...inherit, split_by_side: false, staff_names: merged, staff_names_kamite: [], staff_names_shimote: [] };
         }
       });
     }
@@ -461,6 +470,13 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
             <Label>属性</Label>
             <div className="mt-1.5">
               <CategoryPicker value={form.category} onChange={(v) => setForm((f) => ({ ...f, category: v }))} />
+            </div>
+          </div>
+
+          <div>
+            <Label>推奨性別（自動配置で優先マッチング）</Label>
+            <div className="mt-1.5">
+              <GenderToggle value={form.recommended_gender} onChange={(v) => setForm((f) => ({ ...f, recommended_gender: v }))} />
             </div>
           </div>
 
