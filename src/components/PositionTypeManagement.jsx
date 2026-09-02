@@ -27,7 +27,7 @@ const PRESET_COLORS = [
   "#ef4444", "#8b5cf6", "#06b6d4", "#f97316",
 ];
 
-export default function PositionTypeManagement({ eventId, section = "positions", isLocked = false }) {
+export default function PositionTypeManagement({ eventId, section = "positions", isLocked = false, mode = "full" }) {
   const [name, setName] = useState("");
   const [color, setColor] = useState(PRESET_COLORS[0]);
   const [category, setCategory] = useState("");
@@ -37,6 +37,8 @@ export default function PositionTypeManagement({ eventId, section = "positions",
   const queryClient = useQueryClient();
   const { canEdit } = useUserRole();
   const isAdmin = canEdit && !isLocked;
+  const showSideToggle = mode !== "global" && !!eventId;
+  const showCrud = mode !== "event-side";
   const { record } = useOperationLog(eventId);
   const { allRoles, getBadgeClass } = useAllRoles();
 
@@ -50,6 +52,7 @@ export default function PositionTypeManagement({ eventId, section = "positions",
   const { data: sideSettings } = useQuery({
     queryKey: ["positionSideSettings", eventId],
     queryFn: () => loadPositionSideSettings(base44, eventId),
+    enabled: !!eventId,
     staleTime: 30_000,
     refetchInterval: LIVE_SYNC_INTERVAL,
   });
@@ -59,6 +62,7 @@ export default function PositionTypeManagement({ eventId, section = "positions",
   const { data: event } = useQuery({
     queryKey: ["event", eventId],
     queryFn: () => loadEventById(eventId),
+    enabled: !!eventId,
     refetchInterval: LIVE_SYNC_INTERVAL,
   });
 
@@ -240,10 +244,12 @@ export default function PositionTypeManagement({ eventId, section = "positions",
       {/* Position type section */}
       <SectionHeader
         icon={Settings}
-        title="ポジション設定"
-        subtitle="プリセット適用時に使用されるポジション一覧です。"
+        title={mode === "event-side" ? "上手/下手分割" : "ポジション設定"}
+        subtitle={mode === "event-side" ? "各ポジションの上手/下手分割を設定します。" : "プリセット適用時に使用されるポジション一覧です。"}
       />
 
+      {showCrud && (
+      <>
       {/* Add form */}
       <div className="bg-card border border-border rounded-xl p-2.5 mb-2">
         <p className="text-[11px] font-medium mb-1.5 text-muted-foreground">ポジションを追加</p>
@@ -265,6 +271,8 @@ export default function PositionTypeManagement({ eventId, section = "positions",
           </div>
         </div>
       </div>
+      </>
+      )}
 
       {isLocked && <div className="mb-2"><EventLockBanner /></div>}
 
@@ -287,7 +295,7 @@ export default function PositionTypeManagement({ eventId, section = "positions",
               onDrop={(e) => handleDrop(e, pt.id)}
             >
               <div className="flex items-center gap-2">
-                {isAdmin && (
+                {showCrud && isAdmin && (
                   <div draggable onDragStart={(e) => handleDragStart(e, pt.id)}
                     onDragEnd={() => { setDraggingId(null); setDragOverId(null); }}
                     className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground shrink-0">
@@ -296,6 +304,7 @@ export default function PositionTypeManagement({ eventId, section = "positions",
                 )}
                 <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: pt.color || "#6366f1" }} />
                 <span className="font-medium text-xs flex-1 min-w-0 truncate">{pt.name}</span>
+                {showSideToggle && (
                 <label className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0 select-none">
                   <input
                     type="checkbox"
@@ -306,11 +315,15 @@ export default function PositionTypeManagement({ eventId, section = "positions",
                   />
                   上手/下手
                 </label>
+                )}
+                {showCrud && (
                 <button onClick={() => setConfirmDelete({ id: pt.id, name: pt.name })} disabled={!isAdmin}
                   className="p-1 rounded hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
+                )}
               </div>
+              {showCrud && (
               <div className="flex flex-wrap items-center gap-1 mt-1.5 pl-5">
                 <span className="text-[10px] text-muted-foreground mr-0.5">属性:</span>
                 <div className="flex-1 min-w-0">
@@ -321,6 +334,8 @@ export default function PositionTypeManagement({ eventId, section = "positions",
                   />
                 </div>
               </div>
+              )}
+              {showCrud && (
               <div className="flex flex-wrap items-center gap-1 mt-1.5 pl-5">
                 <span className="text-[10px] text-muted-foreground mr-0.5">必要役割:</span>
                 {allRoles.map((role) => {
@@ -338,6 +353,7 @@ export default function PositionTypeManagement({ eventId, section = "positions",
                   );
                 })}
               </div>
+              )}
             </div>
           ))}
         </div>
@@ -351,7 +367,7 @@ export default function PositionTypeManagement({ eventId, section = "positions",
 
       </>
       )}
-      {section === "presets" && <PositionPresetManager eventId={eventId} />}
+      {section === "presets" && <PositionPresetManager eventId={eventId} mode={mode} />}
     </div>
   );
 }

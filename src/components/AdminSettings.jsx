@@ -1,27 +1,13 @@
 import ActivityLogViewer from "@/components/ActivityLogViewer";
-import UserRoleManager from "@/components/UserRoleManager";
-import PortalRestrictionManager from "@/components/PortalRestrictionManager";
 import AccessRestrictionManager from "@/components/AccessRestrictionManager";
-import GlobalBannerManager from "@/components/GlobalBannerManager";
-import TabControlManager from "@/components/TabControlManager";
 import StaffQrExport from "@/components/StaffQrExport";
-import PinCodeManager from "@/components/PinCodeManager";
-import LoginHelpManager from "@/components/LoginHelpManager";
-import DataMaintenanceSection from "@/components/DataMaintenanceSection";
 
-export default function AdminSettings({ eventId, section = "users" }) {
+export default function AdminSettings({ eventId, section = "operation_logs" }) {
   return (
     <div>
-      {section === "users" && <UserRoleManager />}
       {section === "operation_logs" && <ActivityLogViewer eventId={eventId} />}
       {section === "access_restriction" && <AccessRestrictionManager eventId={eventId} />}
-      {section === "portal_restriction" && <PortalRestrictionManager />}
-      {section === "global_banner" && <GlobalBannerManager />}
-      {section === "tab_control" && <TabControlManager />}
       {section === "staff_qr" && <StaffQrExport eventId={eventId} />}
-      {section === "pin_management" && <PinCodeManager />}
-      {section === "login_help" && <LoginHelpManager />}
-      {section === "data_maintenance" && <DataMaintenanceSection />}
     </div>
   );
 }

@@ -47,7 +47,7 @@ export default function EventDetail() {
   const [tabResetKey, setTabResetKey] = useState(0);
   const [showScreenSaver, setShowScreenSaver] = useState(false);
   const [confirmScreenSaver, setConfirmScreenSaver] = useState(false);
-  const [adminSection, setAdminSection] = useState("users"); // 'users' | 'operation_logs' | 'view_logs' | 'portal_restriction'
+  const [adminSection, setAdminSection] = useState("operation_logs"); // 'operation_logs' | 'access_restriction' | 'staff_qr'
   const [settingsSection, setSettingsSection] = useState("positions");
   const topBarRef = useRef(null);
   const [topBarHeight, setTopBarHeight] = useState(56);
@@ -191,24 +191,15 @@ export default function EventDetail() {
   const isManagementTab = managementTabs.some(({ id }) => id === activeTab);
   const activeManagementChildren = activeTab === "admin"
     ? [
-        { id: "users", label: "ユーザー管理", icon: Users },
         { id: "operation_logs", label: "操作ログ", icon: FileText },
         { id: "access_restriction", label: "アクセス制限", icon: Lock },
-        { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
-        { id: "global_banner", label: "グローバル通知", icon: Bell },
-        { id: "tab_control", label: "タブ制御", icon: LayoutTemplate },
         { id: "staff_qr", label: "スタッフ QR 出力", icon: QrCode },
-        { id: "pin_management", label: "PIN管理", icon: KeyRound },
-        { id: "login_help", label: "ログイン案内", icon: HelpCircle },
-        { id: "data_maintenance", label: "データメンテナンス", icon: Database },
       ]
     : activeTab === "settings"
       ? [
-          { id: "positions", label: "ポジション設定", icon: Settings },
-          { id: "presets", label: "ポジションプリセット", icon: ClipboardList },
-          { id: "venues", label: "会場管理", icon: LayoutTemplate },
-          ...(isPrivileged ? [{ id: "pos_notes", label: "ポジション説明", icon: FileText }] : []),
-          { id: "tag_management", label: "タグ・役割管理", icon: Tag },
+          { id: "pos_notes", label: "ポジション説明", icon: FileText },
+          { id: "side_split", label: "上手/下手分割", icon: Settings },
+          { id: "preset_apply", label: "プリセット適用", icon: ClipboardList },
           { id: "emergency_contacts", label: "緊急連絡先", icon: Phone },
         ]
       : [];
@@ -344,11 +335,9 @@ export default function EventDetail() {
                 section={adminSection}
               />
             )}
-            {activeTab === "settings" && settingsSection === "positions" && <PositionTypeManagement eventId={eventId} section="positions" isLocked={eventLocked} />}
-            {activeTab === "settings" && settingsSection === "presets" && <PositionTypeManagement eventId={eventId} section="presets" />}
-            {activeTab === "settings" && settingsSection === "venues" && <VenueManager />}
             {activeTab === "settings" && settingsSection === "pos_notes" && <PositionNotesEditor eventId={eventId} isLocked={eventLocked} />}
-            {activeTab === "settings" && settingsSection === "tag_management" && <TagManagement />}
+            {activeTab === "settings" && settingsSection === "side_split" && <PositionTypeManagement eventId={eventId} section="positions" mode="event-side" isLocked={eventLocked} />}
+            {activeTab === "settings" && settingsSection === "preset_apply" && <PositionTypeManagement eventId={eventId} section="presets" mode="event-apply" />}
             {activeTab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} isLocked={eventLocked} />}
             {activeTab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
             {activeTab === "files" && <SharedFileManager eventId={eventId} showAll={true} isLocked={eventLocked} />}

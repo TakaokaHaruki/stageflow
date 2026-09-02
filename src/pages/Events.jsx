@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { Calendar, MapPin, ChevronRight, Trash2, Pencil, Search, Plus, ShieldCheck, User, LogOut, LogIn } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
-import AdminUserModal from "@/components/AdminUserModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion } from "framer-motion";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -29,7 +28,6 @@ import { Input } from "@/components/ui/input";
 export default function Events() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
-  const [showAdminModal, setShowAdminModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -193,12 +191,12 @@ export default function Events() {
         <SidebarNav
           tabs={[
             ...(canEdit ? [{ id: "new", label: "新規イベント", icon: Plus }] : []),
-            ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : [])
+            ...(canEdit ? [{ id: "management", label: "管理設定", icon: ShieldCheck }] : [])
           ]}
           activeTab=""
           onSelectTab={(tabId) => {
             if (tabId === "new") { setEditingEvent(null); setShowModal(true); }
-            if (tabId === "admin") setShowAdminModal(true);
+            if (tabId === "management") navigate("/management");
           }}
           topOffset={56}
         />
@@ -311,11 +309,9 @@ export default function Events() {
         isAdmin={isAdmin}
         currentUser={currentUser}
         onNewEvent={() => { setEditingEvent(null); setShowModal(true); }}
-        onAdminSettings={() => setShowAdminModal(true)}
+        onAdminSettings={() => navigate("/management")}
         onCurrentUserChange={setCurrentUser}
       />
-
-      {showAdminModal && <AdminUserModal onClose={() => setShowAdminModal(false)} />}
 
       {showModal &&
       <EventFormModal

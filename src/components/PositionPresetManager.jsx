@@ -79,7 +79,7 @@ function SlotPositionSelector({ slot, selectedIds, positionTypes, onChange }) {
   );
 }
 
-function PresetCard({ preset, eventId, event, onDelete, isAdmin, positionTypes }) {
+function PresetCard({ preset, eventId, event, onDelete, isAdmin, positionTypes, showApply, showCrud }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(preset.name);
@@ -143,26 +143,28 @@ function PresetCard({ preset, eventId, event, onDelete, isAdmin, positionTypes }
           {preset.description && <p className="text-xs text-muted-foreground">{preset.description}</p>}
           <p className="text-xs text-muted-foreground mt-0.5">{TIME_SLOTS.map((s) => `${s}: ${(slotMap[s] || []).length}件`).join("　")}</p>
         </div>
-        {isActive ? (
-          <Button size="sm" variant="outline" className="gap-1 h-7 text-xs shrink-0" disabled={!isAdmin || clearMutation.isPending}
-            onClick={() => setConfirm({ type: 'clear' })}>{clearMutation.isPending ? "解除中..." : "解除"}</Button>
-        ) : (
-          <Button size="sm" className="gap-1 h-7 text-xs shrink-0" disabled={!isAdmin || applyMutation.isPending}
-            onClick={() => setConfirm({ type: 'apply' })}>
-            <Zap className="w-3 h-3" />{applyMutation.isPending ? "適用中..." : "適用"}
-          </Button>
+        {showApply && (
+          isActive ? (
+            <Button size="sm" variant="outline" className="gap-1 h-7 text-xs shrink-0" disabled={!isAdmin || clearMutation.isPending}
+              onClick={() => setConfirm({ type: 'clear' })}>{clearMutation.isPending ? "解除中..." : "解除"}</Button>
+          ) : (
+            <Button size="sm" className="gap-1 h-7 text-xs shrink-0" disabled={!isAdmin || applyMutation.isPending}
+              onClick={() => setConfirm({ type: 'apply' })}>
+              <Zap className="w-3 h-3" />{applyMutation.isPending ? "適用中..." : "適用"}
+            </Button>
+          )
         )}
-        {isAdmin && <button onClick={() => { setEditName(preset.name); setEditDesc(preset.description || ""); setEditSlots(preset.slot_positions || {}); setEditing(true); setExpanded(false); }} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors"><Pencil className="w-4 h-4" /></button>}
-        <button onClick={() => setConfirm({ type: 'delete' })} disabled={!isAdmin}
+        {showCrud && isAdmin && <button onClick={() => { setEditName(preset.name); setEditDesc(preset.description || ""); setEditSlots(preset.slot_positions || {}); setEditing(true); setExpanded(false); }} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors"><Pencil className="w-4 h-4" /></button>}
+        {showCrud && <button onClick={() => setConfirm({ type: 'delete' })} disabled={!isAdmin}
           className="p-1.5 rounded-lg hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none">
           <Trash2 className="w-4 h-4" />
-        </button>
+        </button>}
         <button onClick={() => setExpanded(!expanded)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground">
           {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
       </div>
 
-      {editing && (
+      {showCrud && editing && (
         <div className="border-t border-border px-4 py-3 space-y-2">
           <p className="text-xs font-semibold text-muted-foreground mb-2">プリセットを編集</p>
           <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="プリセット名" className="h-8 text-sm" />
@@ -213,7 +215,7 @@ function PresetCard({ preset, eventId, event, onDelete, isAdmin, positionTypes }
   );
 }
 
-export default function PositionPresetManager({ eventId }) {
+export default function PositionPresetManager({ eventId, mode = "full" }) {
   const [creating, setCreating] = useState(false);
   const [presetName, setPresetName] = useState("");
   const [presetDesc, setPresetDesc] = useState("");
@@ -221,9 +223,12 @@ export default function PositionPresetManager({ eventId }) {
   const queryClient = useQueryClient();
   const { canEdit: isAdmin } = useUserRole();
 
+  const showApply = mode !== "global";
+  const showCrud = mode !== "event-apply";
+
   const { data: presets = [], isLoading } = useQuery({ queryKey: ["positionPresets"], queryFn: () => base44.entities.PositionPreset.list(), refetchInterval: LIVE_SYNC_INTERVAL });
   const { data: positionTypes = [] } = useQuery({ queryKey: ["positionTypes"], queryFn: () => base44.entities.PositionType.list(), refetchInterval: LIVE_SYNC_INTERVAL });
-  const { data: event } = useQuery({ queryKey: ["event", eventId], queryFn: () => loadEventById(eventId), refetchInterval: LIVE_SYNC_INTERVAL });
+  const { data: event } = useQuery({ queryKey: ["event", eventId], queryFn: () => loadEventById(eventId), enabled: !!eventId, refetchInterval: LIVE_SYNC_INTERVAL });
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.functions.invoke("updatePositionPresetRecord", { action: "create", data }),
@@ -243,15 +248,16 @@ export default function PositionPresetManager({ eventId }) {
     <div>
       <SectionHeader
         icon={BookOpen}
-        title="ポジションプリセット"
-        actions={isAdmin && !creating && (
+        title={mode === "event-apply" ? "プリセット適用" : "ポジションプリセット"}
+        subtitle={mode === "event-apply" ? "このイベントに適用するプリセットを選択します。" : "全イベントで共通して利用できるプリセットです。"}
+        actions={showCrud && isAdmin && !creating && (
           <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2" onClick={() => setCreating(true)}>
             <Plus className="w-3.5 h-3.5" />新規プリセット
           </Button>
         )}
       />
 
-      {creating && (
+      {showCrud && creating && (
         <div className="bg-card border border-border rounded-xl p-3 mb-3">
           <p className="text-xs font-semibold text-muted-foreground mb-3">新規プリセット作成</p>
           <div className="space-y-2 mb-4">
@@ -283,7 +289,8 @@ export default function PositionPresetManager({ eventId }) {
         <div className="space-y-2">
           {presets.map((preset) => (
             <PresetCard key={preset.id} preset={preset} eventId={eventId} event={event}
-              onDelete={(id) => deleteMutation.mutate(id)} isAdmin={isAdmin} positionTypes={positionTypes} />
+              onDelete={(id) => deleteMutation.mutate(id)} isAdmin={isAdmin} positionTypes={positionTypes}
+              showApply={showApply} showCrud={showCrud} />
           ))}
         </div>
       )}

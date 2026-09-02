@@ -25,7 +25,7 @@ export default function EventsBottomBar({ canEdit, isAdmin, currentUser, onNewEv
 
   const primaryActions = [];
   if (canEdit) primaryActions.push({ id: "new", label: "新規", icon: Plus, onClick: onNewEvent });
-  if (isAdmin) primaryActions.push({ id: "admin", label: "管理者", icon: ShieldCheck, onClick: onAdminSettings });
+  if (canEdit) primaryActions.push({ id: "management", label: "管理設定", icon: ShieldCheck, onClick: onAdminSettings });
 
   const toggleTheme = () => setIsDark(!isDark);
 
