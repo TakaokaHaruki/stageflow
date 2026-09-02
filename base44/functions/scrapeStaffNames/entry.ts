@@ -97,6 +97,27 @@ Deno.serve(async (req) => {
       staffList.push({ name, acast_id, type, memo, defaultChecked });
     }
 
+    // 過去イベントで性別が設定されているスタッフがいれば、acast_id で突合して自動反映
+    const acastIds = staffList.map(s => s.acast_id).filter(id => id);
+    if (acastIds.length > 0) {
+      try {
+        const pastStaff = await base44.asServiceRole.entities.Staff.filter({ acast_id: { $in: acastIds }, gender: { $ne: "" } });
+        const genderByAcast = {};
+        for (const ps of pastStaff) {
+          if (ps.acast_id && ps.gender && !genderByAcast[ps.acast_id]) {
+            genderByAcast[ps.acast_id] = ps.gender;
+          }
+        }
+        for (const s of staffList) {
+          if (s.acast_id && genderByAcast[s.acast_id]) {
+            s.gender = genderByAcast[s.acast_id];
+          }
+        }
+      } catch (e) {
+        // 過去スタッフの突合に失敗しても取得自体は継続
+      }
+    }
+
     if (staffList.length === 0) {
       return Response.json({ staffList: [], message: '名前が見つかりませんでした。URLやページ構造を確認してください。' });
     }

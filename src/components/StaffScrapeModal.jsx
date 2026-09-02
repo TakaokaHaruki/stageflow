@@ -64,7 +64,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
         data.staffList.forEach((s, i) => {
           const isExcludedType = EXCLUDED_TYPES.some(t => s.type?.includes(t));
           initChecked[i] = isExcludedType ? false : (s.defaultChecked && !fetchedExistingNames.has(s.name));
-          initGenders[i] = "";
+          initGenders[i] = s.gender || "";
         });
         setChecked(initChecked);
         setGenders(initGenders);
