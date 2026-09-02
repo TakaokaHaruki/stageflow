@@ -90,11 +90,11 @@ export default function StaffScrapeModal({ eventId, onClose }) {
     const selectedStaff = staffList
       .map((s, i) => ({ s, i }))
       .filter(({ i }) => checked[i])
-      .map(({ s, i }) => ({
-        name: s.name,
-        acast_id: s.acast_id || null,
-        gender: genders[i] || ""
-      }));
+      .map(({ s, i }) => {
+        const gender = genders[i] || "";
+        const color = gender === "男" ? "#2563eb" : gender === "女" ? "#dc2626" : "";
+        return { name: s.name, acast_id: s.acast_id || null, gender, color };
+      });
     if (selectedStaff.length === 0) { setError("スタッフが選択されていません"); return; }
     setLoading(true);
     setError(null);

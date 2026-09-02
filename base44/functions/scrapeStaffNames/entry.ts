@@ -47,7 +47,8 @@ Deno.serve(async (req) => {
             event_id: eventId, 
             name: staff.name,
             acast_id: staff.acast_id || null,
-            gender: staff.gender || ""
+            gender: staff.gender || "",
+            color: staff.color || ""
           });
           addedStaff.push(staff.name);
         } else {
@@ -57,6 +58,7 @@ Deno.serve(async (req) => {
             const updates = {};
             if (staff.acast_id && !existing.acast_id) updates.acast_id = staff.acast_id;
             if (staff.gender && !existing.gender) updates.gender = staff.gender;
+            if (staff.color && !existing.color) updates.color = staff.color;
             if (Object.keys(updates).length > 0) {
               await base44.asServiceRole.entities.Staff.update(existing.id, updates);
             }
