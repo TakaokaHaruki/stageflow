@@ -13,7 +13,6 @@ export default function BackupManager() {
   const [selectedEventId, setSelectedEventId] = useState("");
   const [pendingCompare, setPendingCompare] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
-  const [backingUpEventId, setBackingUpEventId] = useState(null);
 
   const eventsQuery = useQuery({
     queryKey: ["events-for-backup"],
@@ -29,17 +28,29 @@ export default function BackupManager() {
   const createBackupMutation = useMutation({
     mutationFn: ({ eventId, label }) =>
       base44.functions.invoke("backupPositions", { event_id: eventId, label, is_auto: false }),
-    onMutate: ({ eventId }) => setBackingUpEventId(eventId),
     onSuccess: (_data, { eventId }) => {
       toast.success("バックアップを作成しました");
       queryClient.invalidateQueries({ queryKey: ["position-backups", eventId] });
       queryClient.invalidateQueries({ queryKey: ["position-backups", selectedEventId] });
-      setBackingUpEventId(null);
     },
-    onError: (e) => {
-      toast.error(e?.message || "バックアップ作成に失敗しました");
-      setBackingUpEventId(null);
+    onError: (e) => toast.error(e?.message || "バックアップ作成に失敗しました"),
+  });
+
+  const bulkBackupMutation = useMutation({
+    mutationFn: () => base44.functions.invoke("autoBackupAllEvents", { is_auto: false }),
+    onSuccess: (res) => {
+      const data = res?.data || res;
+      const results = data?.results || [];
+      const ok = results.filter((r) => r.status === "success").length;
+      const fail = results.filter((r) => r.status === "error").length;
+      if (fail > 0) {
+        toast.warning(`${ok}件成功・${fail}件失敗しました`);
+      } else {
+        toast.success(`全イベント（${ok}件）のバックアップを作成しました`);
+      }
+      queryClient.invalidateQueries({ queryKey: ["position-backups", selectedEventId] });
     },
+    onError: (e) => toast.error(e?.message || "一括バックアップに失敗しました"),
   });
 
   const restoreMutation = useMutation({
@@ -112,31 +123,16 @@ export default function BackupManager() {
         </div>
 
         <div className="mt-3 pt-3 border-t border-border">
-          <p className="text-xs font-semibold text-muted-foreground mb-2">イベントごとにバックアップ作成</p>
-          <div className="space-y-1.5 max-h-72 overflow-y-auto scrollbar-hide">
-            {events.map((ev) => {
-              const isBackingUp = backingUpEventId === ev.id;
-              return (
-                <div key={ev.id} className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-2.5 py-1.5">
-                  <span className="flex-1 text-sm truncate">{ev.name}</span>
-                  <span className="text-[11px] text-muted-foreground shrink-0">{ev.date || "日付未定"}</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={isBackingUp}
-                    onClick={() => createBackupMutation.mutate({ eventId: ev.id, label: "手動バックアップ" })}
-                    className="gap-1 shrink-0 h-7 px-2"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    {isBackingUp ? "作成中..." : "作成"}
-                  </Button>
-                </div>
-              );
-            })}
-            {events.length === 0 && (
-              <p className="text-xs text-muted-foreground py-4 text-center">対象イベントがありません</p>
-            )}
-          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={bulkBackupMutation.isPending || events.length === 0}
+            onClick={() => bulkBackupMutation.mutate()}
+            className="gap-1 w-full"
+          >
+            <ShieldCheck className="w-4 h-4" />
+            {bulkBackupMutation.isPending ? "一括バックアップ中..." : "全イベント一括バックアップ"}
+          </Button>
         </div>
       </div>
 
