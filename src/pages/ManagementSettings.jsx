@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Users, ShieldCheck, Bell, LayoutTemplate, KeyRound, HelpCircle, Database, Settings, ClipboardList, Tag, LogOut, User as UserIcon } from "lucide-react";
+import { Users, ShieldCheck, Bell, LayoutTemplate, KeyRound, HelpCircle, Database, Settings, ClipboardList, Tag, LogOut, User as UserIcon, HardDriveDownload } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -14,6 +14,7 @@ import TabControlManager from "@/components/TabControlManager";
 import PinCodeManager from "@/components/PinCodeManager";
 import LoginHelpManager from "@/components/LoginHelpManager";
 import DataMaintenanceSection from "@/components/DataMaintenanceSection";
+import BackupManager from "@/components/BackupManager";
 import PositionTypeManagement from "@/components/PositionTypeManagement";
 import PositionPresetManager from "@/components/PositionPresetManager";
 import VenueManager from "@/components/VenueManager";
@@ -28,6 +29,7 @@ const ADMIN_SECTIONS = [
   { id: "pin_management", label: "PIN管理", icon: KeyRound },
   { id: "login_help", label: "ログイン案内", icon: HelpCircle },
   { id: "data_maintenance", label: "データメンテナンス", icon: Database },
+  { id: "backup", label: "バックアップ", icon: HardDriveDownload },
 ];
 const SETTINGS_SECTIONS = [
   { id: "positions", label: "ポジション設定", icon: Settings },
@@ -75,6 +77,7 @@ export default function ManagementSettings() {
         case "pin_management": return <PinCodeManager />;
         case "login_help": return <LoginHelpManager />;
         case "data_maintenance": return <DataMaintenanceSection />;
+        case "backup": return <BackupManager />;
         default: return null;
       }
     }

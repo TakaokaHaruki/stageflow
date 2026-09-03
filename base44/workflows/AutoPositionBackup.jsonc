@@ -1,0 +1,45 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 3 * * *",
+      "one_time_date": null,
+      "timezone": "Asia/Tokyo",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "\u6bce\u65e5\u5348\u524d3\u6642\u306b\u5168\u30a4\u30d9\u30f3\u30c8\u306e\u914d\u7f6e\u8868\u3092\u81ea\u52d5\u30d0\u30c3\u30af\u30a2\u30c3\u30d7\u3057\u307e\u3059\uff08\u5404\u30a4\u30d9\u30f3\u30c8\u6700\u65b010\u4ef6\u30fb\u5168\u4f5330\u4ef6\u307e\u3067\u4fdd\u6301\uff09",
+  "name": "\u914d\u7f6e\u81ea\u52d5\u30d0\u30c3\u30af\u30a2\u30c3\u30d7",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_position_backup",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_backup": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoBackupAllEvents",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "\u5168\u30a4\u30d9\u30f3\u30c8\u306e\u914d\u7f6e\u3092\u30d0\u30c3\u30af\u30a2\u30c3\u30d7",
+            "description": "\u6bce\u65e53\u6642\u81ea\u52d5\u5b9f\u884c"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "name": "PositionBackup",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "\u30a4\u30d9\u30f3\u30c8ID"
+    },
+    "label": {
+      "type": "string",
+      "description": "\u30d0\u30c3\u30af\u30a2\u30c3\u30d7\u30e9\u30d9\u30eb",
+      "default": ""
+    },
+    "backup_data": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "\u30dd\u30b8\u30b7\u30e7\u30f3\u30b9\u30ca\u30c3\u30d7\u30b7\u30e7\u30c3\u30c8\u914d\u5217\uff08id/created_date\u7b49\u3092\u9664\u3044\u305f\u5168\u30d5\u30a3\u30fc\u30eb\u30c9\uff09",
+      "default": []
+    },
+    "position_count": {
+      "type": "number",
+      "description": "\u30dd\u30b8\u30b7\u30e7\u30f3\u6570",
+      "default": 0
+    },
+    "is_auto": {
+      "type": "boolean",
+      "description": "\u81ea\u52d5\u30d0\u30c3\u30af\u30a2\u30c3\u30d7\u304b\u3069\u3046\u304b",
+      "default": false
+    },
+    "created_by_name": {
+      "type": "string",
+      "description": "\u4f5c\u6210\u8005\u540d",
+      "default": ""
+    },
+    "created_at_jst": {
+      "type": "string",
+      "description": "\u4f5c\u6210\u65e5\u6642(JST YYYY-MM-DD HH:mm)"
+    }
+  },
+  "required": [
+    "event_id"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    }
+  }
+}
