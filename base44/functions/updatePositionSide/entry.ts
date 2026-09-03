@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { eventLockResponse, eventLockResponseByPosition } from '../../shared/eventLock.ts';
 
 const unique = (items = []) => [...new Set(items.filter(Boolean))];
-const ALLOWED_UPDATE_FIELDS = ['order', 'required_count', 'notes', 'color', 'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote', 'category', 'chief_name', 'chief_names'];
+const ALLOWED_UPDATE_FIELDS = ['order', 'required_count', 'notes', 'color', 'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote', 'category', 'chief_name', 'chief_names', 'parts'];
 
 Deno.serve(async (req) => {
   try {
@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
       const allowedFields = [
         'name', 'time_slot', 'notes', 'color', 'category', 'recommended_gender',
         'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote',
-        'required_count', 'order', 'chief_name', 'chief_names',
+        'required_count', 'order', 'chief_name', 'chief_names', 'parts',
       ];
       const extraFields = Object.fromEntries(
         allowedFields
@@ -245,6 +245,104 @@ Deno.serve(async (req) => {
           split_by_side: splitBySide,
         },
       });
+    }
+
+    // 複数公演モード：部間同期（共有レコード化）／解除（部ごとに分割コピー）
+    if (action === 'syncShowParts') {
+      const { timeSlot, group, mode: syncMode } = body;
+      if (!eventId || !timeSlot || !Array.isArray(group) || group.length === 0) {
+        return Response.json({ error: 'eventId, timeSlot, group are required' }, { status: 400 });
+      }
+      const lockResp = await eventLockResponse(base44, eventId, user);
+      if (lockResp) return lockResp;
+
+      const groupKey = [...new Set(group)].sort((a, b) => a - b);
+      const allPositions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
+      const slotPositions = allPositions.filter((p) => (p.time_slot || '開場中') === timeSlot);
+      const partsOf = (p) => (Array.isArray(p.parts) && p.parts.length ? p.parts : [1]);
+
+      if (syncMode === 'sync') {
+        const inGroup = slotPositions.filter((p) => partsOf(p).some((pp) => groupKey.includes(pp)));
+        const byName = new Map();
+        for (const p of inGroup) {
+          if (!byName.has(p.name)) byName.set(p.name, []);
+          byName.get(p.name).push(p);
+        }
+        const toUpdate = [];
+        const toDelete = [];
+        for (const [, arr] of byName) {
+          const [keep, ...rest] = arr;
+          const staffNames = unique(arr.flatMap((p) => p.staff_names || []));
+          const kamite = unique(arr.flatMap((p) => p.staff_names_kamite || []));
+          const shimote = unique(arr.flatMap((p) => p.staff_names_shimote || []));
+          const chiefNames = unique(arr.flatMap((p) => p.chief_names || []));
+          const reqCount = Math.max(0, ...arr.map((p) => p.required_count || 0));
+          const splitBySide = arr.some((p) => p.split_by_side);
+          toUpdate.push({ id: keep.id, staffNames, kamite, shimote, chiefNames, reqCount, splitBySide });
+          toDelete.push(...rest.map((r) => r.id));
+        }
+        for (const u of toUpdate) {
+          await base44.asServiceRole.entities.Position.update(u.id, {
+            parts: groupKey,
+            staff_names: u.staffNames,
+            staff_names_kamite: u.kamite,
+            staff_names_shimote: u.shimote,
+            chief_names: u.chiefNames,
+            required_count: u.reqCount,
+            split_by_side: u.splitBySide,
+          });
+        }
+        if (toDelete.length) {
+          await Promise.all(toDelete.map((id) => base44.asServiceRole.entities.Position.delete(id)));
+        }
+        return Response.json({ ok: true, updated: toUpdate.length, deleted: toDelete.length });
+      }
+
+      if (syncMode === 'unlink') {
+        const shared = slotPositions.filter((p) => {
+          const parts = [...partsOf(p)].sort((a, b) => a - b);
+          return parts.length === groupKey.length && parts.every((pp, i) => pp === groupKey[i]);
+        });
+        const toCreate = [];
+        for (const p of shared) {
+          const [first, ...rest] = groupKey;
+          await base44.asServiceRole.entities.Position.update(p.id, { parts: [first] });
+          for (const partNum of rest) {
+            toCreate.push({
+              event_id: eventId,
+              name: p.name,
+              time_slot: p.time_slot,
+              category: p.category || '',
+              recommended_gender: p.recommended_gender || '',
+              staff_names: p.staff_names || [],
+              staff_names_kamite: p.staff_names_kamite || [],
+              staff_names_shimote: p.staff_names_shimote || [],
+              split_by_side: Boolean(p.split_by_side),
+              notes: p.notes || '',
+              color: p.color || '',
+              map_x: p.map_x ?? null,
+              map_y: p.map_y ?? null,
+              map_x_kamite: p.map_x_kamite ?? null,
+              map_y_kamite: p.map_y_kamite ?? null,
+              map_x_shimote: p.map_x_shimote ?? null,
+              map_y_shimote: p.map_y_shimote ?? null,
+              required_count: p.required_count ?? 0,
+              required_skills: p.required_skills || [],
+              required_roles: p.required_roles || [],
+              chief_name: p.chief_name || '',
+              chief_names: p.chief_names || [],
+              order: p.order ?? 0,
+              parts: [partNum],
+            });
+          }
+        }
+        if (toCreate.length) {
+          await Promise.all(toCreate.map((c) => base44.asServiceRole.entities.Position.create(c)));
+        }
+        return Response.json({ ok: true, split: shared.length });
+      }
+
+      return Response.json({ error: 'invalid sync mode' }, { status: 400 });
     }
 
     return Response.json({ error: 'unknown action' }, { status: 400 });

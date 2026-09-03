@@ -135,6 +135,21 @@
       "default": false,
       "description": "\u4e00\u65e5\u901a\u3057\u30e2\u30fc\u30c9\uff08\u6642\u9593\u5e2f\u533a\u5206\u306a\u3057\u30fb\u5927\u578b\u30d5\u30a7\u30b9\u7b49\uff09"
     },
+    "multi_show_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u8907\u6570\u516c\u6f14\u30e2\u30fc\u30c9\uff081\u90e8\u30fcN\u90e8\u306e\u5404\u516c\u6f14\u3054\u3068\u306b\u958b\u5834\u4e2d\u30fb\u958b\u6f14\u4e2d\u30fb\u7d42\u6f14\u5f8c\u3092\u7ba1\u7406\uff09\u3002\u901a\u3057\u30e2\u30fc\u30c9\u3068\u306f\u6392\u4ed6"
+    },
+    "show_count": {
+      "type": "number",
+      "default": 1,
+      "description": "\u8907\u6570\u516c\u6f14\u30e2\u30fc\u30c9\u6642\u306e\u516c\u6f14\u6570\uff08\u90e8\u6570\uff09"
+    },
+    "show_sync": {
+      "type": "object",
+      "description": "\u90e8\u9593\u540c\u671f\u8a2d\u5b9a { \u6642\u9593\u5e2f: [\u540c\u671f\u3059\u308b\u90e8\u756a\u53f7...] }\u3002\u4f8b: {\"\u958b\u5834\u4e2d\": [1,2]}",
+      "default": {}
+    },
     "admin_only": {
       "type": "boolean",
       "default": false,

@@ -28,10 +28,11 @@ const PRESET_COLORS = [
   "#ef4444", "#8b5cf6", "#06b6d4", "#f97316",
 ];
 
-export default function PositionFormModal({ position, eventId, defaultTimeSlot = "開場中", continuousMode = false, onClose, onSaved, onDelete }) {
+export default function PositionFormModal({ position, eventId, defaultTimeSlot = "開場中", continuousMode = false, multiShowMode = false, currentPart = 1, partsCount = 1, onClose, onSaved, onDelete }) {
   const [form, setForm] = useState({
     name: position?.name || "",
     time_slot: position?.time_slot || (continuousMode ? "通し" : defaultTimeSlot),
+    parts: position?.parts && position.parts.length ? [...position.parts] : (multiShowMode ? [currentPart] : []),
     staff_names: position?.staff_names || [],
     staff_names_kamite: position?.staff_names_kamite || [],
     staff_names_shimote: position?.staff_names_shimote || [],
@@ -151,7 +152,8 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     prev.recommended_gender !== cur.recommended_gender ||
     JSON.stringify(prev.chief_names) !== JSON.stringify(cur.chief_names) ||
     JSON.stringify(prev.required_skills) !== JSON.stringify(cur.required_skills) ||
-    JSON.stringify(prev.required_roles) !== JSON.stringify(cur.required_roles);
+    JSON.stringify(prev.required_roles) !== JSON.stringify(cur.required_roles) ||
+    JSON.stringify(prev.parts) !== JSON.stringify(cur.parts);
 
   useEffect(() => {
     if (!position) return;
@@ -331,6 +333,33 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
               placeholder="時間帯を選択"
             />
           </div>
+
+          {multiShowMode && (
+            <div>
+              <Label>対象部（複数選択で部間共有）</Label>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {Array.from({ length: Math.max(1, partsCount) }, (_, i) => i + 1).map((part) => {
+                  const active = (form.parts || []).includes(part);
+                  return (
+                    <button
+                      key={part}
+                      type="button"
+                      onClick={() => setForm((f) => {
+                        const cur = f.parts || [];
+                        return { ...f, parts: cur.includes(part) ? cur.filter((p) => p !== part) : [...cur, part] };
+                      })}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${active ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}
+                    >
+                      {part}部
+                    </button>
+                  );
+                })}
+              </div>
+              {(form.parts || []).length > 1 && (
+                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">複数部で共有中（編集が全ての部に反映されます）</p>
+              )}
+            </div>
+          )}
 
           {/* 上手下手 split toggle */}
           <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2">

@@ -26,6 +26,8 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     time_start: event?.time_start || "",
     time_end: event?.time_end || "",
     continuous_mode: event?.continuous_mode || false,
+    multi_show_mode: event?.multi_show_mode || false,
+    show_count: event?.show_count || 1,
   });
   const [uploadingMap, setUploadingMap] = useState(false);
   const fileInputRef = useRef(null);
@@ -126,7 +128,9 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     prev.time_open !== cur.time_open ||
     prev.time_start !== cur.time_start ||
     prev.time_end !== cur.time_end ||
-    prev.continuous_mode !== cur.continuous_mode;
+    prev.continuous_mode !== cur.continuous_mode ||
+    prev.multi_show_mode !== cur.multi_show_mode ||
+    prev.show_count !== cur.show_count;
 
   useEffect(() => {
     if (!event || !form.name) return;
@@ -314,8 +318,36 @@ export default function EventFormModal({ event, onClose, onSaved }) {
             </div>
             <Switch
               checked={form.continuous_mode}
-              onCheckedChange={(checked) => setForm({ ...form, continuous_mode: checked })}
+              onCheckedChange={(checked) => setForm({ ...form, continuous_mode: checked, multi_show_mode: checked ? false : form.multi_show_mode })}
             />
+          </div>
+          <div className="rounded-lg border border-border p-3 space-y-2.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-start gap-2">
+                <CalendarClock className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <Label className="cursor-pointer">複数公演モード</Label>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
+                    同一日の複数公演（1部・2部・3部…）を各部ごとに開場中・開演中・終演後で管理します。各部は配置表から切り替えられます。
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={form.multi_show_mode}
+                onCheckedChange={(checked) => setForm({ ...form, multi_show_mode: checked, continuous_mode: checked ? false : form.continuous_mode })}
+              />
+            </div>
+            {form.multi_show_mode && (
+              <div className="flex items-center gap-2 pl-6">
+                <Label className="text-xs text-muted-foreground whitespace-nowrap">公演回数（部数）</Label>
+                <div className="flex items-center border border-border rounded-md overflow-hidden">
+                  <button type="button" onClick={() => setForm({ ...form, show_count: Math.max(2, (form.show_count || 2) - 1) })} className="flex h-7 w-7 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-6 sm:w-6">−</button>
+                  <span className="w-8 text-center text-sm font-semibold">{form.show_count || 2}</span>
+                  <button type="button" onClick={() => setForm({ ...form, show_count: (form.show_count || 2) + 1 })} className="flex h-7 w-7 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-6 sm:w-6">+</button>
+                </div>
+                <span className="text-[10px] text-muted-foreground">部（あとから増減可能）</span>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex gap-2 mt-4">

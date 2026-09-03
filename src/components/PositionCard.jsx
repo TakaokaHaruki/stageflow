@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Pencil, Minus, Plus, Lock, AlertCircle, AlertTriangle } from "lucide-react";
 import { getStaffDisplayName, getStaffColor } from "@/lib/staffName";
+import { getParts, partLabel } from "@/lib/showParts";
 import RoleIcon from "@/components/RoleIcon";
 import { useStaffExperience } from "@/hooks/useStaffExperience";
 
@@ -113,6 +114,7 @@ export default function PositionCard({
   maskStaffNames = false,
   onPosDragStart, onPosDragEnd,
   continuousMode = false,
+  multiShowMode = false,
   eventId = null,
 }) {
   const { hasExperience, isReady } = useStaffExperience(eventId);
@@ -144,6 +146,9 @@ export default function PositionCard({
       >
         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pos.color || "#6366f1" }} />
         <span className="text-xs font-semibold text-foreground">{pos.name}</span>
+        {multiShowMode && getParts(pos).length > 1 && (
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-violet-500/15 text-violet-600 dark:text-violet-300 border border-violet-500/30 shrink-0">{partLabel(getParts(pos))}</span>
+        )}
         {onRequiredCountChange && isAdmin ? (
           <div className="flex items-center border border-border/60 rounded overflow-hidden bg-background ml-1">
             <button type="button" onClick={() => onRequiredCountChange(Math.max(0, requiredCount - 1))}

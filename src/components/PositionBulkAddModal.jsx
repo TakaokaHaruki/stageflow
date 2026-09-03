@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { TIME_SLOTS, CONTINUOUS_SLOT } from "@/lib/constants";
 
-export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開場中", continuousMode = false, onClose, onSaved }) {
+export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開場中", continuousMode = false, multiShowMode = false, defaultParts = null, onClose, onSaved }) {
   const queryClient = useQueryClient();
   const activeSlots = continuousMode ? [CONTINUOUS_SLOT] : TIME_SLOTS;
   const [timeSlot, setTimeSlot] = useState(continuousMode ? CONTINUOUS_SLOT : defaultTimeSlot);
@@ -30,10 +30,14 @@ export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開�
     },
   });
 
-  // Already-added names for the selected time slot
+  // Already-added names for the selected time slot (and same part in multi-show mode)
+  const partMatches = (p) => !multiShowMode || !defaultParts || (() => {
+    const pp = (p.parts && p.parts.length) ? p.parts : [1];
+    return pp.some((n) => defaultParts.includes(n));
+  })();
   const existingNames = new Set(
     existingPositions
-      .filter((p) => (p.time_slot || "開場中") === timeSlot)
+      .filter((p) => (p.time_slot || "開場中") === timeSlot && partMatches(p))
       .map((p) => p.name)
   );
 
@@ -77,6 +81,7 @@ export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開�
       category: pt.category || "",
       required_count: getRequiredCount(pt),
       order: startOrder + idx,
+      ...(multiShowMode && defaultParts ? { parts: defaultParts } : {}),
     }));
 
     try {

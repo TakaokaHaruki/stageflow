@@ -10,6 +10,7 @@ import PositionFormModal from "@/components/PositionFormModal";
 import StaffEditModal from "@/components/StaffEditModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useUserRole } from "@/hooks/useUserRole";
+import { toast } from "sonner";
 import { usePDFExport } from "@/hooks/usePDFExport";
 import { TIME_SLOTS, TIME_SLOT_STYLES, CONTINUOUS_SLOT } from "@/lib/constants";
 import { getStaffDisplayName } from "@/lib/staffName";
@@ -30,6 +31,8 @@ import PresetSelector from "@/components/PresetSelector";
 import AutoAssignModal from "@/components/AutoAssignModal";
 import { useStaffTrends } from "@/hooks/useStaffTrends";
 import BulkDeleteDialog from "@/components/BulkDeleteDialog";
+import ShowSyncModal from "@/components/ShowSyncModal";
+import { getParts } from "@/lib/showParts";
 import SectionHeader from "@/components/SectionHeader";
 import EventLockBanner from "@/components/EventLockBanner";
 import { LOCK_TOOLTIP_TEXT } from "@/lib/eventLock";
@@ -40,6 +43,8 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   const editable = canEdit && !isLocked;
   const { record } = useOperationLog(eventId);
   const [mobileSlot, setMobileSlot] = useState(null);
+  const [selectedPart, setSelectedPart] = useState(1);
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -100,7 +105,15 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   });
 
   const positionTypes = applyPositionSideSettingsToTypes(rawPositionTypes, sideSettings);
-  const positions = applyPositionSideSettingsToPositions(rawPositions, positionTypes, sideSettings);
+  const allPositions = applyPositionSideSettingsToPositions(rawPositions, positionTypes, sideSettings);
+  const multiShowMode = Boolean(event?.multi_show_mode);
+  const partsCount = Math.max(1, event?.show_count || 1);
+  const positions = multiShowMode ? allPositions.filter((p) => getParts(p).includes(selectedPart)) : allPositions;
+
+  // 選中部が範囲外になったら1部に戻す
+  useEffect(() => {
+    if (multiShowMode && selectedPart > partsCount) setSelectedPart(1);
+  }, [multiShowMode, partsCount, selectedPart]);
 
   const updatePositionMutation = useMutation({
     scope: { id: `position-side-${eventId}` },
@@ -327,6 +340,18 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   const [showBulkAddModal, setShowBulkAddModal] = useState(false);
   const openAdd = (slot) => { setDefaultSlot(continuousMode ? CONTINUOUS_SLOT : slot); setShowBulkAddModal(true); };
 
+  const handleAddPart = async () => {
+    const next = partsCount + 1;
+    try {
+      await base44.entities.Event.update(eventId, { show_count: next, multi_show_mode: true });
+      setSelectedPart(next);
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      toast.success(`${next}部目を追加しました`);
+    } catch {
+      toast.error("部の追加に失敗しました");
+    }
+  };
+
   const handleStaffDragStart = (e, staffName) => {
     setDraggedStaff(staffName);
     e.dataTransfer.effectAllowed = "move";
@@ -528,7 +553,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
       <SectionHeader
         icon={ClipboardList}
         title="配置表"
-        description={continuousMode ? "一日通しモードです　各セクションチーフがスタッフを追加することができます" : undefined}
+        description={continuousMode ? "一日通しモードです　各セクションチーフがスタッフを追加することができます" : multiShowMode ? `${selectedPart}部目の配置です　部を切り替えて編集できます` : undefined}
         actions={(
           <>
           {canManageSettings && !isLocked && <PresetSelector eventId={eventId} compact positions={positions} />}
@@ -545,6 +570,29 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
       />
 
       {isLocked && <div className="mb-1.5"><EventLockBanner /></div>}
+
+      {multiShowMode && (
+        <div className="mb-1.5 flex items-center gap-1 flex-wrap rounded-lg border border-border bg-muted/40 p-1">
+          <span className="text-[10px] font-bold text-muted-foreground px-1 shrink-0">公演</span>
+          {Array.from({ length: partsCount }, (_, i) => i + 1).map((part) => (
+            <button
+              key={part}
+              type="button"
+              onClick={() => setSelectedPart(part)}
+              className={`min-h-7 rounded-md px-2.5 text-xs font-semibold transition-colors ${selectedPart === part ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted"}`}
+              aria-pressed={selectedPart === part}
+            >
+              {part}部
+            </button>
+          ))}
+          {canManageSettings && !isLocked && (
+            <>
+              <button type="button" onClick={handleAddPart} className="min-h-7 rounded-md px-2 text-xs font-medium border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors">＋部追加</button>
+              <button type="button" onClick={() => setShowSyncModal(true)} className="min-h-7 rounded-md px-2 text-xs font-medium border border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors ml-auto">部間同期</button>
+            </>
+          )}
+        </div>
+      )}
 
       <div className={`mb-1.5 ${continuousMode ? "grid-cols-2" : "grid-cols-4"} grid gap-1 rounded-lg border border-border bg-muted/40 p-0.5 sm:hidden`}>
         {activeSlots.map((slot) => (
@@ -674,6 +722,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                           onPosDragStart={isAdmin ? (e) => handlePosDragStart(e, pos.id) : undefined}
                           onPosDragEnd={isAdmin ? handlePosDragEnd : undefined}
                           continuousMode={continuousMode}
+                          multiShowMode={multiShowMode}
                         />
                       </div>
                     ))}
@@ -839,7 +888,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
       </div>
 
       {showBulkAddModal && (
-        <PositionBulkAddModal eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode}
+        <PositionBulkAddModal eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode} multiShowMode={multiShowMode} defaultParts={multiShowMode ? [selectedPart] : null}
           onClose={() => setShowBulkAddModal(false)}
           onSaved={(added) => {
             queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
@@ -852,7 +901,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           }} />
       )}
       {showModal && (
-        <PositionFormModal position={editing} eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode}
+        <PositionFormModal position={editing} eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode} multiShowMode={multiShowMode} currentPart={selectedPart} partsCount={partsCount}
           onClose={() => setShowModal(false)}
           onDelete={(pos) => { deleteMutation.mutate({ id: pos.id }); setShowModal(false); }}
           onSaved={(saved) => {
@@ -924,6 +973,9 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
             queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
           }}
         />
+      )}
+      {showSyncModal && (
+        <ShowSyncModal eventId={eventId} event={event} partsCount={partsCount} onClose={() => setShowSyncModal(false)} />
       )}
     </div>
   );

@@ -36,6 +36,14 @@
       "default": "\u958b\u5834\u4e2d",
       "description": "\u6642\u9593\u5e2f\u533a\u5206"
     },
+    "parts": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "\u6240\u5c5e\u516c\u6f14\u90e8\u756a\u53f7\u30ea\u30b9\u30c8\uff08\u8907\u6570\u516c\u6f14\u30e2\u30fc\u30c9\u6642\uff09\u3002\u8907\u6570\u542b\u3080\u3068\u90e8\u9593\u540c\u671f\uff081\u30ec\u30b3\u30fc\u30c9\u3092\u5171\u6709\uff09",
+      "default": []
+    },
     "staff_names": {
       "type": "array",
       "items": {
