@@ -79,12 +79,6 @@ export default function BackupManager() {
 
   const events = eventsQuery.data || [];
   const backups = backupsQuery.data || [];
-  const now = new Date();
-  const activeEvents = events.filter((e) => {
-    if (!e.date) return true;
-    const d = new Date(e.date + "T23:59");
-    return d >= new Date(now.getTime() - 7 * 86400000);
-  });
 
   return (
     <div className="space-y-4">
@@ -107,7 +101,7 @@ export default function BackupManager() {
               className="flex-1 h-9 rounded-md border border-input bg-transparent px-2 text-sm"
             >
               <option value="">イベントを選択...</option>
-              {activeEvents.map((ev) => (
+              {events.map((ev) => (
                 <option key={ev.id} value={ev.id}>{ev.name} ({ev.date || "日付未定"})</option>
               ))}
             </select>
