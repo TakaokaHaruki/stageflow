@@ -29,7 +29,7 @@ export const ENTITY_MAP = {
 };
 
 export const SECTIONS = [
-  { key: 'positions', label: '配置表', getKey: (r) => r.name || '' },
+  { key: 'positions', label: '配置表', getKey: (r) => `${r.name || ''}|${r.time_slot || ''}|${(r.parts || []).join(',')}` },
   { key: 'staff', label: 'スタッフ', getKey: (r) => r.name || '' },
   { key: 'emergency_contacts', label: '緊急連絡先', getKey: (r) => r.role_title || '' },
   { key: 'event_sheets', label: '注意事項', getKey: () => 'event_sheet' },
