@@ -12,17 +12,24 @@
       "default": ""
     },
     "backup_data": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      },
-      "description": "\u30dd\u30b8\u30b7\u30e7\u30f3\u30b9\u30ca\u30c3\u30d7\u30b7\u30e7\u30c3\u30c8\u914d\u5217\uff08id/created_date\u7b49\u3092\u9664\u3044\u305f\u5168\u30d5\u30a3\u30fc\u30eb\u30c9\uff09",
-      "default": []
+      "type": "object",
+      "description": "\u30a4\u30d9\u30f3\u30c8\u56fa\u6709\u30c7\u30fc\u30bf\u306e\u30b9\u30ca\u30c3\u30d7\u30b7\u30e7\u30c3\u30c8 {positions, staff, emergency_contacts, event_sheets, announcements, shared_files, side_settings, map_areas, tasks, position_type_overrides}",
+      "default": {}
     },
     "position_count": {
       "type": "number",
-      "description": "\u30dd\u30b8\u30b7\u30e7\u30f3\u6570",
+      "description": "\u30dd\u30b8\u30b7\u30e7\u30f3\u6570\uff08\u4e92\u63db\u7528\uff09",
       "default": 0
+    },
+    "staff_count": {
+      "type": "number",
+      "description": "\u30b9\u30bf\u30c3\u30d5\u6570",
+      "default": 0
+    },
+    "summary": {
+      "type": "string",
+      "description": "\u30d0\u30c3\u30af\u30a2\u30c3\u30d7\u6982\u8981\uff08\u4f8b: \u914d\u7f6e16\u30fb\u30b9\u30bf\u30c3\u30d58\u30fb\u304a\u77e5\u3089\u305b3\uff09",
+      "default": ""
     },
     "is_auto": {
       "type": "boolean",

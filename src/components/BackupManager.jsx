@@ -3,15 +3,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Database, RotateCcw, Plus, Trash2, ShieldCheck, Clock } from "lucide-react";
+import { Database, RotateCcw, Plus, Trash2, ShieldCheck, Clock, Layers } from "lucide-react";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import BackupCompareModal from "@/components/BackupCompareModal";
 
 export default function BackupManager() {
   const queryClient = useQueryClient();
   const [selectedEventId, setSelectedEventId] = useState("");
-  const [pendingRestore, setPendingRestore] = useState(null);
+  const [pendingCompare, setPendingCompare] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [pendingBulkBackup, setPendingBulkBackup] = useState(false);
 
   const eventsQuery = useQuery({
     queryKey: ["events-for-backup"],
@@ -34,14 +36,29 @@ export default function BackupManager() {
     onError: (e) => toast.error(e?.message || "バックアップ作成に失敗しました"),
   });
 
+  const bulkBackupMutation = useMutation({
+    mutationFn: () =>
+      base44.functions.invoke("autoBackupAllEvents", { is_auto: false, label: "全イベント一括バックアップ" }),
+    onSuccess: (res) => {
+      const data = res?.data || res;
+      const count = (data?.results || []).filter((r) => !r.error).length;
+      toast.success(`${count}件のイベントをバックアップしました`);
+      queryClient.invalidateQueries({ queryKey: ["position-backups", selectedEventId] });
+      setPendingBulkBackup(false);
+    },
+    onError: (e) => toast.error(e?.message || "一括バックアップに失敗しました"),
+  });
+
   const restoreMutation = useMutation({
     mutationFn: (backupId) => base44.functions.invoke("restorePositions", { backup_id: backupId }),
     onSuccess: (res) => {
       const data = res?.data || res;
-      toast.success(`${data?.restored ?? 0}件のポジションを復元しました`);
+      const restored = data?.restored || {};
+      const total = Object.values(restored).reduce((a, b) => a + (b || 0), 0);
+      toast.success(`${total}件のデータを復元しました`);
       queryClient.invalidateQueries({ queryKey: ["position-backups", selectedEventId] });
       queryClient.invalidateQueries({ queryKey: ["positions", selectedEventId] });
-      setPendingRestore(null);
+      setPendingCompare(null);
     },
     onError: (e) => toast.error(e?.message || "復元に失敗しました"),
   });
@@ -70,11 +87,11 @@ export default function BackupManager() {
       <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
         <div className="flex items-center gap-2 mb-1">
           <ShieldCheck className="w-5 h-5 text-primary" />
-          <h2 className="text-base font-bold">配置バックアップ・復元</h2>
+          <h2 className="text-base font-bold">イベントバックアップ・復元</h2>
           <Badge variant="secondary" className="ml-1 gap-1"><Clock className="w-3 h-3" />毎日3時自動実行</Badge>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-          配置表（ポジション）のスナップショットを保存し、データ消失時に復元できます。各イベントごとに手動バックアップの作成・一覧確認・復元が可能です。自動バックアップは毎日午前3時に実行され、最新10件（全体で30件）まで保持されます。
+          配置表・スタッフ・緊急連絡先・お知らせ・配布資料など、イベント固有の全データをバックアップ・復元できます。復元時は現在のデータとバックアップ内容を比較してから実行できます。自動バックアップは毎日午前3時に実行され、最新10件（全体で30件）まで保持されます。
         </p>
 
         <div className="space-y-2">
@@ -100,6 +117,19 @@ export default function BackupManager() {
             </Button>
           </div>
         </div>
+
+        <div className="mt-3 pt-3 border-t border-border">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={bulkBackupMutation.isPending || events.length === 0}
+            onClick={() => setPendingBulkBackup(true)}
+            className="gap-1 w-full"
+          >
+            <Layers className="w-4 h-4" />
+            {bulkBackupMutation.isPending ? "バックアップ中..." : "全イベント一括バックアップ"}
+          </Button>
+        </div>
       </div>
 
       {selectedEventId && (
@@ -120,17 +150,21 @@ export default function BackupManager() {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-sm font-medium truncate">{b.label || "バックアップ"}</span>
                       {b.is_auto && <Badge variant="outline" className="text-[10px] h-4">自動</Badge>}
-                      <Badge variant="secondary" className="text-[10px] h-4">{b.position_count}件</Badge>
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       {b.created_at_jst || "日時不明"}{b.created_by_name ? ` ・ ${b.created_by_name}` : ""}
                     </p>
+                    {b.summary ? (
+                      <p className="text-[11px] text-foreground mt-0.5">{b.summary}</p>
+                    ) : b.position_count != null ? (
+                      <p className="text-[11px] text-muted-foreground mt-0.5">配置 {b.position_count}件</p>
+                    ) : null}
                   </div>
                   <Button
                     size="sm"
                     variant="outline"
                     disabled={restoreMutation.isPending}
-                    onClick={() => setPendingRestore(b)}
+                    onClick={() => setPendingCompare(b)}
                     className="gap-1 shrink-0"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />復元
@@ -150,13 +184,21 @@ export default function BackupManager() {
         </div>
       )}
 
-      {pendingRestore && (
+      {pendingCompare && (
+        <BackupCompareModal
+          backup={pendingCompare}
+          onClose={() => setPendingCompare(null)}
+          onRestore={() => restoreMutation.mutate(pendingCompare.id)}
+          isRestoring={restoreMutation.isPending}
+        />
+      )}
+      {pendingBulkBackup && (
         <ConfirmDialog
-          message={`「${pendingRestore.label || "バックアップ"}」(${pendingRestore.created_at_jst || ""}) から配置を復元します。\n現在の配置は全て上書きされます。この操作は取り消せません。`}
-          confirmLabel="復元する"
+          message="全イベントの一括バックアップを作成しますか？\nすべてのイベントの配置表・スタッフ等のデータが保存されます。"
+          confirmLabel="バックアップ作成"
           confirmVariant="default"
-          onCancel={() => setPendingRestore(null)}
-          onConfirm={() => restoreMutation.mutate(pendingRestore.id)}
+          onCancel={() => setPendingBulkBackup(false)}
+          onConfirm={() => bulkBackupMutation.mutate()}
         />
       )}
       {pendingDelete && (
