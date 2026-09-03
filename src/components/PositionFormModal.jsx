@@ -22,17 +22,18 @@ import { useCaptureTags } from "@/hooks/useCaptureTags";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import CategoryPicker from "@/components/CategoryPicker";
 import GenderToggle from "@/components/GenderToggle";
+import { getSyncGroup } from "@/lib/showParts";
 
 const PRESET_COLORS = [
   "#6366f1", "#3b82f6", "#10b981", "#f59e0b",
   "#ef4444", "#8b5cf6", "#06b6d4", "#f97316",
 ];
 
-export default function PositionFormModal({ position, eventId, defaultTimeSlot = "開場中", continuousMode = false, multiShowMode = false, currentPart = 1, partsCount = 1, onClose, onSaved, onDelete }) {
+export default function PositionFormModal({ position, eventId, defaultTimeSlot = "開場中", continuousMode = false, multiShowMode = false, currentPart = 1, partsCount = 1, showSync = {}, onClose, onSaved, onDelete }) {
   const [form, setForm] = useState({
     name: position?.name || "",
     time_slot: position?.time_slot || (continuousMode ? "通し" : defaultTimeSlot),
-    parts: position?.parts && position.parts.length ? [...position.parts] : (multiShowMode ? [currentPart] : []),
+    parts: position?.parts && position.parts.length ? [...position.parts] : (multiShowMode ? (getSyncGroup(showSync, position?.time_slot || (continuousMode ? "通し" : defaultTimeSlot)) || [currentPart]) : []),
     staff_names: position?.staff_names || [],
     staff_names_kamite: position?.staff_names_kamite || [],
     staff_names_shimote: position?.staff_names_shimote || [],
@@ -322,7 +323,11 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
             <Label>時間帯</Label>
             <ResponsiveSelect
               value={form.time_slot}
-              onValueChange={(v) => setForm({ ...form, time_slot: v })}
+              onValueChange={(v) => setForm((f) => {
+                if (!multiShowMode) return { ...f, time_slot: v };
+                const sg = getSyncGroup(showSync, v);
+                return { ...f, time_slot: v, parts: sg || (f.parts.length ? f.parts : [currentPart]) };
+              })}
               options={continuousMode
                 ? [{ value: "通し", label: "通し" }]
                 : [

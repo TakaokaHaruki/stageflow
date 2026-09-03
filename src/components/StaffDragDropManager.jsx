@@ -888,7 +888,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
       </div>
 
       {showBulkAddModal && (
-        <PositionBulkAddModal eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode} multiShowMode={multiShowMode} defaultParts={multiShowMode ? [selectedPart] : null}
+        <PositionBulkAddModal eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode} multiShowMode={multiShowMode} defaultParts={multiShowMode ? [selectedPart] : null} showSync={event?.show_sync || {}}
           onClose={() => setShowBulkAddModal(false)}
           onSaved={(added) => {
             queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
@@ -901,7 +901,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           }} />
       )}
       {showModal && (
-        <PositionFormModal position={editing} eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode} multiShowMode={multiShowMode} currentPart={selectedPart} partsCount={partsCount}
+        <PositionFormModal position={editing} eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode} multiShowMode={multiShowMode} currentPart={selectedPart} partsCount={partsCount} showSync={event?.show_sync || {}}
           onClose={() => setShowModal(false)}
           onDelete={(pos) => { deleteMutation.mutate({ id: pos.id }); setShowModal(false); }}
           onSaved={(saved) => {

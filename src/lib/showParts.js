@@ -23,3 +23,9 @@ export function partLabel(parts) {
 export function syncGroupKey(group) {
   return [...group].sort((a, b) => a - b).join(",");
 }
+
+// 指定時間帯の同期グループを取得（同期ONなら数値配列、なければnull）
+export function getSyncGroup(showSync, timeSlot) {
+  const g = showSync?.[timeSlot];
+  return Array.isArray(g) && g.length >= 2 ? [...g].sort((a, b) => a - b) : null;
+}

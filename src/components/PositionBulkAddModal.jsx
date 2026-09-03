@@ -7,8 +7,9 @@ import { X, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { TIME_SLOTS, CONTINUOUS_SLOT } from "@/lib/constants";
+import { getSyncGroup } from "@/lib/showParts";
 
-export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開場中", continuousMode = false, multiShowMode = false, defaultParts = null, onClose, onSaved }) {
+export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開場中", continuousMode = false, multiShowMode = false, defaultParts = null, showSync = {}, onClose, onSaved }) {
   const queryClient = useQueryClient();
   const activeSlots = continuousMode ? [CONTINUOUS_SLOT] : TIME_SLOTS;
   const [timeSlot, setTimeSlot] = useState(continuousMode ? CONTINUOUS_SLOT : defaultTimeSlot);
@@ -72,6 +73,8 @@ export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開�
       .map((id) => positionTypes.find((pt) => pt.id === id))
       .filter(Boolean);
 
+    const syncGroup = multiShowMode ? getSyncGroup(showSync, timeSlot) : null;
+    const partsForNew = multiShowMode ? (syncGroup || defaultParts) : null;
     const positions = targets.map((pt, idx) => ({
       name: pt.name,
       time_slot: timeSlot,
@@ -81,7 +84,7 @@ export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開�
       category: pt.category || "",
       required_count: getRequiredCount(pt),
       order: startOrder + idx,
-      ...(multiShowMode && defaultParts ? { parts: defaultParts } : {}),
+      ...(partsForNew ? { parts: partsForNew } : {}),
     }));
 
     try {
