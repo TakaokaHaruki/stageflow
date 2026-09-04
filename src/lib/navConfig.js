@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Settings, ShieldCheck, UserCircle, Info, HardDriveDownload } from "lucide-react";
+import { Home, CalendarDays, Settings, ShieldCheck, UserCircle, Info } from "lucide-react";
 
 /**
  * 新タブ構成の共通ナビ定義。
@@ -15,8 +15,7 @@ export function getNavItems({ isAdmin = false, canEdit = false, isGuest = false 
     { id: "events", label: "イベント一覧", short: "イベント", icon: CalendarDays, path: "/events", description: "イベントの作成・管理と詳細設定" },
     ...(canEdit
       ? [
-          { id: "management", label: "管理設定", short: "管理設定", icon: Settings, path: "/management", description: "ポジション・プリセット・会場などのアプリ共通設定" },
-          { id: "backup-history", label: "バックアップ履歴", short: "バックアップ", icon: HardDriveDownload, path: "/backup-history", description: "バックアップの履歴・バージョン比較・復元" },
+          { id: "management", label: "管理設定", short: "管理設定", icon: Settings, path: "/management", description: "ポジション・プリセット・会場・バックアップなどのアプリ共通設定" },
         ]
       : []),
     ...(isAdmin

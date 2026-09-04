@@ -22,7 +22,6 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ManagementSettings from "./pages/ManagementSettings";
-import BackupHistory from "./pages/BackupHistory";
 
 const AuthenticatedApp = () => {
   const { authError, user } = useAuth();
@@ -59,7 +58,6 @@ const AuthenticatedApp = () => {
           <Route path="/admin-settings" element={<AdminSettingsPage />} />
           <Route path="/events" element={<Events />} />
           <Route path="/management" element={<ManagementSettings />} />
-          <Route path="/backup-history" element={<BackupHistory />} />
         </Route>
         {/* イベント詳細は独自レイアウトを持つため共通ナビ対象外 */}
         <Route path="/events/:eventId" element={<EventDetail />} />
