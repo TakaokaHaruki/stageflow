@@ -86,7 +86,10 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
       )}
 
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/90 backdrop-blur-md safe-area-bottom">
-        <div className="grid min-h-14 grid-cols-6">
+        <div
+          className="grid min-h-14"
+          style={{ gridTemplateColumns: `repeat(${PRIMARY_TABS.length + (moreTabs.length > 0 ? 1 : 0)}, minmax(0, 1fr))` }}
+        >
           {PRIMARY_TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -98,7 +101,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
               aria-current={activeTab === id ? "page" : undefined}
               aria-label={label}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className="h-4 w-4 shrink-0" />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">{label}</span>
             </button>
           ))}
@@ -112,7 +115,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
               aria-expanded={moreOpen}
               aria-label="その他"
             >
-              <MoreHorizontal className="h-5 w-5 shrink-0" />
+              <MoreHorizontal className="h-4 w-4 shrink-0" />
               <span className="text-[10px] font-medium leading-none">その他</span>
             </button>
           )}
