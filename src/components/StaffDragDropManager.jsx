@@ -32,6 +32,7 @@ import AutoAssignModal from "@/components/AutoAssignModal";
 import { useStaffTrends } from "@/hooks/useStaffTrends";
 import BulkDeleteDialog from "@/components/BulkDeleteDialog";
 import ShowSyncModal from "@/components/ShowSyncModal";
+import ShowPartOverview from "@/components/ShowPartOverview";
 import { getParts } from "@/lib/showParts";
 import SectionHeader from "@/components/SectionHeader";
 import EventLockBanner from "@/components/EventLockBanner";
@@ -46,6 +47,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   const [selectedPart, setSelectedPart] = useState(1);
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [confirmRemovePart, setConfirmRemovePart] = useState(false);
+  const [partViewMode, setPartViewMode] = useState("part"); // part=部別編集 / overview=全体一覧
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -608,7 +610,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
       <SectionHeader
         icon={ClipboardList}
         title="配置表"
-        description={continuousMode ? "一日通しモードです　各セクションチーフがスタッフを追加することができます" : multiShowMode ? `${selectedPart}部目の配置です　部を切り替えて編集できます` : undefined}
+        description={continuousMode ? "一日通しモードです　各セクションチーフがスタッフを追加することができます" : multiShowMode ? (partViewMode === "overview" ? "全ての部のスタッフ配置と人員過不足を一覧で確認できます" : `${selectedPart}部目の配置です　部を切り替えて編集できます`) : undefined}
         actions={(
           <>
           {canManageSettings && !isLocked && <PresetSelector eventId={eventId} compact positions={positions} />}
@@ -649,6 +651,24 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
             ].filter(Boolean).join("　");
             return txt ? <span className="text-[10px] text-muted-foreground ml-1 shrink-0">{txt}</span> : null;
           })()}
+          <div className="ml-auto flex items-center gap-0.5 rounded-md bg-muted p-0.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setPartViewMode("part")}
+              className={`min-h-7 rounded px-2 text-xs font-semibold transition-colors ${partViewMode === "part" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-background"}`}
+              aria-pressed={partViewMode === "part"}
+            >
+              部別表示
+            </button>
+            <button
+              type="button"
+              onClick={() => setPartViewMode("overview")}
+              className={`min-h-7 rounded px-2 text-xs font-semibold transition-colors ${partViewMode === "overview" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-background"}`}
+              aria-pressed={partViewMode === "overview"}
+            >
+              全体一覧
+            </button>
+          </div>
           {canManageSettings && !isLocked && (
             <>
               <button type="button" onClick={handleAddPart} className="min-h-7 rounded-md px-2 text-xs font-medium border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors">＋部追加</button>
@@ -667,6 +687,16 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
         </div>
       )}
 
+      {multiShowMode && partViewMode === "overview" ? (
+        <ShowPartOverview
+          positions={allPositions}
+          staffList={staffList}
+          partsCount={partsCount}
+          showTimes={event?.show_times || {}}
+          maskStaffNames={shouldMaskStaffNames}
+        />
+      ) : (
+      <>
       <div className={`mb-1.5 ${continuousMode ? "grid-cols-2" : "grid-cols-4"} grid gap-1 rounded-lg border border-border bg-muted/40 p-0.5 sm:hidden`}>
         {activeSlots.map((slot) => (
           <button
@@ -852,6 +882,8 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           </div>
         </div>
       </div>
+      </>
+      )}
 
       <div className="mt-1.5 border border-border rounded-lg overflow-hidden">
         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-muted border-b border-border">
