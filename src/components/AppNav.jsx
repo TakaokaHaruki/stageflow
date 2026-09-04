@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { LogIn, LogOut, User as UserIcon } from "lucide-react";
+import { LogIn, LogOut, User as UserIcon, RefreshCw } from "lucide-react";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 import SidebarNav from "@/components/SidebarNav";
@@ -9,6 +9,7 @@ import GlobalBanner from "@/components/GlobalBanner";
 import { getUserDisplayName } from "@/lib/userDisplay";
 import { Button } from "@/components/ui/button";
 import { getNavItems } from "@/lib/navConfig";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 
 /**
@@ -21,9 +22,16 @@ export default function AppNav() {
   const location = useLocation();
   const { isAdmin, canEdit, isGuest } = useUserRole();
   const [currentUser, setCurrentUser] = useState(null);
+  const [profileError, setProfileError] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
+
+  const loadUser = () => {
+    setProfileError(false);
+    base44.auth.me().then(setCurrentUser).catch(() => setProfileError(true));
+  };
 
   useEffect(() => {
-    if (!isGuest) base44.auth.me().then(setCurrentUser).catch(() => {});
+    if (!isGuest) loadUser();
   }, [isGuest]);
 
   const navItems = getNavItems({ isAdmin, canEdit, isGuest });
@@ -50,7 +58,16 @@ export default function AppNav() {
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">{title}</h1>
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
-            {isGuest || !currentUser ? (
+            {profileError && !isGuest ? (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-11 gap-1 px-2 text-xs shrink-0 sm:h-7"
+                onClick={loadUser}
+              >
+                <RefreshCw className="w-3 h-3" />再試行
+              </Button>
+            ) : isGuest || !currentUser ? (
               <Button
                 size="sm"
                 variant="outline"
@@ -60,14 +77,14 @@ export default function AppNav() {
                 <LogIn className="w-3 h-3" />ログイン
               </Button>
             ) : (
-              <div className="flex h-9 max-w-36 shrink-0 items-center gap-0.5 rounded-md bg-muted px-0.5 sm:h-7 sm:gap-1 sm:px-1">
+              <div className="flex h-11 max-w-36 shrink-0 items-center gap-0.5 rounded-md bg-muted px-0.5 sm:h-7 sm:gap-1 sm:px-1">
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-5 sm:w-5">
                   <UserIcon className="w-3 h-3 text-primary" />
                 </div>
                 <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
                 <button
-                  onClick={() => base44.auth.logout()}
-                  className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
+                  onClick={() => setConfirmLogout(true)}
+                  className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
                   title="ログアウト"
                   aria-label="ログアウト"
                 >
@@ -87,6 +104,16 @@ export default function AppNav() {
           <Outlet />
         </div>
       </div>
+
+      {confirmLogout && (
+        <ConfirmDialog
+          message="ログアウトしますか？"
+          confirmLabel="ログアウト"
+          confirmVariant="default"
+          onCancel={() => setConfirmLogout(false)}
+          onConfirm={() => { setConfirmLogout(false); base44.auth.logout(); }}
+        />
+      )}
 
       {/* モバイル用グローバルナビ */}
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/90 backdrop-blur-md safe-area-bottom sm:hidden">

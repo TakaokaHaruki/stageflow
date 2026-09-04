@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
-import { Calendar, Search, Plus } from "lucide-react";
+import { Calendar, Search, Plus, X, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,14 +12,19 @@ import EventFormModal from "@/components/EventFormModal";
 import EventListItem from "@/components/EventListItem";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
-import { format } from "date-fns";
-import { ja } from "date-fns/locale";
+import { formatJaDate } from "@/lib/dateFormat";
+
+function getTodayJST() {
+  const now = new Date();
+  return new Date(now.getTime() + 9 * 60 * 60000).toISOString().split("T")[0];
+}
 
 export default function Events() {
   const [showModal, setShowModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
+  const [showPast, setShowPast] = useState(false);
   const queryClient = useQueryClient();
   const { canEdit, role, isGuest, isAdmin } = useUserRole();
 
@@ -29,55 +34,42 @@ export default function Events() {
     refetchInterval: LIVE_SYNC_INTERVAL
   });
 
-  // Group events by date and sort by date descending
-  const groupedEvents = useMemo(() => {
-    if (!allEvents || allEvents.length === 0) return [];
+  const todayStr = getTodayJST();
 
-    // Filter by search query first
+  // 今日を境に「今後」「過去」へ分離し、日付ごとにグループ化する
+  const { upcomingGroups, pastGroups, pastCount } = useMemo(() => {
+    if (!allEvents || allEvents.length === 0) return { upcomingGroups: [], pastGroups: [], pastCount: 0 };
+
+    const query = searchQuery.toLowerCase();
     const filtered = allEvents.filter((event) => {
-      const query = searchQuery.toLowerCase();
       const nameMatch = event.name?.toLowerCase().includes(query);
       const venueMatch = event.venue?.toLowerCase().includes(query);
       return nameMatch || venueMatch;
     });
 
-    // Sort by date descending (newest first)
-    const sorted = [...filtered].sort((a, b) => {
-      if (!a.date && !b.date) return 0;
-      if (!a.date) return 1;
-      if (!b.date) return -1;
-      return new Date(b.date) - new Date(a.date);
-    });
-
-    // Group by date
-    const groups = {};
-    for (const event of sorted) {
-      const dateKey = event.date || "no-date";
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
+    const groupByDate = (list) => {
+      const groups = {};
+      for (const event of list) {
+        const dateKey = event.date || "no-date";
+        if (!groups[dateKey]) groups[dateKey] = [];
+        groups[dateKey].push(event);
       }
-      groups[dateKey].push(event);
-    }
+      return Object.entries(groups).map(([date, events]) => ({ date, events }));
+    };
 
-    // Convert to array and sort groups by date descending
-    return Object.entries(groups).
-    sort((a, b) => {
-      if (a[0] === "no-date") return 1;
-      if (b[0] === "no-date") return -1;
-      return new Date(b[0]) - new Date(a[0]);
-    }).
-    map(([date, events]) => ({ date, events }));
-  }, [allEvents, searchQuery]);
+    const withDate = filtered.filter((e) => e.date);
+    const noDate = filtered.filter((e) => !e.date);
+    const upcoming = withDate.filter((e) => e.date >= todayStr).sort((a, b) => a.date.localeCompare(b.date));
+    const past = withDate.filter((e) => e.date < todayStr).sort((a, b) => b.date.localeCompare(a.date));
 
-  // Check if a date is today (JST)
-  const isToday = (dateStr) => {
-    if (!dateStr) return false;
-    const now = new Date();
-    const jstOffset = 9 * 60;
-    const jstDate = new Date(now.getTime() + jstOffset * 60000);
-    const today = jstDate.toISOString().split("T")[0];
-    return dateStr === today;
-  };
+    return {
+      upcomingGroups: [...groupByDate(upcoming), ...groupByDate(noDate)],
+      pastGroups: groupByDate(past),
+      pastCount: past.length,
+    };
+  }, [allEvents, searchQuery, todayStr]);
+
+  const isToday = (dateStr) => dateStr === todayStr;
 
   const { isPulling, pullDistance } = usePullToRefresh(async () => {
     await refetch();
@@ -110,6 +102,40 @@ export default function Events() {
     setConfirmDeleteEvent({ id, name });
   };
 
+  const renderGroup = ({ date, events: dateEvents }, groupIdx) => (
+    <motion.div
+      key={date}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: groupIdx * 0.05 }}
+      className="space-y-2"
+    >
+      {date !== "no-date" && (
+        <div className="mb-2 mr-2 border-b border-border pb-1 text-base font-bold text-foreground">
+          {formatJaDate(date)}
+          {isToday(date) && <span className="ml-2 text-xs text-primary">（今日）</span>}
+        </div>
+      )}
+      {date === "no-date" && (
+        <div className="mb-2 border-b border-border pb-1 text-base font-bold text-foreground">
+          日付未設定
+        </div>
+      )}
+      {dateEvents.map((event) => (
+        <EventListItem
+          key={event.id}
+          event={event}
+          isToday={isToday(date)}
+          isAdmin={isAdmin}
+          canEdit={canEdit}
+          isGuest={isGuest}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      ))}
+    </motion.div>
+  );
+
   return (
     <>
       <div className="mx-auto max-w-6xl px-1.5 py-1">
@@ -130,7 +156,17 @@ export default function Events() {
               placeholder="イベント名または会場名で検索"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9" />
+              className="pl-9 pr-9" />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="検索条件をクリア"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
           {canEdit && (
             <Button
@@ -147,7 +183,7 @@ export default function Events() {
           <div className="flex justify-center py-20">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
           </div> :
-          groupedEvents.length === 0 ?
+          upcomingGroups.length === 0 && pastCount === 0 ?
           <div className="py-24 text-center text-muted-foreground">
             <Calendar className="mx-auto mb-4 h-14 w-14 opacity-20" />
             {searchQuery ?
@@ -164,42 +200,34 @@ export default function Events() {
           </div> :
 
           <div className="space-y-4 pb-6">
-            {/* Grouped events */}
-            {groupedEvents.map(({ date, events: dateEvents }, groupIdx) =>
-              <motion.div
-                key={date}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: groupIdx * 0.05 }}
-                className="space-y-2">
-
-              {/* Date header */}
-              {date !== "no-date" &&
-                <div className="mb-2 mr-2 border-b border-border pb-1 text-base font-bold text-foreground">
-                  {format(new Date(date), "M 月 d 日（E）", { locale: ja })}
-                  {isToday(date) && <span className="ml-2 text-xs text-primary">（今日）</span>}
+            {/* 今後のイベント */}
+            {upcomingGroups.length > 0 && (
+              <div>
+                <div className="mb-1 px-1 text-xs font-bold text-muted-foreground">今後のイベント</div>
+                <div className="space-y-4">
+                  {upcomingGroups.map(renderGroup)}
                 </div>
-              }
-              {date === "no-date" &&
-                <div className="mb-2 border-b border-border pb-1 text-base font-bold text-foreground">
-                  日付未設定
-                </div>
-              }
+              </div>
+            )}
 
-              {/* Event rows */}
-              {dateEvents.map((event) => (
-                <EventListItem
-                  key={event.id}
-                  event={event}
-                  isToday={isToday(date)}
-                  isAdmin={isAdmin}
-                  canEdit={canEdit}
-                  isGuest={isGuest}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </motion.div>
+            {/* 過去のイベント（折りたたみ・検索中は展開） */}
+            {pastCount > 0 && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowPast((v) => !v)}
+                  aria-expanded={showPast || Boolean(searchQuery)}
+                  className="flex w-full items-center gap-1.5 rounded-lg px-1 py-1.5 text-xs font-bold text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform ${(showPast || searchQuery) ? "" : "-rotate-90"}`} />
+                  過去のイベント（{pastCount}件）
+                </button>
+                {(showPast || searchQuery) && (
+                  <div className="space-y-4">
+                    {pastGroups.map(renderGroup)}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         }

@@ -98,7 +98,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
               aria-current={activeTab === id ? "page" : undefined}
               aria-label={label}
             >
-              <Icon className="h-4.5 w-4.5 shrink-0" />
+              <Icon className="h-5 w-5 shrink-0" />
               <span className="max-w-full truncate text-[10px] font-medium leading-none">{label}</span>
             </button>
           ))}
@@ -112,7 +112,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
               aria-expanded={moreOpen}
               aria-label="その他"
             >
-              <MoreHorizontal className="h-4.5 w-4.5 shrink-0" />
+              <MoreHorizontal className="h-5 w-5 shrink-0" />
               <span className="text-[10px] font-medium leading-none">その他</span>
             </button>
           )}

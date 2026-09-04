@@ -6,17 +6,25 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { getUserDisplayName } from "@/lib/userDisplay";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import PasswordChangeCard from "@/components/account/PasswordChangeCard";
+import DeleteAccountModal from "@/components/account/DeleteAccountModal";
 import { Button } from "@/components/ui/button";
 
 const ROLE_LABELS = { admin: "管理者", chief: "チーフ", user: "メンバー", unapproved: "承認待ち" };
 
 export default function Account() {
   const [currentUser, setCurrentUser] = useState(null);
+  const [profileError, setProfileError] = useState(false);
   const [qrUrl, setQrUrl] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const loadUser = () => {
+    setProfileError(false);
+    base44.auth.me().then(setCurrentUser).catch(() => setProfileError(true));
+  };
 
   useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {});
+    loadUser();
     QRCode.toDataURL(`${window.location.origin}/`, { width: 240, margin: 1 })
       .then(setQrUrl)
       .catch(() => {});
@@ -37,6 +45,12 @@ export default function Account() {
         {/* プロフィール */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
           <h2 className="mb-3 text-sm font-bold">プロフィール</h2>
+          {profileError ? (
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-destructive">ユーザー情報の取得に失敗しました</p>
+              <Button variant="outline" size="sm" onClick={loadUser}>再試行</Button>
+            </div>
+          ) : (
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/15 text-lg font-bold text-primary">
               {(displayName || "?").charAt(0)}
@@ -53,6 +67,7 @@ export default function Account() {
               <p className="mt-0.5 truncate text-xs text-muted-foreground">{currentUser?.email || "—"}</p>
             </div>
           </div>
+          )}
         </div>
 
         {/* パスワード変更（Googleログインのみでパスワード未設定のユーザーには非表示） */}
@@ -100,7 +115,15 @@ export default function Account() {
             confirmLabel="削除する"
             confirmVariant="destructive"
             onCancel={() => setConfirmDelete(false)}
-            onConfirm={() => { setConfirmDelete(false); handleDeleteAccount(); }}
+            onConfirm={() => { setConfirmDelete(false); setShowDeleteConfirm(true); }}
+          />
+        )}
+
+        {showDeleteConfirm && (
+          <DeleteAccountModal
+            displayName={displayName}
+            onCancel={() => setShowDeleteConfirm(false)}
+            onConfirm={() => { setShowDeleteConfirm(false); handleDeleteAccount(); }}
           />
         )}
       </div>

@@ -3,11 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
-import { ja } from "date-fns/locale";
+import { formatJaDate } from "@/lib/dateFormat";
 import { CalendarDays, Users, AlertTriangle, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/home/StatCard";
 import SlotRow from "@/components/home/SlotRow";
+import AnnouncementsCard from "@/components/home/AnnouncementsCard";
 import { TIME_SLOTS } from "@/lib/constants";
 import { getNavItems } from "@/lib/navConfig";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -33,25 +34,29 @@ export default function Home() {
     [events, today]
   );
 
-  const { data: positionsRes } = useQuery({
+  const { data: positionsRes, isLoading: positionsLoading } = useQuery({
     queryKey: ["home-positions", nextEvent?.id],
     queryFn: () => base44.functions.invoke("getPositionList", { eventId: nextEvent.id }),
     enabled: !!nextEvent,
   });
   const positions = positionsRes?.data?.positions ?? [];
 
-  const { data: staffRes } = useQuery({
+  const { data: staffRes, isLoading: staffLoading } = useQuery({
     queryKey: ["home-staff", nextEvent?.id],
     queryFn: () => base44.functions.invoke("getStaffList", { eventId: nextEvent.id }),
     enabled: !!nextEvent,
   });
   const staff = staffRes?.data?.staff ?? [];
 
-  const { data: announcements = [] } = useQuery({
+  const { data: announcements = [], isLoading: announcementsLoading } = useQuery({
     queryKey: ["home-announcements", nextEvent?.id],
     queryFn: () => base44.entities.Announcement.filter({ event_id: nextEvent.id }),
     enabled: !!nextEvent,
   });
+
+  // ポジション・スタッフ取得中は不確実な充足数を表示しない
+  const detailLoading = !!nextEvent && (positionsLoading || staffLoading);
+  const sameDayCount = nextEvent ? events.filter((e) => e.date === nextEvent.date).length : 0;
 
   const assignedNames = new Set(positions.flatMap((p) => [
     ...(p.staff_names || []),
@@ -85,21 +90,31 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-            <StatCard icon={CalendarDays} label="本日のイベント" value={todayEvents.length} sub={todayEvents[0]?.name} />
-            <StatCard icon={CalendarDays} label="次回イベント" value={nextEvent ? format(new Date(nextEvent.date), "M/d") : "—"} sub={nextEvent?.name || "予定なし"} />
+            <StatCard
+              icon={CalendarDays}
+              label="本日のイベント"
+              value={todayEvents.length}
+              sub={todayEvents.map((e) => e.name).join("、") || "なし"}
+            />
+            <StatCard
+              icon={CalendarDays}
+              label="次回イベント"
+              value={nextEvent ? format(new Date(nextEvent.date), "M/d") : "—"}
+              sub={nextEvent ? (sameDayCount > 1 ? `${nextEvent.name} ほか${sameDayCount - 1}件` : nextEvent.name) : "予定なし"}
+            />
             <StatCard
               icon={Users}
               label="未配置スタッフ（次回）"
-              value={nextEvent ? unassignedCount : "—"}
-              sub={nextEvent ? `スタッフ総数 ${staff.length}名` : "次回イベントなし"}
-              tone={nextEvent ? (unassignedCount > 0 ? "danger" : "ok") : "default"}
+              value={nextEvent ? (detailLoading ? "…" : unassignedCount) : "—"}
+              sub={nextEvent ? (detailLoading ? "取得中…" : `スタッフ総数 ${staff.length}名`) : "次回イベントなし"}
+              tone={nextEvent && !detailLoading ? (unassignedCount > 0 ? "danger" : "ok") : "default"}
             />
             <StatCard
               icon={AlertTriangle}
               label="緊急お知らせ（次回）"
-              value={nextEvent ? alertCount : "—"}
-              sub={nextEvent ? (alertCount > 0 ? "確認が必要です" : "アラートなし") : "次回イベントなし"}
-              tone={alertCount > 0 ? "danger" : "default"}
+              value={nextEvent ? (announcementsLoading ? "…" : alertCount) : "—"}
+              sub={nextEvent ? (announcementsLoading ? "取得中…" : alertCount > 0 ? "確認が必要です" : "アラートなし") : "次回イベントなし"}
+              tone={nextEvent && !announcementsLoading && alertCount > 0 ? "danger" : "default"}
             />
           </div>
         )}
@@ -111,7 +126,7 @@ export default function Home() {
               <div className="min-w-0">
                 <h2 className="text-sm font-bold">時間帯別の配置状況</h2>
                 <p className="truncate text-[11px] text-muted-foreground">
-                  {nextEvent.name} ・ {format(new Date(nextEvent.date), "M月d日（E）", { locale: ja })}
+                  {nextEvent.name} ・ {formatJaDate(nextEvent.date)}
                   {nextEvent.venue ? ` ・ ${nextEvent.venue}` : ""}
                 </p>
               </div>
@@ -120,12 +135,19 @@ export default function Home() {
               </Button>
             </div>
             <div className="grid gap-1.5 sm:grid-cols-3">
-              {slotStats.map((s) => (
-                <SlotRow key={s.slot} slot={s.slot} assigned={s.assigned} required={s.required} />
-              ))}
+              {detailLoading
+                ? TIME_SLOTS.map((slot) => (
+                    <div key={slot} className="h-10 animate-pulse rounded-lg bg-muted" aria-label="読み込み中" />
+                  ))
+                : slotStats.map((s) => (
+                    <SlotRow key={s.slot} slot={s.slot} assigned={s.assigned} required={s.required} />
+                  ))}
             </div>
           </div>
         )}
+
+        {/* お知らせ（未読バッジ付き） */}
+        {nextEvent && <AnnouncementsCard eventId={nextEvent.id} announcements={announcements} />}
 
         {/* クイックリンク */}
         <div className="rounded-2xl border border-border bg-card p-3 shadow-md">

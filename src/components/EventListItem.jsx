@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, MapPin, ChevronRight, Trash2, Pencil, Lock, Copy } from "lucide-react";
-import { format } from "date-fns";
-import { ja } from "date-fns/locale";
+import { formatJaDate } from "@/lib/dateFormat";
 import EventPublishToggle from "@/components/EventPublishToggle";
 import CloneEventModal from "@/components/CloneEventModal";
 
@@ -20,7 +19,7 @@ export default function EventListItem({ event, isToday, isAdmin, canEdit, isGues
           {event.date && (
             <span className="flex items-center gap-0.5">
               <Calendar className="w-2.5 h-2.5" />
-              {format(new Date(event.date), "M 月 d 日（E）", { locale: ja })}
+              {formatJaDate(event.date)}
             </span>
           )}
           {event.venue && (
@@ -38,7 +37,7 @@ export default function EventListItem({ event, isToday, isAdmin, canEdit, isGues
             <>
               <button
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowClone(true); }}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-sky-600 hover:bg-sky-500/10 transition-colors select-none"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:text-sky-600 hover:bg-sky-500/10 transition-colors select-none sm:h-8 sm:w-8"
                 aria-label={`${event.name} をコピーして新規作成`}
                 title="コピーして新規作成">
                 <Copy className="w-3 h-3" />
@@ -46,14 +45,14 @@ export default function EventListItem({ event, isToday, isAdmin, canEdit, isGues
               <button
                 onClick={(e) => onEdit(e, event)}
                 disabled={!canEdit}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none sm:h-8 sm:w-8"
                 aria-label={`${event.name} を編集`}>
                 <Pencil className="w-3 h-3" />
               </button>
               <button
                 onClick={(e) => onDelete(e, event.id, event.name)}
                 disabled={!canEdit}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none sm:h-8 sm:w-8"
                 aria-label={`${event.name} を削除`}>
                 <Trash2 className="w-3 h-3" />
               </button>

@@ -12,8 +12,8 @@ import TagManagement from "@/components/TagManagement";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const SECTIONS = [
-  { id: "positions", label: "ポジション設定", icon: Settings },
-  { id: "presets", label: "ポジションプリセット", icon: ClipboardList },
+  { id: "positions", label: "ポジション共通定義", icon: Settings },
+  { id: "presets", label: "プリセット共通定義", icon: ClipboardList },
   { id: "venues", label: "会場管理", icon: LayoutTemplate },
   { id: "tag_management", label: "タグ・役割管理", icon: Tag },
   { id: "global_banner", label: "グローバル通知", icon: Bell },
@@ -55,19 +55,19 @@ export default function ManagementSettings() {
     <div className="mx-auto max-w-[1400px] px-1.5 py-2">
         {/* Section bar */}
         <div className="sticky top-[56px] z-40 mb-3 border-b border-border/70 bg-muted/40">
-          <div className="grid grid-cols-4 gap-1 sm:flex sm:gap-4 sm:overflow-x-auto sm:scrollbar-hide">
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide">
             {SECTIONS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => setSection(id)}
-                className={`flex min-h-9 min-w-0 select-none items-center justify-center gap-1 whitespace-normal border-b-2 px-1 py-1 text-center text-[10px] font-semibold leading-tight transition-colors sm:min-h-0 sm:shrink-0 sm:justify-start sm:gap-1.5 sm:whitespace-nowrap sm:px-0 sm:py-2 sm:text-left sm:text-xs ${
+                className={`flex min-h-11 shrink-0 select-none items-center justify-start gap-1.5 whitespace-nowrap border-b-2 px-1 py-2 text-left text-xs font-semibold transition-colors ${
                   section === id
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
                 aria-current={section === id ? "page" : undefined}
               >
-                <Icon className="hidden h-3.5 w-3.5 sm:block" />
+                <Icon className="h-3.5 w-3.5 shrink-0" />
                 <span>{label}</span>
               </button>
             ))}
