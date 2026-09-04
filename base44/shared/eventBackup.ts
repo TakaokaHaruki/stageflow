@@ -65,6 +65,13 @@ export async function collectEventRaw(client, event_id) {
   };
 }
 
+export function normalizeBackupData(backup) {
+  const data = Array.isArray(backup?.backup_data) ? { positions: backup.backup_data } : (backup?.backup_data || {});
+  const out = {};
+  for (const k of Object.keys(ENTITY_MAP)) out[k] = Array.isArray(data[k]) ? data[k] : [];
+  return out;
+}
+
 export function cleanBackupData(raw) {
   const out = {};
   for (const key of Object.keys(ENTITY_MAP)) {
