@@ -1,3 +1,5 @@
+import { getParts } from "@/lib/showParts";
+
 let cachedFontBase64 = null;       // 変数TTF（400・フルカバレッジ・髙対応）
 let cachedMediumFontBase64 = null; // fontsource 500 woff（Medium）
 
@@ -209,11 +211,16 @@ function calcCardHeight(pos) {
   return CARD_HEADER_H + chiefH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + CARD_PADDING_V;
 }
 
-function drawTitle(doc, event) {
+function drawTitle(doc, event, partLabel) {
   doc.setFontSize(11);
   doc.setFont('NotoSansJP', 'normal');
   doc.setTextColor(0, 0, 0);
   doc.text(event.name || '', MARGIN, MARGIN + 5);
+  if (partLabel) {
+    doc.setFontSize(11);
+    doc.setTextColor(30, 64, 175);
+    doc.text(partLabel, PAGE_W - MARGIN, MARGIN + 5, { align: 'right' });
+  }
   doc.setFontSize(8);
   let dateStr = '';
   if (event.date) {
@@ -697,8 +704,21 @@ export async function generatePositionPDF(data, filename) {
     drawTimelineTable(doc, data.positions || [], data.staff || []);
   } else {
     pdfMode = 'position';
-    drawTitle(doc, data.event || {});
-    drawColumns(doc, data.positions || [], data.staff || [], data.event || {});
+    const event = data.event || {};
+    // 複数公演モード: 部ごとにページを分けて出力（1ページ=1部の配置表）
+    const multiShow = Boolean(event.multi_show_mode) && (event.show_count || 1) > 1;
+    if (multiShow) {
+      const partsCount = Math.max(1, event.show_count || 1);
+      for (let part = 1; part <= partsCount; part++) {
+        if (part > 1) doc.addPage();
+        drawTitle(doc, event, `${part}部`);
+        const partPositions = (data.positions || []).filter((p) => getParts(p).includes(part));
+        drawColumns(doc, partPositions, data.staff || [], event);
+      }
+    } else {
+      drawTitle(doc, event);
+      drawColumns(doc, data.positions || [], data.staff || [], event);
+    }
   }
 
   doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
