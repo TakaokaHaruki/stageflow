@@ -3,7 +3,7 @@ import QRCode from "qrcode";
 import { base44 } from "@/api/base44Client";
 import { LogOut, Trash2 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
+import { getUserDisplayName } from "@/lib/userDisplay";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 
@@ -43,7 +43,6 @@ export default function Account() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <p className="truncate text-sm font-semibold">{displayName || "—"}</p>
-                {currentUser && <UserNameEditor user={currentUser} onSaved={setCurrentUser} />}
                 {role && (
                   <span className="shrink-0 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
                     {ROLE_LABELS[role] || role}

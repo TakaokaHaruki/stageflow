@@ -13,7 +13,7 @@ import StaffDragDropManager from "@/components/StaffDragDropManager";
 import PositionNotesEditor from "@/components/PositionNotesEditor";
 import BottomTabBar from "@/components/BottomTabBar";
 import SidebarNav from "@/components/SidebarNav";
-import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
+import { getUserDisplayName } from "@/lib/userDisplay";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import GlobalBanner from "@/components/GlobalBanner";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
@@ -258,7 +258,6 @@ export default function EventDetail() {
                 <User className="w-3 h-3 text-primary" />
               </div>
               <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
-              <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
               <button
                 onClick={() => base44.auth.logout()}
                 className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"

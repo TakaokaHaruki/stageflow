@@ -6,7 +6,7 @@ import CrewlyLogo from "@/components/CrewlyLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 import SidebarNav from "@/components/SidebarNav";
 import GlobalBanner from "@/components/GlobalBanner";
-import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
+import { getUserDisplayName } from "@/lib/userDisplay";
 import { Button } from "@/components/ui/button";
 import { getNavItems } from "@/lib/navConfig";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -65,7 +65,6 @@ export default function AppNav() {
                   <UserIcon className="w-3 h-3 text-primary" />
                 </div>
                 <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
-                <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
                 <button
                   onClick={() => base44.auth.logout()}
                   className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
