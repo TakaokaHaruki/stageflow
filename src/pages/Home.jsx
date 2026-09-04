@@ -165,7 +165,7 @@ export default function Home() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold text-foreground">{label}</span>
-                  <span className="block truncate text-[11px] text-muted-foreground">{description}</span>
+                  <span className="block text-[11px] leading-snug text-muted-foreground">{description}</span>
                 </span>
                 <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary" />
               </button>
