@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Users, CheckCircle2, AlertTriangle, Layers } from "lucide-react";
 import { TIME_SLOTS } from "@/lib/constants";
 import { getParts, partLabel } from "@/lib/showParts";
@@ -43,7 +43,6 @@ function PartSlotRow({ slot, slotPositions, staffCount }) {
  */
 export default function ShowPartOverview({ positions = [], staffList = [], partsCount = 1, showTimes = {}, maskStaffNames = false }) {
   const parts = Array.from({ length: partsCount }, (_, i) => i + 1);
-  const [viewMode, setViewMode] = useState("parts");
 
   function positionsForStaff(targetPositions, staffName) {
     return targetPositions.filter((p) => {
@@ -73,19 +72,6 @@ export default function ShowPartOverview({ positions = [], staffList = [], parts
       return positionsForStaff(stat.positions, staff.name);
     }),
   })), [staffList, partStats]);
-
-  const slotRows = useMemo(() => staffList.map((staff) => ({
-    staff,
-    slots: TIME_SLOTS.map((slot) => positionsForStaff(
-      positions.filter((p) => (p.time_slot || "開場中") === slot),
-      staff.name
-    )),
-  })), [staffList, positions]);
-
-  const activeSlots = useMemo(
-    () => TIME_SLOTS.filter((slot) => positions.some((p) => (p.time_slot || "開場中") === slot)),
-    [positions]
-  );
 
   return (
     <div className="space-y-2">
@@ -140,23 +126,6 @@ export default function ShowPartOverview({ positions = [], staffList = [], parts
         <div className="flex items-center gap-1.5 mb-1">
           <Users className="w-3.5 h-3.5 text-primary" />
           <h3 className="text-sm font-bold">スタッフ別の配置一覧</h3>
-          <div className="ml-auto flex rounded-lg border border-border bg-muted/50 overflow-hidden">
-            {[
-              { key: "parts", label: "部別" },
-              { key: "slots", label: "時間帯別" },
-            ].map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setViewMode(key)}
-                className={`px-2 py-1 text-[10px] font-bold transition-colors ${
-                  viewMode === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
         </div>
         {staffRows.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-4 border border-dashed border-border rounded-lg">
@@ -168,26 +137,22 @@ export default function ShowPartOverview({ positions = [], staffList = [], parts
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="px-2 py-1.5 text-left font-bold shrink-0">スタッフ</th>
-                  {(viewMode === "parts"
-                    ? parts.map((part) => ({ key: part, label: `${part}部` }))
-                    : activeSlots.map((slot) => ({ key: slot, label: slot }))
-                  ).map(({ key, label }) => (
-                    <th key={key} className="px-2 py-1.5 text-left font-bold min-w-[100px]">{label}</th>
+                  {parts.map((part) => (
+                    <th key={part} className="px-2 py-1.5 text-left font-bold min-w-[100px]">{part}部</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {(viewMode === "parts" ? staffRows : slotRows).map(({ staff, parts: partAssignments, slots: slotAssignments }) => {
+                {staffRows.map(({ staff, parts: partAssignments }) => {
                   const displayName = getStaffDisplayName(staff.name, maskStaffNames);
-                  const cells = viewMode === "parts" ? partAssignments : slotAssignments;
                   return (
                     <tr key={staff.id}>
                       <td className="px-2 py-1.5 font-medium text-foreground align-top">{displayName}</td>
-                      {cells.map((ps, i) => (
+                      {partAssignments.map((ps, i) => (
                         <td key={i} className="px-2 py-1.5 align-top">
                           {ps.length === 0 ? (
                             <span className="text-muted-foreground/60">—</span>
-                          ) : viewMode === "parts" ? (
+                          ) : (
                             <div className="space-y-1">
                               {TIME_SLOTS.map((slot) => {
                                 const slotPs = ps.filter((p) => (p.time_slot || "開場中") === slot);
@@ -205,14 +170,6 @@ export default function ShowPartOverview({ positions = [], staffList = [], parts
                                   </div>
                                 );
                               })}
-                            </div>
-                          ) : (
-                            <div className="flex flex-wrap gap-0.5">
-                              {ps.map((p) => (
-                                <span key={p.id} className="rounded-full bg-primary/10 border border-primary/30 text-primary px-1.5 py-0.5 font-medium" title={partLabel(getParts(p))}>
-                                  {p.name}
-                                </span>
-                              ))}
                             </div>
                           )}
                         </td>
