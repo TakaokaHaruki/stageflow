@@ -31,14 +31,9 @@ export default async function(req) {
       created_at_jst: jstNow(),
     });
 
-    if (is_auto) {
-      const autos = await base44.entities.PositionBackup.filter({ event_id, is_auto: true }, '-created_date', 100);
-      for (const a of autos.slice(10)) {
-        try { await base44.entities.PositionBackup.delete(a.id); } catch (e) {}
-      }
-    }
+    // 保存ポリシー: 全体は無制限、各イベントごとに最新20件まで保持
     const allBackups = await base44.entities.PositionBackup.filter({ event_id }, '-created_date', 100);
-    for (const a of allBackups.slice(30)) {
+    for (const a of allBackups.slice(20)) {
       try { await base44.entities.PositionBackup.delete(a.id); } catch (e) {}
     }
 

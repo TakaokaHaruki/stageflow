@@ -33,14 +33,9 @@ export default async function(req) {
           created_by_name: createdBy,
           created_at_jst: jstNow(),
         });
-        if (is_auto) {
-          const autos = await svc.entities.PositionBackup.filter({ event_id: ev.id, is_auto: true }, '-created_date', 100);
-          for (const a of autos.slice(10)) {
-            try { await svc.entities.PositionBackup.delete(a.id); } catch (e) {}
-          }
-        }
+        // 保存ポリシー: 全体は無制限、各イベントごとに最新20件まで保持
         const allBk = await svc.entities.PositionBackup.filter({ event_id: ev.id }, '-created_date', 100);
-        for (const a of allBk.slice(30)) {
+        for (const a of allBk.slice(20)) {
           try { await svc.entities.PositionBackup.delete(a.id); } catch (e) {}
         }
         results.push({ event_id: ev.id, name: ev.name, summary });

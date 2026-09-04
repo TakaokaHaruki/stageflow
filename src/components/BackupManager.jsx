@@ -89,7 +89,7 @@ export default function BackupManager() {
           <Badge variant="secondary" className="ml-1 gap-1"><Clock className="w-3 h-3" />毎日3時自動実行</Badge>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-          配置表・スタッフ・緊急連絡先・お知らせ・配布資料など、イベント固有の全データをバックアップ・復元できます。復元時は現在のデータとバックアップ内容を比較してから実行できます。自動バックアップは毎日午前3時に実行され、最新10件（全体で30件）まで保持されます。
+          配置表・スタッフ・緊急連絡先・お知らせ・配布資料など、イベント固有の全データをバックアップ・復元できます。復元時は現在のデータとバックアップ内容を比較してから実行できます。自動バックアップは毎日午前3時に実行され、各イベントごとに最新20件まで保存されます（全体の件数に上限はありません）。
         </p>
 
         <div className="space-y-2">
