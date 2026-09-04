@@ -187,6 +187,25 @@ export default function ShowPartOverview({ positions = [], staffList = [], parts
                         <td key={i} className="px-2 py-1.5 align-top">
                           {ps.length === 0 ? (
                             <span className="text-muted-foreground/60">—</span>
+                          ) : viewMode === "parts" ? (
+                            <div className="space-y-1">
+                              {TIME_SLOTS.map((slot) => {
+                                const slotPs = ps.filter((p) => (p.time_slot || "開場中") === slot);
+                                if (slotPs.length === 0) return null;
+                                return (
+                                  <div key={slot}>
+                                    <span className="text-[9px] font-bold text-muted-foreground">{slot}</span>
+                                    <div className="flex flex-wrap gap-0.5 mt-0.5">
+                                      {slotPs.map((p) => (
+                                        <span key={p.id} className="rounded-full bg-primary/10 border border-primary/30 text-primary px-1.5 py-0.5 font-medium" title={partLabel(getParts(p))}>
+                                          {p.name}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           ) : (
                             <div className="flex flex-wrap gap-0.5">
                               {ps.map((p) => (
