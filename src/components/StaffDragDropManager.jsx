@@ -45,6 +45,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   const [mobileSlot, setMobileSlot] = useState(null);
   const [selectedPart, setSelectedPart] = useState(1);
   const [showSyncModal, setShowSyncModal] = useState(false);
+  const [confirmRemovePart, setConfirmRemovePart] = useState(false);
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -352,6 +353,60 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
     }
   };
 
+  // 選択中部の削除：専属ポジションは削除、兼務ポジションは部番号を付け替え、後続の部は繰り上げ
+  const handleRemovePart = async () => {
+    const part = selectedPart;
+    try {
+      const deleteIds = [];
+      const updates = [];
+      allPositions.forEach((p) => {
+        const parts = getParts(p);
+        const renumbered = parts.map((n) => (n > part ? n - 1 : n));
+        if (parts.includes(part)) {
+          const removed = renumbered.filter((n, i) => parts[i] !== part);
+          if (removed.length === 0) deleteIds.push(p.id);
+          else updates.push({ positionId: p.id, data: { parts: removed } });
+        } else if (renumbered.some((n, i) => parts[i] !== n)) {
+          updates.push({ positionId: p.id, data: { parts: renumbered } });
+        }
+      });
+      if (deleteIds.length > 0) {
+        await base44.functions.invoke("updatePositionSide", { action: "deletePositions", positionIds: deleteIds });
+      }
+      await Promise.all(updates.map((u) =>
+        base44.functions.invoke("updatePositionSide", { action: "updatePositionFields", ...u })
+      ));
+      const showSync = {};
+      Object.entries(event?.show_sync || {}).forEach(([slot, group]) => {
+        const g = (Array.isArray(group) ? group : []).filter((n) => n !== part).map((n) => (n > part ? n - 1 : n));
+        if (g.length > 0) showSync[slot] = g;
+      });
+      const showTimes = {};
+      Object.entries(event?.show_times || {}).forEach(([key, val]) => {
+        const n = Number(key);
+        if (n === part) return;
+        showTimes[String(n > part ? n - 1 : n)] = val;
+      });
+      await base44.entities.Event.update(eventId, {
+        show_count: partsCount - 1,
+        show_sync: showSync,
+        show_times: showTimes,
+      });
+      if (selectedPart > part) setSelectedPart(selectedPart - 1);
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
+      record({
+        action_type: "event_update",
+        description: `「${part}部」を削除しました（専属ポジション${deleteIds.length}件削除）`,
+        entity_type: "Event",
+        entity_id: eventId,
+      });
+      toast.success(`${part}部を削除しました`);
+    } catch {
+      toast.error("部の削除に失敗しました");
+    }
+  };
+
   const handleStaffDragStart = (e, staffName) => {
     setDraggedStaff(staffName);
     e.dataTransfer.effectAllowed = "move";
@@ -598,6 +653,15 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
             <>
               <button type="button" onClick={handleAddPart} className="min-h-7 rounded-md px-2 text-xs font-medium border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors">＋部追加</button>
               <button type="button" onClick={() => setShowSyncModal(true)} className="min-h-7 rounded-md px-2 text-xs font-medium border border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors ml-auto">部間同期</button>
+              {partsCount > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmRemovePart(true)}
+                  className="flex min-h-7 items-center gap-1 rounded-md px-2 text-xs font-medium border border-border text-destructive hover:border-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <Trash2 className="w-3 h-3" />{selectedPart}部削除
+                </button>
+              )}
             </>
           )}
         </div>
@@ -983,6 +1047,21 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           }}
         />
       )}
+      {confirmRemovePart && (() => {
+        const part = selectedPart;
+        const onlyCount = allPositions.filter((p) => {
+          const parts = getParts(p);
+          return parts.includes(part) && parts.length === 1;
+        }).length;
+        return (
+          <ConfirmDialog
+            message={`「${part}部」を削除します。\n${part}部のみに所属するポジション（${onlyCount}件）も一緒に削除され、この操作は取り消せません。\nよろしいですか？`}
+            confirmLabel="削除"
+            onConfirm={() => { setConfirmRemovePart(false); handleRemovePart(); }}
+            onCancel={() => setConfirmRemovePart(false)}
+          />
+        );
+      })()}
       {showSyncModal && (
         <ShowSyncModal eventId={eventId} event={event} partsCount={partsCount} onClose={() => setShowSyncModal(false)} />
       )}
