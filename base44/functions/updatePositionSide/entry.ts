@@ -4,6 +4,26 @@ import { eventLockResponse, eventLockResponseByPosition } from '../../shared/eve
 const unique = (items = []) => [...new Set(items.filter(Boolean))];
 const ALLOWED_UPDATE_FIELDS = ['order', 'required_count', 'notes', 'color', 'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote', 'category', 'chief_name', 'chief_names', 'parts'];
 
+// 部間同期ヘルパー: 同期ONの時間帯に作成されるポジションに、同期グループ全員を既定の部として付与する
+// （parts未指定で作成された場合のみ。明示的なparts指定は尊重する）
+const applySyncParts = async (base44, eventId, positions) => {
+  let showSync = {};
+  try {
+    const event = (await base44.asServiceRole.entities.Event.filter({ id: eventId }))[0];
+    showSync = event?.show_sync || {};
+  } catch (_e) {
+    showSync = {};
+  }
+  return positions.map((p) => {
+    const group = showSync?.[p.time_slot];
+    const hasParts = Array.isArray(p.parts) && p.parts.length > 0;
+    if (Array.isArray(group) && group.length >= 2 && !hasParts) {
+      return { ...p, parts: [...new Set(group)].sort((a, b) => a - b) };
+    }
+    return p;
+  });
+};
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -35,7 +55,8 @@ Deno.serve(async (req) => {
       }
       const lockResp = await eventLockResponse(base44, eventId, user);
       if (lockResp) return lockResp;
-      const created = await base44.asServiceRole.entities.Position.create({ ...position, event_id: eventId });
+      const [positionWithParts] = await applySyncParts(base44, eventId, [position]);
+      const created = await base44.asServiceRole.entities.Position.create({ ...positionWithParts, event_id: eventId });
       return Response.json({ position: created });
     }
 
@@ -47,8 +68,9 @@ Deno.serve(async (req) => {
       }
       const lockResp = await eventLockResponse(base44, eventId, user);
       if (lockResp) return lockResp;
+      const positionsWithParts = await applySyncParts(base44, eventId, positions);
       const created = await Promise.all(
-        positions.map((p) => base44.asServiceRole.entities.Position.create({ ...p, event_id: eventId }))
+        positionsWithParts.map((p) => base44.asServiceRole.entities.Position.create({ ...p, event_id: eventId }))
       );
       return Response.json({ positions: created });
     }
