@@ -31,7 +31,6 @@ import SeatingMapViewer from "@/components/SeatingMapViewer";
 import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
 import EmergencyContactManager from "@/components/EmergencyContactManager";
-import PinCodeManager from "@/components/PinCodeManager";
 import SharedFileManager from "@/components/SharedFileManager";
 import { isEventLocked } from "@/lib/eventLock";
 
@@ -83,19 +82,6 @@ export default function EventDetail() {
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
-
-  // Fetch tab-disabled configs for filtering
-  const { data: tabConfigs = [] } = useQuery({
-    queryKey: ["appConfig", "tab_control"],
-    queryFn: () => base44.entities.AppConfig.list(),
-    refetchInterval: 30000,
-    enabled: !isAdmin,
-  });
-  const disabledTabIds = isAdmin
-    ? []
-    : tabConfigs
-        .filter((c) => c.key?.startsWith("tab_disabled_") && c.value_bool)
-        .map((c) => c.key.replace("tab_disabled_", ""));
 
   const { data: event, isLoading, refetch: refetchEvent } = useQuery({
     queryKey: ["event", eventId],
@@ -176,7 +162,7 @@ export default function EventDetail() {
     ...(isPrivileged ? [{ id: "files", label: "配布資料", icon: Paperclip }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
-  ].filter((t) => isAdmin || !disabledTabIds.includes(t.id));
+  ];
 
   // URL の ?tab= に直接アクセスしても、権限のないタブは表示しない
   const allowedTabIds = desktopTabs.map((t) => t.id);
