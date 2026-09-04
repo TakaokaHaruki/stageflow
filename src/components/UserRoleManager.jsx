@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { Trash2, Pencil, Check, X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
 const ROLE_OPTIONS = [
@@ -22,8 +22,6 @@ const ROLE_STYLE = {
 export default function UserRoleManager() {
   const queryClient = useQueryClient();
   const [editingRoleId, setEditingRoleId] = useState(null);
-  const [editingNameId, setEditingNameId] = useState(null);
-  const [editingName, setEditingName] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const { data: users = [], isLoading } = useQuery({
@@ -52,27 +50,6 @@ export default function UserRoleManager() {
     },
   });
 
-  const updateNameMutation = useMutation({
-    mutationFn: ({ userId, full_name }) => base44.auth.updateMe({ full_name }),
-    onMutate: async ({ userId, full_name }) => {
-      await queryClient.cancelQueries({ queryKey: ["users-all"] });
-      const prev = queryClient.getQueryData(["users-all"]);
-      queryClient.setQueryData(["users-all"], (old = []) =>
-        old.map((u) => (u.id === userId ? { ...u, full_name } : u))
-      );
-      return { prev };
-    },
-    onError: (_, __, ctx) => {
-      queryClient.setQueryData(["users-all"], ctx?.prev);
-      toast.error("名前の変更に失敗しました");
-    },
-    onSuccess: () => toast.success("名前を変更しました"),
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["users-all"] });
-      setEditingNameId(null);
-    },
-  });
-
   const deleteMutation = useMutation({
     mutationFn: (userId) => base44.entities.User.delete(userId),
     onMutate: async (userId) => {
@@ -88,16 +65,6 @@ export default function UserRoleManager() {
     onSuccess: () => toast.success("ユーザーを削除しました"),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["users-all"] }),
   });
-
-  const startEditName = (u) => {
-    setEditingNameId(u.id);
-    setEditingName(u.full_name || "");
-  };
-
-  const saveEditName = (u) => {
-    if (!editingName.trim()) return;
-    updateNameMutation.mutate({ userId: u.id, full_name: editingName.trim() });
-  };
 
   if (isLoading) return (
     <div className="flex justify-center py-4">
@@ -115,39 +82,8 @@ export default function UserRoleManager() {
           <div key={u.id} className="bg-card px-2.5 py-2 flex items-center gap-2">
             {/* Name */}
             <div className="flex-1 min-w-0">
-              {editingNameId === u.id ? (
-                <div className="flex items-center gap-1">
-                  <input
-                    autoFocus
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") saveEditName(u);
-                      if (e.key === "Escape") setEditingNameId(null);
-                    }}
-                    className="flex-1 text-xs border border-input rounded px-1.5 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-                  />
-                  <button onClick={() => saveEditName(u)} className="p-0.5 text-green-600 hover:text-green-700">
-                    <Check className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={() => setEditingNameId(null)} className="p-0.5 text-muted-foreground hover:text-foreground">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1 group">
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium truncate">{u.full_name || u.email}</p>
-                    {u.full_name && <p className="text-[10px] text-muted-foreground truncate">{u.email}</p>}
-                  </div>
-                  <button
-                    onClick={() => startEditName(u)}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 text-muted-foreground hover:text-primary transition-all shrink-0"
-                  >
-                    <Pencil className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
+              <p className="text-xs font-medium truncate">{u.full_name || u.email}</p>
+              {u.full_name && <p className="text-[10px] text-muted-foreground truncate">{u.email}</p>}
             </div>
 
             {/* Role */}

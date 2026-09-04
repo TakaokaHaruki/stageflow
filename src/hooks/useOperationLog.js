@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { getUserDisplayName } from "@/components/UserNameEditor";
+import { getUserDisplayName } from "@/lib/userDisplay";
 
 function getJSTDateTime() {
   return new Date().toLocaleString("sv-SE", { timeZone: "Asia/Tokyo" }).replace("T", " ").slice(0, 16);

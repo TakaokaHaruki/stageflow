@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Plus, ShieldCheck, Sun, Moon, LogIn, LogOut, User, Trash2, X, MoreHorizontal } from "lucide-react";
 import { useTheme } from "@/lib/ThemeProvider";
-import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
+import { getUserDisplayName } from "@/lib/userDisplay";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
 export default function EventsBottomBar({ canEdit, isAdmin, currentUser, onNewEvent, onAdminSettings, onCurrentUserChange }) {
@@ -74,7 +74,6 @@ export default function EventsBottomBar({ canEdit, isAdmin, currentUser, onNewEv
                     <User className="w-3 h-3 text-primary" />
                   </div>
                   <span className="flex-1 min-w-0 truncate text-[11px] font-medium">{getUserDisplayName(currentUser)}</span>
-                  <UserNameEditor user={currentUser} onSaved={onCurrentUserChange} />
                   <button onClick={() => setConfirmDeleteAccount(true)} className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:text-destructive" title="アカウント削除">
                     <Trash2 className="h-3 w-3" />
                   </button>

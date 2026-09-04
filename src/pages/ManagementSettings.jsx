@@ -6,7 +6,7 @@ import { Users, ShieldCheck, Bell, LayoutTemplate, HelpCircle, Settings, Clipboa
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import ThemeToggle from "@/components/ThemeToggle";
-import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
+import { getUserDisplayName } from "@/lib/userDisplay";
 import UserRoleManager from "@/components/UserRoleManager";
 import PortalRestrictionManager from "@/components/PortalRestrictionManager";
 import GlobalBannerManager from "@/components/GlobalBannerManager";
@@ -97,7 +97,6 @@ export default function ManagementSettings() {
                   <UserIcon className="w-3 h-3 text-primary" />
                 </div>
                 <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
-                <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
                 <button onClick={() => base44.auth.logout()} className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:text-destructive sm:h-5 sm:w-5" title="ログアウト" aria-label="ログアウト">
                   <LogOut className="h-3 w-3" />
                 </button>
