@@ -7,7 +7,6 @@ import { Calendar, Search, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import AppNav from "@/components/AppNav";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import EventFormModal from "@/components/EventFormModal";
 import EventListItem from "@/components/EventListItem";
@@ -112,19 +111,7 @@ export default function Events() {
   };
 
   return (
-    <AppNav
-      activeTab="events"
-      title="イベント一覧"
-      actions={canEdit ? (
-        <Button
-          size="sm"
-          className="h-7 shrink-0 gap-1 px-2 text-xs"
-          onClick={() => { setEditingEvent(null); setShowModal(true); }}
-        >
-          <Plus className="h-3 w-3" />新規イベント
-        </Button>
-      ) : null}
-    >
+    <>
       <div className="mx-auto max-w-6xl px-1.5 py-1">
         {/* Pull-to-refresh indicator */}
         {isPulling &&
@@ -133,6 +120,28 @@ export default function Events() {
           </div>
         }
         <UserRestrictionBanner role={role} />
+
+        {/* 検索と新規イベント作成 */}
+        <div className="flex items-center gap-2 py-1">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="イベント名または会場名で検索"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9" />
+          </div>
+          {canEdit && (
+            <Button
+              size="sm"
+              className="h-8 shrink-0 gap-1 px-3 text-xs"
+              onClick={() => { setEditingEvent(null); setShowModal(true); }}
+            >
+              <Plus className="h-3 w-3" />新規イベント
+            </Button>
+          )}
+        </div>
 
         {isLoading ?
           <div className="flex justify-center py-20">
@@ -155,17 +164,6 @@ export default function Events() {
           </div> :
 
           <div className="space-y-4 pb-6">
-            {/* Search box */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="イベント名または会場名で検索"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9" />
-            </div>
-
             {/* Grouped events */}
             {groupedEvents.map(({ date, events: dateEvents }, groupIdx) =>
               <motion.div
@@ -227,6 +225,6 @@ export default function Events() {
             queryClient.invalidateQueries({ queryKey: ["events"] });
           }} />
       }
-    </AppNav>
+    </>
   );
 }

@@ -1,5 +1,4 @@
 import { BookOpen } from "lucide-react";
-import AppNav from "@/components/AppNav";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 const SECTIONS = [
@@ -78,8 +77,7 @@ const SECTIONS = [
 
 export default function Information() {
   return (
-    <AppNav activeTab="information" title="インフォメーション">
-      <div className="mx-auto max-w-3xl space-y-3 px-2 py-3">
+    <div className="mx-auto max-w-3xl space-y-3 px-2 py-3">
         <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
           <div className="mb-1 flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-primary" />
@@ -112,6 +110,5 @@ export default function Information() {
           </Accordion>
         </div>
       </div>
-    </AppNav>
   );
 }

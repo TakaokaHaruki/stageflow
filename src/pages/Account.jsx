@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { base44 } from "@/api/base44Client";
 import { LogOut, Trash2 } from "lucide-react";
-import AppNav from "@/components/AppNav";
 import ThemeToggle from "@/components/ThemeToggle";
 import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -33,8 +32,7 @@ export default function Account() {
   };
 
   return (
-    <AppNav activeTab="account" title="アカウント">
-      <div className="mx-auto max-w-2xl space-y-3 px-2 py-3">
+    <div className="mx-auto max-w-2xl space-y-3 px-2 py-3">
         {/* プロフィール */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
           <h2 className="mb-3 text-sm font-bold">プロフィール</h2>
@@ -103,6 +101,5 @@ export default function Account() {
           />
         )}
       </div>
-    </AppNav>
   );
 }

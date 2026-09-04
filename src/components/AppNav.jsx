@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { LogIn, LogOut, User as UserIcon } from "lucide-react";
 import CrewlyLogo from "@/components/CrewlyLogo";
@@ -12,11 +12,13 @@ import { getNavItems } from "@/lib/navConfig";
 import { useUserRole } from "@/hooks/useUserRole";
 
 /**
- * 全管理画面共通のシェル。
- * ガイドブック準拠の情報階層（共通ヘッダ → グローバルナビ → コンテンツ）を提供する。
+ * 全管理画面共通のシェル（レイアウトルート）。
+ * ページ遷移時も再マウントされず、ヘッダー・サイドバーは固定のまま
+ * コンテンツ（Outlet）だけが即時切り替わる。
  */
-export default function AppNav({ activeTab, title, actions = null, children }) {
+export default function AppNav() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAdmin, canEdit, isGuest } = useUserRole();
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -25,6 +27,13 @@ export default function AppNav({ activeTab, title, actions = null, children }) {
   }, [isGuest]);
 
   const navItems = getNavItems({ isAdmin, canEdit, isGuest });
+
+  // 表示中ページのタブ・タイトルをルートパスから解決
+  const current =
+    navItems.find((item) => item.path === location.pathname) ??
+    navItems.find((item) => location.pathname.startsWith(`${item.path}/`));
+  const activeTab = current?.id;
+  const title = current?.label ?? "";
 
   const handleSelect = (tabId) => {
     const item = navItems.find((i) => i.id === tabId);
@@ -40,7 +49,6 @@ export default function AppNav({ activeTab, title, actions = null, children }) {
           <CrewlyLogo className="mr-1" administrator={isAdmin} />
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">{title}</h1>
           <div className="ml-auto flex items-center gap-1">
-            {actions}
             <ThemeToggle />
             {isGuest || !currentUser ? (
               <Button
@@ -76,7 +84,9 @@ export default function AppNav({ activeTab, title, actions = null, children }) {
         {!isGuest && (
           <SidebarNav tabs={navItems} activeTab={activeTab} onSelectTab={handleSelect} topOffset={56} />
         )}
-        <div className="flex-1 min-w-0 pb-16 sm:pb-0">{children}</div>
+        <div className="flex-1 min-w-0 pb-16 sm:pb-0">
+          <Outlet />
+        </div>
       </div>
 
       {/* モバイル用グローバルナビ */}

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, ShieldCheck, History, Lock, QrCode, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import AppNav from "@/components/AppNav";
 import UserRoleManager from "@/components/UserRoleManager";
 import PortalRestrictionManager from "@/components/PortalRestrictionManager";
 import ActivityLogViewer from "@/components/ActivityLogViewer";
@@ -29,15 +28,13 @@ export default function AdminSettingsPage() {
 
   if (!isAdmin) {
     return (
-      <AppNav activeTab="admin-settings" title="管理者設定">
-        <div className="flex min-h-[60vh] items-center justify-center px-4 text-center">
-          <div>
-            <ShieldCheck className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
-            <h1 className="text-base font-bold">閲覧する権限がありません</h1>
-            <button className="mt-4 text-sm text-primary underline" onClick={() => navigate("/home")}>ホームへ戻る</button>
-          </div>
+      <div className="flex min-h-[60vh] items-center justify-center px-4 text-center">
+        <div>
+          <ShieldCheck className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
+          <h1 className="text-base font-bold">閲覧する権限がありません</h1>
+          <button className="mt-4 text-sm text-primary underline" onClick={() => navigate("/home")}>ホームへ戻る</button>
         </div>
-      </AppNav>
+      </div>
     );
   }
 
@@ -63,8 +60,7 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <AppNav activeTab="admin-settings" title="管理者設定">
-      <div className="mx-auto max-w-[1400px] px-1.5 py-2">
+    <div className="mx-auto max-w-[1400px] px-1.5 py-2">
         {/* Section bar */}
         <div className="sticky top-[56px] z-40 mb-3 border-b border-border/70 bg-muted/40">
           <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-4 sm:overflow-x-auto sm:scrollbar-hide">
@@ -101,7 +97,6 @@ export default function AdminSettingsPage() {
             {renderSection()}
           </motion.div>
         </AnimatePresence>
-      </div>
-    </AppNav>
+    </div>
   );
 }

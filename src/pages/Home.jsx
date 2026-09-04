@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { CalendarDays, Users, AlertTriangle, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import AppNav from "@/components/AppNav";
 import StatCard from "@/components/home/StatCard";
 import SlotRow from "@/components/home/SlotRow";
 import { TIME_SLOTS } from "@/lib/constants";
@@ -76,8 +75,7 @@ export default function Home() {
   const quickLinks = getNavItems({ isAdmin, canEdit, isGuest }).filter((i) => i.id !== "home");
 
   return (
-    <AppNav activeTab="home" title="ホーム">
-      <div className="mx-auto max-w-5xl space-y-3 px-2 py-3">
+    <div className="mx-auto max-w-5xl space-y-3 px-2 py-3">
         {/* KPI帯（最重要指標を最上位に配置） */}
         {isLoading ? (
           <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
@@ -153,6 +151,5 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </AppNav>
   );
 }
