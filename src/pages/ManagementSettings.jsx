@@ -10,6 +10,7 @@ import PositionPresetManager from "@/components/PositionPresetManager";
 import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
 import { useUserRole } from "@/hooks/useUserRole";
+import SectionTabBar from "@/components/SectionTabBar";
 
 const SECTIONS = [
   { id: "positions", label: "ポジション共通定義", icon: Settings },
@@ -54,25 +55,12 @@ export default function ManagementSettings() {
   return (
     <div className="mx-auto max-w-[1400px] px-1.5 py-2">
         {/* Section bar */}
-        <div className="sticky top-[56px] z-40 mb-3 border-b border-border/70 bg-muted/40">
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide">
-            {SECTIONS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setSection(id)}
-                className={`flex min-h-11 shrink-0 select-none items-center justify-start gap-1.5 whitespace-nowrap border-b-2 px-1 py-2 text-left text-xs font-semibold transition-colors ${
-                  section === id
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-                aria-current={section === id ? "page" : undefined}
-              >
-                <Icon className="h-3.5 w-3.5 shrink-0" />
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <SectionTabBar
+          items={SECTIONS}
+          activeId={section}
+          onSelect={setSection}
+          className="sticky top-[56px] z-40 mb-3"
+        />
 
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

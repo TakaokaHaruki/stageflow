@@ -13,6 +13,7 @@ import StaffDragDropManager from "@/components/StaffDragDropManager";
 import PositionNotesEditor from "@/components/PositionNotesEditor";
 import BottomTabBar from "@/components/BottomTabBar";
 import SidebarNav from "@/components/SidebarNav";
+import SectionTabBar from "@/components/SectionTabBar";
 import { getUserDisplayName } from "@/lib/userDisplay";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import GlobalBanner from "@/components/GlobalBanner";
@@ -294,27 +295,13 @@ export default function EventDetail() {
         <div className="flex-1 min-w-0">
           {/* Child tab bar */}
           {isManagementTab && (
-            <div className="block border-b border-border/70 bg-muted/40 sm:sticky sm:z-40" style={{ top: topBarHeight }}>
-              <div className="max-w-[1400px] mx-auto px-2">
-                <div className="flex gap-4 overflow-x-auto scrollbar-hide">
-                  {activeManagementChildren.map(({ id, label, icon: Icon }) => (
-                    <button
-                      key={id}
-                      onClick={() => selectManagementChild(id)}
-                      className={`flex min-h-11 shrink-0 select-none items-center justify-start gap-1.5 whitespace-nowrap border-b-2 px-1 py-2 text-left text-xs font-semibold transition-colors focus-visible:outline-none ${
-                        activeManagementChild === id
-                          ? "border-primary text-primary"
-                          : "border-transparent text-muted-foreground hover:text-foreground"
-                      }`}
-                      aria-current={activeManagementChild === id ? "page" : undefined}
-                    >
-                      <Icon className="h-3.5 w-3.5 shrink-0" />
-                      <span>{label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <SectionTabBar
+              items={activeManagementChildren}
+              activeId={activeManagementChild}
+              onSelect={selectManagementChild}
+              className="sm:sticky sm:z-40"
+              style={{ top: topBarHeight }}
+            />
           )}
 
           <div className="max-w-[1400px] mx-auto px-1 py-1 pb-16 sm:pb-8">

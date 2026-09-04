@@ -9,6 +9,7 @@ import AccessRestrictionManager from "@/components/AccessRestrictionManager";
 import StaffQrExport from "@/components/StaffQrExport";
 import EventScopeSelector from "@/components/admin/EventScopeSelector";
 import { useUserRole } from "@/hooks/useUserRole";
+import SectionTabBar from "@/components/SectionTabBar";
 
 const SECTIONS = [
   { id: "users", label: "ユーザー管理", icon: Users },
@@ -62,25 +63,12 @@ export default function AdminSettingsPage() {
   return (
     <div className="mx-auto max-w-[1400px] px-1.5 py-2">
         {/* Section bar */}
-        <div className="sticky top-[56px] z-40 mb-3 border-b border-border/70 bg-muted/40">
-          <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-4 sm:overflow-x-auto sm:scrollbar-hide">
-            {SECTIONS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setSection(id)}
-                className={`flex min-h-9 min-w-0 select-none items-center justify-center gap-1.5 whitespace-nowrap border-b-2 px-1 py-1 text-xs font-semibold transition-colors sm:min-h-0 sm:justify-start sm:px-0 sm:py-2 ${
-                  section === id
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-                aria-current={section === id ? "page" : undefined}
-              >
-                <Icon className="hidden h-3.5 w-3.5 sm:block" />
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <SectionTabBar
+          items={SECTIONS}
+          activeId={section}
+          onSelect={setSection}
+          className="sticky top-[56px] z-40 mb-3"
+        />
 
         {EVENT_SCOPED.has(section) && (
           <EventScopeSelector value={selectedEventId} onChange={setSelectedEventId} />
