@@ -30,6 +30,20 @@ export default function EventListItem({ event, isToday, isAdmin, canEdit, isGues
             </span>
           )}
           <EventPublishToggle event={event} canEdit={canEdit} />
+          {event.status && (
+            <span
+              className={`flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${
+                event.status === "開催中"
+                  ? "border-emerald-300 bg-emerald-100 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                  : event.status === "準備中"
+                    ? "border-sky-300 bg-sky-100 text-sky-700 dark:border-sky-700 dark:bg-sky-900/40 dark:text-sky-300"
+                    : "border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300"
+              }`}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-current" />
+              {event.status}
+            </span>
+          )}
         </div>
       </div>
       {!restricted && (

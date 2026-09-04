@@ -1,36 +1,26 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
-import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, ChevronRight, Trash2, Pencil, Search, Plus, ShieldCheck, User, LogOut, LogIn } from "lucide-react";
-import BackButton from "@/components/BackButton";
-import CrewlyLogo from "@/components/CrewlyLogo";
-import ConfirmDialog from "@/components/ConfirmDialog";
+import { Calendar, Search, Plus } from "lucide-react";
 import { motion } from "framer-motion";
-import ThemeToggle from "@/components/ThemeToggle";
-import UserNameEditor, { getUserDisplayName } from "@/components/UserNameEditor";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import AppNav from "@/components/AppNav";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import EventFormModal from "@/components/EventFormModal";
-import EventPublishToggle from "@/components/EventPublishToggle";
 import EventListItem from "@/components/EventListItem";
-import SidebarNav from "@/components/SidebarNav";
-import EventsBottomBar from "@/components/EventsBottomBar";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
-import GlobalBanner from "@/components/GlobalBanner";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { Input } from "@/components/ui/input";
 
 export default function Events() {
-  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
   const queryClient = useQueryClient();
   const { canEdit, role, isGuest, isAdmin } = useUserRole();
 
@@ -94,10 +84,6 @@ export default function Events() {
     await refetch();
   });
 
-  useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {});
-  }, []);
-
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Event.delete(id),
     onMutate: async (id) => {
@@ -119,18 +105,6 @@ export default function Events() {
     setShowModal(true);
   };
 
-  const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
-  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
-
-  const handleDeleteAccount = async () => {
-    try {
-      if (currentUser?.id) {
-        await base44.entities.User.delete(currentUser.id);
-      }
-    } catch {}
-    base44.auth.logout();
-  };
-
   const handleDelete = (e, id, name) => {
     e.preventDefault();
     e.stopPropagation();
@@ -138,127 +112,81 @@ export default function Events() {
   };
 
   return (
-    <div className="min-h-screen bg-background safe-area-bottom relative scrollbar-hide overflow-x-clip">
-      {/* Pull-to-refresh indicator */}
-      {isPulling &&
-      <div className="fixed top-0 left-0 right-0 flex justify-center pt-2 z-30">
-          <div className="w-6 h-6 border-3 border-primary/30 border-t-primary rounded-full animate-spin" style={{ opacity: pullDistance / 100 }} />
-        </div>
-      }
-      <GlobalBanner />
-      {/* Sticky Header */}
-      <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
-        <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
-          {isGuest && <BackButton to="/home" label="ホームへ戻る" />}
-          <CrewlyLogo className="mr-1" administrator={role === "admin"} />
-          <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">イベント一覧</h1>
-          <div className="ml-auto flex items-center gap-1">
-            <ThemeToggle />
-            {currentUser ? (
-              <div className="flex h-9 max-w-36 shrink-0 items-center gap-0.5 rounded-md bg-muted px-0.5 sm:h-7 sm:gap-1 sm:px-1">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-5 sm:w-5">
-                  <User className="w-3 h-3 text-primary" />
-                </div>
-                <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
-                <UserNameEditor user={currentUser} onSaved={setCurrentUser} />
-                <button
-                  onClick={() => setConfirmDeleteAccount(true)}
-                  className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
-                  title="アカウント削削"
-                  aria-label="アカウント削除"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
-                <button
-                  onClick={() => base44.auth.logout()}
-                  className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
-                  title="ログアウト"
-                  aria-label="ログアウト"
-                >
-                  <LogOut className="h-3 w-3" />
-                </button>
-              </div>
-            ) : (
-              <Button size="sm" variant="outline" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}>
-                <LogIn className="w-3 h-3" />ログイン
-              </Button>
-            )}
+    <AppNav
+      activeTab="events"
+      title="イベント一覧"
+      actions={canEdit ? (
+        <Button
+          size="sm"
+          className="h-7 shrink-0 gap-1 px-2 text-xs"
+          onClick={() => { setEditingEvent(null); setShowModal(true); }}
+        >
+          <Plus className="h-3 w-3" />新規イベント
+        </Button>
+      ) : null}
+    >
+      <div className="mx-auto max-w-6xl px-1.5 py-1">
+        {/* Pull-to-refresh indicator */}
+        {isPulling &&
+          <div className="fixed top-0 left-0 right-0 z-30 flex justify-center pt-2">
+            <div className="h-6 w-6 animate-spin rounded-full border-3 border-primary/30 border-t-primary" style={{ opacity: pullDistance / 100 }} />
           </div>
-        </div>
-      </div>
-
-      <div className="sm:flex">
-        <SidebarNav
-          tabs={[
-            ...(canEdit ? [{ id: "new", label: "新規イベント", icon: Plus }] : []),
-            ...(canEdit ? [{ id: "management", label: "管理設定", icon: ShieldCheck }] : [])
-          ]}
-          activeTab=""
-          onSelectTab={(tabId) => {
-            if (tabId === "new") { setEditingEvent(null); setShowModal(true); }
-            if (tabId === "management") navigate("/management");
-          }}
-          topOffset={56}
-        />
-        
-        <div className="flex-1 min-w-0">
-      <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:pb-8">
-      <UserRestrictionBanner role={role} />
+        }
+        <UserRestrictionBanner role={role} />
 
         {isLoading ?
-            <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <div className="flex justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
           </div> :
-            groupedEvents.length === 0 ?
-            <div className="text-center py-24 text-muted-foreground">
-            <Calendar className="w-14 h-14 mx-auto mb-4 opacity-20" />
+          groupedEvents.length === 0 ?
+          <div className="py-24 text-center text-muted-foreground">
+            <Calendar className="mx-auto mb-4 h-14 w-14 opacity-20" />
             {searchQuery ?
               <>
                 <p className="text-lg font-medium">該当するイベントがありません</p>
-                <p className="text-sm mt-1">検索条件を変更してください</p>
+                <p className="mt-1 text-sm">検索条件を変更してください</p>
               </> :
 
               <>
                 <p className="text-lg font-medium">イベントがありません</p>
-                <p className="text-sm mt-1">新規イベントを追加してください</p>
+                <p className="mt-1 text-sm">新規イベントを追加してください</p>
               </>
-              }
+            }
           </div> :
 
-            <div className="space-y-4 pb-6">
-          {/* Search box */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-                  type="text"
-                  placeholder="イベント名または会場名で検索"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9" />
-                
-          </div>
+          <div className="space-y-4 pb-6">
+            {/* Search box */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="イベント名または会場名で検索"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9" />
+            </div>
 
-          {/* Grouped events */}
-          {groupedEvents.map(({ date, events: dateEvents }, groupIdx) =>
+            {/* Grouped events */}
+            {groupedEvents.map(({ date, events: dateEvents }, groupIdx) =>
               <motion.div
                 key={date}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: groupIdx * 0.05 }}
                 className="space-y-2">
-                
+
               {/* Date header */}
               {date !== "no-date" &&
-                <div className="font-bold text-base text-foreground border-b border-border pb-1 mb-2 mr-2">
+                <div className="mb-2 mr-2 border-b border-border pb-1 text-base font-bold text-foreground">
                   {format(new Date(date), "M 月 d 日（E）", { locale: ja })}
                   {isToday(date) && <span className="ml-2 text-xs text-primary">（今日）</span>}
                 </div>
-                }
+              }
               {date === "no-date" &&
-                <div className="font-bold text-base text-foreground border-b border-border pb-1 mb-2">
+                <div className="mb-2 border-b border-border pb-1 text-base font-bold text-foreground">
                   日付未設定
                 </div>
-                }
+              }
 
               {/* Event rows */}
               {dateEvents.map((event) => (
@@ -274,54 +202,31 @@ export default function Events() {
                 />
               ))}
             </motion.div>
-              )}
-        </div>
-            }
-      </div>{/* end max-w container */}
-        </div>{/* end flex-1 */}
-      </div>{/* end sm:flex */}
+            )}
+          </div>
+        }
+      </div>
 
       {confirmDeleteEvent &&
-      <ConfirmDialog
-        message={`「${confirmDeleteEvent.name}」を削除しますか？`}
-        confirmLabel="削除"
-        confirmVariant="destructive"
-        onConfirm={() => {
-          deleteMutation.mutate(confirmDeleteEvent.id);
-          setConfirmDeleteEvent(null);
-        }}
-        onCancel={() => setConfirmDeleteEvent(null)} />
-
+        <ConfirmDialog
+          message={`「${confirmDeleteEvent.name}」を削除しますか？`}
+          confirmLabel="削除"
+          confirmVariant="destructive"
+          onConfirm={() => {
+            deleteMutation.mutate(confirmDeleteEvent.id);
+            setConfirmDeleteEvent(null);
+          }}
+          onCancel={() => setConfirmDeleteEvent(null)} />
       }
-
-      {confirmDeleteAccount &&
-      <ConfirmDialog
-        message={"アカウントを削除しますか？\nこの操作は取り消せません。"}
-        confirmLabel="削除する"
-        confirmVariant="destructive"
-        onConfirm={() => {setConfirmDeleteAccount(false);handleDeleteAccount();}}
-        onCancel={() => setConfirmDeleteAccount(false)} />
-
-      }
-
-      <EventsBottomBar
-        canEdit={canEdit}
-        isAdmin={isAdmin}
-        currentUser={currentUser}
-        onNewEvent={() => { setEditingEvent(null); setShowModal(true); }}
-        onAdminSettings={() => navigate("/management")}
-        onCurrentUserChange={setCurrentUser}
-      />
 
       {showModal &&
-      <EventFormModal
-        event={editingEvent}
-        onClose={() => setShowModal(false)}
-        onSaved={() => {
-          queryClient.invalidateQueries({ queryKey: ["events"] });
-        }} />
-
+        <EventFormModal
+          event={editingEvent}
+          onClose={() => setShowModal(false)}
+          onSaved={() => {
+            queryClient.invalidateQueries({ queryKey: ["events"] });
+          }} />
       }
-    </div>);
-
+    </AppNav>
+  );
 }

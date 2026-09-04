@@ -10,7 +10,10 @@ import PendingApproval from '@/components/PendingApproval';
 import { ThemeProvider } from '@/lib/ThemeProvider';
 import ProtectedRoute from '@/components/ProtectedRoute';
 // Add page imports here
-import Landing from "./pages/Landing";
+import Home from "./pages/Home";
+import Account from "./pages/Account";
+import Information from "./pages/Information";
+import AdminSettingsPage from "./pages/AdminSettingsPage";
 import StaffPortal from "./pages/StaffPortal";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
@@ -60,10 +63,13 @@ const AuthenticatedApp = () => {
           
           {/* Public pages - accessible without login */}
           <Route path="/" element={<StaffPortal />} />
-          <Route path="/home" element={<Landing />} />
           
           {/* Protected app routes - require login */}
           <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+            <Route path="/home" element={<Home />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/information" element={<Information />} />
+            <Route path="/admin-settings" element={<AdminSettingsPage />} />
             <Route path="/events" element={<Events />} />
             <Route path="/events/:eventId" element={<EventDetail />} />
             <Route path="/management" element={<ManagementSettings />} />
