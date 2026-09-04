@@ -4,17 +4,23 @@ import { eventLockResponse, eventLockResponseByPosition } from '../../shared/eve
 const unique = (items = []) => [...new Set(items.filter(Boolean))];
 const ALLOWED_UPDATE_FIELDS = ['order', 'required_count', 'notes', 'color', 'map_x', 'map_y', 'map_x_kamite', 'map_y_kamite', 'map_x_shimote', 'map_y_shimote', 'category', 'chief_name', 'chief_names', 'parts'];
 
-// 部間同期ヘルパー: 同期ONの時間帯に作成されるポジションに、同期グループ全員を既定の部として付与する
-// （parts未指定で作成された場合のみ。明示的なparts指定は尊重する）
-const applySyncParts = async (base44, eventId, positions) => {
-  let showSync = {};
+// ポジションの所属部配列（未設定=1部扱い）
+const partsOf = (p) => (Array.isArray(p?.parts) && p.parts.length > 0 ? p.parts : [1]);
+
+// イベントの部間同期設定を取得
+const getShowSync = async (base44, eventId) => {
   try {
     const event = (await base44.asServiceRole.entities.Event.filter({ id: eventId }))[0];
-    showSync = event?.show_sync || {};
+    return event?.show_sync || {};
   } catch (_e) {
-    showSync = {};
+    return {};
   }
-  return positions.map((p) => {
+};
+
+// 部間同期ヘルパー: 同期ONの時間帯に作成されるポジションに、同期グループ全員を既定の部として付与する
+// （parts未指定で作成された場合のみ。明示的なparts指定は尊重する）
+const applySyncPartsTo = (showSync, positions) =>
+  positions.map((p) => {
     const group = showSync?.[p.time_slot];
     const hasParts = Array.isArray(p.parts) && p.parts.length > 0;
     if (Array.isArray(group) && group.length >= 2 && !hasParts) {
@@ -22,6 +28,32 @@ const applySyncParts = async (base44, eventId, positions) => {
     }
     return p;
   });
+
+// 部間同期ONの時間帯では、同期グループ内のどの部に同名ポジションが存在していても既存レコードに統合する（重複作成防止）
+const createOrMergePosition = async (base44, eventId, showSync, existingPositions, position) => {
+  const slot = position.time_slot || '開場中';
+  const group = Array.isArray(showSync?.[slot]) ? [...new Set(showSync[slot])].sort((a, b) => a - b) : [];
+  const dup = group.length >= 2
+    ? existingPositions.find(
+        (e) => (e.time_slot || '開場中') === slot && e.name === position.name &&
+          partsOf(e).some((pp) => group.includes(pp))
+      )
+    : undefined;
+  if (!dup) {
+    const created = await base44.asServiceRole.entities.Position.create({ ...position, event_id: eventId });
+    existingPositions.push(created);
+    return created;
+  }
+  const merged = await base44.asServiceRole.entities.Position.update(dup.id, {
+    parts: [...new Set([...partsOf(dup), ...partsOf(position)])].sort((a, b) => a - b),
+    staff_names: unique([...(dup.staff_names || []), ...(position.staff_names || [])]),
+    staff_names_kamite: unique([...(dup.staff_names_kamite || []), ...(position.staff_names_kamite || [])]),
+    staff_names_shimote: unique([...(dup.staff_names_shimote || []), ...(position.staff_names_shimote || [])]),
+    chief_names: unique([...(dup.chief_names || []), ...(position.chief_names || [])]),
+    required_count: Math.max(dup.required_count || 0, position.required_count || 0),
+    split_by_side: Boolean(dup.split_by_side) || Boolean(position.split_by_side),
+  });
+  return { ...(merged || dup), id: dup.id };
 };
 
 Deno.serve(async (req) => {
@@ -55,9 +87,11 @@ Deno.serve(async (req) => {
       }
       const lockResp = await eventLockResponse(base44, eventId, user);
       if (lockResp) return lockResp;
-      const [positionWithParts] = await applySyncParts(base44, eventId, [position]);
-      const created = await base44.asServiceRole.entities.Position.create({ ...positionWithParts, event_id: eventId });
-      return Response.json({ position: created });
+      const showSync = await getShowSync(base44, eventId);
+      const [positionWithParts] = applySyncPartsTo(showSync, [position]);
+      const existingPositions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
+      const saved = await createOrMergePosition(base44, eventId, showSync, existingPositions, positionWithParts);
+      return Response.json({ position: saved });
     }
 
     // 新規：複数 Position 並行作成
@@ -68,11 +102,14 @@ Deno.serve(async (req) => {
       }
       const lockResp = await eventLockResponse(base44, eventId, user);
       if (lockResp) return lockResp;
-      const positionsWithParts = await applySyncParts(base44, eventId, positions);
-      const created = await Promise.all(
-        positionsWithParts.map((p) => base44.asServiceRole.entities.Position.create({ ...p, event_id: eventId }))
-      );
-      return Response.json({ positions: created });
+      const showSync = await getShowSync(base44, eventId);
+      const positionsWithParts = applySyncPartsTo(showSync, positions);
+      const existingPositions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
+      const saved = [];
+      for (const p of positionsWithParts) {
+        saved.push(await createOrMergePosition(base44, eventId, showSync, existingPositions, p));
+      }
+      return Response.json({ positions: saved });
     }
 
     // 新規：単一 Position 削除

@@ -32,9 +32,11 @@ export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "開�
   });
 
   // Already-added names for the selected time slot (and same part in multi-show mode)
-  const partMatches = (p) => !multiShowMode || !defaultParts || (() => {
+  // 部間同期ONの時間帯は同期グループ全体で判定（別部にのみ存在する同名ポジションも追加済みとみなす）
+  const effectiveParts = multiShowMode ? (getSyncGroup(showSync, timeSlot) || defaultParts) : null;
+  const partMatches = (p) => !multiShowMode || !effectiveParts || (() => {
     const pp = (p.parts && p.parts.length) ? p.parts : [1];
-    return pp.some((n) => defaultParts.includes(n));
+    return pp.some((n) => effectiveParts.includes(n));
   })();
   const existingNames = new Set(
     existingPositions
