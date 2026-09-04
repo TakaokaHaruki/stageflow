@@ -49,6 +49,8 @@ export default function Login() {
     setIsLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
+      // パスワードでログインしたことを記録（アカウント画面のパスワード変更セクション表示用）
+      try { await base44.auth.updateMe({ password_set: true }); } catch {}
       const user = await base44.auth.me();
       if (!user || !user.role) {
         setPendingApproval(true);

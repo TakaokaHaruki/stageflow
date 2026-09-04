@@ -5,6 +5,7 @@ import { LogOut, Trash2 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { getUserDisplayName } from "@/lib/userDisplay";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import PasswordChangeCard from "@/components/account/PasswordChangeCard";
 import { Button } from "@/components/ui/button";
 
 const ROLE_LABELS = { admin: "管理者", chief: "チーフ", user: "メンバー", unapproved: "承認待ち" };
@@ -53,6 +54,9 @@ export default function Account() {
             </div>
           </div>
         </div>
+
+        {/* パスワード変更（Googleログインのみでパスワード未設定のユーザーには非表示） */}
+        <PasswordChangeCard currentUser={currentUser} />
 
         {/* 表示設定 */}
         <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 shadow-md">
