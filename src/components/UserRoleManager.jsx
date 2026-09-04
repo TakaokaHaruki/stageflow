@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil, Check, X } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { getUserDisplayName } from "@/lib/userDisplay";
 
 const ROLE_OPTIONS = [
   { value: "admin", label: "管理者" },
@@ -22,6 +23,8 @@ const ROLE_STYLE = {
 export default function UserRoleManager() {
   const queryClient = useQueryClient();
   const [editingRoleId, setEditingRoleId] = useState(null);
+  const [editingNameId, setEditingNameId] = useState(null);
+  const [editingName, setEditingName] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const { data: users = [], isLoading } = useQuery({
@@ -49,6 +52,34 @@ export default function UserRoleManager() {
       setEditingRoleId(null);
     },
   });
+
+  // 表示名は管理者のみが変更可能（Userエンティティはプラットフォームの権限で一般ユーザーは更新不可）
+  const updateDisplayNameMutation = useMutation({
+    mutationFn: ({ userId, display_name }) => base44.entities.User.update(userId, { display_name }),
+    onMutate: async ({ userId, display_name }) => {
+      await queryClient.cancelQueries({ queryKey: ["users-all"] });
+      const prev = queryClient.getQueryData(["users-all"]);
+      queryClient.setQueryData(["users-all"], (old = []) =>
+        old.map((u) => (u.id === userId ? { ...u, display_name } : u))
+      );
+      return { prev };
+    },
+    onError: (_, __, ctx) => {
+      queryClient.setQueryData(["users-all"], ctx?.prev);
+      toast.error("表示名の変更に失敗しました");
+    },
+    onSuccess: () => toast.success("表示名を変更しました"),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["users-all"] });
+      setEditingNameId(null);
+    },
+  });
+
+  const saveEditName = (u) => {
+    const trimmed = editingName.trim();
+    if (trimmed === (u.display_name || "").trim()) { setEditingNameId(null); return; }
+    updateDisplayNameMutation.mutate({ userId: u.id, display_name: trimmed });
+  };
 
   const deleteMutation = useMutation({
     mutationFn: (userId) => base44.entities.User.delete(userId),
@@ -80,10 +111,44 @@ export default function UserRoleManager() {
       <div className="border border-border rounded-lg overflow-hidden divide-y divide-border">
         {users.map((u) => (
           <div key={u.id} className="bg-card px-2.5 py-2 flex items-center gap-2">
-            {/* Name */}
+            {/* Name（表示名 = アプリ内表示・ログに使用） */}
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium truncate">{u.full_name || u.email}</p>
-              {u.full_name && <p className="text-[10px] text-muted-foreground truncate">{u.email}</p>}
+              {editingNameId === u.id ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    autoFocus
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") saveEditName(u);
+                      if (e.key === "Escape") setEditingNameId(null);
+                    }}
+                    placeholder="表示名"
+                    className="flex-1 min-w-0 text-xs border border-input rounded px-1.5 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                  />
+                  <button onClick={() => saveEditName(u)} className="p-0.5 text-green-600 hover:text-green-700 shrink-0" aria-label="保存">
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => setEditingNameId(null)} className="p-0.5 text-muted-foreground hover:text-foreground shrink-0" aria-label="キャンセル">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 group min-w-0">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">{getUserDisplayName(u)}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{u.full_name || u.email}{u.display_name ? `　${u.email}` : ""}</p>
+                  </div>
+                  <button
+                    onClick={() => { setEditingNameId(u.id); setEditingName(u.display_name || ""); }}
+                    className="opacity-0 group-hover:opacity-100 p-0.5 text-muted-foreground hover:text-primary transition-all shrink-0"
+                    aria-label="表示名を編集"
+                    title="表示名を編集"
+                  >
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Role */}
@@ -122,7 +187,7 @@ export default function UserRoleManager() {
 
       {confirmDeleteId && confirmDeleteUser && (
         <ConfirmDialog
-          message={`「${confirmDeleteUser.full_name || confirmDeleteUser.email}」を削除しますか？\nこの操作は取り消せません。`}
+          message={`「${getUserDisplayName(confirmDeleteUser)}」を削除しますか？\nこの操作は取り消せません。`}
           confirmLabel="削除"
           confirmVariant="destructive"
           onConfirm={() => { deleteMutation.mutate(confirmDeleteId); setConfirmDeleteId(null); }}
