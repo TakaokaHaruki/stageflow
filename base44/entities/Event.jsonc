@@ -150,6 +150,11 @@
       "description": "\u90e8\u9593\u540c\u671f\u8a2d\u5b9a { \u6642\u9593\u5e2f: [\u540c\u671f\u3059\u308b\u90e8\u756a\u53f7...] }\u3002\u4f8b: {\"\u958b\u5834\u4e2d\": [1,2]}",
       "default": {}
     },
+    "show_times": {
+      "type": "object",
+      "description": "\u90e8\u5225\u306e\u516c\u6f14\u6642\u523b {\"1\": {time_open, time_open_end, time_start, time_start_end, time_end, time_end_end}}\uff08\u8907\u6570\u516c\u6f14\u30e2\u30fc\u30c9\u6642\uff09\u3002\u672a\u8a2d\u5b9a\u306e\u90e8\u306f\u30a4\u30d9\u30f3\u30c8\u5171\u901a\u306e\u6642\u523b\u3092\u4f7f\u7528",
+      "default": {}
+    },
     "admin_only": {
       "type": "boolean",
       "default": false,

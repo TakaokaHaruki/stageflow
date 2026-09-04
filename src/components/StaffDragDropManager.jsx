@@ -585,6 +585,15 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
               {part}部
             </button>
           ))}
+          {(() => {
+            const st = event?.show_times?.[String(selectedPart)];
+            const txt = [
+              st?.time_open ? `開場 ${st.time_open}` : null,
+              st?.time_start ? `開演 ${st.time_start}` : null,
+              st?.time_end ? `終演 ${st.time_end}` : null,
+            ].filter(Boolean).join("　");
+            return txt ? <span className="text-[10px] text-muted-foreground ml-1 shrink-0">{txt}</span> : null;
+          })()}
           {canManageSettings && !isLocked && (
             <>
               <button type="button" onClick={handleAddPart} className="min-h-7 rounded-md px-2 text-xs font-medium border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors">＋部追加</button>

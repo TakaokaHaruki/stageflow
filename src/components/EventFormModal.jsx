@@ -28,7 +28,17 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     continuous_mode: event?.continuous_mode || false,
     multi_show_mode: event?.multi_show_mode || false,
     show_count: event?.show_count || 1,
+    show_times: event?.show_times || {},
   });
+  const setShowTime = (part, key, val) => {
+    setForm((prev) => ({
+      ...prev,
+      show_times: {
+        ...prev.show_times,
+        [String(part)]: { ...(prev.show_times?.[String(part)] || {}), [key]: val },
+      },
+    }));
+  };
   const [uploadingMap, setUploadingMap] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -75,8 +85,20 @@ export default function EventFormModal({ event, onClose, onSaved }) {
   const mutation = useMutation({
     mutationFn: async (data) => {
       // Auto-populate end times: 開場終了=開演開始, 開演終了=終演開始
+      // 部別時刻も同様に「開場終了=開演 / 開演終了=終演」を自動補完する
+      const showTimes = {};
+      for (const [part, t] of Object.entries(data.show_times || {})) {
+        showTimes[part] = {
+          time_open: t?.time_open || "",
+          time_open_end: t?.time_start || "",
+          time_start: t?.time_start || "",
+          time_start_end: t?.time_end || "",
+          time_end: t?.time_end || "",
+        };
+      }
       const payload = {
         ...data,
+        show_times: showTimes,
         time_open_end: data.time_start || "",
         time_start_end: data.time_end || "",
       };
@@ -130,7 +152,8 @@ export default function EventFormModal({ event, onClose, onSaved }) {
     prev.time_end !== cur.time_end ||
     prev.continuous_mode !== cur.continuous_mode ||
     prev.multi_show_mode !== cur.multi_show_mode ||
-    prev.show_count !== cur.show_count;
+    prev.show_count !== cur.show_count ||
+    JSON.stringify(prev.show_times) !== JSON.stringify(cur.show_times);
 
   useEffect(() => {
     if (!event || !form.name) return;
@@ -346,6 +369,41 @@ export default function EventFormModal({ event, onClose, onSaved }) {
                   <button type="button" onClick={() => setForm({ ...form, show_count: (form.show_count || 2) + 1 })} className="flex h-7 w-7 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-6 sm:w-6">+</button>
                 </div>
                 <span className="text-[10px] text-muted-foreground">部（あとから増減可能）</span>
+              </div>
+            )}
+            {form.multi_show_mode && (
+              <div className="pl-6 pt-1 space-y-1.5">
+                <p className="text-[10px] text-muted-foreground leading-tight">
+                  各部の開場・開演・終演時刻を設定できます（未設定の部は共通の時刻を使用）
+                </p>
+                <div className="grid grid-cols-[2.4rem_1fr_1fr_1fr] gap-1.5">
+                  <span />
+                  <Label className="text-[10px] text-muted-foreground">開場</Label>
+                  <Label className="text-[10px] text-muted-foreground">開演</Label>
+                  <Label className="text-[10px] text-muted-foreground">終演</Label>
+                </div>
+                {Array.from({ length: Math.max(2, form.show_count || 2) }, (_, i) => i + 1).map((part) => {
+                  const st = form.show_times?.[String(part)] || {};
+                  return (
+                    <div key={part} className="grid grid-cols-[2.4rem_1fr_1fr_1fr] gap-1.5 items-center">
+                      <Label className="text-xs text-muted-foreground">{part}部</Label>
+                      {[
+                        { key: "time_open", label: "開場時刻" },
+                        { key: "time_start", label: "開演時刻" },
+                        { key: "time_end", label: "終演時刻" },
+                      ].map(({ key, label }) => (
+                        <div key={key} className="flex items-center gap-1 min-w-0">
+                          <div className="flex-1 min-w-0">
+                            <ResponsiveSelect value={st[key] || ""} onValueChange={(val) => setShowTime(part, key, val)} placeholder="--:--" options={timeOptions} label={`${part}部 ${label}`} />
+                          </div>
+                          <button type="button" onClick={() => setShowTime(part, key, "")} disabled={!st[key]} className="text-muted-foreground hover:text-destructive disabled:opacity-30 transition-colors shrink-0" aria-label={`${part}部 ${label}をクリア`}>
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

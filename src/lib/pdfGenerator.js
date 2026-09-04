@@ -712,8 +712,18 @@ export async function generatePositionPDF(data, filename) {
       for (let part = 1; part <= partsCount; part++) {
         if (part > 1) doc.addPage();
         drawTitle(doc, event, `${part}部`);
+        // 部別時刻（show_times）を優先し、未設定の項目はイベント共通の時刻で補完
+        const st = event.show_times?.[String(part)] || {};
+        const partEvent = {
+          ...event,
+          time_open: st.time_open ?? event.time_open,
+          time_open_end: st.time_open_end ?? event.time_open_end,
+          time_start: st.time_start ?? event.time_start,
+          time_start_end: st.time_start_end ?? event.time_start_end,
+          time_end: st.time_end ?? event.time_end,
+        };
         const partPositions = (data.positions || []).filter((p) => getParts(p).includes(part));
-        drawColumns(doc, partPositions, data.staff || [], event);
+        drawColumns(doc, partPositions, data.staff || [], partEvent);
       }
     } else {
       drawTitle(doc, event);
