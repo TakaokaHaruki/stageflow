@@ -10,6 +10,7 @@ import StatCard from "@/components/home/StatCard";
 import SlotRow from "@/components/home/SlotRow";
 import AnnouncementsCard from "@/components/home/AnnouncementsCard";
 import ConcertCard from "@/components/home/ConcertCard";
+import BackupStatusCard from "@/components/home/BackupStatusCard";
 import { TIME_SLOTS } from "@/lib/constants";
 import { getNavItems } from "@/lib/navConfig";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -119,6 +120,9 @@ export default function Home() {
 
         {/* お知らせ（未読バッジ付き） */}
         {nextEvent && <AnnouncementsCard eventId={nextEvent.id} announcements={announcements} />}
+
+        {/* 自動バックアップ状況 */}
+        <BackupStatusCard />
 
         {/* 大分県のコンサート予定 */}
         <ConcertCard />
