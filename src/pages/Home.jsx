@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { formatJaDate } from "@/lib/dateFormat";
-import { CalendarDays, Users, AlertTriangle, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/home/StatCard";
 import SlotRow from "@/components/home/SlotRow";
@@ -42,30 +42,14 @@ export default function Home() {
   });
   const positions = positionsRes?.data?.positions ?? [];
 
-  const { data: staffRes, isLoading: staffLoading } = useQuery({
-    queryKey: ["home-staff", nextEvent?.id],
-    queryFn: () => base44.functions.invoke("getStaffList", { eventId: nextEvent.id }),
-    enabled: !!nextEvent,
-  });
-  const staff = staffRes?.data?.staff ?? [];
-
   const { data: announcements = [], isLoading: announcementsLoading } = useQuery({
     queryKey: ["home-announcements", nextEvent?.id],
     queryFn: () => base44.entities.Announcement.filter({ event_id: nextEvent.id }),
     enabled: !!nextEvent,
   });
 
-  // ポジション・スタッフ取得中は不確実な充足数を表示しない
-  const detailLoading = !!nextEvent && (positionsLoading || staffLoading);
+  const detailLoading = !!nextEvent && positionsLoading;
   const sameDayCount = nextEvent ? events.filter((e) => e.date === nextEvent.date).length : 0;
-
-  const assignedNames = new Set(positions.flatMap((p) => [
-    ...(p.staff_names || []),
-    ...(p.staff_names_kamite || []),
-    ...(p.staff_names_shimote || []),
-  ]));
-  const unassignedCount = nextEvent ? Math.max(0, staff.length - assignedNames.size) : 0;
-  const alertCount = nextEvent ? announcements.filter((a) => a.is_alert).length : 0;
 
   const slotStats = TIME_SLOTS.map((slot) => {
     const slotPositions = positions.filter((p) => (p.time_slot || "開場中") === slot);
@@ -84,13 +68,13 @@ export default function Home() {
     <div className="mx-auto max-w-5xl space-y-3 px-2 py-3">
         {/* KPI帯（最重要指標を最上位に配置） */}
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
+          <div className="grid grid-cols-2 gap-2">
+            {[...Array(2)].map((_, i) => (
               <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2">
             <StatCard
               icon={CalendarDays}
               label="本日のイベント"
@@ -102,20 +86,6 @@ export default function Home() {
               label="次回イベント"
               value={nextEvent ? format(new Date(nextEvent.date), "M/d") : "—"}
               sub={nextEvent ? (sameDayCount > 1 ? `${nextEvent.name} ほか${sameDayCount - 1}件` : nextEvent.name) : "予定なし"}
-            />
-            <StatCard
-              icon={Users}
-              label="未配置スタッフ（次回）"
-              value={nextEvent ? (detailLoading ? "…" : unassignedCount) : "—"}
-              sub={nextEvent ? (detailLoading ? "取得中…" : `スタッフ総数 ${staff.length}名`) : "次回イベントなし"}
-              tone={nextEvent && !detailLoading ? (unassignedCount > 0 ? "danger" : "ok") : "default"}
-            />
-            <StatCard
-              icon={AlertTriangle}
-              label="緊急お知らせ（次回）"
-              value={nextEvent ? (announcementsLoading ? "…" : alertCount) : "—"}
-              sub={nextEvent ? (announcementsLoading ? "取得中…" : alertCount > 0 ? "確認が必要です" : "アラートなし") : "次回イベントなし"}
-              tone={nextEvent && !announcementsLoading && alertCount > 0 ? "danger" : "default"}
             />
           </div>
         )}

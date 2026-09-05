@@ -23,6 +23,6 @@ export function getNavItems({ isAdmin = false, canEdit = false, isGuest = false 
       ? [{ id: "admin-settings", label: "管理者設定", short: "管理者", icon: ShieldCheck, path: "/admin-settings", description: "ユーザー管理とポータル制限" }]
       : []),
     { id: "account", label: "アカウント", short: "アカウント", icon: UserCircle, path: "/account", description: "表示名・テーマ・ポータルQRの確認" },
-    { id: "information", label: "インフォメーション", short: "インフォ", icon: Info, path: "/information", description: "Crewlyの使い方と操作ガイド" },
+    { id: "information", label: "インフォメーション", short: "インフォ", icon: Info, path: "/information", description: "アプリ情報・利用規約・プライバシーポリシー・お問い合わせ" },
   ];
 }
