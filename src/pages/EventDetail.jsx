@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip, HelpCircle, Database, Lock } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, Map, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip, HelpCircle, Database, Lock } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -13,12 +13,12 @@ import StaffDragDropManager from "@/components/StaffDragDropManager";
 import PositionNotesEditor from "@/components/PositionNotesEditor";
 import BottomTabBar from "@/components/BottomTabBar";
 import SidebarNav from "@/components/SidebarNav";
+import SectionTabBar from "@/components/SectionTabBar";
 import { getUserDisplayName } from "@/lib/userDisplay";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import GlobalBanner from "@/components/GlobalBanner";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
-import { format } from "date-fns";
-import { ja } from "date-fns/locale";
+import { formatJaDate } from "@/lib/dateFormat";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useTabNavigation } from "@/hooks/useTabNavigation";
 import { EVENT_MODE_REFETCH_INTERVAL, loadEventById } from "@/lib/eventLoader";
@@ -28,6 +28,7 @@ import EventScreenSaver from "@/components/EventScreenSaver";
 import ThemeToggle from "@/components/ThemeToggle";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SeatingMapViewer from "@/components/SeatingMapViewer";
+import PositionMapViewer from "@/components/PositionMapViewer";
 import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
 import EmergencyContactManager from "@/components/EmergencyContactManager";
@@ -46,6 +47,7 @@ export default function EventDetail() {
   const [tabResetKey, setTabResetKey] = useState(0);
   const [showScreenSaver, setShowScreenSaver] = useState(false);
   const [confirmScreenSaver, setConfirmScreenSaver] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const [adminSection, setAdminSection] = useState("operation_logs"); // 'operation_logs' | 'access_restriction' | 'staff_qr'
   const [settingsSection, setSettingsSection] = useState("positions");
   const topBarRef = useRef(null);
@@ -64,6 +66,12 @@ export default function EventDetail() {
   const { isAdmin, isChief, canEdit, canManageSettings, role } = useUserRole();
   const isPrivileged = isAdmin || isChief;
   const [currentUser, setCurrentUser] = useState(null);
+  const [profileError, setProfileError] = useState(false);
+
+  const loadUser = () => {
+    setProfileError(false);
+    base44.auth.me().then(setCurrentUser).catch(() => setProfileError(true));
+  };
 
   const handleTabChange = (newTab, options) => {
     setTab(newTab, options);
@@ -80,7 +88,7 @@ export default function EventDetail() {
   }, [tab]);
 
   useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {});
+    loadUser();
   }, []);
 
   const { data: event, isLoading, refetch: refetchEvent } = useQuery({
@@ -158,6 +166,7 @@ export default function EventDetail() {
   const desktopTabs = [
     { id: "staff", label: "スタッフ管理", icon: Users },
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
+    { id: "map", label: "配置マップ", icon: Map },
     { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
     ...(isPrivileged ? [{ id: "files", label: "配布資料", icon: Paperclip }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
@@ -183,8 +192,8 @@ export default function EventDetail() {
       ]
     : activeTab === "settings"
       ? [
-          { id: "positions", label: "ポジション設定", icon: Settings },
-          { id: "presets", label: "ポジションプリセット", icon: ClipboardList },
+          { id: "positions", label: "ポジション個別設定", icon: Settings },
+          { id: "presets", label: "プリセット保存", icon: ClipboardList },
           { id: "tag_management", label: "タグ・役割管理", icon: Tag },
           { id: "pos_notes", label: "ポジション説明", icon: FileText },
           { id: "side_split", label: "上手/下手分割", icon: Settings },
@@ -236,7 +245,7 @@ export default function EventDetail() {
             </div>
             {(event.date || event.venue) && (
               <div className="text-xs text-muted-foreground leading-snug mt-0.5">
-                {event.date && format(new Date(event.date), "M月d日（E）", { locale: ja })}
+                {event.date && formatJaDate(event.date)}
                 {event.venue && `　${event.venue}`}
                 <span className="sm:hidden ml-2">{currentTime}</span>
               </div>
@@ -245,22 +254,26 @@ export default function EventDetail() {
           <button
             type="button"
             onClick={() => setConfirmScreenSaver(true)}
-            className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:ml-0 sm:h-7 sm:w-7"
+            className="ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:ml-0 sm:h-7 sm:w-7"
             title="スクリーンセーバー"
             aria-label="スクリーンセーバーを表示"
           >
             <Monitor className="h-3.5 w-3.5" />
           </button>
           <ThemeToggle />
-          {currentUser ? (
-            <div className="flex h-9 max-w-36 shrink-0 items-center gap-0.5 rounded-md bg-muted px-0.5 sm:h-7 sm:gap-1 sm:px-1">
+          {profileError && !currentUser ? (
+            <Button size="sm" variant="outline" className="h-11 gap-1 px-2 text-xs shrink-0 sm:h-7" onClick={loadUser}>
+              <RefreshCw className="w-3 h-3" />再試行
+            </Button>
+          ) : currentUser ? (
+            <div className="flex h-11 max-w-36 shrink-0 items-center gap-0.5 rounded-md bg-muted px-0.5 sm:h-7 sm:gap-1 sm:px-1">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-5 sm:w-5">
                 <User className="w-3 h-3 text-primary" />
               </div>
               <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
               <button
-                onClick={() => base44.auth.logout()}
-                className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
+                onClick={() => setConfirmLogout(true)}
+                className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
                 title="ログアウト"
                 aria-label="ログアウト"
               >
@@ -282,27 +295,13 @@ export default function EventDetail() {
         <div className="flex-1 min-w-0">
           {/* Child tab bar */}
           {isManagementTab && (
-            <div className="block border-b border-border/70 bg-muted/40 sm:sticky sm:z-40" style={{ top: topBarHeight }}>
-              <div className="max-w-[1400px] mx-auto px-2">
-                <div className="grid grid-cols-3 gap-1 sm:flex sm:gap-4 sm:overflow-x-auto sm:scrollbar-hide">
-                  {activeManagementChildren.map(({ id, label, icon: Icon }) => (
-                    <button
-                      key={id}
-                      onClick={() => selectManagementChild(id)}
-                      className={`flex min-h-9 min-w-0 select-none items-center justify-center gap-1 whitespace-normal border-b-2 px-1 py-1 text-center text-[10px] font-semibold leading-tight transition-colors focus-visible:outline-none sm:min-h-0 sm:shrink-0 sm:justify-start sm:gap-1.5 sm:whitespace-nowrap sm:px-0 sm:py-2 sm:text-left sm:text-xs ${
-                        activeManagementChild === id
-                          ? "border-primary text-primary"
-                          : "border-transparent text-muted-foreground hover:text-foreground"
-                      }`}
-                      aria-current={activeManagementChild === id ? "page" : undefined}
-                    >
-                      <Icon className="hidden h-3.5 w-3.5 sm:block" />
-                      <span>{label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <SectionTabBar
+              items={activeManagementChildren}
+              activeId={activeManagementChild}
+              onSelect={selectManagementChild}
+              className="sm:sticky sm:z-40"
+              style={{ top: topBarHeight }}
+            />
           )}
 
           <div className="max-w-[1400px] mx-auto px-1 py-1 pb-16 sm:pb-8">
@@ -330,6 +329,7 @@ export default function EventDetail() {
             {activeTab === "settings" && settingsSection === "side_split" && <PositionTypeManagement eventId={eventId} section="positions" mode="event-side" isLocked={eventLocked} />}
             {activeTab === "settings" && settingsSection === "preset_apply" && <PositionTypeManagement eventId={eventId} section="presets" mode="event-apply" />}
             {activeTab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} isLocked={eventLocked} />}
+            {activeTab === "map" && <PositionMapViewer eventId={eventId} event={event} />}
             {activeTab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
             {activeTab === "files" && <SharedFileManager eventId={eventId} showAll={true} isLocked={eventLocked} />}
           </motion.div>
@@ -340,6 +340,16 @@ export default function EventDetail() {
 
       {showScreenSaver && (
         <EventScreenSaver event={event} onExit={() => setShowScreenSaver(false)} administrator={role === "admin"} />
+      )}
+
+      {confirmLogout && (
+        <ConfirmDialog
+          message="ログアウトしますか？"
+          confirmLabel="ログアウト"
+          confirmVariant="default"
+          onCancel={() => setConfirmLogout(false)}
+          onConfirm={() => { setConfirmLogout(false); base44.auth.logout(); }}
+        />
       )}
 
       {confirmScreenSaver && (

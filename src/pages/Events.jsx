@@ -1,36 +1,30 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
-import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, ChevronRight, Trash2, Pencil, Search, Plus, ShieldCheck, User, LogOut, LogIn } from "lucide-react";
-import BackButton from "@/components/BackButton";
-import CrewlyLogo from "@/components/CrewlyLogo";
-import ConfirmDialog from "@/components/ConfirmDialog";
+import { Calendar, Search, Plus, X, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import ThemeToggle from "@/components/ThemeToggle";
-import { getUserDisplayName } from "@/lib/userDisplay";
 import { Button } from "@/components/ui/button";
-import EventFormModal from "@/components/EventFormModal";
-import EventPublishToggle from "@/components/EventPublishToggle";
-import EventListItem from "@/components/EventListItem";
-import SidebarNav from "@/components/SidebarNav";
-import EventsBottomBar from "@/components/EventsBottomBar";
-import UserRestrictionBanner from "@/components/UserRestrictionBanner";
-import GlobalBanner from "@/components/GlobalBanner";
-import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
-import { format } from "date-fns";
-import { ja } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import EventFormModal from "@/components/EventFormModal";
+import EventListItem from "@/components/EventListItem";
+import UserRestrictionBanner from "@/components/UserRestrictionBanner";
+import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
+import { formatJaDate } from "@/lib/dateFormat";
+
+function getTodayJST() {
+  const now = new Date();
+  return new Date(now.getTime() + 9 * 60 * 60000).toISOString().split("T")[0];
+}
 
 export default function Events() {
-  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
+  const [showPast, setShowPast] = useState(false);
   const queryClient = useQueryClient();
   const { canEdit, role, isGuest, isAdmin } = useUserRole();
 
@@ -40,63 +34,46 @@ export default function Events() {
     refetchInterval: LIVE_SYNC_INTERVAL
   });
 
-  // Group events by date and sort by date descending
-  const groupedEvents = useMemo(() => {
-    if (!allEvents || allEvents.length === 0) return [];
+  const todayStr = getTodayJST();
 
-    // Filter by search query first
+  // 今日を境に「今後」「過去」へ分離し、日付ごとにグループ化する
+  const { upcomingGroups, pastGroups, pastCount } = useMemo(() => {
+    if (!allEvents || allEvents.length === 0) return { upcomingGroups: [], pastGroups: [], pastCount: 0 };
+
+    const query = searchQuery.toLowerCase();
     const filtered = allEvents.filter((event) => {
-      const query = searchQuery.toLowerCase();
       const nameMatch = event.name?.toLowerCase().includes(query);
       const venueMatch = event.venue?.toLowerCase().includes(query);
       return nameMatch || venueMatch;
     });
 
-    // Sort by date descending (newest first)
-    const sorted = [...filtered].sort((a, b) => {
-      if (!a.date && !b.date) return 0;
-      if (!a.date) return 1;
-      if (!b.date) return -1;
-      return new Date(b.date) - new Date(a.date);
-    });
-
-    // Group by date
-    const groups = {};
-    for (const event of sorted) {
-      const dateKey = event.date || "no-date";
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
+    const groupByDate = (list) => {
+      const groups = {};
+      for (const event of list) {
+        const dateKey = event.date || "no-date";
+        if (!groups[dateKey]) groups[dateKey] = [];
+        groups[dateKey].push(event);
       }
-      groups[dateKey].push(event);
-    }
+      return Object.entries(groups).map(([date, events]) => ({ date, events }));
+    };
 
-    // Convert to array and sort groups by date descending
-    return Object.entries(groups).
-    sort((a, b) => {
-      if (a[0] === "no-date") return 1;
-      if (b[0] === "no-date") return -1;
-      return new Date(b[0]) - new Date(a[0]);
-    }).
-    map(([date, events]) => ({ date, events }));
-  }, [allEvents, searchQuery]);
+    const withDate = filtered.filter((e) => e.date);
+    const noDate = filtered.filter((e) => !e.date);
+    const upcoming = withDate.filter((e) => e.date >= todayStr).sort((a, b) => a.date.localeCompare(b.date));
+    const past = withDate.filter((e) => e.date < todayStr).sort((a, b) => b.date.localeCompare(a.date));
 
-  // Check if a date is today (JST)
-  const isToday = (dateStr) => {
-    if (!dateStr) return false;
-    const now = new Date();
-    const jstOffset = 9 * 60;
-    const jstDate = new Date(now.getTime() + jstOffset * 60000);
-    const today = jstDate.toISOString().split("T")[0];
-    return dateStr === today;
-  };
+    return {
+      upcomingGroups: [...groupByDate(upcoming), ...groupByDate(noDate)],
+      pastGroups: groupByDate(past),
+      pastCount: past.length,
+    };
+  }, [allEvents, searchQuery, todayStr]);
+
+  const isToday = (dateStr) => dateStr === todayStr;
 
   const { isPulling, pullDistance } = usePullToRefresh(async () => {
     await refetch();
   });
-
-  useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {});
-  }, []);
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Event.delete(id),
@@ -119,208 +96,163 @@ export default function Events() {
     setShowModal(true);
   };
 
-  const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
-  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
-
-  const handleDeleteAccount = async () => {
-    try {
-      if (currentUser?.id) {
-        await base44.entities.User.delete(currentUser.id);
-      }
-    } catch {}
-    base44.auth.logout();
-  };
-
   const handleDelete = (e, id, name) => {
     e.preventDefault();
     e.stopPropagation();
     setConfirmDeleteEvent({ id, name });
   };
 
-  return (
-    <div className="min-h-screen bg-background safe-area-bottom relative scrollbar-hide overflow-x-clip">
-      {/* Pull-to-refresh indicator */}
-      {isPulling &&
-      <div className="fixed top-0 left-0 right-0 flex justify-center pt-2 z-30">
-          <div className="w-6 h-6 border-3 border-primary/30 border-t-primary rounded-full animate-spin" style={{ opacity: pullDistance / 100 }} />
+  const renderGroup = ({ date, events: dateEvents }, groupIdx) => (
+    <motion.div
+      key={date}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: groupIdx * 0.05 }}
+      className="space-y-2"
+    >
+      {date !== "no-date" && (
+        <div className="mb-2 mr-2 border-b border-border pb-1 text-base font-bold text-foreground">
+          {formatJaDate(date)}
+          {isToday(date) && <span className="ml-2 text-xs text-primary">（今日）</span>}
         </div>
-      }
-      <GlobalBanner />
-      {/* Sticky Header */}
-      <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
-        <div className="max-w-6xl mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
-          {isGuest && <BackButton to="/home" label="ホームへ戻る" />}
-          <CrewlyLogo className="mr-1" administrator={role === "admin"} />
-          <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">イベント一覧</h1>
-          <div className="ml-auto flex items-center gap-1">
-            <ThemeToggle />
-            {currentUser ? (
-              <div className="flex h-9 max-w-36 shrink-0 items-center gap-0.5 rounded-md bg-muted px-0.5 sm:h-7 sm:gap-1 sm:px-1">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-5 sm:w-5">
-                  <User className="w-3 h-3 text-primary" />
-                </div>
-                <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
-                <button
-                  onClick={() => setConfirmDeleteAccount(true)}
-                  className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
-                  title="アカウント削削"
-                  aria-label="アカウント削除"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
-                <button
-                  onClick={() => base44.auth.logout()}
-                  className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
-                  title="ログアウト"
-                  aria-label="ログアウト"
-                >
-                  <LogOut className="h-3 w-3" />
-                </button>
-              </div>
-            ) : (
-              <Button size="sm" variant="outline" className="gap-1 h-7 text-xs px-2 shrink-0" onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}>
-                <LogIn className="w-3 h-3" />ログイン
-              </Button>
+      )}
+      {date === "no-date" && (
+        <div className="mb-2 border-b border-border pb-1 text-base font-bold text-foreground">
+          日付未設定
+        </div>
+      )}
+      {dateEvents.map((event) => (
+        <EventListItem
+          key={event.id}
+          event={event}
+          isToday={isToday(date)}
+          isAdmin={isAdmin}
+          canEdit={canEdit}
+          isGuest={isGuest}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      ))}
+    </motion.div>
+  );
+
+  return (
+    <>
+      <div className="mx-auto max-w-6xl px-1.5 py-1">
+        {/* Pull-to-refresh indicator */}
+        {isPulling &&
+          <div className="fixed top-0 left-0 right-0 z-30 flex justify-center pt-2">
+            <div className="h-6 w-6 animate-spin rounded-full border-3 border-primary/30 border-t-primary" style={{ opacity: pullDistance / 100 }} />
+          </div>
+        }
+        <UserRestrictionBanner role={role} />
+
+        {/* 検索と新規イベント作成 */}
+        <div className="flex items-center gap-2 py-1">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="イベント名または会場名で検索"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-9" />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="検索条件をクリア"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
             )}
           </div>
+          {canEdit && (
+            <Button
+              size="sm"
+              className="h-8 shrink-0 gap-1 px-3 text-xs"
+              onClick={() => { setEditingEvent(null); setShowModal(true); }}
+            >
+              <Plus className="h-3 w-3" />新規イベント
+            </Button>
+          )}
         </div>
-      </div>
-
-      <div className="sm:flex">
-        <SidebarNav
-          tabs={[
-            ...(canEdit ? [{ id: "new", label: "新規イベント", icon: Plus }] : []),
-            ...(canEdit ? [{ id: "management", label: "管理設定", icon: ShieldCheck }] : [])
-          ]}
-          activeTab=""
-          onSelectTab={(tabId) => {
-            if (tabId === "new") { setEditingEvent(null); setShowModal(true); }
-            if (tabId === "management") navigate("/management");
-          }}
-          topOffset={56}
-        />
-        
-        <div className="flex-1 min-w-0">
-      <div className="max-w-6xl mx-auto px-1.5 py-1 pb-16 sm:pb-8">
-      <UserRestrictionBanner role={role} />
 
         {isLoading ?
-            <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <div className="flex justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
           </div> :
-            groupedEvents.length === 0 ?
-            <div className="text-center py-24 text-muted-foreground">
-            <Calendar className="w-14 h-14 mx-auto mb-4 opacity-20" />
+          upcomingGroups.length === 0 && pastCount === 0 ?
+          <div className="py-24 text-center text-muted-foreground">
+            <Calendar className="mx-auto mb-4 h-14 w-14 opacity-20" />
             {searchQuery ?
               <>
                 <p className="text-lg font-medium">該当するイベントがありません</p>
-                <p className="text-sm mt-1">検索条件を変更してください</p>
+                <p className="mt-1 text-sm">検索条件を変更してください</p>
               </> :
 
               <>
                 <p className="text-lg font-medium">イベントがありません</p>
-                <p className="text-sm mt-1">新規イベントを追加してください</p>
+                <p className="mt-1 text-sm">新規イベントを追加してください</p>
               </>
-              }
+            }
           </div> :
 
-            <div className="space-y-4 pb-6">
-          {/* Search box */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-                  type="text"
-                  placeholder="イベント名または会場名で検索"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9" />
-                
+          <div className="space-y-4 pb-6">
+            {/* 今後のイベント */}
+            {upcomingGroups.length > 0 && (
+              <div>
+                <div className="mb-1 px-1 text-xs font-bold text-muted-foreground">今後のイベント</div>
+                <div className="space-y-4">
+                  {upcomingGroups.map(renderGroup)}
+                </div>
+              </div>
+            )}
+
+            {/* 過去のイベント（折りたたみ・検索中は展開） */}
+            {pastCount > 0 && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowPast((v) => !v)}
+                  aria-expanded={showPast || Boolean(searchQuery)}
+                  className="flex w-full items-center gap-1.5 rounded-lg px-1 py-1.5 text-xs font-bold text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform ${(showPast || searchQuery) ? "" : "-rotate-90"}`} />
+                  過去のイベント（{pastCount}件）
+                </button>
+                {(showPast || searchQuery) && (
+                  <div className="space-y-4">
+                    {pastGroups.map(renderGroup)}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-
-          {/* Grouped events */}
-          {groupedEvents.map(({ date, events: dateEvents }, groupIdx) =>
-              <motion.div
-                key={date}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: groupIdx * 0.05 }}
-                className="space-y-2">
-                
-              {/* Date header */}
-              {date !== "no-date" &&
-                <div className="font-bold text-base text-foreground border-b border-border pb-1 mb-2 mr-2">
-                  {format(new Date(date), "M 月 d 日（E）", { locale: ja })}
-                  {isToday(date) && <span className="ml-2 text-xs text-primary">（今日）</span>}
-                </div>
-                }
-              {date === "no-date" &&
-                <div className="font-bold text-base text-foreground border-b border-border pb-1 mb-2">
-                  日付未設定
-                </div>
-                }
-
-              {/* Event rows */}
-              {dateEvents.map((event) => (
-                <EventListItem
-                  key={event.id}
-                  event={event}
-                  isToday={isToday(date)}
-                  isAdmin={isAdmin}
-                  canEdit={canEdit}
-                  isGuest={isGuest}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </motion.div>
-              )}
-        </div>
-            }
-      </div>{/* end max-w container */}
-        </div>{/* end flex-1 */}
-      </div>{/* end sm:flex */}
+        }
+      </div>
 
       {confirmDeleteEvent &&
-      <ConfirmDialog
-        message={`「${confirmDeleteEvent.name}」を削除しますか？`}
-        confirmLabel="削除"
-        confirmVariant="destructive"
-        onConfirm={() => {
-          deleteMutation.mutate(confirmDeleteEvent.id);
-          setConfirmDeleteEvent(null);
-        }}
-        onCancel={() => setConfirmDeleteEvent(null)} />
-
+        <ConfirmDialog
+          message={`「${confirmDeleteEvent.name}」を削除しますか？`}
+          confirmLabel="削除"
+          confirmVariant="destructive"
+          onConfirm={() => {
+            deleteMutation.mutate(confirmDeleteEvent.id);
+            setConfirmDeleteEvent(null);
+          }}
+          onCancel={() => setConfirmDeleteEvent(null)} />
       }
-
-      {confirmDeleteAccount &&
-      <ConfirmDialog
-        message={"アカウントを削除しますか？\nこの操作は取り消せません。"}
-        confirmLabel="削除する"
-        confirmVariant="destructive"
-        onConfirm={() => {setConfirmDeleteAccount(false);handleDeleteAccount();}}
-        onCancel={() => setConfirmDeleteAccount(false)} />
-
-      }
-
-      <EventsBottomBar
-        canEdit={canEdit}
-        isAdmin={isAdmin}
-        currentUser={currentUser}
-        onNewEvent={() => { setEditingEvent(null); setShowModal(true); }}
-        onAdminSettings={() => navigate("/management")}
-        onCurrentUserChange={setCurrentUser}
-      />
 
       {showModal &&
-      <EventFormModal
-        event={editingEvent}
-        onClose={() => setShowModal(false)}
-        onSaved={() => {
-          queryClient.invalidateQueries({ queryKey: ["events"] });
-        }} />
-
+        <EventFormModal
+          event={editingEvent}
+          onClose={() => setShowModal(false)}
+          onSaved={() => {
+            queryClient.invalidateQueries({ queryKey: ["events"] });
+          }} />
       }
-    </div>);
-
+    </>
+  );
 }

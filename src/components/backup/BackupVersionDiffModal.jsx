@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Loader2, ChevronDown, ChevronRight, AlertCircle, Plus, Minus, Edit3, Check } from "lucide-react";
 import ModalShell from "@/components/ModalShell";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, Loader2, ChevronDown, ChevronRight, Plus, Minus, Edit3, Check } from "lucide-react";
+import { itemSummary } from "@/components/BackupCompareModal";
 
 const STATUS_CONFIG = {
   added: { label: "新規", cls: "text-green-700 bg-green-100", icon: Plus },
@@ -11,35 +12,11 @@ const STATUS_CONFIG = {
   same: { label: "同一", cls: "text-muted-foreground bg-muted", icon: Check },
 };
 
-export function itemSummary(sectionKey, record) {
-  if (!record) return null;
-  switch (sectionKey) {
-    case "positions":
-      return [record.name, (record.staff_names || []).join(", ")].filter(Boolean).join(": ");
-    case "staff":
-      return [record.name, record.gender].filter(Boolean).join(" / ");
-    case "emergency_contacts":
-      return [record.role_title, record.name, record.phone].filter(Boolean).join(" / ");
-    case "event_sheets":
-      return record.custom_notes ? (record.custom_notes.length > 40 ? record.custom_notes.slice(0, 40) + "..." : record.custom_notes) : "(空)";
-    case "announcements":
-      return [record.title, record.priority].filter(Boolean).join(" / ");
-    case "shared_files":
-      return [record.title].filter(Boolean).join("");
-    case "side_settings":
-      return `設定データ (${Object.keys(record).length}項目)`;
-    case "map_areas":
-      return [record.name, record.type].filter(Boolean).join(" / ");
-    case "tasks":
-      return [record.title, record.is_done ? "✓" : ""].filter(Boolean).join(" ");
-    case "position_type_overrides":
-      return record.position_type_name;
-    default:
-      return record.name || record.title || "";
-  }
-}
-
-export default function BackupCompareModal({ backup, onClose, onRestore, isRestoring }) {
+/**
+ * 2つのバックアップバージョン（古い・新しい）の差分を表示するモーダル。
+ * 差分判定は復元時の新旧比較と同一の複合キー（名前＋時間帯＋パーツ）ロジックに基づく。
+ */
+export default function BackupVersionDiffModal({ older, newer, onClose }) {
   const [comparison, setComparison] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -49,12 +26,12 @@ export default function BackupCompareModal({ backup, onClose, onRestore, isResto
     let cancelled = false;
     (async () => {
       try {
-        const res = await base44.functions.invoke("restorePositions", { backup_id: backup.id, compare_only: true });
+        const res = await base44.functions.invoke("compareBackups", { older_id: older.id, newer_id: newer.id });
         if (cancelled) return;
         const data = res?.data || res;
         setComparison(data);
         const expanded = {};
-        for (const s of (data?.comparison || [])) {
+        for (const s of data?.comparison || []) {
           if (s.added > 0 || s.removed > 0 || s.modified > 0) expanded[s.key] = true;
         }
         setExpandedSections(expanded);
@@ -65,7 +42,7 @@ export default function BackupCompareModal({ backup, onClose, onRestore, isResto
       }
     })();
     return () => { cancelled = true; };
-  }, [backup.id]);
+  }, [older.id, newer.id]);
 
   const toggleSection = (key) => {
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -78,9 +55,12 @@ export default function BackupCompareModal({ backup, onClose, onRestore, isResto
     <ModalShell onClose={onClose} maxWidth="max-w-2xl">
       <div className="space-y-3">
         <div>
-          <h2 className="text-base font-bold">復元前の確認（新旧比較）</h2>
+          <h2 className="text-base font-bold">バージョン比較</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            「{backup.label || "バックアップ"}」({backup.created_at_jst || ""})
+            <span className="font-semibold">古い</span>: {older.label || "バックアップ"} ({older.created_at_jst || ""})
+          </p>
+          <p className="text-xs text-muted-foreground">
+            <span className="font-semibold">新しい</span>: {newer.label || "バックアップ"} ({newer.created_at_jst || ""})
           </p>
         </div>
 
@@ -101,15 +81,13 @@ export default function BackupCompareModal({ backup, onClose, onRestore, isResto
           <>
             <div className="rounded-lg border border-border bg-muted/30 p-2.5">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {totalChanges > 0 ? (
-                  <><AlertCircle className="w-3.5 h-3.5 inline mr-1 text-amber-500 align-text-bottom" />{totalChanges}件の変更があります。復元すると<strong className="text-foreground">現在のデータが全て上書き</strong>されます。下記を確認してから実行してください。</>
-                ) : (
-                  "現在のデータとバックアップ内容は同一です。"
-                )}
+                {totalChanges > 0
+                  ? `選択した2つのバージョン間に ${totalChanges} 件の差分があります。`
+                  : "選択した2つのバージョンは同一の内容です。"}
               </p>
             </div>
 
-            <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
               {sections.map((s) => {
                 const hasChanges = s.added > 0 || s.removed > 0 || s.modified > 0;
                 const expanded = expandedSections[s.key];
@@ -122,7 +100,7 @@ export default function BackupCompareModal({ backup, onClose, onRestore, isResto
                       {expanded ? <ChevronDown className="w-4 h-4 shrink-0" /> : <ChevronRight className="w-4 h-4 shrink-0" />}
                       <span className="text-sm font-medium flex-1">{s.label}</span>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        バックアップ {s.backup_count}件 / 現在 {s.current_count}件
+                        古い {s.current_count}件 / 新しい {s.backup_count}件
                       </span>
                       {hasChanges && (
                         <div className="flex gap-1 shrink-0">
@@ -148,12 +126,12 @@ export default function BackupCompareModal({ backup, onClose, onRestore, isResto
                                 <div className="flex-1 min-w-0">
                                   <div className="grid grid-cols-2 gap-2">
                                     <div>
-                                      <p className="text-[10px] text-muted-foreground font-semibold mb-0.5">バックアップ</p>
-                                      <p className="text-foreground break-words">{itemSummary(s.key, d.backup) || "—"}</p>
+                                      <p className="text-[10px] text-muted-foreground font-semibold mb-0.5">古い</p>
+                                      <p className="text-foreground break-words">{itemSummary(s.key, d.current) || "—"}</p>
                                     </div>
                                     <div>
-                                      <p className="text-[10px] text-muted-foreground font-semibold mb-0.5">現在</p>
-                                      <p className="text-foreground break-words">{itemSummary(s.key, d.current) || "—"}</p>
+                                      <p className="text-[10px] text-muted-foreground font-semibold mb-0.5">新しい</p>
+                                      <p className="text-foreground break-words">{itemSummary(s.key, d.backup) || "—"}</p>
                                     </div>
                                   </div>
                                 </div>
@@ -167,15 +145,12 @@ export default function BackupCompareModal({ backup, onClose, onRestore, isResto
                 );
               })}
             </div>
-
-            <div className="flex gap-2 pt-1">
-              <Button variant="outline" className="flex-1" onClick={onClose}>キャンセル</Button>
-              <Button className="flex-1" onClick={onRestore} disabled={isRestoring}>
-                {isRestoring ? "復元中..." : "復元を実行"}
-              </Button>
-            </div>
           </>
         )}
+
+        <div className="flex gap-2 pt-1">
+          <Button variant="outline" className="flex-1" onClick={onClose}>閉じる</Button>
+        </div>
       </div>
     </ModalShell>
   );

@@ -1,0 +1,51 @@
+{
+  "name": "ConcertInfo",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "\u516c\u6f14\u30bf\u30a4\u30c8\u30eb"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u958b\u50ac\u65e5 (YYYY-MM-DD)"
+    },
+    "venue": {
+      "type": "string",
+      "description": "\u4f1a\u5834\u540d",
+      "default": ""
+    },
+    "source_url": {
+      "type": "string",
+      "description": "\u53ce\u96c6\u5143\u306e\u516c\u6f14\u8a73\u7d30URL",
+      "default": ""
+    },
+    "last_fetched_at": {
+      "type": "string",
+      "description": "\u6700\u7d42\u53d6\u5f97\u65e5\u6642 (JST YYYY-MM-DD HH:mm)"
+    }
+  },
+  "required": [
+    "title",
+    "date"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

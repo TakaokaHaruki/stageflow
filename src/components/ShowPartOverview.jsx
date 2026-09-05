@@ -44,6 +44,17 @@ function PartSlotRow({ slot, slotPositions, staffCount }) {
 export default function ShowPartOverview({ positions = [], staffList = [], partsCount = 1, showTimes = {}, maskStaffNames = false }) {
   const parts = Array.from({ length: partsCount }, (_, i) => i + 1);
 
+  function positionsForStaff(targetPositions, staffName) {
+    return targetPositions.filter((p) => {
+      const all = [
+        ...(p.staff_names || []),
+        ...(p.staff_names_kamite || []),
+        ...(p.staff_names_shimote || []),
+      ];
+      return all.includes(staffName);
+    });
+  }
+
   const partStats = useMemo(() => parts.map((part) => {
     const partPositions = positions.filter((p) => getParts(p).includes(part));
     const assignedNames = new Set(partPositions.flatMap((p) => [
@@ -57,21 +68,10 @@ export default function ShowPartOverview({ positions = [], staffList = [], parts
   const staffRows = useMemo(() => staffList.map((staff) => ({
     staff,
     parts: parts.map((part) => {
-      const stat = partStats.find((s) => s.part === part) || { positions: [], assignedNames: new Set() };
-      return partPositionsForStaff(stat.positions, staff.name);
+      const stat = partStats.find((s) => s.part === part) || { positions: [] };
+      return positionsForStaff(stat.positions, staff.name);
     }),
   })), [staffList, partStats]);
-
-  function partPositionsForStaff(partPositions, staffName) {
-    return partPositions.filter((p) => {
-      const all = [
-        ...(p.staff_names || []),
-        ...(p.staff_names_kamite || []),
-        ...(p.staff_names_shimote || []),
-      ];
-      return all.includes(staffName);
-    });
-  }
 
   return (
     <div className="space-y-2">
@@ -125,7 +125,7 @@ export default function ShowPartOverview({ positions = [], staffList = [], parts
       <div>
         <div className="flex items-center gap-1.5 mb-1">
           <Users className="w-3.5 h-3.5 text-primary" />
-          <h3 className="text-sm font-bold">スタッフ別の部配置一覧</h3>
+          <h3 className="text-sm font-bold">スタッフ別の配置一覧</h3>
         </div>
         {staffRows.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-4 border border-dashed border-border rounded-lg">
@@ -153,12 +153,23 @@ export default function ShowPartOverview({ positions = [], staffList = [], parts
                           {ps.length === 0 ? (
                             <span className="text-muted-foreground/60">—</span>
                           ) : (
-                            <div className="flex flex-wrap gap-0.5">
-                              {ps.map((p) => (
-                                <span key={p.id} className="rounded-full bg-primary/10 border border-primary/30 text-primary px-1.5 py-0.5 font-medium" title={partLabel(getParts(p))}>
-                                  {p.name}
-                                </span>
-                              ))}
+                            <div className="space-y-1">
+                              {TIME_SLOTS.map((slot) => {
+                                const slotPs = ps.filter((p) => (p.time_slot || "開場中") === slot);
+                                if (slotPs.length === 0) return null;
+                                return (
+                                  <div key={slot}>
+                                    <span className="text-[9px] font-bold text-muted-foreground">{slot}</span>
+                                    <div className="flex flex-wrap gap-0.5 mt-0.5">
+                                      {slotPs.map((p) => (
+                                        <span key={p.id} className="rounded-full bg-primary/10 border border-primary/30 text-primary px-1.5 py-0.5 font-medium" title={partLabel(getParts(p))}>
+                                          {p.name}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </td>

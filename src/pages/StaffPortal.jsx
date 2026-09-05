@@ -20,6 +20,8 @@ import PositionDetailExpand from "@/components/PositionDetailExpand";
 import StaffFileViewer from "@/components/StaffFileViewer";
 import PdfViewerModal from "@/components/PdfViewerModal";
 import { Phone } from "lucide-react";
+import { formatJaDate } from "@/lib/dateFormat";
+import PortalAnnouncementsCard from "@/components/portal/PortalAnnouncementsCard";
 
 const STORAGE_KEY = "crewly_acast_id";
 const COMPLIANCE_STORAGE_PREFIX = "crewly_compliance_";
@@ -56,6 +58,7 @@ export default function StaffPortal() {
   const [removing, setRemoving] = useState(false);
   const [showAllPositions, setShowAllPositions] = useState(false);
   const [emergencyContacts, setEmergencyContacts] = useState([]);
+  const [contactsError, setContactsError] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [myChiefEventIds, setMyChiefEventIds] = useState(new Set());
   const [loginHelpText, setLoginHelpText] = useState("");
@@ -172,16 +175,18 @@ export default function StaffPortal() {
 
       // Fetch emergency contacts for all active events
       const allContacts = [];
+      let contactsFailed = false;
       for (const event of activeEvents) {
         try {
           const contacts = await base44.entities.EmergencyContact.filter({ event_id: event.id });
           for (const c of contacts) {
             allContacts.push({ ...c, _eventName: event.name });
           }
-        } catch (_) {}
+        } catch (_) { contactsFailed = true; }
       }
       allContacts.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       setEmergencyContacts(allContacts);
+      setContactsError(contactsFailed);
 
       // Check if already agreed to compliance for this staff/event combination
       const agreedEvents = activeEvents.filter((event) => {
@@ -321,6 +326,7 @@ export default function StaffPortal() {
     setPendingRemove(null);
     setRemoving(false);
     setEmergencyContacts([]);
+    setContactsError(false);
     setShowPinModal(false);
     setMyChiefEventIds(new Set());
   }, []);
@@ -411,16 +417,18 @@ export default function StaffPortal() {
 
       // Refresh emergency contacts
       const allContacts = [];
+      let contactsFailed = false;
       for (const event of activeEvents) {
         try {
           const contacts = await base44.entities.EmergencyContact.filter({ event_id: event.id });
           for (const c of contacts) {
             allContacts.push({ ...c, _eventName: event.name });
           }
-        } catch (_) {}
+        } catch (_) { contactsFailed = true; }
       }
       allContacts.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       setEmergencyContacts(allContacts);
+      setContactsError(contactsFailed);
     } catch (e) {
       // silent refresh failure
     }
@@ -764,7 +772,7 @@ export default function StaffPortal() {
                 {event.date && (
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    {new Date(event.date).toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "short", timeZone: "Asia/Tokyo" })}
+                    {formatJaDate(event.date)}
                   </span>
                 )}
                 {event.venue && (
@@ -898,6 +906,19 @@ export default function StaffPortal() {
                 <Eye className="w-3.5 h-3.5" />全ポジションを見る
               </Button>
             )}
+          </div>
+        )}
+
+        {/* お知らせ（未読バッジ付き） */}
+        {!loading && staffName && <PortalAnnouncementsCard events={events} staffName={staffName} />}
+
+        {/* 緊急連絡先の取得エラー */}
+        {!loading && contactsError && emergencyContacts.length === 0 && events.length > 0 && (
+          <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50/60 p-4 text-center shadow-md dark:border-rose-900 dark:bg-rose-950/20">
+            <p className="text-xs font-semibold text-rose-700 dark:text-rose-400">緊急連絡先の取得に失敗しました</p>
+            <Button variant="outline" size="sm" className="mt-2 gap-1.5" onClick={() => refreshPositions()}>
+              <RefreshCw className="w-3.5 h-3.5" />再試行
+            </Button>
           </div>
         )}
 

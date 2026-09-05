@@ -22,10 +22,10 @@ export default function Login() {
   const [error, setError] = useState("");
   const [pendingApproval, setPendingApproval] = useState(false);
 
-  // Redirect already authenticated users to events page
+  // Redirect already authenticated users to home page
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/events", { replace: true });
+      navigate("/home", { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -49,11 +49,13 @@ export default function Login() {
     setIsLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
+      // パスワードでログインしたことを記録（アカウント画面のパスワード変更セクション表示用）
+      try { await base44.auth.updateMe({ password_set: true }); } catch {}
       const user = await base44.auth.me();
       if (!user || !user.role) {
         setPendingApproval(true);
       } else {
-        window.location.href = "/";
+        window.location.href = "/home";
       }
     } catch (err) {
       setError(err.message || "ログインに失敗しました。メールアドレスまたはパスワードをご確認ください。");
@@ -64,7 +66,7 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     try {
-      await base44.auth.loginWithProvider("google", "/events");
+      await base44.auth.loginWithProvider("google", "/home");
     } catch (err) {
       setError(err.message || "Google ログインに失敗しました。");
     }
@@ -76,7 +78,7 @@ export default function Login() {
     <div className="h-screen bg-background flex flex-col items-center justify-center px-6">
       {/* Fixed top bar with logo */}
       <div className="fixed top-0 left-0 right-0 h-12 flex items-center px-2 gap-1 border-b border-border bg-background/80 backdrop-blur-md z-50 safe-area-top">
-        <BackButton to="/home" label="ホームへ戻る" />
+        <BackButton to="/" label="ポータルへ戻る" />
         <CrewlyLogo />
       </div>
       <motion.div

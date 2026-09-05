@@ -3,16 +3,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Database, RotateCcw, Plus, Trash2, ShieldCheck, Clock } from "lucide-react";
+import { Database, RotateCcw, Plus, Trash2, ShieldCheck, Clock, GitCompare } from "lucide-react";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import BackupCompareModal from "@/components/BackupCompareModal";
+import BackupVersionDiffModal from "@/components/backup/BackupVersionDiffModal";
 
 export default function BackupManager() {
   const queryClient = useQueryClient();
   const [selectedEventId, setSelectedEventId] = useState("");
   const [pendingCompare, setPendingCompare] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [compareIds, setCompareIds] = useState([]);
+  const [diffOpen, setDiffOpen] = useState(false);
 
   const eventsQuery = useQuery({
     queryKey: ["events-for-backup"],
@@ -21,7 +24,7 @@ export default function BackupManager() {
 
   const backupsQuery = useQuery({
     queryKey: ["position-backups", selectedEventId],
-    queryFn: () => base44.entities.PositionBackup.filter({ event_id: selectedEventId }, "-created_date", 50),
+    queryFn: () => base44.entities.PositionBackup.filter({ event_id: selectedEventId }, "-created_date", 20),
     enabled: !!selectedEventId,
   });
 
@@ -80,6 +83,21 @@ export default function BackupManager() {
   const events = eventsQuery.data || [];
   const backups = backupsQuery.data || [];
 
+  const toggleCompare = (id) => {
+    setCompareIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= 2) return [prev[1], id];
+      return [...prev, id];
+    });
+  };
+
+  // 選択中の2件を古い・新しい順に並べる
+  const compareBackups = compareIds
+    .map((id) => backups.find((b) => b.id === id))
+    .filter(Boolean)
+    .sort((a, b) => (a.created_date || "").localeCompare(b.created_date || ""));
+  const [olderBackup, newerBackup] = compareBackups;
+
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
@@ -97,7 +115,11 @@ export default function BackupManager() {
           <div className="flex flex-col sm:flex-row gap-2">
             <select
               value={selectedEventId}
-              onChange={(e) => setSelectedEventId(e.target.value)}
+              onChange={(e) => {
+                setSelectedEventId(e.target.value);
+                setCompareIds([]);
+                setDiffOpen(false);
+              }}
               className="flex-1 h-9 rounded-md border border-input bg-transparent px-2 text-sm"
             >
               <option value="">イベントを選択...</option>
@@ -134,8 +156,16 @@ export default function BackupManager() {
         <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
           <div className="flex items-center gap-2 mb-3">
             <Database className="w-4 h-4 text-muted-foreground" />
-            <h3 className="text-sm font-bold">バックアップ一覧</h3>
+            <h3 className="text-sm font-bold flex-1">バックアップ一覧</h3>
             {backupsQuery.isLoading && <span className="text-xs text-muted-foreground">読み込み中...</span>}
+            <Button
+              size="sm"
+              className="gap-1"
+              disabled={compareIds.length !== 2}
+              onClick={() => setDiffOpen(true)}
+            >
+              <GitCompare className="w-3.5 h-3.5" />バージョン比較
+            </Button>
           </div>
 
           {backups.length === 0 && !backupsQuery.isLoading ? (
@@ -144,6 +174,13 @@ export default function BackupManager() {
             <div className="space-y-2">
               {backups.map((b) => (
                 <div key={b.id} className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-2.5">
+                  <input
+                    type="checkbox"
+                    checked={compareIds.includes(b.id)}
+                    onChange={() => toggleCompare(b.id)}
+                    aria-label={`${b.label || "バックアップ"}を比較対象に選択`}
+                    className="h-4 w-4 shrink-0 accent-primary"
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-sm font-medium truncate">{b.label || "バックアップ"}</span>
@@ -182,6 +219,9 @@ export default function BackupManager() {
         </div>
       )}
 
+      {diffOpen && olderBackup && newerBackup && (
+        <BackupVersionDiffModal older={olderBackup} newer={newerBackup} onClose={() => setDiffOpen(false)} />
+      )}
       {pendingCompare && (
         <BackupCompareModal
           backup={pendingCompare}
