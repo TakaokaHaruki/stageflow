@@ -13,6 +13,9 @@ function stripTags(text) {
 }
 
 // 大分県のライブ・コンサート日程ページを解析し、{title, date, venue, source_url} の配列を返す
+// 2種類のHTML構造に対応:
+//  旧: <dt class="ev_old">9/16(水)</dt><dd><div class="ev_old">タイトル<br>会場（大分県）</div></dd>
+//  新: <dt class="el_day"><span class="el_day2">9/16(水)</span></dt><dd><div class="el_ttl">タイトル</div><font>会場（大分県）<br>副題</font></dd>
 function parseConcerts(html) {
   const concerts = [];
   const sections = html.split(/<h3[^>]*class="ev_h3"[^>]*>/i);
@@ -24,20 +27,34 @@ function parseConcerts(html) {
     let dlMatch;
     while ((dlMatch = dlRegex.exec(sections[i])) !== null) {
       const dl = dlMatch[1];
-      const dtMatch = /<dt[^>]*>([^<]*)<\/dt>/i.exec(dl);
+      const dtMatch = /<dt[^>]*>([\s\S]*?)<\/dt>/i.exec(dl);
       if (!dtMatch) continue;
-      const md = /(\d{1,2})\/(\d{1,2})/.exec(dtMatch[1]);
+      const md = /(\d{1,2})\/(\d{1,2})/.exec(stripTags(dtMatch[1]));
       if (!md) continue;
-      const ddMatch = /<dd>\s*<div[^>]*>([\s\S]*?)<\/div>\s*<\/dd>/i.exec(dl);
-      if (!ddMatch) continue;
-      const parts = ddMatch[1].split(/<br\s*\/?>/i).map(stripTags).filter(Boolean);
-      if (parts.length === 0 || !parts[0]) continue;
-      const venue = (parts[1] || '').replace(/（大分県）$/, '').trim();
+      let title = '';
+      let venue = '';
+      const ttlMatch = /<div[^>]*class="el_ttl"[^>]*>([\s\S]*?)<\/div>/i.exec(dl);
+      if (ttlMatch) {
+        title = stripTags(ttlMatch[1]);
+        const fontMatch = /<font[^>]*>([\s\S]*?)<\/font>/i.exec(dl);
+        if (fontMatch) {
+          const lines = fontMatch[1].split(/<br\s*\/?>/i).map(stripTags).filter(Boolean);
+          venue = lines[0] || '';
+        }
+      } else {
+        const ddMatch = /<dd>\s*<div[^>]*>([\s\S]*?)<\/div>\s*<\/dd>/i.exec(dl);
+        if (!ddMatch) continue;
+        const parts = ddMatch[1].split(/<br\s*\/?>/i).map(stripTags).filter(Boolean);
+        if (parts.length === 0 || !parts[0]) continue;
+        title = parts[0];
+        venue = parts[1] || '';
+      }
+      if (!title) continue;
       const hrefMatch = /href="(https:\/\/live-events\.a-jp\.org\/soko\/evg\/\d+\.html)"/i.exec(dl);
       concerts.push({
-        title: parts[0],
+        title,
         date: `${year}-${md[1].padStart(2, '0')}-${md[2].padStart(2, '0')}`,
-        venue,
+        venue: venue.replace(/（大分県）$/, '').trim(),
         source_url: hrefMatch ? hrefMatch[1] : '',
       });
     }
