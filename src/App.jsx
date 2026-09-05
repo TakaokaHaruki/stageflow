@@ -23,6 +23,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ManagementSettings from "./pages/ManagementSettings";
 import SupportChat from "./pages/SupportChat";
+import Concerts from "./pages/Concerts";
 
 const AuthenticatedApp = () => {
   const { authError, user } = useAuth();
@@ -59,6 +60,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin-settings" element={<AdminSettingsPage />} />
           <Route path="/events" element={<Events />} />
           <Route path="/support" element={<SupportChat />} />
+          <Route path="/concerts" element={<Concerts />} />
           <Route path="/management" element={<ManagementSettings />} />
         </Route>
         {/* イベント詳細は独自レイアウトを持つため共通ナビ対象外 */}
