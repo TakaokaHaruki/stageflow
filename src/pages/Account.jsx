@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import QRCode from "qrcode";
 import { base44 } from "@/api/base44Client";
 import { LogOut, Trash2 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -14,7 +13,6 @@ const ROLE_LABELS = { admin: "管理者", chief: "チーフ", user: "メンバ�
 export default function Account() {
   const [currentUser, setCurrentUser] = useState(null);
   const [profileError, setProfileError] = useState(false);
-  const [qrUrl, setQrUrl] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -25,9 +23,6 @@ export default function Account() {
 
   useEffect(() => {
     loadUser();
-    QRCode.toDataURL(`${window.location.origin}/`, { width: 240, margin: 1 })
-      .then(setQrUrl)
-      .catch(() => {});
   }, []);
 
   const displayName = currentUser ? getUserDisplayName(currentUser) : "";
@@ -80,20 +75,6 @@ export default function Account() {
             <p className="mt-0.5 text-xs text-muted-foreground">ライト/ダーク表示を切り替えます</p>
           </div>
           <ThemeToggle />
-        </div>
-
-        {/* スタッフポータルQR */}
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
-          <h2 className="mb-1 text-sm font-bold">スタッフポータル</h2>
-          <p className="mb-3 text-xs text-muted-foreground">
-            スタッフ向けポータルのQRコードです。共有してスタッフにアクセスしてもらえます。
-          </p>
-          <div className="flex items-center gap-4">
-            {qrUrl && (
-              <img src={qrUrl} alt="スタッフポータルQRコード" className="h-28 w-28 shrink-0 rounded-lg border border-border bg-white p-1" />
-            )}
-            <p className="min-w-0 break-all text-xs text-muted-foreground">{window.location.origin}/</p>
-          </div>
         </div>
 
         {/* アカウント操作 */}
