@@ -31,7 +31,10 @@ export default function AppNav() {
   useEffect(() => {
     const el = headerRef.current;
     if (!el) return;
-    const update = () => setHeaderHeight(el.offsetHeight);
+    const update = () => {
+      setHeaderHeight(el.offsetHeight);
+      document.documentElement.style.setProperty("--app-header-height", `${el.offsetHeight}px`);
+    };
     update();
     const observer = new ResizeObserver(update);
     observer.observe(el);

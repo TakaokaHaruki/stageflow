@@ -61,13 +61,13 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] px-1.5 py-2">
+    <div className="mx-auto max-w-[1400px] px-1.5 pb-2">
         {/* Section bar */}
         <SectionTabBar
           items={SECTIONS}
           activeId={section}
           onSelect={setSection}
-          className="sticky top-[56px] z-40 mb-3"
+          className="sticky top-[var(--app-header-height)] z-40 mb-3"
         />
 
         {EVENT_SCOPED.has(section) && (
