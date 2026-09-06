@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { LogIn, LogOut, User as UserIcon, RefreshCw } from "lucide-react";
@@ -24,6 +24,19 @@ export default function AppNav() {
   const [currentUser, setCurrentUser] = useState(null);
   const [profileError, setProfileError] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const headerRef = useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(56);
+
+  // ヘッダーの実際の高さにサイドバーの固定位置を合わせる
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const update = () => setHeaderHeight(el.offsetHeight);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const loadUser = () => {
     setProfileError(false);
@@ -52,7 +65,7 @@ export default function AppNav() {
     <div className="min-h-screen bg-background safe-area-bottom relative scrollbar-hide overflow-x-clip">
       <GlobalBanner />
       {/* 共通ヘッダ */}
-      <div className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
+      <div ref={headerRef} className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-[1400px] mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
           <CrewlyLogo className="mr-1" administrator={isAdmin} />
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">{title}</h1>
@@ -98,7 +111,7 @@ export default function AppNav() {
 
       <div className="sm:flex">
         {!isGuest && (
-          <SidebarNav tabs={navItems} activeTab={activeTab} onSelectTab={handleSelect} topOffset={56} />
+          <SidebarNav tabs={navItems} activeTab={activeTab} onSelectTab={handleSelect} topOffset={headerHeight} />
         )}
         <div className="flex-1 min-w-0 pb-16 sm:pb-0">
           <Outlet />
