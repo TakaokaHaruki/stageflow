@@ -36,6 +36,8 @@ export function normalizeVenue(raw) {
     .replace(/^大分・/, '')
     .replace(/\(大分県\)$/, '')
     .replace(/[\s\u3000]+/g, ' ')
+    // 英字と日本語の間の空白を詰める（「iichiko グランシアタ」→「iichikoグランシアタ」）
+    .replace(/([a-zA-Z0-9]) (?=[ぁ-んァ-ヶ一-龯々])/g, '$1')
     .trim();
 }
 

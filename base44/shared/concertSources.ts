@@ -55,6 +55,7 @@ const LTIKE_SEARCH_URL = 'https://l-tike.com/search/?vnu=%E3%82%B0%E3%83%A9%E3%8
 
 // ブラウザの遷移に近いリクエストヘッダー（WAF対策）
 const BROWSER_NAV_HEADERS = {
+  'Accept-Encoding': 'gzip',
   'Referer': 'https://l-tike.com/',
   'Sec-Fetch-Dest': 'document',
   'Sec-Fetch-Mode': 'navigate',
@@ -117,7 +118,7 @@ const PIA_QUERY = 'cAsgnFlg=false&mode=2&bAsgnFlg=false&dispMode=1&rlsIn=0&respo
 
 function cleanPiaTitle(raw) {
   let t = stripTags(raw);
-  t = t.replace(/^(一般発売|先行発売|先着発売|リセール|プレイガイド発売)\s*[／/]\s*/, '');
+  t = t.replace(/^(一般発売|先行発売|先着発売|リセール|プレイガイド発売)\s*[／/]?\s*/, '');
   t = t.replace(/^【[^】]*】\s*[／/]?\s*/, '');
   t = t.replace(/\s*[／/]\s*大分\s*$/, '');
   t = t.replace(/(プレ?リザーブ|プリセール|リザーブ)(\d*次)?$/, '');

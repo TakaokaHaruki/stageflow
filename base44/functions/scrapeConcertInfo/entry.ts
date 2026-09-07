@@ -44,7 +44,7 @@ export default async function(req) {
         merge_preview: clusters.map((c) => ({
           title: c.items[0].title,
           date: c.date,
-          venue: c.items[0].venue,
+          venue: normalizeVenue(c.items[0].venue),
           sources: c.items.map((i) => i.source),
           merged_from: c.items.length,
         })),
@@ -82,16 +82,18 @@ export default async function(req) {
 
       if (keep) {
         const updates = {};
+        let changed = false;
         if (rep.priority < 99) {
-          if (rep.title && rep.title !== keep.title) updates.title = rep.title;
+          if (rep.title && rep.title !== keep.title) { updates.title = rep.title; changed = true; }
           const venue = normalizeVenue(rep.venue);
-          if (venue && venue !== (keep.venue || '')) updates.venue = venue;
-          if (rep.source_url && rep.source_url !== (keep.source_url || '')) updates.source_url = rep.source_url;
+          if (venue && venue !== (keep.venue || '')) { updates.venue = venue; changed = true; }
+          if (rep.source_url && rep.source_url !== (keep.source_url || '')) { updates.source_url = rep.source_url; changed = true; }
           updates.last_fetched_at = fetchedAt;
         }
         if (Object.keys(updates).length > 0) {
           await svc.entities.ConcertInfo.update(keep.id, updates);
-          updated++;
+          // 表示内容が変わった場合のみ「更新」としてカウントする
+          if (changed) updated++;
         }
         // クラスタ内の重複した既存レコードは1つにまとめる
         for (const dup of existingInCluster.slice(1)) {
