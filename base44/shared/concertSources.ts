@@ -32,7 +32,11 @@ async function fetchPage(url, extraHeaders) {
       ...(extraHeaders || {}),
     },
   });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
+  if (!res.ok) {
+    // エラー時は本文の先頭も添えて、WAF/混雑ページなど原因を判別できるようにする
+    const errText = new TextDecoder('utf-8').decode((await res.arrayBuffer()).slice(0, 200)).replace(/\s+/g, ' ');
+    throw new Error('HTTP ' + res.status + (errText ? ' (' + errText + ')' : ''));
+  }
   const buf = await res.arrayBuffer();
   const contentType = res.headers.get('content-type') || '';
   let charset = /charset=([\w-]+)/i.exec(contentType);
@@ -218,18 +222,18 @@ export async function fetchKyodo() {
       const end = block.indexOf('<!-- 公演　ここまで -->');
       const b = end >= 0 ? block.slice(0, end) : block.slice(0, 3000);
       const dtRaw = /<dt[^>]*>([\s\S]*?)<\/dt>/.exec(b);
-      const dm = /(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日/.exec(stripTags(dtRaw ? dtRaw[1] : ''));
+      const dm = /(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/.exec(stripTags(dtRaw ? dtRaw[1] : ''));
       const titleRaw = /<span class="title">([\s\S]*?)<\/span>/.exec(b);
       const title = stripTags(titleRaw ? titleRaw[1] : '');
       if (!dm || !title) continue;
       const placeRaw = /<span class="place">([\s\S]*?)<\/span>/.exec(b);
-      const hrefMatch = /href="(https:\/\/www\.kyodo-west\.co\.jp\/artist_page\.php\?a_id=\d+)"/.exec(b);
+      const hrefMatch = /href="(artist_page\.php\?a_id=\d+)"/.exec(b);
       items.push({
         source: 'kyodo',
         title,
         date: dm[1] + '-' + dm[2].padStart(2, '0') + '-' + dm[3].padStart(2, '0'),
         venue: stripTags(placeRaw ? placeRaw[1] : '').replace(/^大分・/, ''),
-        source_url: hrefMatch ? hrefMatch[1] : '',
+        source_url: hrefMatch ? 'https://www.kyodo-west.co.jp/' + hrefMatch[1] : '',
       });
     }
     if (items.length === 0) {
