@@ -1,66 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { jstNow } from "../../shared/eventBackup.ts";
-
-const SOURCE_URL = 'https://live-events.a-jp.org/soko/prf/44.html';
-
-function stripTags(text) {
-  return text
-    .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&quot;/g, '"')
-    .trim();
-}
-
-// 大分県のライブ・コンサート日程ページを解析し、{title, date, venue, source_url} の配列を返す
-// 2種類のHTML構造に対応:
-//  旧: <dt class="ev_old">9/16(水)</dt><dd><div class="ev_old">タイトル<br>会場（大分県）</div></dd>
-//  新: <dt class="el_day"><span class="el_day2">9/16(水)</span></dt><dd><div class="el_ttl">タイトル</div><font>会場（大分県）<br>副題</font></dd>
-function parseConcerts(html) {
-  const concerts = [];
-  const sections = html.split(/<h3[^>]*class="ev_h3"[^>]*>/i);
-  for (let i = 1; i < sections.length; i++) {
-    const yearMatch = /(\d{4})年/.exec(sections[i].slice(0, 200));
-    if (!yearMatch) continue;
-    const year = yearMatch[1];
-    const dlRegex = /<dl[^>]*>([\s\S]*?)<\/dl>/gi;
-    let dlMatch;
-    while ((dlMatch = dlRegex.exec(sections[i])) !== null) {
-      const dl = dlMatch[1];
-      const dtMatch = /<dt[^>]*>([\s\S]*?)<\/dt>/i.exec(dl);
-      if (!dtMatch) continue;
-      const md = /(\d{1,2})\/(\d{1,2})/.exec(stripTags(dtMatch[1]));
-      if (!md) continue;
-      let title = '';
-      let venue = '';
-      const ttlMatch = /<div[^>]*class="el_ttl"[^>]*>([\s\S]*?)<\/div>/i.exec(dl);
-      if (ttlMatch) {
-        title = stripTags(ttlMatch[1]);
-        const fontMatch = /<font[^>]*>([\s\S]*?)<\/font>/i.exec(dl);
-        if (fontMatch) {
-          const lines = fontMatch[1].split(/<br\s*\/?>/i).map(stripTags).filter(Boolean);
-          venue = lines[0] || '';
-        }
-      } else {
-        const ddMatch = /<dd>\s*<div[^>]*>([\s\S]*?)<\/div>\s*<\/dd>/i.exec(dl);
-        if (!ddMatch) continue;
-        const parts = ddMatch[1].split(/<br\s*\/?>/i).map(stripTags).filter(Boolean);
-        if (parts.length === 0 || !parts[0]) continue;
-        title = parts[0];
-        venue = parts[1] || '';
-      }
-      if (!title) continue;
-      const hrefMatch = /href="(https:\/\/live-events\.a-jp\.org\/soko\/evg\/\d+\.html)"/i.exec(dl);
-      concerts.push({
-        title,
-        date: `${year}-${md[1].padStart(2, '0')}-${md[2].padStart(2, '0')}`,
-        venue: venue.replace(/（大分県）$/, '').trim(),
-        source_url: hrefMatch ? hrefMatch[1] : '',
-      });
-    }
-  }
-  return concerts;
-}
+import { fetchLtike, fetchPia, fetchEplus, fetchKyodo, fetchBeanet, SOURCE_PRIORITY } from "../../shared/concertSources.ts";
+import { buildClusters, normalizeVenue } from "../../shared/concertMatch.ts";
 
 export default async function(req) {
   try {
@@ -74,46 +15,104 @@ export default async function(req) {
 
     const body = await req.json().catch(() => ({}));
 
-    const response = await fetch(SOURCE_URL, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-    });
-    if (!response.ok) {
-      return Response.json({ error: `ページの取得に失敗しました: ${response.status}` }, { status: 400 });
+    // 5ソース（L-Tike / チケpia / e+ / 京楽西日本 / bea-net）を並列取得
+    const results = await Promise.all(
+      [fetchLtike(), fetchPia(), fetchEplus(), fetchKyodo(), fetchBeanet()].map((p) =>
+        p.catch((e) => ({ source: 'unknown', status: 'error', message: e.message, items: [] }))
+      )
+    );
+    const sourceReports = {};
+    const fetched = [];
+    for (const r of results) {
+      sourceReports[r.source] = { status: r.status, count: r.items.length, message: r.message || '' };
+      for (const item of r.items) {
+        fetched.push({ ...item, priority: SOURCE_PRIORITY[item.source] || 9 });
+      }
     }
-    const html = await response.text();
-    const concerts = parseConcerts(html);
-    if (concerts.length === 0) {
-      return Response.json({ error: 'コンサート情報が見つかりませんでした。ページ構造が変更された可能性があります。' }, { status: 400 });
+    if (fetched.length === 0) {
+      return Response.json({ error: 'いずれのソースからも公演情報を取得できませんでした', sources: sourceReports }, { status: 400 });
     }
 
-    // 取得テスト用（DBに書き込まない）
+    // dryRun: DBに書き込まず、ソース別の抽出結果と統合プレビューを返す
     if (body.dryRun) {
-      return Response.json({ ok: true, dry_run: true, fetched: concerts.length, sample: concerts.slice(0, 5) });
+      const clusters = buildClusters(fetched.slice().sort((a, b) => a.priority - b.priority));
+      return Response.json({
+        ok: true,
+        dry_run: true,
+        fetched: fetched.length,
+        sources: sourceReports,
+        merge_preview: clusters.map((c) => ({
+          title: c.items[0].title,
+          date: c.date,
+          venue: c.items[0].venue,
+          sources: c.items.map((i) => i.source),
+          merged_from: c.items.length,
+        })),
+      });
     }
 
     const svc = base44.asServiceRole;
     const existing = await svc.entities.ConcertInfo.list('date', 500);
-    const existingMap = new Map(existing.map((c) => [`${c.date}|${c.title}`, c]));
+    // 取得データは優先順位順、既存レコードは最優先度低（既存の重複も再統合する）
+    const items = fetched
+      .slice()
+      .sort((a, b) => a.priority - b.priority)
+      .concat(
+        existing.map((c) => ({
+          source: 'existing',
+          priority: 99,
+          title: c.title || '',
+          date: c.date,
+          venue: c.venue || '',
+          source_url: c.source_url || '',
+          id: c.id,
+        }))
+      );
+    const clusters = buildClusters(items);
+
     const fetchedAt = jstNow();
     let created = 0;
     let updated = 0;
-    for (const concert of concerts) {
-      const ex = existingMap.get(`${concert.date}|${concert.title}`);
-      if (!ex) {
-        await svc.entities.ConcertInfo.create({ ...concert, last_fetched_at: fetchedAt });
-        created++;
-      } else if (ex.venue !== concert.venue || ex.source_url !== concert.source_url) {
-        await svc.entities.ConcertInfo.update(ex.id, {
-          venue: concert.venue,
-          source_url: concert.source_url,
-          last_fetched_at: fetchedAt,
-        });
-        updated++;
+    let merged = 0;
+    for (const c of clusters) {
+      // 代表: チケットサイト（L-Tike > PIA > e+ > その他）の情報を優先
+      const rep = c.items.reduce((a, b) => (b.priority < a.priority ? b : a));
+      const existingInCluster = c.items.filter((i) => i.id);
+      const keep = existingInCluster[0] || null;
+
+      if (keep) {
+        const updates = {};
+        if (rep.priority < 99) {
+          if (rep.title && rep.title !== keep.title) updates.title = rep.title;
+          const venue = normalizeVenue(rep.venue);
+          if (venue && venue !== (keep.venue || '')) updates.venue = venue;
+          if (rep.source_url && rep.source_url !== (keep.source_url || '')) updates.source_url = rep.source_url;
+          updates.last_fetched_at = fetchedAt;
+        }
+        if (Object.keys(updates).length > 0) {
+          await svc.entities.ConcertInfo.update(keep.id, updates);
+          updated++;
+        }
+        // クラスタ内の重複した既存レコードは1つにまとめる
+        for (const dup of existingInCluster.slice(1)) {
+          await svc.entities.ConcertInfo.delete(dup.id);
+          merged++;
+        }
+      } else {
+        // 新規公演のみ作成（既存のみのクラスタは作成しない）
+        if (rep.priority < 99) {
+          await svc.entities.ConcertInfo.create({
+            title: rep.title,
+            date: c.date,
+            venue: normalizeVenue(rep.venue),
+            source_url: rep.source_url || '',
+            last_fetched_at: fetchedAt,
+          });
+          created++;
+        }
       }
     }
-    return Response.json({ ok: true, fetched: concerts.length, created, updated, fetched_at: fetchedAt });
+    return Response.json({ ok: true, fetched: fetched.length, created, updated, merged, sources: sourceReports, fetched_at: fetchedAt });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

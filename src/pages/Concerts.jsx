@@ -28,7 +28,7 @@ export default function Concerts() {
       if (data.error) {
         toast.error(data.error);
       } else {
-        toast.success(`最新情報を取得しました（新規${data.created}件・更新${data.updated}件）`);
+        toast.success(`最新情報を取得しました（新規${data.created}件・更新${data.updated}件・統合${data.merged ?? 0}件）`);
         await queryClient.invalidateQueries({ queryKey: ["concerts"] });
       }
     } catch (err) {
