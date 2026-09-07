@@ -23,8 +23,15 @@ export function stripTags(text) {
 }
 
 // 文字コード自動判定つきページ取得（Shift_JIS サイト対応）
-async function fetchPage(url) {
-  const res = await fetch(url, { headers: { 'User-Agent': UA, 'Accept-Language': 'ja,en;q=0.9' } });
+async function fetchPage(url, extraHeaders) {
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': UA,
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
+      ...(extraHeaders || {}),
+    },
+  });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const buf = await res.arrayBuffer();
   const contentType = res.headers.get('content-type') || '';
@@ -42,6 +49,16 @@ async function fetchPage(url) {
 // ─── L-Tike（iichikoグランシアタ検索。1〜2ページ目） ───
 const LTIKE_SEARCH_URL = 'https://l-tike.com/search/?vnu=%E3%82%B0%E3%83%A9%E3%83%B3%E3%82%B7%E3%82%A2%E3%82%BF';
 
+// ブラウザの遷移に近いリクエストヘッダー（WAF対策）
+const BROWSER_NAV_HEADERS = {
+  'Referer': 'https://l-tike.com/',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'same-origin',
+  'Sec-Fetch-User': '?1',
+  'Upgrade-Insecure-Requests': '1',
+};
+
 export async function fetchLtike() {
   const items = [];
   const seen = new Set();
@@ -49,7 +66,18 @@ export async function fetchLtike() {
   // 2ページ目はURLパラメータでは遷移できない構造だが、将来の仕様変更に備えて巡回する（重複は除外）
   for (const url of [LTIKE_SEARCH_URL, LTIKE_SEARCH_URL + '&p=2']) {
     try {
-      const html = await fetchPage(url);
+      // WAFによる一時的な拒否（520）に備えて2回まで試行する
+      let html = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          html = await fetchPage(url, BROWSER_NAV_HEADERS);
+          break;
+        } catch (e) {
+          lastError = e.message;
+          if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 1500));
+        }
+      }
+      if (!html) continue;
       for (const m of html.matchAll(/<a\s[^>]*data-prfName="([^"]+)"[^>]*>/g)) {
         const tag = m[0];
         const attr = (name) => {
@@ -205,7 +233,14 @@ export async function fetchKyodo() {
       });
     }
     if (items.length === 0) {
-      return { source: 'kyodo', status: 'error', message: '公演情報が見つかりませんでした', items: [] };
+      const blocks = html.split('<!-- 公演 -->').length - 1;
+      return {
+        source: 'kyodo',
+        status: 'error',
+        message:
+          '公演情報が見つかりませんでした (len=' + html.length + ', blocks=' + blocks + ', head=' + html.slice(0, 150).replace(/\s+/g, ' ') + ')',
+        items: [],
+      };
     }
     return { source: 'kyodo', status: 'ok', message: '', items };
   } catch (e) {
@@ -222,10 +257,16 @@ export async function fetchBeanet() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const artists = await res.json();
     const items = [];
-    for (const artist of artists) {
+    for (const artist of Array.isArray(artists) ? artists : []) {
       const title = stripTags(artist.art);
       if (!title) continue;
-      for (const live of artist.liveinfo || []) {
+      // liveinfo は配列の場合と {"0": {...}} 形式のオブジェクトの場合がある
+      const lives = Array.isArray(artist.liveinfo)
+        ? artist.liveinfo
+        : artist.liveinfo && typeof artist.liveinfo === 'object'
+          ? Object.values(artist.liveinfo)
+          : [];
+      for (const live of lives) {
         // 大分県の公演のみ抽出
         if (live.pp !== '大分') continue;
         if (!/^\d{4}-\d{2}-\d{2}$/.test(live.date || '')) continue;
