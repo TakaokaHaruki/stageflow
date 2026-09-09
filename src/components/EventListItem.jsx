@@ -14,22 +14,25 @@ export default function EventListItem({ event, isToday, isAdmin, canEdit, isGues
       {/* イベント名はカード幅いっぱいまで表示し、次の行でメタ情報（左）と操作アイコン（右端）を並べる */}
       <h2 className="mb-0.5 text-sm font-semibold text-foreground truncate">{event.name}</h2>
       <div className="flex items-center justify-between gap-1.5">
-        <div className="flex min-w-0 flex-1 items-center gap-2 text-[11px] text-muted-foreground">
-          {event.date && (
-            <span className="flex shrink-0 items-center gap-0.5">
-              <Calendar className="w-2.5 h-2.5" />
-              {formatJaDate(event.date)}
+        {/* 左側は日付・バッジ行と会場名行の2段スタックにして会場名に十分な幅を確保する */}
+        <div className="min-w-0 flex-1 space-y-0.5 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-2">
+            {event.date && (
+              <span className="flex shrink-0 items-center gap-0.5">
+                <Calendar className="w-2.5 h-2.5" />
+                {formatJaDate(event.date)}
+              </span>
+            )}
+            <span className="shrink-0">
+              <EventPublishToggle event={event} canEdit={canEdit} />
             </span>
-          )}
+          </div>
           {event.venue && (
             <span className="flex min-w-0 items-center gap-0.5">
               <MapPin className="w-2.5 h-2.5 shrink-0" />
               <span className="truncate">{event.venue}</span>
             </span>
           )}
-          <span className="shrink-0">
-            <EventPublishToggle event={event} canEdit={canEdit} />
-          </span>
         </div>
         {!restricted && (
           <div className="flex shrink-0 items-center justify-end gap-0.5">
