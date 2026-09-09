@@ -1,13 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, ShieldCheck, Bell, LayoutTemplate, HelpCircle, Settings, ClipboardList, Tag, HardDriveDownload } from "lucide-react";
+import { ShieldCheck, Settings, ClipboardList, Tag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import GlobalBannerManager from "@/components/GlobalBannerManager";
-import LoginHelpManager from "@/components/LoginHelpManager";
-import BackupManager from "@/components/BackupManager";
 import PositionTypeManagement from "@/components/PositionTypeManagement";
 import PositionPresetManager from "@/components/PositionPresetManager";
-import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
 import { useUserRole } from "@/hooks/useUserRole";
 import SectionTabBar from "@/components/SectionTabBar";
@@ -15,11 +11,7 @@ import SectionTabBar from "@/components/SectionTabBar";
 const SECTIONS = [
   { id: "positions", label: "ポジション共通定義", icon: Settings },
   { id: "presets", label: "プリセット共通定義", icon: ClipboardList },
-  { id: "venues", label: "会場管理", icon: LayoutTemplate },
   { id: "tag_management", label: "タグ・役割管理", icon: Tag },
-  { id: "global_banner", label: "グローバル通知", icon: Bell },
-  { id: "login_help", label: "ログイン案内", icon: HelpCircle },
-  { id: "backup", label: "バックアップ", icon: HardDriveDownload },
 ];
 
 export default function ManagementSettings() {
@@ -43,11 +35,7 @@ export default function ManagementSettings() {
     switch (section) {
       case "positions": return <PositionTypeManagement mode="global" section="positions" />;
       case "presets": return <PositionPresetManager mode="global" />;
-      case "venues": return <VenueManager />;
       case "tag_management": return <TagManagement />;
-      case "global_banner": return <GlobalBannerManager />;
-      case "login_help": return <LoginHelpManager />;
-      case "backup": return <BackupManager />;
       default: return null;
     }
   };

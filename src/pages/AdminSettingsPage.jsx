@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, ShieldCheck, History, Lock, QrCode, Calendar } from "lucide-react";
+import { Users, ShieldCheck, History, Lock, QrCode, Calendar, LayoutTemplate, Bell, HelpCircle, HardDriveDownload } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserRoleManager from "@/components/UserRoleManager";
 import PortalRestrictionManager from "@/components/PortalRestrictionManager";
 import ActivityLogViewer from "@/components/ActivityLogViewer";
 import AccessRestrictionManager from "@/components/AccessRestrictionManager";
 import StaffQrExport from "@/components/StaffQrExport";
+import VenueManager from "@/components/VenueManager";
+import GlobalBannerManager from "@/components/GlobalBannerManager";
+import LoginHelpManager from "@/components/LoginHelpManager";
+import BackupManager from "@/components/BackupManager";
 import EventScopeSelector from "@/components/admin/EventScopeSelector";
 import { useUserRole } from "@/hooks/useUserRole";
 import SectionTabBar from "@/components/SectionTabBar";
@@ -17,6 +21,10 @@ const SECTIONS = [
   { id: "operation_logs", label: "操作ログ", icon: History },
   { id: "access_restriction", label: "アクセス制限", icon: Lock },
   { id: "staff_qr", label: "スタッフQR", icon: QrCode },
+  { id: "venues", label: "会場管理", icon: LayoutTemplate },
+  { id: "global_banner", label: "グローバル通知", icon: Bell },
+  { id: "login_help", label: "ログイン案内", icon: HelpCircle },
+  { id: "backup", label: "バックアップ", icon: HardDriveDownload },
 ];
 
 const EVENT_SCOPED = new Set(["operation_logs", "access_restriction", "staff_qr"]);
@@ -56,6 +64,10 @@ export default function AdminSettingsPage() {
     switch (section) {
       case "users": return <UserRoleManager />;
       case "portal_restriction": return <PortalRestrictionManager />;
+      case "venues": return <VenueManager />;
+      case "global_banner": return <GlobalBannerManager />;
+      case "login_help": return <LoginHelpManager />;
+      case "backup": return <BackupManager />;
       default: return null;
     }
   };
