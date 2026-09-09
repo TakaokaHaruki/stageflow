@@ -10,57 +10,58 @@ export default function EventListItem({ event, isToday, isAdmin, canEdit, isGues
   const restricted = Boolean(event.admin_only) && !isAdmin;
 
   const content = (
-    <div className="flex items-center justify-between gap-1.5">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <h2 className="text-sm font-semibold text-foreground truncate">{event.name}</h2>
-        </div>
-        <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+    <div>
+      {/* イベント名はカード幅いっぱいまで表示し、次の行でメタ情報（左）と操作アイコン（右端）を並べる */}
+      <h2 className="mb-0.5 text-sm font-semibold text-foreground truncate">{event.name}</h2>
+      <div className="flex items-center justify-between gap-1.5">
+        <div className="flex min-w-0 flex-1 items-center gap-2 text-[11px] text-muted-foreground">
           {event.date && (
-            <span className="flex items-center gap-0.5">
+            <span className="flex shrink-0 items-center gap-0.5">
               <Calendar className="w-2.5 h-2.5" />
               {formatJaDate(event.date)}
             </span>
           )}
           {event.venue && (
-            <span className="flex items-center gap-0.5">
-              <MapPin className="w-2.5 h-2.5" />
-              {event.venue}
+            <span className="flex min-w-0 items-center gap-0.5">
+              <MapPin className="w-2.5 h-2.5 shrink-0" />
+              <span className="truncate">{event.venue}</span>
             </span>
           )}
-          <EventPublishToggle event={event} canEdit={canEdit} />
+          <span className="shrink-0">
+            <EventPublishToggle event={event} canEdit={canEdit} />
+          </span>
         </div>
+        {!restricted && (
+          <div className="flex shrink-0 items-center justify-end gap-0.5">
+            {!isGuest && (
+              <>
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowClone(true); }}
+                  className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:text-sky-600 hover:bg-sky-500/10 transition-colors select-none sm:h-8 sm:w-8"
+                  aria-label={`${event.name} をコピーして新規作成`}
+                  title="コピーして新規作成">
+                  <Copy className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={(e) => onEdit(e, event)}
+                  disabled={!canEdit}
+                  className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none sm:h-8 sm:w-8"
+                  aria-label={`${event.name} を編集`}>
+                  <Pencil className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={(e) => onDelete(e, event.id, event.name)}
+                  disabled={!canEdit}
+                  className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none sm:h-8 sm:w-8"
+                  aria-label={`${event.name} を削除`}>
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </>
+            )}
+            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+          </div>
+        )}
       </div>
-      {!restricted && (
-        <div className="flex shrink-0 items-center justify-end gap-0.5">
-          {!isGuest && (
-            <>
-              <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowClone(true); }}
-                className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:text-sky-600 hover:bg-sky-500/10 transition-colors select-none sm:h-8 sm:w-8"
-                aria-label={`${event.name} をコピーして新規作成`}
-                title="コピーして新規作成">
-                <Copy className="w-3 h-3" />
-              </button>
-              <button
-                onClick={(e) => onEdit(e, event)}
-                disabled={!canEdit}
-                className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none sm:h-8 sm:w-8"
-                aria-label={`${event.name} を編集`}>
-                <Pencil className="w-3 h-3" />
-              </button>
-              <button
-                onClick={(e) => onDelete(e, event.id, event.name)}
-                disabled={!canEdit}
-                className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:pointer-events-none select-none sm:h-8 sm:w-8"
-                aria-label={`${event.name} を削除`}>
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </>
-          )}
-          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-        </div>
-      )}
     </div>
   );
 
