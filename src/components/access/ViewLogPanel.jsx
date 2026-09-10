@@ -3,7 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Search, Bell, FileText, LayoutList, ChevronDown } from "lucide-react";
+import { Search, Bell, FileText, LayoutList, ChevronDown, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { downloadLogCsv } from "@/lib/csvExport";
 
 const VIEW_TYPE_META = {
   announcement_open: { label: "お知らせ", icon: Bell, style: "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700" },
@@ -20,6 +23,7 @@ export default function ViewLogPanel() {
   const [dateTo, setDateTo] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [keyword, setKeyword] = useState("");
+  const [csvLoading, setCsvLoading] = useState(false);
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["view-logs"],
@@ -47,6 +51,17 @@ export default function ViewLogPanel() {
       return true;
     });
   }, [logs, dateFrom, dateTo, typeFilter, keyword]);
+
+  const handleDownloadCsv = async () => {
+    setCsvLoading(true);
+    try {
+      const count = await downloadLogCsv({ target: "view", dateFrom, dateTo });
+      toast.success(`${count}件をCSV出力しました`);
+    } catch {
+      toast.error("CSV出力に失敗しました");
+    }
+    setCsvLoading(false);
+  };
 
   return (
     <div>
@@ -84,7 +99,18 @@ export default function ViewLogPanel() {
         </div>
       </div>
 
-      <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">{filtered.length} 件</p>
+      <div className="mb-2 flex flex-wrap items-center gap-2 px-1">
+        <p className="text-xs font-medium text-muted-foreground">{filtered.length} 件</p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="ml-auto gap-1.5 text-xs"
+          onClick={handleDownloadCsv}
+          disabled={csvLoading}
+        >
+          <Download className="h-3 w-3" />CSVダウンロード
+        </Button>
+      </div>
 
       {/* 一覧 */}
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-md">

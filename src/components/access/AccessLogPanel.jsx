@@ -4,7 +4,8 @@ import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Search, Trash2, RefreshCw, Monitor, Smartphone, Tablet } from "lucide-react";
+import { Search, Trash2, RefreshCw, Monitor, Smartphone, Tablet, Download } from "lucide-react";
+import { downloadLogCsv } from "@/lib/csvExport";
 import { toast } from "sonner";
 import AccessStats from "./AccessStats";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -16,6 +17,20 @@ const AUTH_STYLES = {
   anonymous: "bg-muted text-muted-foreground border-border",
 };
 const DEVICE_ICONS = { mobile: Smartphone, tablet: Tablet, desktop: Monitor };
+const REF_LABELS = { internal: "アプリ内", direct: "直接", search: "検索", sns: "SNS", external: "外部リンク" };
+const REF_STYLES = {
+  internal: "bg-sky-100 text-sky-700 border-sky-300 dark:bg-sky-900/40 dark:text-sky-300 dark:border-sky-700",
+  direct: "bg-muted text-muted-foreground border-border",
+  search: "bg-green-100 text-green-700 border-green-300 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700",
+  sns: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300 dark:bg-fuchsia-900/40 dark:text-fuchsia-300 dark:border-fuchsia-700",
+  external: "bg-teal-100 text-teal-700 border-teal-300 dark:bg-teal-900/40 dark:text-teal-300 dark:border-teal-700",
+};
+const formatStay = (s) => {
+  const v = Math.round(s);
+  if (v >= 3600) return `${Math.floor(v / 3600)}時間${Math.floor((v % 3600) / 60)}分`;
+  if (v >= 60) return `${Math.floor(v / 60)}分${v % 60}秒`;
+  return `${v}秒`;
+};
 
 function UserLabel({ log }) {
   if (log.auth_type === "app_user" && log.user_email) {
@@ -33,6 +48,8 @@ export default function AccessLogPanel() {
   const [dateTo, setDateTo] = useState("");
   const [authFilter, setAuthFilter] = useState("all");
   const [deviceFilter, setDeviceFilter] = useState("all");
+  const [referrerFilter, setReferrerFilter] = useState("all");
+  const [csvLoading, setCsvLoading] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [cleanupDays, setCleanupDays] = useState("90");
   const [showCleanupConfirm, setShowCleanupConfirm] = useState(false);
@@ -50,8 +67,9 @@ export default function AccessLogPanel() {
       if (dateTo && day > dateTo) return false;
       if (authFilter !== "all" && l.auth_type !== authFilter) return false;
       if (deviceFilter !== "all" && l.device_type !== deviceFilter) return false;
+      if (referrerFilter !== "all" && (l.referrer_type || "direct") !== referrerFilter) return false;
       if (kw) {
-        const hay = `${l.page_path} ${l.from_path} ${l.referrer} ${l.query} ${l.user_email} ${l.portal_acast_id} ${l.ip_address}`.toLowerCase();
+        const hay = `${l.page_path} ${l.from_path} ${l.referrer} ${l.query} ${l.user_email} ${l.portal_acast_id} ${l.ip_address} ${l.session_id} ${l.visitor_id} ${l.browser} ${l.os}`.toLowerCase();
         if (!hay.includes(kw)) return false;
       }
       return true;
@@ -77,6 +95,17 @@ export default function AccessLogPanel() {
       toast.error("削除に失敗しました");
     }
     setShowCleanupConfirm(false);
+  };
+
+  const handleDownloadCsv = async () => {
+    setCsvLoading(true);
+    try {
+      const count = await downloadLogCsv({ target: "access", dateFrom, dateTo });
+      toast.success(`${count}件をCSV出力しました`);
+    } catch {
+      toast.error("CSV出力に失敗しました");
+    }
+    setCsvLoading(false);
   };
 
   return (
@@ -116,8 +145,22 @@ export default function AccessLogPanel() {
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-1">
+            <span className="text-[10px] font-medium text-muted-foreground">流入元</span>
+            <Select value={referrerFilter} onValueChange={setReferrerFilter}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">すべて</SelectItem>
+                <SelectItem value="internal">アプリ内</SelectItem>
+                <SelectItem value="direct">直接</SelectItem>
+                <SelectItem value="search">検索</SelectItem>
+                <SelectItem value="sns">SNS</SelectItem>
+                <SelectItem value="external">外部リンク</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <label className="col-span-2 space-y-1">
-            <span className="text-[10px] font-medium text-muted-foreground">キーワード（パス・経路・ID・メール）</span>
+            <span className="text-[10px] font-medium text-muted-foreground">キーワード（パス・経路・ID・セッション）</span>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="検索…" className="h-8 pl-8 text-xs" />
@@ -146,6 +189,9 @@ export default function AccessLogPanel() {
               <Trash2 className="h-3 w-3" />一括削除
             </Button>
           </div>
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handleDownloadCsv} disabled={csvLoading}>
+            <Download className="h-3 w-3" />CSVダウンロード
+          </Button>
           <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => queryClient.invalidateQueries({ queryKey: ["access-logs"] })}>
             <RefreshCw className="h-3 w-3" />更新
           </Button>
@@ -175,6 +221,14 @@ export default function AccessLogPanel() {
                   </span>
                   {l.ip_address && (
                     <span className="shrink-0 font-mono text-[11px] text-muted-foreground">{l.ip_address}</span>
+                  )}
+                  {l.referrer_type && (
+                    <span className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${REF_STYLES[l.referrer_type] || REF_STYLES.direct}`}>
+                      {REF_LABELS[l.referrer_type] || l.referrer_type}
+                    </span>
+                  )}
+                  {typeof l.stay_seconds === "number" && l.stay_seconds > 0 && (
+                    <span className="shrink-0 text-[11px] text-muted-foreground">{formatStay(l.stay_seconds)}</span>
                   )}
                   <span className="min-w-0 break-all font-semibold">
                     {l.page_path}

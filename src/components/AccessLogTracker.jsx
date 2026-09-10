@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
-import { trackPageView } from "@/lib/accessTracker";
+import { trackPageView, flushStayTime } from "@/lib/accessTracker";
 
 /**
  * アプリ全体のページアクセスをAccessLogへ記録する共通トラッカー。
  * Router配下に配置するだけで、全ページ遷移を非同期で記録する。
+ * ページ離脱・非表示時には滞在時間を確定させる。
  */
 export default function AccessLogTracker() {
   const location = useLocation();
@@ -26,6 +27,19 @@ export default function AccessLogTracker() {
     });
     prevPathRef.current = location.pathname;
   }, [location.pathname, location.search, authChecked, user]);
+
+  // ページ離脱・タブ非表示時に現在ページの滞在時間を確定
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") flushStayTime();
+    };
+    window.addEventListener("pagehide", flushStayTime);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.removeEventListener("pagehide", flushStayTime);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
 
   return null;
 }

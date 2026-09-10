@@ -16,6 +16,18 @@
       "default": "",
       "description": "\u5916\u90e8\u53c2\u7167\u5143URL\uff08document.referrer\uff09"
     },
+    "referrer_type": {
+      "type": "string",
+      "enum": [
+        "internal",
+        "direct",
+        "search",
+        "sns",
+        "external"
+      ],
+      "default": "direct",
+      "description": "\u6d41\u5165\u5143\u5206\u985e\uff08\u30a2\u30d7\u30ea\u5185/\u76f4\u63a5\u30a2\u30af\u30bb\u30b9/\u691c\u7d22/SNS/\u5916\u90e8\u30ea\u30f3\u30af\uff09"
+    },
     "query": {
       "type": "string",
       "default": "",
@@ -35,6 +47,21 @@
       ],
       "default": "desktop",
       "description": "\u30c7\u30d0\u30a4\u30b9\u7a2e\u5225"
+    },
+    "browser": {
+      "type": "string",
+      "default": "",
+      "description": "\u30d6\u30e9\u30a6\u30b6\uff08Chrome, Safari \u306a\u3069\uff09"
+    },
+    "os": {
+      "type": "string",
+      "default": "",
+      "description": "OS\uff08iOS, Android, Windows \u306a\u3069\uff09"
+    },
+    "screen_size": {
+      "type": "string",
+      "default": "",
+      "description": "\u753b\u9762\u30b5\u30a4\u30ba\uff08\u5e45x\u9ad8\u3055\uff09"
     },
     "user_agent": {
       "type": "string",
@@ -65,6 +92,21 @@
       "type": "string",
       "default": "",
       "description": "\u30dd\u30fc\u30bf\u30eb\u8a8d\u8a3c\u6e08\u307f\u30b9\u30bf\u30c3\u30d5\u306eA-CAST ID"
+    },
+    "visitor_id": {
+      "type": "string",
+      "default": "",
+      "description": "\u7aef\u672b\u5358\u4f4d\u306e\u6c38\u7d9a\u8a2a\u554f\u8005ID"
+    },
+    "session_id": {
+      "type": "string",
+      "default": "",
+      "description": "\u8a2a\u554f\u5358\u4f4d\u306e\u30bb\u30c3\u30b7\u30e7\u30f3ID\uff0830\u5206\u7121\u64cd\u4f5c\u3067\u5207\u66ff\uff09"
+    },
+    "stay_seconds": {
+      "type": "number",
+      "default": 0,
+      "description": "\u3053\u306e\u30da\u30fc\u30b8\u306e\u6ede\u5728\u79d2\u6570\uff08\u6b21\u306e\u9077\u79fb\u30fb\u96e2\u8131\u6642\u306b\u78ba\u5b9a\uff09"
     },
     "logged_at_jst": {
       "type": "string",
