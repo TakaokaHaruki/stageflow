@@ -1,0 +1,100 @@
+{
+  "name": "InteractionLog",
+  "type": "object",
+  "properties": {
+    "page_path": {
+      "type": "string",
+      "description": "\u64cd\u4f5c\u304c\u884c\u308f\u308c\u305f\u30da\u30fc\u30b8\u30d1\u30b9\uff08\u4f8b: /home\uff09"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "click",
+        "change"
+      ],
+      "default": "click",
+      "description": "\u64cd\u4f5c\u7a2e\u5225\uff08\u30af\u30ea\u30c3\u30af/\u9078\u629e\u5909\u66f4\uff09"
+    },
+    "element_type": {
+      "type": "string",
+      "default": "",
+      "description": "\u64cd\u4f5c\u5bfe\u8c61\u306e\u8981\u7d20\u7a2e\u5225\uff08button, a, select \u306a\u3069\uff09"
+    },
+    "element_label": {
+      "type": "string",
+      "description": "\u64cd\u4f5c\u5bfe\u8c61\u306e\u8868\u793a\u30e9\u30d9\u30eb\uff08\u30dc\u30bf\u30f3\u540d\u30fb\u30ea\u30f3\u30af\u540d\u306a\u3069\uff09"
+    },
+    "element_value": {
+      "type": "string",
+      "default": "",
+      "description": "\u9078\u629e\u5909\u66f4\u6642\u306e\u9078\u629e\u5024"
+    },
+    "ip_address": {
+      "type": "string",
+      "default": "",
+      "description": "\u30a2\u30af\u30bb\u30b9\u5143IP\u30a2\u30c9\u30ec\u30b9"
+    },
+    "auth_type": {
+      "type": "string",
+      "enum": [
+        "anonymous",
+        "app_user",
+        "portal_staff"
+      ],
+      "default": "anonymous",
+      "description": "\u8a8d\u8a3c\u72b6\u6cc1\uff08\u672a\u30ed\u30b0\u30a4\u30f3/\u30a2\u30d7\u30ea\u30ed\u30b0\u30a4\u30f3/\u30dd\u30fc\u30bf\u30eb\u8a8d\u8a3c\uff09"
+    },
+    "user_email": {
+      "type": "string",
+      "default": "",
+      "description": "\u30a2\u30d7\u30ea\u30ed\u30b0\u30a4\u30f3\u30e6\u30fc\u30b6\u30fc\u306e\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9"
+    },
+    "user_role": {
+      "type": "string",
+      "default": "",
+      "description": "\u30a2\u30d7\u30ea\u30ed\u30b0\u30a4\u30f3\u30e6\u30fc\u30b6\u30fc\u306e\u30ed\u30fc\u30eb"
+    },
+    "portal_acast_id": {
+      "type": "string",
+      "default": "",
+      "description": "\u30dd\u30fc\u30bf\u30eb\u8a8d\u8a3c\u6e08\u307f\u30b9\u30bf\u30c3\u30d5\u306eA-CAST ID"
+    },
+    "visitor_id": {
+      "type": "string",
+      "default": "",
+      "description": "\u7aef\u672b\u5358\u4f4d\u306e\u6c38\u7d9a\u8a2a\u554f\u8005ID"
+    },
+    "session_id": {
+      "type": "string",
+      "default": "",
+      "description": "\u8a2a\u554f\u5358\u4f4d\u306e\u30bb\u30c3\u30b7\u30e7\u30f3ID\uff0830\u5206\u7121\u64cd\u4f5c\u3067\u5207\u66ff\uff09"
+    },
+    "logged_at_jst": {
+      "type": "string",
+      "description": "\u64cd\u4f5c\u65e5\u6642\uff08JST YYYY-MM-DD HH:mm\uff09"
+    }
+  },
+  "required": [
+    "page_path",
+    "element_label",
+    "logged_at_jst"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

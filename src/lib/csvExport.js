@@ -20,7 +20,8 @@ export async function downloadLogCsv({ target, dateFrom, dateTo }) {
   const period =
     dateFrom || dateTo ? `${dateFrom || "開始日なし"}〜${dateTo || "最新"}` : "全期間";
   a.href = url;
-  a.download = `${target === "access" ? "アクセス履歴" : "閲覧操作"}_${period}.csv`;
+  const targetName = target === "access" ? "アクセス履歴" : target === "interaction" ? "操作ログ" : "閲覧操作";
+  a.download = `${targetName}_${period}.csv`;
   document.body.appendChild(a);
   a.click();
   a.remove();

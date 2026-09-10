@@ -169,6 +169,32 @@ export function flushStayTime() {
 }
 
 /**
+ * ボタン・リンクなどの操作をInteractionLogとして非同期記録する（fire-and-forget・失敗は無視）
+ */
+export function trackInteraction({ pagePath, actionType, elementType, elementLabel, elementValue, user }) {
+  try {
+    const portalAcastId = localStorage.getItem(PORTAL_ACAST_KEY) || "";
+    base44.functions
+      .invoke("recordInteractionLog", {
+        page_path: pagePath || "/",
+        action_type: actionType === "change" ? "change" : "click",
+        element_type: elementType || "",
+        element_label: elementLabel || "",
+        element_value: elementValue || "",
+        auth_type: user ? "app_user" : portalAcastId ? "portal_staff" : "anonymous",
+        user_email: user?.email || "",
+        user_role: user?.role || "",
+        portal_acast_id: portalAcastId,
+        visitor_id: getVisitorId(),
+        session_id: getSessionId(),
+      })
+      .catch(() => {});
+  } catch {
+    // ログ保存失敗は画面に影響させない
+  }
+}
+
+/**
  * ポータル内の閲覧操作（お知らせ・配布資料など）をViewLogとして非同期記録する
  */
 export function trackPortalView({ eventId, viewType, targetTitle, targetId, actorName }) {

@@ -23,7 +23,7 @@ export default async function (req) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const target = body.target === "view" ? "view" : "access";
+    const target = body.target === "view" ? "view" : body.target === "interaction" ? "interaction" : "access";
     const from = typeof body.date_from === "string" && body.date_from ? body.date_from + " 00:00" : "";
     const to = typeof body.date_to === "string" && body.date_to ? body.date_to + " 23:59" : "";
     const q = {};
@@ -57,6 +57,18 @@ export default async function (req) {
         AUTH_LABELS[l.auth_type] || l.auth_type, l.user_email, l.user_role, l.portal_acast_id,
         l.visitor_id, l.session_id, l.stay_seconds === null || l.stay_seconds === undefined ? "" : l.stay_seconds,
         l.__exit ? "○" : "",
+      ]);
+    } else if (target === "interaction") {
+      const logs = await base44.entities.InteractionLog.filter(q, "-created_date", 5000);
+      header = [
+        "記録日時", "操作種別", "操作対象", "要素種別", "選択値", "ページパス", "IPアドレス",
+        "認証状況", "メールアドレス", "ロール", "A-CAST ID", "訪問者ID", "セッションID",
+      ];
+      rows = logs.map((l) => [
+        l.logged_at_jst, l.action_type === "change" ? "選択変更" : "クリック", l.element_label,
+        l.element_type, l.element_value, l.page_path, l.ip_address,
+        AUTH_LABELS[l.auth_type] || l.auth_type, l.user_email, l.user_role, l.portal_acast_id,
+        l.visitor_id, l.session_id,
       ]);
     } else {
       const logs = await base44.entities.ViewLog.filter(q, "-created_date", 5000);

@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, BarChart3, Eye } from "lucide-react";
+import { ShieldCheck, BarChart3, Eye, MousePointerClick } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SectionTabBar from "@/components/SectionTabBar";
 import AccessLogPanel from "@/components/access/AccessLogPanel";
 import ViewLogPanel from "@/components/access/ViewLogPanel";
+import InteractionLogPanel from "@/components/access/InteractionLogPanel";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const SECTIONS = [
   { id: "access", label: "アクセス履歴", icon: BarChart3 },
   { id: "views", label: "閲覧操作", icon: Eye },
+  { id: "interactions", label: "操作ログ", icon: MousePointerClick },
 ];
 
 export default function AccessInsights() {
@@ -54,7 +56,13 @@ export default function AccessInsights() {
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2 }}
         >
-          {section === "access" ? <AccessLogPanel /> : <ViewLogPanel />}
+          {section === "access" ? (
+            <AccessLogPanel />
+          ) : section === "views" ? (
+            <ViewLogPanel />
+          ) : (
+            <InteractionLogPanel />
+          )}
         </motion.div>
       </AnimatePresence>
     </div>
