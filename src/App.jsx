@@ -9,6 +9,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PendingApproval from '@/components/PendingApproval';
 import { ThemeProvider } from '@/lib/ThemeProvider';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import AdminRoute from '@/components/AdminRoute';
 // Add page imports here
 import Home from "./pages/Home";
 import Account from "./pages/Account";
@@ -67,7 +68,10 @@ const AuthenticatedApp = () => {
           <Route path="/support" element={<SupportChat />} />
           <Route path="/concerts" element={<Concerts />} />
           <Route path="/management" element={<ManagementSettings />} />
-          <Route path="/access-insights" element={<AccessInsights />} />
+          {/* 管理者専用ページ */}
+          <Route element={<AdminRoute />}>
+            <Route path="/access-insights" element={<AccessInsights />} />
+          </Route>
         </Route>
         {/* イベント詳細は独自レイアウトを持つため共通ナビ対象外 */}
         <Route path="/events/:eventId" element={<EventDetail />} />

@@ -22,7 +22,8 @@ export function trackPageView({ path, search, fromPath, user }) {
   try {
     const portalAcastId = localStorage.getItem(PORTAL_ACAST_KEY) || "";
     const authType = user ? "app_user" : portalAcastId ? "portal_staff" : "anonymous";
-    base44.entities.AccessLog.create({
+    // バックエンド関数経由で記録（アクセス元IPアドレスをサーバー側で取得するため）
+    base44.functions.invoke("recordAccessLog", {
       page_path: path || "/",
       from_path: fromPath || "",
       referrer: document.referrer || "",
@@ -33,7 +34,6 @@ export function trackPageView({ path, search, fromPath, user }) {
       user_email: user?.email || "",
       user_role: user?.role || "",
       portal_acast_id: portalAcastId,
-      logged_at_jst: getJstNow(),
     }).catch(() => {});
   } catch {
     // ログ保存失敗は画面に影響させない

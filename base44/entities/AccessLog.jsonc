@@ -21,6 +21,11 @@
       "default": "",
       "description": "URL\u30af\u30a8\u30ea\u30d1\u30e9\u30e1\u30fc\u30bf\uff08\u6d41\u5165\u7d4c\u8def\u7279\u5b9a\u7528\uff09"
     },
+    "ip_address": {
+      "type": "string",
+      "default": "",
+      "description": "\u30a2\u30af\u30bb\u30b9\u5143IP\u30a2\u30c9\u30ec\u30b9"
+    },
     "device_type": {
       "type": "string",
       "enum": [

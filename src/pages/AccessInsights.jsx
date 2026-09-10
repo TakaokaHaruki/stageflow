@@ -14,8 +14,16 @@ const SECTIONS = [
 
 export default function AccessInsights() {
   const navigate = useNavigate();
-  const { isAdmin } = useUserRole();
+  const { role, isAdmin } = useUserRole();
   const [section, setSection] = useState("access");
+
+  if (role === null) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (

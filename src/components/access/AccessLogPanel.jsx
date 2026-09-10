@@ -51,7 +51,7 @@ export default function AccessLogPanel() {
       if (authFilter !== "all" && l.auth_type !== authFilter) return false;
       if (deviceFilter !== "all" && l.device_type !== deviceFilter) return false;
       if (kw) {
-        const hay = `${l.page_path} ${l.from_path} ${l.referrer} ${l.query} ${l.user_email} ${l.portal_acast_id}`.toLowerCase();
+        const hay = `${l.page_path} ${l.from_path} ${l.referrer} ${l.query} ${l.user_email} ${l.portal_acast_id} ${l.ip_address}`.toLowerCase();
         if (!hay.includes(kw)) return false;
       }
       return true;
@@ -173,6 +173,9 @@ export default function AccessLogPanel() {
                   <span className="flex shrink-0 items-center gap-0.5 text-muted-foreground" title={l.device_type}>
                     <DeviceIcon className="h-3 w-3" />
                   </span>
+                  {l.ip_address && (
+                    <span className="shrink-0 font-mono text-[11px] text-muted-foreground">{l.ip_address}</span>
+                  )}
                   <span className="min-w-0 break-all font-semibold">
                     {l.page_path}
                     {l.query && <span className="font-normal text-muted-foreground">{l.query}</span>}
