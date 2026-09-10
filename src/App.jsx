@@ -24,6 +24,8 @@ import ResetPassword from "./pages/ResetPassword";
 import ManagementSettings from "./pages/ManagementSettings";
 import SupportChat from "./pages/SupportChat";
 import Concerts from "./pages/Concerts";
+import AccessInsights from "./pages/AccessInsights";
+import AccessLogTracker from "./components/AccessLogTracker";
 
 const AuthenticatedApp = () => {
   const { authError, user } = useAuth();
@@ -40,7 +42,10 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
-    <Routes>
+    <>
+      {/* アプリ全体のページアクセスを記録する共通トラッカー */}
+      <AccessLogTracker />
+      <Routes>
       {/* Public auth routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -62,6 +67,7 @@ const AuthenticatedApp = () => {
           <Route path="/support" element={<SupportChat />} />
           <Route path="/concerts" element={<Concerts />} />
           <Route path="/management" element={<ManagementSettings />} />
+          <Route path="/access-insights" element={<AccessInsights />} />
         </Route>
         {/* イベント詳細は独自レイアウトを持つため共通ナビ対象外 */}
         <Route path="/events/:eventId" element={<EventDetail />} />
@@ -69,6 +75,7 @@ const AuthenticatedApp = () => {
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </>
   );
 };
 

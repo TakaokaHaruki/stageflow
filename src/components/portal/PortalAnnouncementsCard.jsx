@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Bell, ChevronDown } from "lucide-react";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
+import { trackPortalView } from "@/lib/accessTracker";
 
 const PRIORITY_STYLES = {
   "通常": "bg-muted text-muted-foreground border-border",
@@ -46,6 +47,7 @@ export default function PortalAnnouncementsCard({ events, staffName }) {
       return;
     }
     setOpenId(item.id);
+    trackPortalView({ eventId: item.event_id, viewType: "announcement_open", targetTitle: item.title, targetId: item.id, actorName: staffName });
     if (!(item.read_by || []).includes(staffName)) {
       try {
         await base44.entities.Announcement.update(item.id, { read_by: [...(item.read_by || []), staffName] });

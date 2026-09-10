@@ -1,0 +1,91 @@
+{
+  "name": "AccessLog",
+  "type": "object",
+  "properties": {
+    "page_path": {
+      "type": "string",
+      "description": "\u30a2\u30af\u30bb\u30b9\u3055\u308c\u305f\u30da\u30fc\u30b8\u30d1\u30b9\uff08\u4f8b: /, /events\uff09"
+    },
+    "from_path": {
+      "type": "string",
+      "default": "",
+      "description": "\u30a2\u30d7\u30ea\u5185\u306e\u9077\u79fb\u5143\u30d1\u30b9\uff08\u76f4\u63a5\u30a2\u30af\u30bb\u30b9\u6642\u306f\u7a7a\uff09"
+    },
+    "referrer": {
+      "type": "string",
+      "default": "",
+      "description": "\u5916\u90e8\u53c2\u7167\u5143URL\uff08document.referrer\uff09"
+    },
+    "query": {
+      "type": "string",
+      "default": "",
+      "description": "URL\u30af\u30a8\u30ea\u30d1\u30e9\u30e1\u30fc\u30bf\uff08\u6d41\u5165\u7d4c\u8def\u7279\u5b9a\u7528\uff09"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": [
+        "mobile",
+        "tablet",
+        "desktop"
+      ],
+      "default": "desktop",
+      "description": "\u30c7\u30d0\u30a4\u30b9\u7a2e\u5225"
+    },
+    "user_agent": {
+      "type": "string",
+      "default": "",
+      "description": "\u30e6\u30fc\u30b6\u30fc\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8"
+    },
+    "auth_type": {
+      "type": "string",
+      "enum": [
+        "anonymous",
+        "app_user",
+        "portal_staff"
+      ],
+      "default": "anonymous",
+      "description": "\u8a8d\u8a3c\u72b6\u6cc1\uff08\u672a\u30ed\u30b0\u30a4\u30f3/\u30a2\u30d7\u30ea\u30ed\u30b0\u30a4\u30f3/\u30dd\u30fc\u30bf\u30eb\u8a8d\u8a3c\uff09"
+    },
+    "user_email": {
+      "type": "string",
+      "default": "",
+      "description": "\u30a2\u30d7\u30ea\u30ed\u30b0\u30a4\u30f3\u30e6\u30fc\u30b6\u30fc\u306e\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9"
+    },
+    "user_role": {
+      "type": "string",
+      "default": "",
+      "description": "\u30a2\u30d7\u30ea\u30ed\u30b0\u30a4\u30f3\u30e6\u30fc\u30b6\u30fc\u306e\u30ed\u30fc\u30eb"
+    },
+    "portal_acast_id": {
+      "type": "string",
+      "default": "",
+      "description": "\u30dd\u30fc\u30bf\u30eb\u8a8d\u8a3c\u6e08\u307f\u30b9\u30bf\u30c3\u30d5\u306eA-CAST ID"
+    },
+    "logged_at_jst": {
+      "type": "string",
+      "description": "\u30a2\u30af\u30bb\u30b9\u65e5\u6642\uff08JST YYYY-MM-DD HH:mm\uff09"
+    }
+  },
+  "required": [
+    "page_path",
+    "logged_at_jst"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

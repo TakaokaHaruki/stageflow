@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Settings, ShieldCheck, UserCircle, Info, MessageCircle } from "lucide-react";
+import { Home, CalendarDays, Settings, ShieldCheck, UserCircle, Info, MessageCircle, BarChart3 } from "lucide-react";
 
 /**
  * 新タブ構成の共通ナビ定義。
@@ -20,7 +20,10 @@ export function getNavItems({ isAdmin = false, canEdit = false, isGuest = false 
         ]
       : []),
     ...(isAdmin
-      ? [{ id: "admin-settings", label: "管理者設定", short: "管理者", icon: ShieldCheck, path: "/admin-settings", description: "ユーザー管理とポータル制限" }]
+      ? [
+          { id: "admin-settings", label: "管理者設定", short: "管理者", icon: ShieldCheck, path: "/admin-settings", description: "ユーザー管理とポータル制限" },
+          { id: "access-insights", label: "アクセス解析", short: "アクセス", icon: BarChart3, path: "/access-insights", description: "アクセス履歴と閲覧状況の分析" },
+        ]
       : []),
     { id: "account", label: "アカウント", short: "アカウント", icon: UserCircle, path: "/account", description: "表示名・テーマ・ポータルQRの確認" },
     { id: "information", label: "インフォメーション", short: "インフォ", icon: Info, path: "/information", description: "アプリ情報・利用規約・プライバシーポリシー・お問い合わせ" },

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { FileText, ImageIcon, ChevronRight, Loader2, FolderOpen } from "lucide-react";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import PdfViewerModal from "@/components/PdfViewerModal";
+import { trackPortalView } from "@/lib/accessTracker";
 
 function isFileVisibleToStaff(file, staffName, staffRoles) {
   if (file.visibility === "public") return true;
@@ -111,6 +112,7 @@ export default function StaffFileViewer({ events, staffName, staffRoles, positio
               <button
                 key={f.id}
                 onClick={() => {
+              trackPortalView({ eventId: f.event_id || events[0]?.id || "", viewType: "file_open", targetTitle: f.title, targetId: f.id, actorName: staffName });
               const nameForCheck = (f.file_name || f.title || "").toLowerCase();
               const urlPath = (f.file_url || "").toLowerCase().split("?")[0];
               const isPdf = nameForCheck.includes(".pdf") || urlPath.endsWith(".pdf");
