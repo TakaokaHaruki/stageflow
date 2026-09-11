@@ -1,0 +1,89 @@
+{
+  "name": "ApprovalRequest",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "\u7533\u8acb\u30e6\u30fc\u30b6\u30fc\u306eID"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "\u7533\u8acb\u8005\u540d\uff08\u65b0\u898f\u767b\u9332\u6642\u306e\u540d\u524d\uff09"
+    },
+    "email": {
+      "type": "string",
+      "description": "\u7533\u8acb\u8005\u306e\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9\uff08\u65b0\u898f\u767b\u9332\u6642\u306e\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9\uff09"
+    },
+    "requested_role": {
+      "type": "string",
+      "enum": [
+        "acast_staff",
+        "chief",
+        "user"
+      ],
+      "description": "\u7533\u8acb\u6a29\u9650\uff08A-CAST\u793e\u54e1/\u30c1\u30fc\u30d5/\u30e6\u30fc\u30b6\u30fc\uff09"
+    },
+    "approver": {
+      "type": "string",
+      "description": "\u627f\u8a8d\u8005\uff08\u7533\u8acb\u6642\u306b\u6307\u540d\uff09"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "\u7533\u8acb\u30b9\u30c6\u30fc\u30bf\u30b9\uff08\u627f\u8a8d\u5f85\u3061/\u627f\u8a8d\u6e08\u307f/\u5374\u4e0b\uff09"
+    },
+    "requested_at_jst": {
+      "type": "string",
+      "description": "\u7533\u8acb\u65e5\u6642\uff08JST YYYY-MM-DD HH:mm\uff09"
+    },
+    "handled_at_jst": {
+      "type": "string",
+      "default": "",
+      "description": "\u627f\u8a8d\u30fb\u5374\u4e0b\u51e6\u7406\u65e5\u6642\uff08JST YYYY-MM-DD HH:mm\uff09"
+    },
+    "handled_by": {
+      "type": "string",
+      "default": "",
+      "description": "\u51e6\u7406\u3057\u305f\u7ba1\u7406\u8005\u540d"
+    }
+  },
+  "required": [
+    "user_id",
+    "full_name",
+    "email",
+    "requested_role",
+    "approver"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

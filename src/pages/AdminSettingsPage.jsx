@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, ShieldCheck, History, Lock, QrCode, Calendar, LayoutTemplate, Bell, HelpCircle, HardDriveDownload } from "lucide-react";
+import { Users, ShieldCheck, History, Lock, QrCode, Calendar, LayoutTemplate, Bell, HelpCircle, HardDriveDownload, UserCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserRoleManager from "@/components/UserRoleManager";
+import ApprovalRequestManager from "@/components/ApprovalRequestManager";
 import PortalRestrictionManager from "@/components/PortalRestrictionManager";
 import ActivityLogViewer from "@/components/ActivityLogViewer";
 import AccessRestrictionManager from "@/components/AccessRestrictionManager";
@@ -17,6 +18,7 @@ import SectionTabBar from "@/components/SectionTabBar";
 
 const SECTIONS = [
   { id: "users", label: "ユーザー管理", icon: Users },
+  { id: "approvals", label: "承認申請", icon: UserCheck },
   { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
   { id: "operation_logs", label: "操作ログ", icon: History },
   { id: "access_restriction", label: "アクセス制限", icon: Lock },
@@ -63,6 +65,7 @@ export default function AdminSettingsPage() {
     }
     switch (section) {
       case "users": return <UserRoleManager />;
+      case "approvals": return <ApprovalRequestManager />;
       case "portal_restriction": return <PortalRestrictionManager />;
       case "venues": return <VenueManager />;
       case "global_banner": return <GlobalBannerManager />;
