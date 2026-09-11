@@ -32,6 +32,7 @@ export default function PendingApproval() {
   const [finalApprover, setFinalApprover] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [reapplying, setReapplying] = useState(false);
 
   // 登録済みの名前・メールアドレスをプレフィル
   useEffect(() => {
@@ -99,11 +100,25 @@ export default function PendingApproval() {
         <p className="text-xs text-muted-foreground">最終承認者：{myRequest.final_approver}</p>
         <p className="text-xs text-muted-foreground">申請日時：{myRequest.requested_at_jst}</p>
       </div>
-      <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+      <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
         {myRequest.status === "rejected"
-          ? "この申請は却下されました。承認者または管理者にお問い合わせください。"
+          ? "この申請は却下されました。内容を確認のうえ、再申請いただけます。"
           : "管理者による承認をお待ちください。\n承認後に再度ログインするとご利用いただけます。"}
       </p>
+      {myRequest.status === "rejected" && (
+        <Button
+          className="h-10 text-sm font-semibold gap-2 w-full"
+          onClick={() => {
+            setRole(myRequest.requested_role);
+            setPrimaryApprover(myRequest.primary_approver);
+            setFinalApprover(myRequest.final_approver);
+            setReapplying(true);
+          }}
+        >
+          <Send className="w-4 h-4" />
+          再申請する
+        </Button>
+      )}
     </div>
   );
 
@@ -113,6 +128,11 @@ export default function PendingApproval() {
         <ShieldAlert className="w-8 h-8 text-amber-600 dark:text-amber-400" />
       </div>
       <h1 className="text-xl font-bold text-foreground mb-2">アカウント承認申請</h1>
+      {reapplying && (
+        <p className="text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2 mb-4">
+          前回の申請は却下されました。内容を修正して再申請してください。
+        </p>
+      )}
       <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
         このアプリをご利用いただくには、管理者による承認が必要です。<br />
         以下のフォームから承認申請を行ってください。
@@ -211,7 +231,9 @@ export default function PendingApproval() {
           <div className="flex justify-center py-8">
             <div className="h-6 w-6 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
           </div>
-        ) : myRequest ? (
+        ) : myRequest && myRequest.status !== "rejected" ? (
+          renderStatus()
+        ) : myRequest && !reapplying ? (
           renderStatus()
         ) : (
           renderForm()
