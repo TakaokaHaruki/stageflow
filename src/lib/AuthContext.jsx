@@ -94,6 +94,15 @@ export const AuthProvider = ({ children }) => {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
+      // アプリが「ログインなしで公開」設定の場合、匿名セッションが me() で返ることがある。
+      // メールアドレスを持たない匿名セッションは未ログイン扱いとし、ログインページへ遷移させる
+      if (!currentUser || !currentUser.email) {
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
+        return;
+      }
       // 承認制導入以降に新規登録したデフォルト権限のアカウントは未承認扱いにする
       const approvalSince = new Date('2026-09-11T00:00:00Z');
       if (currentUser?.role === 'user' && new Date(currentUser.created_date) > approvalSince) {
