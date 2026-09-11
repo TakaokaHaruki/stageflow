@@ -82,7 +82,9 @@ export default function ApprovalRequestManager() {
           </div>
           <p className="text-[11px] text-muted-foreground truncate">{r.email}</p>
           <div className="mt-0.5 flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
-            <span>承認者：{r.approver}</span>
+            <span>一次：{r.primary_approver}</span>
+            <span>・</span>
+            <span>最終：{r.final_approver}</span>
             <span>・</span>
             <span>申請：{r.requested_at_jst}</span>
             {r.handled_at_jst && (

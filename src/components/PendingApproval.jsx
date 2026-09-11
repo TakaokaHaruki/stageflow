@@ -28,7 +28,8 @@ export default function PendingApproval() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
-  const [approver, setApprover] = useState("");
+  const [primaryApprover, setPrimaryApprover] = useState("");
+  const [finalApprover, setFinalApprover] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -55,7 +56,7 @@ export default function PendingApproval() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!fullName.trim() || !email.trim() || !role || !approver.trim()) {
+    if (!fullName.trim() || !email.trim() || !role || !primaryApprover.trim() || !finalApprover.trim()) {
       setError("すべての項目を入力してください。");
       return;
     }
@@ -66,7 +67,8 @@ export default function PendingApproval() {
         full_name: fullName.trim(),
         email: email.trim(),
         requested_role: role,
-        approver: approver.trim(),
+        primary_approver: primaryApprover.trim(),
+        final_approver: finalApprover.trim(),
         requested_at_jst: jstNow(),
       });
       queryClient.invalidateQueries({ queryKey: ["my-approval-request", user?.id] });
@@ -93,7 +95,8 @@ export default function PendingApproval() {
       </h1>
       <div className="text-left bg-muted/50 rounded-lg p-3 mb-4 space-y-1">
         <p className="text-xs text-muted-foreground">申請権限：{ROLE_LABELS[myRequest.requested_role] || myRequest.requested_role}</p>
-        <p className="text-xs text-muted-foreground">承認者：{myRequest.approver}</p>
+        <p className="text-xs text-muted-foreground">一次承認者：{myRequest.primary_approver}</p>
+        <p className="text-xs text-muted-foreground">最終承認者：{myRequest.final_approver}</p>
         <p className="text-xs text-muted-foreground">申請日時：{myRequest.requested_at_jst}</p>
       </div>
       <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
@@ -162,17 +165,31 @@ export default function PendingApproval() {
           </div>
         </div>
 
-        <div>
-          <Label htmlFor="approvalApprover" className="text-sm font-medium mb-1.5 block">承認者</Label>
-          <Input
-            id="approvalApprover"
-            type="text"
-            value={approver}
-            onChange={(e) => setApprover(e.target.value)}
-            placeholder="承認を依頼する方のお名前"
-            required
-            className="h-10"
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="approvalPrimaryApprover" className="text-sm font-medium mb-1.5 block">一次承認者</Label>
+            <Input
+              id="approvalPrimaryApprover"
+              type="text"
+              value={primaryApprover}
+              onChange={(e) => setPrimaryApprover(e.target.value)}
+              placeholder="一次承認者のお名前"
+              required
+              className="h-10"
+            />
+          </div>
+          <div>
+            <Label htmlFor="approvalFinalApprover" className="text-sm font-medium mb-1.5 block">最終承認者</Label>
+            <Input
+              id="approvalFinalApprover"
+              type="text"
+              value={finalApprover}
+              onChange={(e) => setFinalApprover(e.target.value)}
+              placeholder="最終承認者のお名前"
+              required
+              className="h-10"
+            />
+          </div>
         </div>
 
         {error && (

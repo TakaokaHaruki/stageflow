@@ -23,9 +23,13 @@
       ],
       "description": "\u7533\u8acb\u6a29\u9650\uff08A-CAST\u793e\u54e1/\u30c1\u30fc\u30d5/\u30e6\u30fc\u30b6\u30fc\uff09"
     },
-    "approver": {
+    "primary_approver": {
       "type": "string",
-      "description": "\u627f\u8a8d\u8005\uff08\u7533\u8acb\u6642\u306b\u6307\u540d\uff09"
+      "description": "\u4e00\u6b21\u627f\u8a8d\u8005\uff08\u7533\u8acb\u6642\u306b\u6307\u5b9a\uff09"
+    },
+    "final_approver": {
+      "type": "string",
+      "description": "\u6700\u7d42\u627f\u8a8d\u8005\uff08\u7533\u8acb\u6642\u306b\u6307\u5b9a\uff09"
     },
     "status": {
       "type": "string",
@@ -57,7 +61,8 @@
     "full_name",
     "email",
     "requested_role",
-    "approver"
+    "primary_approver",
+    "final_approver"
   ],
   "rls": {
     "create": {
