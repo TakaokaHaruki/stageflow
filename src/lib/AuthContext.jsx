@@ -94,6 +94,16 @@ export const AuthProvider = ({ children }) => {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
+      // 承認制導入以降に新規登録したデフォルト権限のアカウントは未承認扱いにする
+      const approvalSince = new Date('2026-09-11T00:00:00Z');
+      if (currentUser?.role === 'user' && new Date(currentUser.created_date) > approvalSince) {
+        try {
+          const res = await base44.functions.invoke('markNewUserUnapproved', {});
+          if (res?.data?.changed) currentUser.role = 'unapproved';
+        } catch (e) {
+          console.error('New user approval check failed:', e);
+        }
+      }
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);

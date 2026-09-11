@@ -6,7 +6,8 @@
       "enum": [
         "admin",
         "chief",
-        "user"
+        "user",
+        "unapproved"
       ]
     },
     "display_name": {

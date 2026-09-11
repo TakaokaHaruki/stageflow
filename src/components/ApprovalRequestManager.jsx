@@ -36,16 +36,17 @@ export default function ApprovalRequestManager() {
 
   const handleMutation = useMutation({
     mutationFn: async ({ request, action }) => {
-      if (action === "approve") {
-        await base44.entities.User.update(request.user_id, {
-          role: APPROVED_ROLE[request.requested_role] || "user",
-        });
-      }
+      // 先に申請ステータスを更新してから権限を付与する（途中ログインで未承認に巻き戻らないように）
       await base44.entities.ApprovalRequest.update(request.id, {
         status: action === "approve" ? "approved" : "rejected",
         handled_at_jst: jstNow(),
         handled_by: user ? getUserDisplayName(user) : "",
       });
+      if (action === "approve") {
+        await base44.entities.User.update(request.user_id, {
+          role: APPROVED_ROLE[request.requested_role] || "user",
+        });
+      }
     },
     onError: () => toast.error("処理に失敗しました"),
     onSuccess: (_, { action }) => {
