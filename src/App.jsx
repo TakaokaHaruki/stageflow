@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import AppNav from './components/AppNav';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -30,6 +30,9 @@ import AccessLogTracker from "./components/AccessLogTracker";
 
 const AuthenticatedApp = () => {
   const { authError, user } = useAuth();
+  const location = useLocation();
+  // 未ログインで直リンクされた場合、ログイン後に元のページへ戻れるよう遷移元を保持
+  const loginPath = `/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`;
 
   // Handle authentication errors (only for user_not_registered)
   if (authError?.type === 'user_not_registered') {
@@ -57,7 +60,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<StaffPortal />} />
 
       {/* Protected app routes - require login */}
-      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to={loginPath} replace />} />}>
         {/* 共通ナビ（ヘッダー・サイドバー固定）配下のページ。遷移時はコンテンツのみ差し替わる */}
         <Route element={<AppNav />}>
           <Route path="/home" element={<Home />} />

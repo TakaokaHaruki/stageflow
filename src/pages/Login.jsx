@@ -11,6 +11,11 @@ import { motion } from "framer-motion";
 import { LogIn, Eye, EyeOff } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import CrewlyLogo from "@/components/CrewlyLogo";
+import { safeReturnTo } from "@/lib/authReturnTo";
+
+// ログイン後の遷移先：returnTo があればそのページ（安全チェック済み）、なければホーム
+const getPostLoginDest = () =>
+  new URLSearchParams(window.location.search).get("returnTo") ? safeReturnTo() : "/home";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -55,7 +60,7 @@ export default function Login() {
       if (!user || !user.role) {
         setPendingApproval(true);
       } else {
-        window.location.href = "/home";
+        window.location.href = getPostLoginDest();
       }
     } catch (err) {
       setError(err.message || "ログインに失敗しました。メールアドレスまたはパスワードをご確認ください。");
@@ -66,7 +71,7 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     try {
-      await base44.auth.loginWithProvider("google", "/home");
+      await base44.auth.loginWithProvider("google", getPostLoginDest());
     } catch (err) {
       setError(err.message || "Google ログインに失敗しました。");
     }
