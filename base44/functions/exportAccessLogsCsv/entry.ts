@@ -10,6 +10,21 @@ const AUTH_LABELS = { app_user: "アプリ", portal_staff: "ポータル", anony
 const DEVICE_LABELS = { mobile: "モバイル", tablet: "タブレット", desktop: "PC" };
 const VIEW_TYPE_LABELS = { announcement_open: "お知らせ", file_open: "配布資料", tab_open: "タブ", item_expand: "項目展開" };
 
+// SDKは1リクエスト最大5,000件のため、skipでページ送りして対象期間のレコードを全件取得する
+const PAGE_SIZE = 5000;
+const MAX_PAGES = 40; // 安全弁（最大20万件）
+
+async function fetchAllLogs(entity: any, q: any) {
+  const all = [];
+  for (let skip = 0; skip < PAGE_SIZE * MAX_PAGES; skip += PAGE_SIZE) {
+    const page = await entity.filter(q, "-created_date", PAGE_SIZE, skip);
+    if (!page || page.length === 0) break;
+    all.push(...page);
+    if (page.length < PAGE_SIZE) break;
+  }
+  return all;
+}
+
 /**
  * アクセス履歴・閲覧操作ログを期間指定でCSV出力する（管理者専用）。
  * UTF-8 with BOM・Excel対応。target: "access" | "view"
@@ -36,7 +51,7 @@ export default async function (req) {
     let header = [];
     let rows = [];
     if (target === "access") {
-      const logs = await base44.entities.AccessLog.filter(q, "-created_date", 5000);
+      const logs = await fetchAllLogs(base44.entities.AccessLog, q);
       // セッションごとの最終アクセスを離脱ページとして判定（降順で最初に出現したもの）
       const seenSessions = new Set();
       for (const l of logs) {
@@ -59,7 +74,7 @@ export default async function (req) {
         l.__exit ? "○" : "",
       ]);
     } else if (target === "interaction") {
-      const logs = await base44.entities.InteractionLog.filter(q, "-created_date", 5000);
+      const logs = await fetchAllLogs(base44.entities.InteractionLog, q);
       header = [
         "記録日時", "操作種別", "操作対象", "要素種別", "選択値", "ページパス", "IPアドレス",
         "認証状況", "メールアドレス", "ロール", "A-CAST ID", "訪問者ID", "セッションID",
@@ -71,7 +86,7 @@ export default async function (req) {
         l.visitor_id, l.session_id,
       ]);
     } else {
-      const logs = await base44.entities.ViewLog.filter(q, "-created_date", 5000);
+      const logs = await fetchAllLogs(base44.entities.ViewLog, q);
       header = ["記録日時", "閲覧種別", "対象タイトル", "対象ID", "イベントID", "実行者名", "実行者メール"];
       rows = logs.map((l) => [
         l.logged_at_jst, VIEW_TYPE_LABELS[l.view_type] || l.view_type, l.target_title,

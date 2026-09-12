@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Search, Trash2, RefreshCw, Monitor, Smartphone, Tablet, Download } from "lucide-react";
 import { downloadLogCsv } from "@/lib/csvExport";
+import { fetchAllRecords } from "@/lib/fetchAllRecords";
 import { toast } from "sonner";
 import AccessStats from "./AccessStats";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -56,7 +57,7 @@ export default function AccessLogPanel() {
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["access-logs"],
-    queryFn: () => base44.entities.AccessLog.list("-created_date", 500),
+    queryFn: () => fetchAllRecords("AccessLog"),
   });
 
   const filtered = useMemo(() => {

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { downloadLogCsv } from "@/lib/csvExport";
+import { fetchAllRecords } from "@/lib/fetchAllRecords";
 
 const ACTION_META = {
   click: { label: "クリック", className: "bg-sky-100 text-sky-700 border-sky-300 dark:bg-sky-900/40 dark:text-sky-300 dark:border-sky-700" },
@@ -26,10 +27,7 @@ export default function InteractionLogPanel() {
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["interaction-logs"],
-    queryFn: async () => {
-      const res = await base44.entities.InteractionLog.list("-created_date", 500);
-      return res || [];
-    },
+    queryFn: () => fetchAllRecords("InteractionLog"),
   });
 
   const filtered = useMemo(() => {
@@ -124,7 +122,7 @@ export default function InteractionLogPanel() {
         </div>
       ) : (
         <div className="divide-y divide-border rounded-2xl border border-border bg-card shadow-md">
-          {filtered.map((l) => {
+          {filtered.slice(0, 300).map((l) => {
             const meta = ACTION_META[l.action_type] || ACTION_META.click;
             return (
               <div key={l.id} className="flex items-start gap-2 px-3 py-2.5">

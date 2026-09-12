@@ -7,6 +7,7 @@ import { Search, Bell, FileText, LayoutList, ChevronDown, Download } from "lucid
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { downloadLogCsv } from "@/lib/csvExport";
+import { fetchAllRecords } from "@/lib/fetchAllRecords";
 
 const VIEW_TYPE_META = {
   announcement_open: { label: "お知らせ", icon: Bell, style: "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700" },
@@ -27,7 +28,7 @@ export default function ViewLogPanel() {
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["view-logs"],
-    queryFn: () => base44.entities.ViewLog.list("-created_date", 500),
+    queryFn: () => fetchAllRecords("ViewLog"),
   });
 
   const { data: events = [] } = useQuery({
