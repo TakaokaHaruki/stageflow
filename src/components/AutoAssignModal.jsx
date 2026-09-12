@@ -59,17 +59,6 @@ function categoryScore(staff, pos, slot, tally, posNameCategory) {
   return total;
 }
 
-// 条件4: クロスタイムスロット共通配置 — 同一ポジション名が複数時間帯に存在するか検出しグループ化
-function detectCommonGroups(positions) {
-  const byName = {};
-  (positions || []).forEach((p) => {
-    (byName[p.name] ||= []).push(p);
-  });
-  return Object.values(byName).filter(
-    (ps) => new Set(ps.map((p) => p.time_slot || "開場中")).size > 1
-  );
-}
-
 /**
  * 自動配置を計算する。
  * @param {Array} positions 対象イベントのポジション一覧
@@ -130,59 +119,6 @@ export function computeAutoAssign(positions, staffList, tally = {}) {
     return countUnassigned(b) - countUnassigned(a);
   };
 
-  // --- Phase 0: クロスタイムスロット共通配置（条件4） ---
-  detectCommonGroups(positions).forEach((group) => {
-    const commonCount = Math.max(...group.map((p) => p.required_count || 0));
-    if (commonCount <= 0) return;
-    const groupSlots = [...new Set(group.map((p) => p.time_slot || "開場中"))];
-
-    // 共通メンバーは全時間帯でフリーである必要がある
-    let candidates = staffList.filter((s) =>
-      groupSlots.every((sl) => !assignedInSlot[sl].has(s.name))
-    );
-    // クロススロットスコア: 各時間帯の同一pos回数（開演中は重み付き）の総和
-    const crossScore = (staff) => {
-      let total = 0;
-      group.forEach((p) => {
-        const slot = p.time_slot || "開場中";
-        const cnt = ((tally[staff.name] || {})[slot] || {})[p.name] || 0;
-        total += cnt * (slot === "開演中" ? MAIN_SLOT_WEIGHT : 1);
-      });
-      return total;
-    };
-    const crossCat = (staff) => {
-      let total = 0;
-      group.forEach((p) => {
-        total += categoryScore(staff, p, p.time_slot || "開場中", tally, posNameCategory);
-      });
-      return total;
-    };
-    const crossGender = (staff) =>
-      group.reduce((acc, p) => acc + genderMatchScore(staff, p), 0);
-    candidates.sort((a, b) => {
-      const ga = crossGender(a), gb = crossGender(b);
-      if (ga !== gb) return gb - ga;
-      const sa = crossScore(a), sb = crossScore(b);
-      if (sa !== sb) return sb - sa;
-      const ca = crossCat(a), cb = crossCat(b);
-      if (ca !== cb) return cb - ca;
-      const ra = group.reduce((acc, p) => acc + roleMatchScore(a, p) + skillMatchScore(a, p), 0);
-      const rb = group.reduce((acc, p) => acc + roleMatchScore(b, p) + skillMatchScore(b, p), 0);
-      if (ra !== rb) return rb - ra;
-      return countUnassigned(b) - countUnassigned(a);
-    });
-
-    const commonMembers = candidates.slice(0, commonCount);
-    group.forEach((p) => {
-      const slot = p.time_slot || "開場中";
-      const need = p.required_count || 0;
-      const take = Math.min(commonMembers.length, need);
-      for (let i = 0; i < take; i++) {
-        addToPlan(p, commonMembers[i].name, slot);
-      }
-    });
-  });
-
   // --- Phase 1 & 2: 開演中を優先 → 残り時間帯（条件5・条件1〜3） ---
   const slotOrder = activeSlots.includes("開演中")
     ? ["開演中", ...activeSlots.filter((sl) => sl !== "開演中")]
@@ -208,6 +144,38 @@ export function computeAutoAssign(positions, staffList, tally = {}) {
         filled++;
       }
     });
+
+    // --- Phase 0: 開演中基準のリンク配置（条件4） ---
+    // 開演中の処理完了後、開演中に実際に配置されたスタッフ（既存配置＋自動配置、既存優先）を、
+    // 開場中・終演後などの同一ポジション名ポジションへ必要人数の上限まで優先配置する。
+    // 持ち越しで埋まらなかった枠は以降の時間帯処理で通常スコアリングにより補充される。
+    if (slot === "開演中") {
+      slotPositions.forEach((mainPos) => {
+        const mainStaff = [...(mainPos.staff_names || []), ...(plan[mainPos.id] || [])];
+        if (mainStaff.length === 0) return;
+        const counterparts = (positions || [])
+          .filter(
+            (pos) =>
+              pos.id !== mainPos.id &&
+              pos.name === mainPos.name &&
+              (pos.time_slot || "開場中") !== "開演中"
+          )
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        counterparts.forEach((pos) => {
+          const targetSlot = pos.time_slot || "開場中";
+          const already = (pos.staff_names || []).length + (plan[pos.id] || []).length;
+          const need = (pos.required_count ?? 0) - already;
+          if (need <= 0) return;
+          let filled = 0;
+          for (const name of mainStaff) {
+            if (filled >= need) break;
+            if (assignedInSlot[targetSlot].has(name) || (plan[pos.id] || []).includes(name)) continue;
+            addToPlan(pos, name, targetSlot);
+            filled++;
+          }
+        });
+      });
+    }
   });
 
   // warnings
