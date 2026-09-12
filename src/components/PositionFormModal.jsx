@@ -88,9 +88,11 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     }
     return excluded;
   }, [allPositions, position?.id, form.time_slot, form.parts]);
+  // 他ポジション配置済みのスタッフは追加候補から除外。ただし自ポジション配属済みのスタッフは
+  // チェック状態で表示し、この画面から解除できるようにする
   const availableStaff = useMemo(
-    () => staffList.filter((s) => !excludedStaffNames.has(s.name)),
-    [staffList, excludedStaffNames]
+    () => staffList.filter((s) => form.staff_names.includes(s.name) || !excludedStaffNames.has(s.name)),
+    [staffList, excludedStaffNames, form.staff_names]
   );
 
   const { data: rawPositionTypes = [] } = useQuery({
