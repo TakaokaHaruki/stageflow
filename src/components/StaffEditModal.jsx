@@ -194,7 +194,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
                     onClick={() => {
                       const next = active ? "" : g;
                       setLocalGender(next);
-                      setLocalColor(next === "男" ? "#2563eb" : next === "女" ? "#dc2626" : "");
+                      setLocalColor(next === "男" ? "#3b82f6" : next === "女" ? "#dc2626" : "");
                     }}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${active ? (g === "男" ? "bg-blue-100 border-blue-300 text-blue-700" : "bg-rose-100 border-rose-300 text-rose-700") : "border-border text-muted-foreground hover:border-primary/50"}`}
                   >

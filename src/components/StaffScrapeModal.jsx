@@ -92,7 +92,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
       .filter(({ i }) => checked[i])
       .map(({ s, i }) => {
         const gender = genders[i] || "";
-        const color = gender === "男" ? "#2563eb" : gender === "女" ? "#dc2626" : "";
+        const color = gender === "男" ? "#3b82f6" : gender === "女" ? "#dc2626" : "";
         return { name: s.name, acast_id: s.acast_id || null, gender, color };
       });
     if (selectedStaff.length === 0) { setError("スタッフが選択されていません"); return; }
