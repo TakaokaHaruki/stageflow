@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -68,6 +68,31 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
   });
 
   // PositionType list for name selection (global, not event-specific)
+  // 重複配置防止: 他ポジションの配置状況を取得（同一時間帯・同一部の担当済みスタッフを選択リストから除外する）
+  const { data: allPositions = [] } = useQuery({
+    queryKey: ["positions", eventId],
+    queryFn: () => base44.entities.Position.filter({ event_id: eventId }),
+    refetchInterval: LIVE_SYNC_INTERVAL,
+  });
+  const partsOf = (arr) => (Array.isArray(arr) && arr.length ? arr : [1]);
+  const excludedStaffNames = useMemo(() => {
+    const myParts = partsOf(form.parts);
+    const excluded = new Set();
+    for (const p of allPositions) {
+      if (p.id === position?.id) continue;
+      if ((p.time_slot || "開場中") !== form.time_slot) continue;
+      if (!partsOf(p.parts).some((pp) => myParts.includes(pp))) continue;
+      for (const n of [...(p.staff_names || []), ...(p.staff_names_kamite || []), ...(p.staff_names_shimote || [])]) {
+        excluded.add(n);
+      }
+    }
+    return excluded;
+  }, [allPositions, position?.id, form.time_slot, form.parts]);
+  const availableStaff = useMemo(
+    () => staffList.filter((s) => !excludedStaffNames.has(s.name)),
+    [staffList, excludedStaffNames]
+  );
+
   const { data: rawPositionTypes = [] } = useQuery({
     queryKey: ["positionTypes"],
     queryFn: () => base44.entities.PositionType.list(),
@@ -117,6 +142,9 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
       const payload = unwrapFunctionResponse(response);
       if (payload?.error) throw new Error(payload.error);
       return payload;
+    },
+    onError: (err) => {
+      toast.error(err?.message || "保存に失敗しました");
     },
     onSuccess: (result) => {
       if (result?.sideSettings) {
@@ -384,6 +412,8 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
             <Label>担当スタッフ</Label>
             {staffList.length === 0 ? (
               <p className="text-xs text-muted-foreground mt-2">{"\u30b9\u30bf\u30c3\u30d5\u304c\u767b\u9332\u3055\u308c\u3066\u3044\u307e\u305b\u3093"}</p>
+            ) : availableStaff.length === 0 ? (
+              <p className="text-xs text-muted-foreground mt-2">選択できるスタッフがいません（他のポジションに配置済みのスタッフは表示されません）</p>
             ) : form.split_by_side ? (
               <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
@@ -392,7 +422,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
                 ].map((side) => (
                   <div key={side.key} className="border border-border rounded-lg overflow-hidden max-h-44 overflow-y-auto">
                     <div className="sticky top-0 bg-muted px-3 py-1 text-xs font-bold">{side.label}</div>
-                    {staffList.map((staff) => {
+                    {availableStaff.map((staff) => {
                       const selected = side.selected.includes(staff.name);
                       return (
                         <button
@@ -418,7 +448,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
               </div>
             ) : (
               <div className="mt-1.5 border border-border rounded-lg overflow-hidden max-h-44 overflow-y-auto">
-                {staffList.map((staff) => {
+                {availableStaff.map((staff) => {
                   const selected = form.staff_names.includes(staff.name);
                   return (
                     <button

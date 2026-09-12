@@ -7,6 +7,23 @@ const ALLOWED_UPDATE_FIELDS = ['order', 'required_count', 'notes', 'color', 'map
 // ポジションの所属部配列（未設定=1部扱い）
 const partsOf = (p) => (Array.isArray(p?.parts) && p.parts.length > 0 ? p.parts : [1]);
 
+// 重複配置チェック: 同一時間帯・同一部に所属する他ポジションに既に配置済みのスタッフ名を検出
+const findDuplicateStaff = (positions, excludeId, excludeName, slot, parts, names) => {
+  const targetParts = Array.isArray(parts) && parts.length > 0 ? parts : [1];
+  const dups = new Set();
+  for (const p of positions || []) {
+    if (excludeId && p.id === excludeId) continue;
+    if (excludeName && p.name === excludeName) continue;
+    if ((p.time_slot || '開場中') !== slot) continue;
+    if (!partsOf(p).some((pp) => targetParts.includes(pp))) continue;
+    const assigned = [...(p.staff_names || []), ...(p.staff_names_kamite || []), ...(p.staff_names_shimote || [])];
+    for (const name of names) {
+      if (assigned.includes(name)) dups.add(name);
+    }
+  }
+  return [...dups];
+};
+
 // イベントの部間同期設定を取得
 const getShowSync = async (base44, eventId) => {
   try {
@@ -90,6 +107,15 @@ Deno.serve(async (req) => {
       const showSync = await getShowSync(base44, eventId);
       const [positionWithParts] = applySyncPartsTo(showSync, [position]);
       const existingPositions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
+      const incomingStaff = unique([
+        ...(positionWithParts.staff_names || []),
+        ...(positionWithParts.staff_names_kamite || []),
+        ...(positionWithParts.staff_names_shimote || []),
+      ]);
+      const dups = findDuplicateStaff(existingPositions, null, positionWithParts.name, positionWithParts.time_slot, positionWithParts.parts, incomingStaff);
+      if (dups.length) {
+        return Response.json({ error: `「${dups[0]}」はすでに追加されています` }, { status: 409 });
+      }
       const saved = await createOrMergePosition(base44, eventId, showSync, existingPositions, positionWithParts);
       return Response.json({ position: saved });
     }
@@ -276,6 +302,29 @@ Deno.serve(async (req) => {
         staffNames = unique(body.staff_names);
       } else {
         staffNames = unique(current?.staff_names || []);
+      }
+
+      // 重複配置チェック: 同一時間帯・同一部の他ポジションに既に配置済みのスタッフは追加不可
+      const currentPos = current ?? await base44.asServiceRole.entities.Position.get(positionId).catch(() => null);
+      const targetSlot = extraFields.time_slot !== undefined ? extraFields.time_slot : (currentPos?.time_slot || '開場中');
+      const currentParts = partsOf(currentPos?.parts);
+      const targetParts = Array.isArray(extraFields.parts) && extraFields.parts.length > 0 ? extraFields.parts : currentParts;
+      const slotChanged = extraFields.time_slot !== undefined && extraFields.time_slot !== (currentPos?.time_slot || '開場中');
+      const partsChanged = JSON.stringify([...targetParts].sort((a, b) => a - b)) !== JSON.stringify([...currentParts].sort((a, b) => a - b));
+      const ownNames = new Set([
+        ...(currentPos?.staff_names || []),
+        ...(currentPos?.staff_names_kamite || []),
+        ...(currentPos?.staff_names_shimote || []),
+      ]);
+      const namesToCheck = slotChanged || partsChanged
+        ? staffNames
+        : staffNames.filter((n) => !ownNames.has(n));
+      if (namesToCheck.length) {
+        const positions = await base44.asServiceRole.entities.Position.filter({ event_id: currentPos?.event_id || body.eventId });
+        const dups = findDuplicateStaff(positions, positionId, null, targetSlot, targetParts, namesToCheck);
+        if (dups.length) {
+          return Response.json({ error: `「${dups[0]}」はすでに追加されています` }, { status: 409 });
+        }
       }
 
       let position;
