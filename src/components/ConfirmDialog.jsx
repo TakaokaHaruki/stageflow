@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 import ModalShell from "@/components/ModalShell";
 
-export default function ConfirmDialog({ message, onConfirm, onCancel, confirmLabel = "削除", confirmVariant = "destructive" }) {
+export default function ConfirmDialog({ message, onConfirm, onCancel, confirmLabel = "削除", confirmVariant = "destructive", children }) {
   const isDestructive = confirmVariant === "destructive";
 
   return (
@@ -13,6 +13,7 @@ export default function ConfirmDialog({ message, onConfirm, onCancel, confirmLab
         </div>
         <p className="text-sm text-foreground leading-relaxed pt-1 whitespace-pre-line">{message}</p>
       </div>
+      {children}
       <div className="flex gap-2">
         <Button variant="outline" className="flex-1" onClick={onCancel}>キャンセル</Button>
         <Button

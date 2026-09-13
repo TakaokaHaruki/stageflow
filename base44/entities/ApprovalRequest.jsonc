@@ -41,6 +41,11 @@
       "default": "pending",
       "description": "\u7533\u8acb\u30b9\u30c6\u30fc\u30bf\u30b9\uff08\u627f\u8a8d\u5f85\u3061/\u627f\u8a8d\u6e08\u307f/\u5374\u4e0b\uff09"
     },
+    "reapply_prohibited": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u518d\u7533\u8acb\u7981\u6b62\u30d5\u30e9\u30b0\uff08\u5374\u4e0b\u6642\u306b\u7ba1\u7406\u8005\u304c\u8a2d\u5b9a\u3002ON\u306e\u5834\u5408\u306f\u518d\u7533\u8acb\u4e0d\u53ef\uff09"
+    },
     "requested_at_jst": {
       "type": "string",
       "description": "\u7533\u8acb\u65e5\u6642\uff08JST YYYY-MM-DD HH:mm\uff09"

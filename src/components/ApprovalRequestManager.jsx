@@ -27,7 +27,7 @@ const jstNow = () =>
 export default function ApprovalRequestManager() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const [confirm, setConfirm] = useState(null); // { request, action }
+  const [confirm, setConfirm] = useState(null); // { request, action, prohibit }
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ["approval-requests"],
@@ -35,10 +35,11 @@ export default function ApprovalRequestManager() {
   });
 
   const handleMutation = useMutation({
-    mutationFn: async ({ request, action }) => {
+    mutationFn: async ({ request, action, prohibit }) => {
       // 先に申請ステータスを更新してから権限を付与する（途中ログインで未承認に巻き戻らないように）
       await base44.entities.ApprovalRequest.update(request.id, {
         status: action === "approve" ? "approved" : "rejected",
+        ...(action === "reject" ? { reapply_prohibited: Boolean(prohibit) } : {}),
         handled_at_jst: jstNow(),
         handled_by: user ? getUserDisplayName(user) : "",
       });
@@ -77,6 +78,11 @@ export default function ApprovalRequestManager() {
             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${status.className}`}>
               {status.label}
             </span>
+            {r.status === "rejected" && r.reapply_prohibited && (
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 shrink-0">
+                再申請不可
+              </span>
+            )}
             <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-secondary text-secondary-foreground shrink-0">
               {ROLE_LABELS[r.requested_role] || r.requested_role}
             </span>
@@ -107,7 +113,7 @@ export default function ApprovalRequestManager() {
               <Check className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setConfirm({ request: r, action: "reject" })}
+              onClick={() => setConfirm({ request: r, action: "reject", prohibit: false })}
               className="p-1.5 rounded-md text-destructive hover:bg-destructive/10 transition-colors"
               title="却下"
               aria-label="却下"
@@ -171,7 +177,19 @@ export default function ApprovalRequestManager() {
           confirmVariant={confirm.action === "approve" ? "default" : "destructive"}
           onConfirm={() => handleMutation.mutate(confirm)}
           onCancel={() => setConfirm(null)}
-        />
+        >
+          {confirm.action === "reject" && (
+            <label className="flex items-start gap-2 mb-4 text-sm cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={Boolean(confirm.prohibit)}
+                onChange={(e) => setConfirm((c) => ({ ...c, prohibit: e.target.checked }))}
+                className="mt-0.5 w-4 h-4 accent-red-600 shrink-0"
+              />
+              <span className="leading-relaxed">このユーザーの再申請を禁止する（却下後に再申請できなくなります）</span>
+            </label>
+          )}
+        </ConfirmDialog>
       )}
     </div>
   );

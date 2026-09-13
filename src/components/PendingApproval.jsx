@@ -102,10 +102,12 @@ export default function PendingApproval() {
       </div>
       <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
         {myRequest.status === "rejected"
-          ? "この申請は却下されました。内容を確認のうえ、再申請いただけます。"
+          ? myRequest.reapply_prohibited
+            ? "この申請は却下され、再申請は許可されていません。管理者にお問い合わせください。"
+            : "この申請は却下されました。内容を確認のうえ、再申請いただけます。"
           : "管理者による承認をお待ちください。\n承認後に再度ログインするとご利用いただけます。"}
       </p>
-      {myRequest.status === "rejected" && (
+      {myRequest.status === "rejected" && !myRequest.reapply_prohibited && (
         <Button
           className="h-10 text-sm font-semibold gap-2 w-full"
           onClick={() => {
