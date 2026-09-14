@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, ShieldCheck, History, Lock, QrCode, Calendar, LayoutTemplate, Bell, HelpCircle, HardDriveDownload, UserCheck } from "lucide-react";
+import { Users, ShieldCheck, History, Lock, QrCode, Calendar, LayoutTemplate, Bell, HelpCircle, HardDriveDownload, UserCheck, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserRoleManager from "@/components/UserRoleManager";
 import ApprovalRequestManager from "@/components/ApprovalRequestManager";
+import EventViewLimitManager from "@/components/EventViewLimitManager";
 import PortalRestrictionManager from "@/components/PortalRestrictionManager";
 import ActivityLogViewer from "@/components/ActivityLogViewer";
 import AccessRestrictionManager from "@/components/AccessRestrictionManager";
@@ -22,6 +23,7 @@ const SECTIONS = [
   { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
   { id: "operation_logs", label: "操作ログ", icon: History },
   { id: "access_restriction", label: "アクセス制限", icon: Lock },
+  { id: "event_view_limit", label: "イベント閲覧制限", icon: Eye },
   { id: "staff_qr", label: "スタッフQR", icon: QrCode },
   { id: "venues", label: "会場管理", icon: LayoutTemplate },
   { id: "global_banner", label: "グローバル通知", icon: Bell },
@@ -66,6 +68,7 @@ export default function AdminSettingsPage() {
     switch (section) {
       case "users": return <UserRoleManager />;
       case "approvals": return <ApprovalRequestManager />;
+      case "event_view_limit": return <EventViewLimitManager />;
       case "portal_restriction": return <PortalRestrictionManager />;
       case "venues": return <VenueManager />;
       case "global_banner": return <GlobalBannerManager />;

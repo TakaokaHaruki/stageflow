@@ -21,6 +21,7 @@ import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { formatJaDate } from "@/lib/dateFormat";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useTabNavigation } from "@/hooks/useTabNavigation";
+import { useEventViewLimit, EVENT_LIMIT_COUNT } from "@/hooks/useEventViewLimit";
 import { EVENT_MODE_REFETCH_INTERVAL, loadEventById } from "@/lib/eventLoader";
 import CrewlyLogo from "@/components/CrewlyLogo";
 import EventTimeDisplay from "@/components/EventTimeDisplay";
@@ -64,6 +65,7 @@ export default function EventDetail() {
   }, []);
 
   const { isAdmin, isChief, canEdit, canManageSettings, role } = useUserRole();
+  const { limited: eventLimitActive, allowedIds: eventLimitIds, isLoading: eventLimitLoading } = useEventViewLimit();
   const isPrivileged = isAdmin || isChief;
   const [currentUser, setCurrentUser] = useState(null);
   const [profileError, setProfileError] = useState(false);
@@ -156,6 +158,33 @@ export default function EventDetail() {
           <Button className="mt-6" onClick={() => { window.location.href = "/events"; }}>
             一覧へ戻る
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (eventLimitLoading) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 px-4 text-center text-muted-foreground">
+        <div className="h-8 w-8 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+        <p className="text-sm font-medium">イベント情報を読み込んでいます</p>
+      </div>
+    );
+  }
+
+  // 閲覧制限ON時、チーフ権限以下は最新2件のイベント以外アクセス不可
+  if (eventLimitActive && !eventLimitIds.has(eventId)) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center">
+        <div className="w-full max-w-sm">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/20">
+            <CalendarX2 className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+          </div>
+          <h1 className="text-lg font-bold">閲覧できるイベントではありません</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            イベントの閲覧は最新{EVENT_LIMIT_COUNT}件までに制限されています。イベント一覧から最新のイベントをご確認ください。
+          </p>
+          <Button className="mt-6" onClick={() => { window.location.href = "/events"; }}>一覧へ戻る</Button>
         </div>
       </div>
     );

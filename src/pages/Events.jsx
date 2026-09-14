@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { useEventViewLimit } from "@/hooks/useEventViewLimit";
 import { Calendar, Search, Plus, X, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ export default function Events() {
   const [showPast, setShowPast] = useState(false);
   const queryClient = useQueryClient();
   const { canEdit, role, isGuest, isAdmin } = useUserRole();
+  const { limited, allowedIds, isLoading: limitLoading } = useEventViewLimit();
 
   const { data: allEvents = [], isLoading, refetch } = useQuery({
     queryKey: ["events"],
@@ -41,7 +43,9 @@ export default function Events() {
     if (!allEvents || allEvents.length === 0) return { upcomingGroups: [], pastGroups: [], pastCount: 0 };
 
     const query = searchQuery.toLowerCase();
-    const filtered = allEvents.filter((event) => {
+    // 閲覧制限ON時はチーフ権限以下、最新2件のみ表示
+    const sourceEvents = limited ? allEvents.filter((e) => allowedIds.has(e.id)) : allEvents;
+    const filtered = sourceEvents.filter((event) => {
       const nameMatch = event.name?.toLowerCase().includes(query);
       const venueMatch = event.venue?.toLowerCase().includes(query);
       return nameMatch || venueMatch;
@@ -67,7 +71,7 @@ export default function Events() {
       pastGroups: groupByDate(past),
       pastCount: past.length,
     };
-  }, [allEvents, searchQuery, todayStr]);
+  }, [allEvents, searchQuery, todayStr, limited, allowedIds]);
 
   const isToday = (dateStr) => dateStr === todayStr;
 
@@ -179,7 +183,7 @@ export default function Events() {
           )}
         </div>
 
-        {isLoading ?
+        {(isLoading || limitLoading) ?
           <div className="flex justify-center py-20">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
           </div> :
