@@ -182,7 +182,7 @@ export default function EventDetail() {
           </div>
           <h1 className="text-lg font-bold">閲覧できるイベントではありません</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            イベントの閲覧は最新{EVENT_LIMIT_COUNT}件までに制限されています。イベント一覧から最新のイベントをご確認ください。
+            過去のイベントの閲覧は最新{EVENT_LIMIT_COUNT}件までに制限されています。イベント一覧からご確認ください。
           </p>
           <Button className="mt-6" onClick={() => { window.location.href = "/events"; }}>一覧へ戻る</Button>
         </div>
