@@ -39,7 +39,7 @@ export default function EventViewLimitManager() {
           イベント閲覧制限
         </h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          チーフ権限以下のユーザーが閲覧できる過去のイベントを最新{EVENT_LIMIT_COUNT}件に制限します。今後のイベントは全件閲覧できます。
+          すべてのユーザーが閲覧できる過去のイベントを最新{EVENT_LIMIT_COUNT}件に制限します。今後のイベントは全件閲覧できます。
         </p>
       </div>
 
@@ -58,7 +58,7 @@ export default function EventViewLimitManager() {
         {enabled && (
           <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
             <ShieldAlert className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-            <span>管理者以外のユーザーは、過去のイベントは最新{EVENT_LIMIT_COUNT}件まで閲覧できます（今後のイベントは全員閲覧可・管理者は全件閲覧可）</span>
+            <span>過去のイベントは最新{EVENT_LIMIT_COUNT}件までの閲覧となります（今後のイベントは全員閲覧可）。過去の全イベントを確認したい場合は設定をOFFにしてください。</span>
           </div>
         )}
       </div>

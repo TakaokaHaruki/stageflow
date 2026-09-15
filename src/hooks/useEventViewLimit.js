@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { useUserRole } from "@/hooks/useUserRole";
 
 export const EVENT_LIMIT_CONFIG_KEY = "restrict_events_latest2";
 export const EVENT_LIMIT_COUNT = 2;
@@ -26,13 +25,11 @@ export function allowedEventIds(events, count = EVENT_LIMIT_COUNT) {
 }
 
 /**
- * 「チーフ権限以下は過去のイベントを最新2件のみ閲覧可能」制限の状態を返すフック。
- * limited = 制限ON かつ 現在のユーザーが管理者以外（ロール読み込み中も制限側に倒す）
+ * 「過去のイベントは最新2件のみ閲覧可能」制限の状態を返すフック。
+ * limited = 制限ON（管理者を含む全ユーザーに適用・ロール読み込み中も制限側に倒す）
  * allowedIds = 閲覧を許可するイベントIDの集合（limited=false の場合は参照しない）
  */
 export function useEventViewLimit() {
-  const { isAdmin } = useUserRole();
-
   const { data: config, isLoading: configLoading } = useQuery({
     queryKey: ["appConfig", EVENT_LIMIT_CONFIG_KEY],
     queryFn: async () => {
@@ -41,7 +38,7 @@ export function useEventViewLimit() {
     },
   });
 
-  const limited = config?.value_bool === true && !isAdmin;
+  const limited = config?.value_bool === true;
 
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ["events"],
