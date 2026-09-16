@@ -847,7 +847,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
             {unassigned.length === 0 ? (
               <p className="text-[11px] text-muted-foreground text-center py-1.5">未配置スタッフはいません</p>
             ) : (
-              <div className={`grid gap-0.5 ${continuousMode ? "grid-cols-2" : ""}`}>
+              <div className="grid grid-cols-2 gap-0.5">
                 {unassigned.map((s) => {
                    const displayName = getStaffDisplayName(s.name, shouldMaskStaffNames);
                    const nameColor = getStaffColor(s);
