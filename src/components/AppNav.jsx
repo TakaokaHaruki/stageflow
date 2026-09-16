@@ -6,6 +6,7 @@ import CrewlyLogo from "@/components/CrewlyLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 import SidebarNav from "@/components/SidebarNav";
 import GlobalBanner from "@/components/GlobalBanner";
+import UserNotificationBanner from "@/components/UserNotificationBanner";
 import { getUserDisplayName } from "@/lib/userDisplay";
 import { Button } from "@/components/ui/button";
 import { getNavItems } from "@/lib/navConfig";
@@ -67,6 +68,7 @@ export default function AppNav() {
   return (
     <div className="min-h-screen bg-background safe-area-bottom relative scrollbar-hide overflow-x-clip">
       <GlobalBanner />
+      <UserNotificationBanner />
       {/* 共通ヘッダ */}
       <div ref={headerRef} className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-[1400px] mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">

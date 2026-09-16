@@ -11,6 +11,7 @@ import AccessRestrictionManager from "@/components/AccessRestrictionManager";
 import StaffQrExport from "@/components/StaffQrExport";
 import VenueManager from "@/components/VenueManager";
 import GlobalBannerManager from "@/components/GlobalBannerManager";
+import UserNotificationManager from "@/components/UserNotificationManager";
 import LoginHelpManager from "@/components/LoginHelpManager";
 import BackupManager from "@/components/BackupManager";
 import EventScopeSelector from "@/components/admin/EventScopeSelector";
@@ -27,6 +28,7 @@ const SECTIONS = [
   { id: "staff_qr", label: "スタッフQR", icon: QrCode },
   { id: "venues", label: "会場管理", icon: LayoutTemplate },
   { id: "global_banner", label: "グローバル通知", icon: Bell },
+  { id: "user_notification", label: "ユーザー通知", icon: Bell },
   { id: "login_help", label: "ログイン案内", icon: HelpCircle },
   { id: "backup", label: "バックアップ", icon: HardDriveDownload },
 ];
@@ -72,6 +74,7 @@ export default function AdminSettingsPage() {
       case "portal_restriction": return <PortalRestrictionManager />;
       case "venues": return <VenueManager />;
       case "global_banner": return <GlobalBannerManager />;
+      case "user_notification": return <UserNotificationManager />;
       case "login_help": return <LoginHelpManager />;
       case "backup": return <BackupManager />;
       default: return null;

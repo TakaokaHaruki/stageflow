@@ -17,6 +17,7 @@ import SectionTabBar from "@/components/SectionTabBar";
 import { getUserDisplayName } from "@/lib/userDisplay";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import GlobalBanner from "@/components/GlobalBanner";
+import UserNotificationBanner from "@/components/UserNotificationBanner";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { formatJaDate } from "@/lib/dateFormat";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -251,6 +252,7 @@ export default function EventDetail() {
       )}
 
       <GlobalBanner />
+      <UserNotificationBanner />
 
       {/* Top bar */}
       <div ref={topBarRef} className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">

@@ -1,0 +1,66 @@
+{
+  "name": "UserNotification",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "\u4ef6\u540d\uff08\u4efb\u610f\uff09",
+      "default": ""
+    },
+    "message": {
+      "type": "string",
+      "description": "\u901a\u77e5\u30e1\u30c3\u30bb\u30fc\u30b8\u672c\u6587"
+    },
+    "target_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "\u5bfe\u8c61\u30ed\u30fc\u30eb\u30ea\u30b9\u30c8\uff08admin/chief/user/acast_staff\uff09\u3002\u7a7a\uff1d\u30ed\u30fc\u30eb\u6307\u5b9a\u306a\u3057"
+    },
+    "target_user_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "\u5bfe\u8c61\u30e6\u30fc\u30b6\u30fcID\u30ea\u30b9\u30c8\uff08\u500b\u5225\u6307\u5b9a\uff09\u3002\u7a7a\uff1d\u500b\u5225\u6307\u5b9a\u306a\u3057"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u6709\u52b9\u30d5\u30e9\u30b0\uff08OFF\u3067\u975e\u8868\u793a\uff09"
+    },
+    "created_at_jst": {
+      "type": "string",
+      "description": "\u4f5c\u6210\u65e5\u6642\uff08JST YYYY-MM-DD HH:mm\uff09"
+    },
+    "created_by_name": {
+      "type": "string",
+      "description": "\u4f5c\u6210\u8005\u540d",
+      "default": ""
+    }
+  },
+  "required": [
+    "message"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": true,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
