@@ -272,7 +272,7 @@ export default function StaffManagement({ eventId, isLocked = false }) {
           <p className="text-sm font-medium">スタッフが登録されていません</p>
         </div> :
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
            {staffList.map((staff) => {
           const assigned = assignedMap[staff.name] || [];
           const displayName = getStaffDisplayName(staff.name, shouldMaskStaffNames);
