@@ -4,7 +4,6 @@ import {
   ClipboardList,
   Settings,
   ShieldCheck,
-  Map,
   LayoutTemplate,
   FileText,
   Paperclip,
@@ -15,7 +14,6 @@ import {
 const PRIMARY_TABS = [
   { id: "staff", label: "スタッフ", icon: Users },
   { id: "dragdrop", label: "配置表", icon: ClipboardList },
-  { id: "map", label: "配置マップ", icon: Map },
   { id: "seating_map", label: "客席図", icon: LayoutTemplate },
 ];
 
