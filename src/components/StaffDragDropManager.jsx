@@ -869,7 +869,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                         <span key={skill} className="text-[10px] px-1 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-medium">{skill}</span>
                       ))}
                       {s.missingSlots.map((slot) => (
-                        <span key={slot} className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${TIME_SLOT_STYLES[slot].header}`}>
+                        <span key={slot} className={`text-[9px] px-1 py-px rounded-full font-medium leading-none ${TIME_SLOT_STYLES[slot].header}`}>
                           {slot}未配置
                         </span>
                       ))}
