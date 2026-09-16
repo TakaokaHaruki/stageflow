@@ -13,7 +13,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { usePDFExport } from "@/hooks/usePDFExport";
 import { TIME_SLOTS, TIME_SLOT_STYLES, CONTINUOUS_SLOT } from "@/lib/constants";
-import { getStaffDisplayName } from "@/lib/staffName";
+import { getStaffDisplayName, getStaffColor } from "@/lib/staffName";
 import { unwrapFunctionResponse } from "@/lib/base44Response";
 import { loadEventById } from "@/lib/eventLoader";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
@@ -849,15 +849,16 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
             ) : (
               <div className={`grid gap-0.5 ${continuousMode ? "grid-cols-2" : ""}`}>
                 {unassigned.map((s) => {
-                  const displayName = getStaffDisplayName(s.name, shouldMaskStaffNames);
-                  return (
-                  <div key={s.id} draggable={isAdmin}
+                   const displayName = getStaffDisplayName(s.name, shouldMaskStaffNames);
+                   const nameColor = getStaffColor(s);
+                   return (
+                   <div key={s.id} draggable={isAdmin}
                     onDragStart={isAdmin ? (e) => handleStaffDragStart(e, s.name) : undefined}
                     onDragEnd={isAdmin ? handleStaffDragEnd : undefined}
                     className={`flex min-h-8 items-center justify-between gap-1.5 px-2 py-0.5 select-none bg-card border border-border rounded ${isAdmin ? "cursor-move hover:bg-muted/50" : "cursor-default"} ${draggedStaff === s.name ? "opacity-50" : ""}`}>
                     <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-medium text-foreground">{displayName}</span>
+                      <span className="text-xs font-medium" style={{ color: nameColor }}>{displayName}</span>
                       {(s.roles || []).map((role) => (
                         <RoleIcon key={role} role={role} />
                       ))}
@@ -872,9 +873,23 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                           {slot}未配置
                         </span>
                       ))}
-                    </div>
-                    </div>
-                  </div>
+                      </div>
+                      {(() => {
+                      const trend = staffTrends?.[s.name];
+                      if (!trend) return null;
+                      const items = Object.entries(trend).map(([slot, counts]) => {
+                        const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+                        return top ? { slot, name: top[0] } : null;
+                      }).filter(Boolean);
+                      if (items.length === 0) return null;
+                      return (
+                        <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
+                          過去: {items.map((it) => `${it.slot} ${it.name}`).join(" / ")}
+                        </p>
+                      );
+                      })()}
+                      </div>
+                      </div>
                   );
                 })}
               </div>

@@ -79,6 +79,11 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, is
             )}
           </div>
         )}
+        {displayNote && (
+          <span className="text-[10px] text-amber-600 dark:text-amber-400 leading-tight" title={displayNote}>
+            {displayNote}
+          </span>
+        )}
         {(staffData?.roles || []).map((role) => (
           <RoleIcon key={role} role={role} />
         ))}
