@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, ClipboardList, Plus, Download, Users, Trash2, Wand2, Lock, LockOpen, ChevronDown } from "lucide-react";
+import { ClipboardList, Plus, Download, Users, Trash2, Wand2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import PositionCard from "@/components/PositionCard";
@@ -900,113 +900,6 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
       </>
       )}
 
-      <div className="mt-1.5 border border-border rounded-lg overflow-hidden">
-        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-muted border-b border-border">
-          <Users className="w-3 h-3 text-muted-foreground" />
-          <span className="font-bold text-xs">スタッフ一覧</span>
-          <span className="text-[10px] text-muted-foreground">{staffList.length}名</span>
-        </div>
-        <div className="bg-card sm:grid sm:grid-cols-3 divide-y divide-border">
-          {staffList.length === 0 ? (
-            <p className="text-[11px] text-muted-foreground text-center py-3">スタッフが登録されていません</p>
-          ) : (
-            staffList.map((s) => {
-              const displayName = getStaffDisplayName(s.name, shouldMaskStaffNames);
-              const nameColor = s.color || undefined;
-              const slotAssignments = TIME_SLOTS.map((slot) => ({
-                slot,
-                positions: positions.filter((p) => (p.time_slot || "開場中") === slot && (
-                (p.staff_names || []).includes(s.name) ||
-                (p.staff_names_kamite || []).includes(s.name) ||
-                (p.staff_names_shimote || []).includes(s.name)
-              )),
-              })).filter((sa) => sa.positions.length > 0);
-              return (
-                <div key={s.id} className="flex items-start gap-2 px-2 py-1">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px] shrink-0 mt-0.5">
-                    {displayName.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <p className="text-xs font-medium" style={{ color: nameColor }}>{displayName}</p>
-                      {(s.roles || []).map((role) => (
-                        <RoleIcon key={role} role={role} />
-                      ))}
-                      {(s.skills || []).map((skill) => (
-                        <span key={skill} className="text-[10px] px-1 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-medium">{skill}</span>
-                      ))}
-                      {s.note && <span className="text-[10px] text-muted-foreground">({s.note})</span>}
-                    </div>
-                    {(s.note_before || s.note_during || s.note_after) && (
-                      <div className="flex flex-wrap gap-1 mt-0.5">
-                        {s.note_before && <span className="text-[10px] text-muted-foreground">開場中: {s.note_before}</span>}
-                        {s.note_during && <span className="text-[10px] text-muted-foreground">開演中: {s.note_during}</span>}
-                        {s.note_after && <span className="text-[10px] text-muted-foreground">終演後: {s.note_after}</span>}
-                      </div>
-                    )}
-                    {slotAssignments.length === 0 ? (
-                      <span className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-0.5"><AlertCircle className="w-2.5 h-2.5" />全スロット未配置</span>
-                    ) : (
-                      <div className="mt-0.5 grid grid-cols-2 sm:grid-cols-3 gap-1">
-                        {slotAssignments.map(({ slot, positions: ps }) =>
-                          ps.map((p) => (
-                            <span key={p.id} className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium text-center truncate ${TIME_SLOT_STYLES[slot].header}`}>
-                              {slot}：{p.name}
-                            </span>
-                          ))
-                        )}
-                      </div>
-                    )}
-                    {isAdmin && (
-                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                        <button
-                          onClick={() => toggleLock(s.name)}
-                          className={`flex items-center gap-0.5 text-[11px] px-1.5 py-0.5 rounded border transition-colors ${isStaffLocked(s.name) ? "bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-300" : "border-border text-muted-foreground hover:border-amber-300 hover:text-amber-600"}`}
-                          title={isStaffLocked(s.name) ? "ロック解除" : "ロック（自動配置から除外）"}
-                        >
-                          {isStaffLocked(s.name) ? <Lock className="w-2.5 h-2.5" /> : <LockOpen className="w-2.5 h-2.5" />}
-                          {isStaffLocked(s.name) ? "固定中" : "固定"}
-                        </button>
-                        <label className="flex items-center gap-1 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={!!s.costume_change}
-                            onChange={(e) => {
-                              const val = e.target.checked;
-                              queryClient.setQueryData(["staff", eventId], (old = []) =>
-                                old.map((item) => item.id === s.id ? { ...item, costume_change: val } : item)
-                              );
-                              base44.functions.invoke("updateStaffRecord", { action: "update", staffId: s.id, data: { costume_change: val } }).catch(() => {});
-                            }}
-                            className="w-3 h-3 accent-purple-600"
-                          />
-                          <span className="text-[11px] text-purple-700 dark:text-purple-300 font-medium">着替</span>
-                        </label>
-                        <label className="flex items-center gap-1 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={!!s.break}
-                            onChange={(e) => {
-                              const val = e.target.checked;
-                              queryClient.setQueryData(["staff", eventId], (old = []) =>
-                                old.map((item) => item.id === s.id ? { ...item, break: val } : item)
-                              );
-                              base44.functions.invoke("updateStaffRecord", { action: "update", staffId: s.id, data: { break: val } }).catch(() => {});
-                            }}
-                            className="w-3 h-3 accent-sky-600"
-                          />
-                          <span className="text-[11px] text-sky-700 dark:text-sky-300 font-medium">休憩</span>
-                        </label>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
-
       {showBulkAddModal && (
         <PositionBulkAddModal eventId={eventId} defaultTimeSlot={defaultSlot} continuousMode={continuousMode} multiShowMode={multiShowMode} defaultParts={multiShowMode ? [selectedPart] : null} showSync={event?.show_sync || {}}
           onClose={() => setShowBulkAddModal(false)}
@@ -1078,15 +971,29 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
               Object.entries(plan).map(([positionId, newStaff]) => {
                 const pos = positions.find((p) => p.id === positionId);
                 if (!pos) return Promise.resolve();
+                if (pos.split_by_side) {
+                  // 上手下手の区分は問わず、両サイドにバランス良く振り分けて配置
+                  const kamite = [...(pos.staff_names_kamite || [])];
+                  const shimote = [...(pos.staff_names_shimote || [])];
+                  for (const name of newStaff) {
+                    if (kamite.includes(name) || shimote.includes(name)) continue;
+                    if (kamite.length <= shimote.length) kamite.push(name);
+                    else shimote.push(name);
+                  }
+                  return updatePositionMutation.mutateAsync({
+                    positionId,
+                    data: {
+                      staff_names: [...new Set([...kamite, ...shimote])],
+                      split_by_side: true,
+                      staff_names_kamite: kamite,
+                      staff_names_shimote: shimote,
+                    },
+                  });
+                }
                 const merged = [...new Set([...(pos.staff_names || []), ...newStaff])];
                 return updatePositionMutation.mutateAsync({
                   positionId,
-                  data: {
-                    staff_names: merged,
-                    split_by_side: Boolean(pos.split_by_side),
-                    staff_names_kamite: pos.staff_names_kamite || [],
-                    staff_names_shimote: pos.staff_names_shimote || [],
-                  },
+                  data: { staff_names: merged },
                 });
               })
             );
