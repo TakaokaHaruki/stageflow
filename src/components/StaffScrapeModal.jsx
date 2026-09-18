@@ -294,45 +294,62 @@ export default function StaffScrapeModal({ eventId, onClose }) {
                           </td>
                           <td className="px-3 py-2 font-medium" onClick={(e) => isGarble && e.stopPropagation()}>
                             {isGarble ? (
-                              <div>
+                              <div className="space-y-1">
                                 <div className="flex items-center gap-1">
-                                  <span
-                                    className={`underline decoration-dotted cursor-pointer ${stillGarble ? "text-amber-700 dark:text-amber-400" : "text-foreground"}`}
-                                    onClick={() => setEditingIndex(editingIndex === i ? null : i)}
-                                  >
+                                  {stillGarble ? (
+                                    <AlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
+                                  ) : (
+                                    <CheckCircle2 className="w-3 h-3 text-green-600 shrink-0" />
+                                  )}
+                                  <span className={`font-medium ${stillGarble ? "text-amber-700 dark:text-amber-400" : "text-foreground"}`}>
                                     {shown}
                                   </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setEditingIndex(editingIndex === i ? null : i)}
-                                    className="text-amber-600 hover:text-amber-700"
-                                  >
-                                    <Pencil className="w-3 h-3" />
-                                  </button>
+                                  {!stillGarble && (
+                                    <button
+                                      type="button"
+                                      onClick={() => { setEditedNames((p) => { const n = { ...p }; delete n[i]; return n; }); setEditingIndex(null); }}
+                                      className="text-[10px] text-muted-foreground hover:text-destructive underline decoration-dotted"
+                                    >
+                                      取消
+                                    </button>
+                                  )}
                                 </div>
-                                {editingIndex === i && (
-                                  <div className="mt-1 space-y-1">
-                                    <input
-                                      value={shown}
-                                      onChange={(e) => setEditedNames((p) => ({ ...p, [i]: e.target.value }))}
-                                      className="w-full text-xs border border-border rounded px-1.5 py-1 bg-background"
-                                      placeholder="氏名を修正"
-                                    />
-                                    {staff.candidates?.length > 0 && (
-                                      <div className="flex flex-wrap gap-1">
+                                {stillGarble && (
+                                  <>
+                                    {staff.candidates?.length > 0 ? (
+                                      <div className="flex flex-wrap items-center gap-1">
+                                        <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">もしかして</span>
                                         {staff.candidates.map((c, idx) => (
                                           <button
                                             key={idx}
                                             type="button"
-                                            onClick={() => setEditedNames((p) => ({ ...p, [i]: c }))}
+                                            onClick={() => { setEditedNames((p) => ({ ...p, [i]: c })); setEditingIndex(null); }}
                                             className="px-1.5 py-0.5 rounded text-[10px] border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
                                           >
                                             {c}
                                           </button>
                                         ))}
+                                        <span className="text-[10px] text-amber-700 dark:text-amber-400">ではありませんか？</span>
                                       </div>
+                                    ) : (
+                                      <p className="text-[10px] text-amber-700 dark:text-amber-400">文字化けの候補が見つかりませんでした。手動で修正してください。</p>
                                     )}
-                                  </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingIndex(editingIndex === i ? null : i)}
+                                      className="text-[10px] text-muted-foreground hover:text-primary underline decoration-dotted"
+                                    >
+                                      手動で修正する
+                                    </button>
+                                    {editingIndex === i && (
+                                      <input
+                                        value={shown}
+                                        onChange={(e) => setEditedNames((p) => ({ ...p, [i]: e.target.value }))}
+                                        className="w-full text-xs border border-border rounded px-1.5 py-1 bg-background"
+                                        placeholder="氏名を修正"
+                                      />
+                                    )}
+                                  </>
                                 )}
                               </div>
                             ) : (
