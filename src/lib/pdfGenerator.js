@@ -2,7 +2,7 @@ import { getParts } from "@/lib/showParts";
 
 let cachedFontBase64 = null;       // 変数TTF（400・フルカバレッジ・髙対応）
 let cachedMediumFontBase64 = null; // fontsource 500 woff（Medium）
-let cachedBizUdFontBase64 = null;  // BIZ UDGothic Regular TTF（環境依存文字網羅）
+let cachedBizUdFontBase64 = null;  // BIZ UDGothic Bold TTF（環境依存文字網羅・太字）
 
 // 配置表PDFの埋め込みフォントをBIZ UDゴシックに切替えるトグル。
 // false にすると従来の Noto Sans JP（Medium＋フルカバレッジ）構成にロールバックします。
@@ -105,7 +105,7 @@ async function woffToTtfArrayBuffer(woffBuffer) {
 async function loadJapaneseFont() {
   if (USE_BIZ_UD_FONT && !cachedBizUdFontBase64) {
     try {
-      cachedBizUdFontBase64 = await fetchFontBase64('https://cdn.jsdelivr.net/gh/googlefonts/morisawa-biz-ud-gothic@main/fonts/ttf/BIZUDGothic-Regular.ttf');
+      cachedBizUdFontBase64 = await fetchFontBase64('https://cdn.jsdelivr.net/gh/googlefonts/morisawa-biz-ud-gothic@main/fonts/ttf/BIZUDGothic-Bold.ttf');
     } catch (e) { /* BIZ UD 取得失敗時は Noto 構成へフォールバック */ }
   }
   if (!cachedFontBase64) {
@@ -657,8 +657,8 @@ export async function generatePositionPDF(data, filename) {
   const hasFull = Boolean(fullFontBase64);
   let fullFontName = null;
   if (hasBizUd) {
-    doc.addFileToVFS('BIZUDGothic.ttf', bizudFontBase64);
-    doc.addFont('BIZUDGothic.ttf', 'NotoSansJP', 'normal');
+    doc.addFileToVFS('BIZUDGothic-Bold.ttf', bizudFontBase64);
+    doc.addFont('BIZUDGothic-Bold.ttf', 'NotoSansJP', 'normal');
   } else {
     if (hasMedium) {
       doc.addFileToVFS('NotoSansJPM.ttf', mediumFontBase64);
