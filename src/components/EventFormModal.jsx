@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useOperationLog } from "@/hooks/useOperationLog";
+import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,8 @@ import TimeField from "@/components/TimeField";
 export default function EventFormModal({ event, onClose, onSaved }) {
   const queryClient = useQueryClient();
   const { record } = useOperationLog(event?.id);
+  const { isAdmin } = useUserRole();
+  const [createdCount, setCreatedCount] = useState(0);
   const [form, setForm] = useState({
     name: event?.name || "",
     date: event?.date || "",
@@ -331,21 +334,42 @@ export default function EventFormModal({ event, onClose, onSaved }) {
             )}
           </div>
         </div>
+        {createdCount > 0 && (
+          <p className="mt-3 text-center text-xs font-medium text-primary">✓ {createdCount}件作成済み</p>
+        )}
         <div className="flex gap-2 mt-4">
           <Button variant="outline" className="flex-1" onClick={onClose}>閉じる</Button>
           {!event && (
-            <Button
-              className="flex-1"
-              disabled={!form.name || mutation.isPending}
-              onClick={() => mutation.mutate(form, {
-                onSuccess: () => {
-                  toast.success("作成しました");
-                  setTimeout(onClose, 500);
-                }
-              })}
-            >
-              {mutation.isPending ? "作成中..." : "作成"}
-            </Button>
+            <>
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  disabled={!form.name || mutation.isPending}
+                  onClick={() => mutation.mutate(form, {
+                    onSuccess: () => {
+                      setCreatedCount((c) => c + 1);
+                      toast.success("作成しました。次のイベントを入力してください");
+                      setForm((prev) => ({ ...prev, name: "", description: "" }));
+                    }
+                  })}
+                >
+                  {mutation.isPending ? "作成中..." : "作成して続ける"}
+                </Button>
+              )}
+              <Button
+                className="flex-1"
+                disabled={!form.name || mutation.isPending}
+                onClick={() => mutation.mutate(form, {
+                  onSuccess: () => {
+                    toast.success("作成しました");
+                    setTimeout(onClose, 500);
+                  }
+                })}
+              >
+                {mutation.isPending ? "作成中..." : "作成"}
+              </Button>
+            </>
           )}
         </div>
       </motion.div>
