@@ -1,5 +1,3 @@
-import { appParams } from "@/lib/app-params";
-
 const positionSideCache = new Map();
 
 function getPositionSideCacheKey(eventId) {
@@ -52,29 +50,6 @@ export function rememberPositionSideSettings(eventId, settings) {
   return normalized;
 }
 
-// Migrate legacy MapTemplate "__position_side__:eventId" record into PositionSideSettings once.
-async function migrateFromMapTemplate(base44, eventId) {
-  if (!appParams.appId) return null;
-  try {
-    const legacyName = `__position_side__:${eventId}`;
-    const response = await fetch(`/api/apps/${appParams.appId}/entities/MapTemplate`);
-    if (!response.ok) return null;
-    const records = await response.json();
-    const legacy = (records || [])
-      .filter((r) => r.name === legacyName)
-      .sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0))[0];
-    if (!legacy) return null;
-    const settings = normalizePositionSideSettings(legacy?.areas?.[0]);
-    if (!hasPositionSideSettings(settings)) return null;
-    // Save into new entity
-    const payload = { ...settings, event_id: eventId, updated_at: new Date().toISOString() };
-    await base44.entities.PositionSideSettings.create(payload);
-    return settings;
-  } catch {
-    return null;
-  }
-}
-
 export async function loadPositionSideSettings(base44, eventId) {
   try {
     const records = await base44.entities.PositionSideSettings.filter({ event_id: eventId });
@@ -85,15 +60,7 @@ export async function loadPositionSideSettings(base44, eventId) {
       return rememberPositionSideSettings(eventId, record);
     }
   } catch (error) {
-    console.warn("PositionSideSettings SDK read failed; trying migration.", error);
-  }
-
-  // Transparent one-time migration from legacy MapTemplate storage
-  try {
-    const migrated = await migrateFromMapTemplate(base44, eventId);
-    if (migrated) return rememberPositionSideSettings(eventId, migrated);
-  } catch {
-    // Fall through to cache
+    console.warn("PositionSideSettings SDK read failed; falling back to cache.", error);
   }
 
   return readCachedPositionSideSettings(eventId);

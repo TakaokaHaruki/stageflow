@@ -19,12 +19,8 @@ export const ENTITY_MAP = {
   positions: 'Position',
   staff: 'Staff',
   emergency_contacts: 'EmergencyContact',
-  event_sheets: 'EventSheet',
-  announcements: 'Announcement',
   shared_files: 'SharedFile',
   side_settings: 'PositionSideSettings',
-  map_areas: 'MapArea',
-  tasks: 'Task',
   position_type_overrides: 'PositionTypeOverride',
 };
 
@@ -32,36 +28,27 @@ export const SECTIONS = [
   { key: 'positions', label: '配置表', getKey: (r) => `${r.name || ''}|${r.time_slot || ''}|${(r.parts || []).join(',')}` },
   { key: 'staff', label: 'スタッフ', getKey: (r) => r.name || '' },
   { key: 'emergency_contacts', label: '緊急連絡先', getKey: (r) => r.role_title || '' },
-  { key: 'event_sheets', label: '注意事項', getKey: () => 'event_sheet' },
-  { key: 'announcements', label: 'お知らせ', getKey: (r) => r.title || '' },
   { key: 'shared_files', label: '配布資料', getKey: (r) => r.title || '' },
   { key: 'side_settings', label: '上下手設定', getKey: () => 'side_settings' },
-  { key: 'map_areas', label: 'マップエリア', getKey: (r) => r.name || '' },
-  { key: 'tasks', label: 'タスク', getKey: (r) => r.title || '' },
   { key: 'position_type_overrides', label: '説明上書き', getKey: (r) => r.position_type_name || '' },
 ];
 
 export async function collectEventRaw(client, event_id) {
   const [
-    positions, staff, emergencyContacts, eventSheets,
-    announcements, sharedFiles, sideSettings, mapAreas,
-    tasks, typeOverrides
+    positions, staff, emergencyContacts,
+    sharedFiles, sideSettings, typeOverrides
   ] = await Promise.all([
     client.entities.Position.filter({ event_id }, '-created_date', 500),
     client.entities.Staff.filter({ event_id }, '-created_date', 500),
     client.entities.EmergencyContact.filter({ event_id }, '-order', 200),
-    client.entities.EventSheet.filter({ event_id }, '-created_date', 50),
-    client.entities.Announcement.filter({ event_id }, '-created_date', 200),
     client.entities.SharedFile.filter({ event_id }, '-created_date', 200),
     client.entities.PositionSideSettings.filter({ event_id }, '-created_date', 50),
-    client.entities.MapArea.filter({ event_id }, '-order', 200),
-    client.entities.Task.filter({ event_id }, '-order', 200),
     client.entities.PositionTypeOverride.filter({ event_id }, '-created_date', 200),
   ]);
   return {
-    positions, staff, emergency_contacts: emergencyContacts, event_sheets: eventSheets,
-    announcements, shared_files: sharedFiles, side_settings: sideSettings,
-    map_areas: mapAreas, tasks, position_type_overrides: typeOverrides,
+    positions, staff, emergency_contacts: emergencyContacts,
+    shared_files: sharedFiles, side_settings: sideSettings,
+    position_type_overrides: typeOverrides,
   };
 }
 
@@ -82,9 +69,8 @@ export function cleanBackupData(raw) {
 
 export function backupSummary(backup_data) {
   const labels = {
-    positions: '配置', staff: 'スタッフ', emergency_contacts: '緊急連絡先', event_sheets: '注意事項',
-    announcements: 'お知らせ', shared_files: '配布資料', side_settings: '上下手設定', map_areas: 'マップエリア',
-    tasks: 'タスク', position_type_overrides: '説明上書き'
+    positions: '配置', staff: 'スタッフ', emergency_contacts: '緊急連絡先',
+    shared_files: '配布資料', side_settings: '上下手設定', position_type_overrides: '説明上書き'
   };
   return Object.keys(labels)
     .filter(k => Array.isArray(backup_data[k]) && backup_data[k].length > 0)

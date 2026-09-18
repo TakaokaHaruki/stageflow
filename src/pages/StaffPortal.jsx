@@ -21,7 +21,6 @@ import StaffFileViewer from "@/components/StaffFileViewer";
 import PdfViewerModal from "@/components/PdfViewerModal";
 import { Phone } from "lucide-react";
 import { formatJaDate } from "@/lib/dateFormat";
-import PortalAnnouncementsCard from "@/components/portal/PortalAnnouncementsCard";
 
 const STORAGE_KEY = "crewly_acast_id";
 const COMPLIANCE_STORAGE_PREFIX = "crewly_compliance_";
@@ -908,9 +907,6 @@ export default function StaffPortal() {
             )}
           </div>
         )}
-
-        {/* お知らせ（未読バッジ付き） */}
-        {!loading && staffName && <PortalAnnouncementsCard events={events} staffName={staffName} />}
 
         {/* 緊急連絡先の取得エラー */}
         {!loading && contactsError && emergencyContacts.length === 0 && events.length > 0 && (

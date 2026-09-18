@@ -1,8 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 // 新規イベント作成時に、過去イベントの設定をまるごとコピーする。
-// コピー対象: Event本体 / Staff / Position / EmergencyContact / MapArea / PositionTypeOverride / EventSheet / SharedFile
-// リセット対象: status(準備中) / active_preset_id / scrape_url* / locked_staff_names / admin_only / added_by / added_at_jst / Announcement(コピーしない)
+// コピー対象: Event本体 / Staff / Position / EmergencyContact / PositionTypeOverride / SharedFile
+// リセット対象: status(準備中) / active_preset_id / scrape_url* / locked_staff_names / admin_only / added_by / added_at_jst
 
 export default async function(req) {
   try {
@@ -39,11 +39,7 @@ export default async function(req) {
       time_start_end: source.time_start_end || '',
       time_end: source.time_end || '',
       time_end_end: source.time_end_end || '',
-      map_image_url: source.map_image_url || '',
-      map_pdf_url: source.map_pdf_url || '',
       continuous_mode: Boolean(source.continuous_mode),
-      show_map: Boolean(source.show_map),
-      show_tasks: source.show_tasks !== undefined ? Boolean(source.show_tasks) : true,
       // リセット
       active_preset_id: '',
       scrape_url: '',
@@ -116,25 +112,7 @@ export default async function(req) {
       );
     }
 
-    // 6. MapArea コピー
-    const areas = await svc.entities.MapArea.filter({ event_id: sourceEventId }, undefined, 500);
-    if (areas && areas.length) {
-      await svc.entities.MapArea.bulkCreate(
-        areas.map((a) => ({
-          event_id: newId,
-          name: a.name || '',
-          type: a.type || 'rectangle',
-          x: a.x,
-          y: a.y,
-          width: a.width,
-          height: a.height,
-          color: a.color || '#e2e8f0',
-          order: a.order ?? 0,
-        }))
-      );
-    }
-
-    // 7. PositionTypeOverride コピー
+    // 6. PositionTypeOverride コピー
     const overrides = await svc.entities.PositionTypeOverride.filter({ event_id: sourceEventId }, undefined, 500);
     if (overrides && overrides.length) {
       await svc.entities.PositionTypeOverride.bulkCreate(
@@ -147,21 +125,7 @@ export default async function(req) {
       );
     }
 
-    // 8. EventSheet コピー
-    const sheets = await svc.entities.EventSheet.filter({ event_id: sourceEventId }, undefined, 10);
-    if (sheets && sheets.length === 0) {
-      await svc.entities.EventSheet.create({
-        event_id: newId,
-        custom_notes: '',
-      });
-    } else if (sheets && sheets.length) {
-      await svc.entities.EventSheet.create({
-        event_id: newId,
-        custom_notes: sheets[0].custom_notes || '',
-      });
-    }
-
-    // 9. SharedFile コピー（created_by_id はサービスロールで cloner 権限）
+    // 7. SharedFile コピー（created_by_id はサービスロールで cloner 権限）
     const files = await svc.entities.SharedFile.filter({ event_id: sourceEventId }, undefined, 500);
     if (files && files.length) {
       await svc.entities.SharedFile.bulkCreate(

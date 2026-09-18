@@ -8,7 +8,6 @@ import { CalendarDays, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/home/StatCard";
 import SlotRow from "@/components/home/SlotRow";
-import AnnouncementsCard from "@/components/home/AnnouncementsCard";
 import ConcertCard from "@/components/home/ConcertCard";
 import BackupStatusCard from "@/components/home/BackupStatusCard";
 import { TIME_SLOTS } from "@/lib/constants";
@@ -42,12 +41,6 @@ export default function Home() {
     enabled: !!nextEvent,
   });
   const positions = positionsRes?.data?.positions ?? [];
-
-  const { data: announcements = [], isLoading: announcementsLoading } = useQuery({
-    queryKey: ["home-announcements", nextEvent?.id],
-    queryFn: () => base44.entities.Announcement.filter({ event_id: nextEvent.id }),
-    enabled: !!nextEvent,
-  });
 
   const detailLoading = !!nextEvent && positionsLoading;
   const sameDayCount = nextEvent ? events.filter((e) => e.date === nextEvent.date).length : 0;
@@ -117,9 +110,6 @@ export default function Home() {
             </div>
           </div>
         )}
-
-        {/* お知らせ（未読バッジ付き） */}
-        {nextEvent && <AnnouncementsCard eventId={nextEvent.id} announcements={announcements} />}
 
         {/* 自動バックアップ状況 */}
         <BackupStatusCard />
