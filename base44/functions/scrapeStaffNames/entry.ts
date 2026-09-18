@@ -118,6 +118,41 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 「?」入り氏名（文字化け）の候補補完：過去スタッフ履歴から推測
+    const garbledNames = staffList.filter((s) => s.name && (s.name.includes('?') || s.name.includes('？')));
+    if (garbledNames.length > 0) {
+      try {
+        const allPast = await base44.asServiceRole.entities.Staff.list('-created_date', 5000);
+        const cleanByAcast = {};
+        const allCleanNames = new Set();
+        for (const ps of allPast) {
+          if (!ps.name) continue;
+          if (ps.name.includes('?') || ps.name.includes('？')) continue;
+          allCleanNames.add(ps.name);
+          if (ps.acast_id) {
+            if (!cleanByAcast[ps.acast_id]) cleanByAcast[ps.acast_id] = [];
+            if (!cleanByAcast[ps.acast_id].includes(ps.name)) cleanByAcast[ps.acast_id].push(ps.name);
+          }
+        }
+        const cleanNameArr = Array.from(allCleanNames);
+        for (const s of garbledNames) {
+          const candidates = new Set();
+          if (s.acast_id && cleanByAcast[s.acast_id]) {
+            cleanByAcast[s.acast_id].forEach((n) => candidates.add(n));
+          }
+          const stripped = s.name.replace(/[?？]/g, '').trim();
+          if (stripped.length >= 2) {
+            for (const n of cleanNameArr) {
+              if (n.includes(stripped)) candidates.add(n);
+            }
+          }
+          s.candidates = Array.from(candidates).slice(0, 5);
+        }
+      } catch (e) {
+        // 候補補完に失敗しても取得自体は継続
+      }
+    }
+
     if (staffList.length === 0) {
       return Response.json({ staffList: [], message: '名前が見つかりませんでした。URLやページ構造を確認してください。' });
     }

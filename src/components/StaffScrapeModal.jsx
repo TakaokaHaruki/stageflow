@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Download, Loader2, CheckCircle2, AlertCircle, ChevronLeft, RefreshCw } from "lucide-react";
+import { X, Download, Loader2, CheckCircle2, AlertCircle, ChevronLeft, RefreshCw, Pencil } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { unwrapFunctionResponse } from "@/lib/base44Response";
@@ -18,8 +18,13 @@ export default function StaffScrapeModal({ eventId, onClose }) {
   const [checked, setChecked] = useState({});
   const [genders, setGenders] = useState({});
   const [existingNames, setExistingNames] = useState(new Set());
+  const [editedNames, setEditedNames] = useState({});
+  const [editingIndex, setEditingIndex] = useState(null);
   // which tab triggered Phase2 (to return to correct tab)
   const [sourceTab, setSourceTab] = useState("history");
+
+  const hasGarble = (name) => !!(name && (name.includes('?') || name.includes('？')));
+  const displayName = (staff, i) => editedNames[i] ?? staff.name;
 
   const queryClient = useQueryClient();
 
@@ -93,7 +98,8 @@ export default function StaffScrapeModal({ eventId, onClose }) {
       .map(({ s, i }) => {
         const gender = genders[i] || "";
         const color = gender === "男" ? "#3b82f6" : gender === "女" ? "#dc2626" : "";
-        return { name: s.name, acast_id: s.acast_id || null, gender, color };
+        const name = editedNames[i] ?? s.name;
+        return { name, acast_id: s.acast_id || null, gender, color };
       });
     if (selectedStaff.length === 0) { setError("スタッフが選択されていません"); return; }
     setLoading(true);
@@ -270,7 +276,10 @@ export default function StaffScrapeModal({ eventId, onClose }) {
                   </thead>
                   <tbody>
                     {staffList.map((staff, i) => {
-                      const isRegistered = staff.name && existingNames.has?.(staff.name);
+                      const isGarble = hasGarble(staff.name);
+                      const shown = displayName(staff, i);
+                      const stillGarble = hasGarble(shown);
+                      const isRegistered = shown && existingNames.has?.(shown);
                       return (
                         <tr
                           key={i}
@@ -283,9 +292,55 @@ export default function StaffScrapeModal({ eventId, onClose }) {
                               onClick={(e) => e.stopPropagation()}
                               className="w-3.5 h-3.5 accent-primary" />
                           </td>
-                          <td className="px-3 py-2 font-medium">
-                            {staff.name}
-                            {isRegistered && <span className="ml-1.5 text-[10px] text-muted-foreground border border-border px-1 py-0.5 rounded">登録済</span>}
+                          <td className="px-3 py-2 font-medium" onClick={(e) => isGarble && e.stopPropagation()}>
+                            {isGarble ? (
+                              <div>
+                                <div className="flex items-center gap-1">
+                                  <span
+                                    className={`underline decoration-dotted cursor-pointer ${stillGarble ? "text-amber-700 dark:text-amber-400" : "text-foreground"}`}
+                                    onClick={() => setEditingIndex(editingIndex === i ? null : i)}
+                                  >
+                                    {shown}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingIndex(editingIndex === i ? null : i)}
+                                    className="text-amber-600 hover:text-amber-700"
+                                  >
+                                    <Pencil className="w-3 h-3" />
+                                  </button>
+                                </div>
+                                {editingIndex === i && (
+                                  <div className="mt-1 space-y-1">
+                                    <input
+                                      value={shown}
+                                      onChange={(e) => setEditedNames((p) => ({ ...p, [i]: e.target.value }))}
+                                      className="w-full text-xs border border-border rounded px-1.5 py-1 bg-background"
+                                      placeholder="氏名を修正"
+                                    />
+                                    {staff.candidates?.length > 0 && (
+                                      <div className="flex flex-wrap gap-1">
+                                        {staff.candidates.map((c, idx) => (
+                                          <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={() => setEditedNames((p) => ({ ...p, [i]: c }))}
+                                            className="px-1.5 py-0.5 rounded text-[10px] border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
+                                          >
+                                            {c}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <>
+                                {staff.name}
+                                {isRegistered && <span className="ml-1.5 text-[10px] text-muted-foreground border border-border px-1 py-0.5 rounded">登録済</span>}
+                              </>
+                            )}
                           </td>
                           <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
                             <div className="flex gap-1">
