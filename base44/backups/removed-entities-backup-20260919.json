@@ -1,0 +1,1578 @@
+{
+  "exported_at": "2026-09-18T16:46:00.753Z",
+  "note": "不要エンティティ削除前の退避データ（位置バックアップとは別保管）",
+  "counts": {
+    "Announcement": 12,
+    "EventSheet": 4,
+    "MapArea": 3,
+    "MapTemplate": 9,
+    "DetectedLineGroup": 6,
+    "Task": 2,
+    "VenueMapAsset": 0
+  },
+  "data": {
+    "Announcement": [
+      {
+        "_id": "6a26c346bd21ab49efb212a9",
+        "_created_date": "2026-06-08T13:27:34.873000",
+        "_updated_date": "2026-06-08T13:27:34.873000",
+        "_created_by_id": "6a04d375dd2d16805b295b5b",
+        "event_id": "test",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": false,
+        "title": "test",
+        "body": "test",
+        "priority": "通常",
+        "file_urls": [],
+        "created_by": "odeko3520email6224@gmail.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a25abf61fbf2bc604b5608e",
+        "_created_date": "2026-06-07T17:35:50.541000",
+        "_updated_date": "2026-06-07T17:35:50.541000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "event_id": "test-event-id",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": false,
+        "title": "テスト",
+        "body": "テスト本文",
+        "priority": "通常",
+        "file_urls": [],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a25a60a59e3e3fef5b9bd11",
+        "_created_date": "2026-06-07T17:10:34.013000",
+        "_updated_date": "2026-06-07T17:10:34.013000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "event_id": "6a25a560ff3f0b9ce19a67ec",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": false,
+        "title": "スタッフへのお知らせ",
+        "body": "添付ファイルをご確認ください。",
+        "priority": "通常",
+        "file_urls": [],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a25a5d69afcf492ede1134c",
+        "_created_date": "2026-06-07T17:09:42.871000",
+        "_updated_date": "2026-06-07T17:09:42.871000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "event_id": "6a25a560ff3f0b9ce19a67ec",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": false,
+        "title": "通常テスト通知",
+        "body": "",
+        "priority": "通常",
+        "file_urls": [],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a25a4fb956a9982cfd7bc62",
+        "_created_date": "2026-06-07T17:06:03.713000",
+        "_updated_date": "2026-06-07T17:06:03.713000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "event_id": "6a25a4737654a0e8f9c91f9b",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": true,
+        "title": "緊急通知テスト",
+        "body": "",
+        "priority": "緊急",
+        "file_urls": [],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a25a4ee3e548046ac8fdb1c",
+        "_created_date": "2026-06-07T17:05:50.514000",
+        "_updated_date": "2026-06-07T17:05:50.514000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "event_id": "6a25a4737654a0e8f9c91f8b",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": false,
+        "title": "Test Notification with Attachment",
+        "body": "Please find the attached file for review.",
+        "priority": "通常",
+        "file_urls": [],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a25a4e29c08b08af3ceb4df",
+        "_created_date": "2026-06-07T17:05:38.343000",
+        "_updated_date": "2026-06-07T17:05:38.343000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "event_id": "6a25a4737654a0e8f9c91f9b",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": true,
+        "title": "テスト通知 - 重要",
+        "body": "通知のログ確認テストです。優先度と添付ファイルを含む。",
+        "priority": "重要",
+        "file_urls": [],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a25a4bc41e1a2e9ca1d7e80",
+        "_created_date": "2026-06-07T17:05:00.501000",
+        "_updated_date": "2026-06-07T17:05:00.501000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "event_id": "6a25a4737654a0e8f9c91f9b",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": false,
+        "title": "通常通知テスト",
+        "body": "",
+        "priority": "通常",
+        "file_urls": [],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a25a384d60cc1d056e00074",
+        "_created_date": "2026-06-07T16:59:48.853000",
+        "_updated_date": "2026-06-07T16:59:48.853000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "event_id": "6a25a2eebde11653ea2b89b1",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": false,
+        "title": "テスト通知 - ファイル添付",
+        "body": "スタッフへの通知テストです。添付ファイルをご確認ください。",
+        "priority": "通常",
+        "file_urls": [],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a23ad8f7cca45a13d096db0",
+        "_created_date": "2026-06-06T05:18:07.150000",
+        "_updated_date": "2026-06-06T05:18:07.150000",
+        "_created_by_id": "6a04d375dd2d16805b295b5b",
+        "event_id": "6a225f9f774b15ab0b278632",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": true,
+        "title": "チケット情報",
+        "body": "売れ:983\n予約：6(KW関係者分)\n合計：989(残：69)\n※紙・電子併用\n\n■電子内訳\nローソン：9\nぴあ：95\nイープラス：55\nBW：29",
+        "priority": "通常",
+        "file_urls": [],
+        "created_by": "odeko3520email6224@gmail.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a0e88d1a573d3831eeafd2a",
+        "_created_date": "2026-05-21T04:23:45.480000",
+        "_updated_date": "2026-05-21T04:23:45.480000",
+        "_created_by_id": "6a0aa41c4d63ab686da9b864",
+        "event_id": "6a09914305408c974cceb151",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": true,
+        "title": "終演後バラシ",
+        "body": "突発以外は仮決定。\n12名そろえばいいので適当に着替えてる子捕まえて送ればok",
+        "priority": "重要",
+        "file_urls": [],
+        "created_by": "y25.watt24@gmail.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a076aa9c16de68602fa9f08",
+        "_created_date": "2026-05-15T18:49:13.520000",
+        "_updated_date": "2026-05-15T18:49:13.520000",
+        "_created_by_id": "6a07089d82ee7cf030d907e5",
+        "event_id": "6a05b1a9ada7f5aad8234b59",
+        "read_by": [],
+        "target_staff": [],
+        "is_alert": false,
+        "title": "デザイン",
+        "body": "テスト",
+        "priority": "通常",
+        "file_urls": [],
+        "created_by": "odekoharuki0213@gmail.com",
+        "is_sample": false
+      }
+    ],
+    "EventSheet": [
+      {
+        "_id": "6aaa68f11a91b0a7c4b80e0d",
+        "_created_date": "2026-09-16T10:01:21.257000",
+        "_updated_date": "2026-09-16T10:01:21.257000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "custom_notes": "",
+        "event_id": "6aaa68f040a697ab106171ce",
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a896b3e5a183f36115224e6",
+        "_created_date": "2026-08-22T09:26:22.744000",
+        "_updated_date": "2026-08-22T09:26:22.744000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "custom_notes": "",
+        "event_id": "6a896b3d40bb7acf21502f40",
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a7d986594c1dda10928bef7",
+        "_created_date": "2026-08-13T10:11:49.816000",
+        "_updated_date": "2026-08-13T10:11:49.816000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "custom_notes": "",
+        "event_id": "6a7d98649bc699e91d09c0c1",
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a7d5503eb519223913f94ed",
+        "_created_date": "2026-08-13T05:24:19.272000",
+        "_updated_date": "2026-08-13T05:24:19.272000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "custom_notes": "",
+        "event_id": "6a7d550257e6290e98ab67d0",
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      }
+    ],
+    "MapArea": [
+      {
+        "_id": "6a05b16e199f7b4671c213fe",
+        "_created_date": "2026-05-14T11:26:38.146000",
+        "_updated_date": "2026-05-14T11:26:38.146000",
+        "_created_by_id": "6a04d375dd2d16805b295b5b",
+        "event_id": "6a04d4899c25209521330a76",
+        "color": "#e2e8f0",
+        "name": "アリーナ内側",
+        "x": 15,
+        "width": 70,
+        "y": 30,
+        "type": "rectangle",
+        "height": 35,
+        "order": 2,
+        "created_by": "odeko3520email6224@gmail.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a05b16e8ce97cc8953b4918",
+        "_created_date": "2026-05-14T11:26:38.106000",
+        "_updated_date": "2026-05-14T11:26:38.106000",
+        "_created_by_id": "6a04d375dd2d16805b295b5b",
+        "event_id": "6a04d4899c25209521330a76",
+        "color": "#bfdbfe",
+        "name": "ステージ",
+        "x": 30,
+        "width": 40,
+        "y": 5,
+        "type": "rectangle",
+        "height": 25,
+        "order": 1,
+        "created_by": "odeko3520email6224@gmail.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a05b16ec9106f75fff6d95b",
+        "_created_date": "2026-05-14T11:26:38.106000",
+        "_updated_date": "2026-05-14T11:26:38.106000",
+        "_created_by_id": "6a04d375dd2d16805b295b5b",
+        "event_id": "6a04d4899c25209521330a76",
+        "color": "#bbf7d0",
+        "name": "フロントエリア",
+        "x": 5,
+        "width": 90,
+        "y": 65,
+        "type": "rectangle",
+        "height": 20,
+        "order": 3,
+        "created_by": "odeko3520email6224@gmail.com",
+        "is_sample": false
+      }
+    ],
+    "MapTemplate": [
+      {
+        "_id": "6a26ab30c4f4c6e5a0623d24",
+        "_created_date": "2026-06-08T11:44:48.767000",
+        "_updated_date": "2026-06-08T11:44:48.767000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "name": "__event_modes__:6a228d53468978be103b7c26",
+        "description": "StageFlow event visibility modes",
+        "areas": [
+          {
+            "modes": {
+              "staff_management_mode": "edit"
+            },
+            "staff_management_mode": "edit",
+            "updated_at": "2026-06-08T11:44:48.522Z"
+          }
+        ],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a26aaf5c6a2c795e51dd5b8",
+        "_created_date": "2026-06-08T11:43:49.814000",
+        "_updated_date": "2026-06-08T11:44:28.323000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "name": "__event_modes__:6a2286b8d9132256af7d3c3c",
+        "description": "StageFlow event visibility modes",
+        "areas": [
+          {
+            "modes": {
+              "assignment_mode": "edit"
+            },
+            "assignment_mode": "edit",
+            "updated_at": "2026-06-08T11:44:28.065Z"
+          }
+        ],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a23a6ca503a63fd0564ba42",
+        "_created_date": "2026-06-06T04:49:14.787000",
+        "_updated_date": "2026-06-06T04:49:14.787000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "name": "__venue_map_asset__:6a225f9f774b15ab0b278632",
+        "description": "StageFlow venue map asset fallback",
+        "areas": [
+          {
+            "event_id": "6a225f9f774b15ab0b278632",
+            "map_pdf_url": "https://base44.app/api/apps/6a04d375dd2d16805b295b5a/files/mp/public/6a04d375dd2d16805b295b5a/e057078c1_20163.pdf",
+            "map_image_url": "https://base44.app/api/apps/6a04d375dd2d16805b295b5a/files/mp/public/6a04d375dd2d16805b295b5a/5db57ad22_20163.jpg",
+            "updated_at": "2026-06-06T04:49:14.092Z"
+          }
+        ],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a239a740c3debb5119beeba",
+        "_created_date": "2026-06-06T03:56:36.486000",
+        "_updated_date": "2026-06-07T15:52:12.175000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "name": "__event_modes__:6a225f9f774b15ab0b278632",
+        "description": "StageFlow event visibility modes",
+        "areas": [
+          {
+            "modes": {
+              "staff_management_mode": "edit",
+              "assignment_mode": "edit"
+            },
+            "staff_management_mode": "edit",
+            "updated_at": "2026-06-07T15:52:12.042Z",
+            "assignment_mode": "edit"
+          }
+        ],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a237c4130afac865ad3e341",
+        "_created_date": "2026-06-06T01:47:45.035000",
+        "_updated_date": "2026-06-06T04:32:22.869000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "name": "__position_side__:6a2286b8d9132256af7d3c3c",
+        "description": "StageFlow position side settings",
+        "areas": [
+          {
+            "position_types": {},
+            "positions": {
+              "6a237ad07035f15f479a38bb": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b875e07423a4f263313": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237bcea45294f5a583dab8": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ad05d849f9341233ccf": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b87a5d3fb7a46563ef9": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237bcea8f1ff76293feeac": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237bce3849283f40a36d1f": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237bce9d9715f99d16491a": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237bce5f88d83938f71b2b": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237bcedf8b0f39a1e3ff67": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b88e40c7401f9a78af9": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b87c2c549ac193a6846": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b8775a0d483dd92a831": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ad07967a1cf8e78e4bb": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ad0f211d84f4fc916b3": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ad042b66dcd1f62376c": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237bcee0b6b2d84ae66959": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ad0d48e36ff165a34ed": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ad0f341a2fee0a60f62": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b878eed9f6fa6cb8d3f": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ad0270b7cc8cdd4139c": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b87f5d4f57526a0f06e": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ccf23d206961d070efb": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ad0785dce472ffeac72": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b8716828d3c06322fed": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ad072291a1e905228fe": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b88d38ed91d2c331982": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b87c3634b52c7821a8b": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b87862f20501200be7a": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237b8810d3d1cdd592cd43": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ad12f3ebfe00b30d563": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237ae1cb328e77bbbe76aa": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a23a0d3e8917958f570209e": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a23a0d31cf9cc045c1ac61d": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a23a0d3559970c686a18324": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a23a0d3df46ad7a87e60efc": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a23a1864f639e2665b49bf0": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a23a1adc75ac8a97d86aba5": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              }
+            },
+            "updated_at": "2026-06-06T04:32:22.718Z"
+          }
+        ],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a22e891c14adfeee96cd528",
+        "_created_date": "2026-06-05T15:17:37.950000",
+        "_updated_date": "2026-06-08T11:50:22.923000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "name": "__position_side__:6a225f9f774b15ab0b278632",
+        "description": "StageFlow position side settings",
+        "areas": [
+          {
+            "position_types": {
+              "前ツラ": true,
+              "前横扉": true,
+              "楽屋口": true,
+              "非常口": true,
+              "後方扉": true
+            },
+            "positions": {
+              "6a226894f7b415a5dcead24d": {
+                "split_by_side": true,
+                "staff_names_kamite": [
+                  "佐藤 颯"
+                ],
+                "staff_names_shimote": [
+                  "堤 太志"
+                ]
+              },
+              "6a2266d94eea72e6ac8882cf": {
+                "split_by_side": true,
+                "staff_names_kamite": [],
+                "staff_names_shimote": [
+                  "堤 太志"
+                ]
+              },
+              "6a2268943b62cf56220ef7a0": {
+                "split_by_side": true,
+                "staff_names_kamite": [
+                  "小野 恵吾"
+                ],
+                "staff_names_shimote": [
+                  "久保 紘心郎"
+                ]
+              },
+              "6a22893e1ad007062ff50359": {
+                "split_by_side": true,
+                "staff_names_kamite": [
+                  "手島 颯太"
+                ],
+                "staff_names_shimote": [
+                  "溝邊 大稀"
+                ]
+              },
+              "6a22689492da7bcee6b6d62c": {
+                "split_by_side": true,
+                "staff_names_kamite": [
+                  "手島 颯太"
+                ],
+                "staff_names_shimote": []
+              },
+              "6a2266d9c438a919e533c8b1": {
+                "split_by_side": true,
+                "staff_names_kamite": [
+                  "手島 颯太"
+                ],
+                "staff_names_shimote": []
+              },
+              "6a22893e5dcd0a0bc34fe5aa": {
+                "split_by_side": true,
+                "staff_names_kamite": [
+                  "岩男 和佳"
+                ],
+                "staff_names_shimote": [
+                  "伊東 朋美"
+                ]
+              },
+              "6a22689451cf3d4bd1b28be7": {
+                "split_by_side": true,
+                "staff_names_kamite": [
+                  "河野 吉彦"
+                ],
+                "staff_names_shimote": [
+                  "伊東 朋美"
+                ]
+              },
+              "6a2266d93044af23b60c4638": {
+                "split_by_side": true,
+                "staff_names_kamite": [
+                  "河野 吉彦"
+                ],
+                "staff_names_shimote": [
+                  "伊東 朋美"
+                ]
+              },
+              "6a2268943f2e6f93731817b3": {
+                "split_by_side": true,
+                "staff_names_kamite": [
+                  "小野 優斗"
+                ],
+                "staff_names_shimote": [
+                  "伊藤 拓海"
+                ]
+              },
+              "6a2266da312dd0af2c890da3": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2266d9f7179ea1f7504a57": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a227066ace846f4b380c638": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2266d9034a93aa9faad9bf": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2266dad7a1e8b0dfd85ceb": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2266daa908f55cd95d4f22": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a226894473bc80626584720": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a23798cea42306b98bb5a0c": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2379af50bb3c6366a448af": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2379afcb328e77bbbe75e3": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2379afd48e36ff165a3473": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2379af8a45c281c1976f18": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a226894a29c4b260a836cca": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237a51f0b48dff84dbf95a": {
+                "split_by_side": true,
+                "staff_names_kamite": [
+                  "手島 颯太"
+                ],
+                "staff_names_shimote": []
+              },
+              "6a2379af108949c14006ddc1": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2379af10d3d1cdd592cc24": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237cb5589bc18c87052d3a": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237cdb3c0f655c1434a345": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a237a51a96ae59484a16126": {
+                "split_by_side": true,
+                "staff_names_kamite": [
+                  "岩男 和佳"
+                ],
+                "staff_names_shimote": [
+                  "伊東 朋美"
+                ]
+              },
+              "6a2266d92129564bc98ed5f9": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a23a7e835448349997ce79c": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2266d99ec1c52623f4cf11": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a226894c8d21fc071bd2735": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              }
+            },
+            "updated_at": "2026-06-08T11:50:22.791Z"
+          }
+        ],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a228dd00b87840880d8eddb",
+        "_created_date": "2026-06-05T08:50:24.154000",
+        "_updated_date": "2026-06-08T13:06:48.841000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "name": "__position_side__:6a228d53468978be103b7c26",
+        "description": "StageFlow position side settings",
+        "areas": [
+          {
+            "position_types": {
+              "チーフ": false
+            },
+            "positions": {
+              "6a228d8621490d7b8cc73b9c": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86c30721481dac9935": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86c80304e677cc20aa": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86c7c45e1bbff3f138": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86d56cd37f270be824": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d869eefcf757ec878e5": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d87dff4e35dc60982d0": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d8647f6b385bbb74fdd": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86dff4e35dc60982cf": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86685c1cbed8088386": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86281a1436aaa25b3c": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d862096572ec253a7dc": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d8689a0d24d6cb8dee1": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86afe9eb10003a082b": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d864f27595f305dc0c2": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d863a7a1e50e0166107": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d8610e731c6cd70d895": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d869a68d8b33f419ad7": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86144a28eaf49ece0a": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86a2626b0ba8e9a864": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86e5fdf20204be641e": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d86cca7c762ec5e7ec9": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d869c3175f0dc91553a": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a228d8650d355a9d7c30dc3": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dceaf366ddf2130c1d20": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea476701d7a5031f4f": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea43b989579d2fbf82": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea06bc50b55280f8a3": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dceaacff177e000abcec": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dceac81aec99be591675": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea6574d49c98652e18": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea77de693421ae791c": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dceabee44ed449634ec1": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea12c450d4e88bab17": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dceac9a576fa5fe40d44": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea034cf079d297efa8": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea496d5fedc23c746c": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dceae79c4858525fcdd5": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea1b5b3129f574c1a7": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea2c7693ef1800fb30": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea0595e55951c9a7c1": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dceae61d3c976abaefe0": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea7405332a609eff84": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea2e9e37256070c221": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea90e01618d8ca5ff8": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea527a54f6f9487a23": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea279630c9c35f5e4e": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22dcea3e64a887ad27c020": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e162715e128e95ead36f": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e16265766b1b3ae54bef": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e162d53d2fd5a74a2a92": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e162d8fba55f8d1b2471": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e16245084707e3b06c20": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e16226538aefcca319ae": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e1627a9a17602344702c": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e162de6a78cf57eca37f": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e162f519a4577054a929": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e162785ab037a2f5ae03": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e1629e4cb5636bc80903": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e1626c2d4351b84e2bdf": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e162e46a3d2049cd779d": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e162c81ae49ba5767f23": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e1629d07e1baf61c1804": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e16224d77a7f71d585e9": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e1623e64a887ad27c38f": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e1628366db6f80e27b2f": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e1628a87a56965a96ef9": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e162e3621e812595fb38": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e1622c7693ef1800fdca": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e1621a6817f2e0847157": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e162cb52d4c8fb941ced": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e1623b0762d68f996452": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a22e162821040a85f48da97": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c99ce7e7a61689b9af": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c905f5ede35de27c55": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c947adb323221ca71e": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9ee3e9286a13c2be6": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9baa655e29f84bb1d": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9b9f0237d55645725": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9f73cdad57f460456": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c964903a64463468ff": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c96f30c644a2daa3f5": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9b8b982b92c5c4508": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c99b88361a2f7eafcf": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c93995641f14c5e5eb": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9eab06e018d43ed34": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9529902ed3a1b1b82": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9699e9d3c77389dd1": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c996b9fa1cbd221b3c": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9b4c4024364995940": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c95837dce2a347a5e5": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9bc5e3523ac2041a1": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c977a4f3cc469c6057": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9010eb0bb940824ca": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9847a6e5962c68ea1": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c9307a5d470ea8d8f7": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2594c900e273ed6f0dea7d": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e47d3d8691b8845ec2": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4394e23d7378dcbea": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e40ba8ccc05441453f": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e49fb0742ef72c448e": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4df670b4d971cdab3": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e460fbf4a5d7fdd1e5": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4a01dc063578b59df": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4a67f292d97e68b15": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e402d401a28cd81939": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4132e08c10979b3b3": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4beb81424397c7fce": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e416dd1879b1d99efe": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4b0c44ec0a56896ff": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4a9963302ab7dd295": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e48c9ff3cda874dda3": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e42b4a4c117d8f21b7": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e45b372aa67e7ef1a0": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4c112ecf4ef3b4fe2": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4f0a0c978bc60fd2b": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4ae87356bbd21123a": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e469d8c9895c0ececb": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e45b3ab65772f391bd": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4a0f26202b6b089e8": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              },
+              "6a2632e4d03a013d244109c0": {
+                "split_by_side": false,
+                "staff_names_kamite": [],
+                "staff_names_shimote": []
+              }
+            },
+            "updated_at": "2026-06-08T13:06:48.738Z"
+          }
+        ],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a0d977d06255b47a0fff849",
+        "_created_date": "2026-05-20T11:14:05.595000",
+        "_updated_date": "2026-05-20T11:14:05.595000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "name": "__venue_map_asset__:6a0a9db3b0449569212bd3e4",
+        "description": "StageFlow venue map asset fallback",
+        "areas": [
+          {
+            "event_id": "6a0a9db3b0449569212bd3e4",
+            "map_pdf_url": "https://base44.app/api/apps/6a04d375dd2d16805b295b5a/files/mp/public/6a04d375dd2d16805b295b5a/2058f0396_gran-seat.pdf",
+            "map_image_url": "https://base44.app/api/apps/6a04d375dd2d16805b295b5a/files/mp/public/6a04d375dd2d16805b295b5a/ecf61663f_gran-seat.jpg",
+            "updated_at": "2026-05-20T11:14:05.082Z"
+          }
+        ],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a0d730d8f6ad68443a282ef",
+        "_created_date": "2026-05-20T08:38:37.131000",
+        "_updated_date": "2026-05-20T21:05:14.934000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "name": "__venue_map_asset__:6a09914305408c974cceb151",
+        "description": "StageFlow venue map asset fallback",
+        "areas": [
+          {
+            "event_id": "6a09914305408c974cceb151",
+            "map_pdf_url": "https://base44.app/api/apps/6a04d375dd2d16805b295b5a/files/mp/public/6a04d375dd2d16805b295b5a/c5143fe9c_gran-seat.pdf",
+            "map_image_url": "https://base44.app/api/apps/6a04d375dd2d16805b295b5a/files/mp/public/6a04d375dd2d16805b295b5a/18f1982a1_gran-seat.jpg",
+            "updated_at": "2026-05-20T21:05:14.584Z"
+          }
+        ],
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      }
+    ],
+    "DetectedLineGroup": [
+      {
+        "_id": "6a262c14b4db1a7e1a0ba60a",
+        "_created_date": "2026-06-08T02:42:28.816000",
+        "_updated_date": "2026-06-08T02:42:28.816000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "group_id": "Cb02cfea58b0bc83bd70723a6464c9755",
+        "group_name": "6/6 アンジェラ・アキ",
+        "detected_at": "2026-06-08T02:42:26.651Z",
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a26271ba43073bd70132374",
+        "_created_date": "2026-06-08T02:21:15.485000",
+        "_updated_date": "2026-06-08T02:21:15.485000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "group_id": "Cb02cfea58b0bc83bd70723a6464c9755",
+        "group_name": "6/6 アンジェラ・アキ",
+        "detected_at": "2026-06-08T02:21:12.769Z",
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a26243b10f5c519fcd6feaa",
+        "_created_date": "2026-06-08T02:08:59.842000",
+        "_updated_date": "2026-06-08T02:08:59.842000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "group_id": "Cb02cfea58b0bc83bd70723a6464c9755",
+        "group_name": "6/6 アンジェラ・アキ",
+        "detected_at": "2026-06-08T02:08:57.454Z",
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a26208485922899db8b83d7",
+        "_created_date": "2026-06-08T01:53:08.556000",
+        "_updated_date": "2026-06-08T01:53:08.556000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "group_id": "Cb02cfea58b0bc83bd70723a6464c9755",
+        "group_name": "6/6 アンジェラ・アキ",
+        "detected_at": "2026-06-08T01:53:06.176Z",
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a23900f6fb526e390b2a5f9",
+        "_created_date": "2026-06-06T03:12:15.706000",
+        "_updated_date": "2026-06-06T03:12:15.706000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "group_id": "Cd3016ea5585c9b00bf831d68a16bb478",
+        "group_name": "てすと",
+        "detected_at": "2026-06-06T03:12:13.413Z",
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a233dd763d1fda0e04dc703",
+        "_created_date": "2026-06-05T21:21:27.881000",
+        "_updated_date": "2026-06-06T13:20:24.371000",
+        "_created_by_id": "service_11a7564d-bf57-490f-a681-fa5aef1d04d0",
+        "group_id": "Cb02cfea58b0bc83bd70723a6464c9755",
+        "group_name": "6/6 アンジェラ・アキ",
+        "detected_at": "2026-06-06T13:20:22.386Z",
+        "created_by": "service+11a7564d-bf57-490f-a681-fa5aef1d04d0@no-reply.base44.com",
+        "is_sample": false
+      }
+    ],
+    "Task": [
+      {
+        "_id": "6a23a05894354527274814c0",
+        "_created_date": "2026-06-06T04:21:44.319000",
+        "_updated_date": "2026-06-06T04:21:51.635000",
+        "_created_by_id": "6a239a1f20c9028e81a39fb8",
+        "note": "",
+        "is_done": true,
+        "event_id": "6a225f9f774b15ab0b278632",
+        "title": "′ OR 1=1 ′",
+        "order": 0,
+        "created_by": "tempercent841@gmail.com",
+        "is_sample": false
+      },
+      {
+        "_id": "6a09303c59f7a3d08bcc45c2",
+        "_created_date": "2026-05-17T03:04:28.495000",
+        "_updated_date": "2026-05-17T03:05:07.392000",
+        "_created_by_id": "6a04d375dd2d16805b295b5b",
+        "note": "",
+        "is_done": true,
+        "event_id": "6a0847618f1aa0d8547f29c4",
+        "title": "テスト",
+        "order": 0,
+        "created_by": "odeko3520email6224@gmail.com",
+        "is_sample": false
+      }
+    ],
+    "VenueMapAsset": []
+  }
+}
