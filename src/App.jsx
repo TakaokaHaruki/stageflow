@@ -35,26 +35,18 @@ const AuthenticatedApp = () => {
   // 未ログインで直リンクされた場合、ログイン後に元のページへ戻れるよう遷移元を保持
   const loginPath = `/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`;
 
-  // Handle authentication errors (only for user_not_registered)
-  if (authError?.type === 'user_not_registered') {
-    return <UserNotRegisteredError />;
-  }
-
-  // Unapproved users see the pending approval screen
-  if (user?.role === 'unapproved') {
-    return <PendingApproval />;
-  }
-
-  // Restricted users are blocked from viewing (no approval form, just a notice)
-  if (user?.role === 'restricted') {
-    return <RestrictedScreen />;
-  }
-
   // Render the main app
+  // アプリ全体のページアクセスを記録する共通トラッカー（未承認・利用制限・登録未完了ユーザー含む全ユーザー対象）
   return (
     <>
-      {/* アプリ全体のページアクセスを記録する共通トラッカー */}
       <AccessLogTracker />
+      {authError?.type === 'user_not_registered' ? (
+        <UserNotRegisteredError />
+      ) : user?.role === 'unapproved' ? (
+        <PendingApproval />
+      ) : user?.role === 'restricted' ? (
+        <RestrictedScreen />
+      ) : (
       <Routes>
       {/* Public auth routes */}
       <Route path="/login" element={<Login />} />
@@ -87,7 +79,8 @@ const AuthenticatedApp = () => {
       </Route>
 
       <Route path="*" element={<PageNotFound />} />
-    </Routes>
+      </Routes>
+      )}
     </>
   );
 };
