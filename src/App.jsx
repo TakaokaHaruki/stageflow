@@ -7,6 +7,7 @@ import AppNav from './components/AppNav';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PendingApproval from '@/components/PendingApproval';
+import RestrictedScreen from '@/components/RestrictedScreen';
 import { ThemeProvider } from '@/lib/ThemeProvider';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AdminRoute from '@/components/AdminRoute';
@@ -42,6 +43,11 @@ const AuthenticatedApp = () => {
   // Unapproved users see the pending approval screen
   if (user?.role === 'unapproved') {
     return <PendingApproval />;
+  }
+
+  // Restricted users are blocked from viewing (no approval form, just a notice)
+  if (user?.role === 'restricted') {
+    return <RestrictedScreen />;
   }
 
   // Render the main app

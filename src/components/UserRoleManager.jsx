@@ -11,6 +11,7 @@ const ROLE_OPTIONS = [
   { value: "chief", label: "チーフ" },
   { value: "user", label: "ユーザー" },
   { value: "unapproved", label: "未承認" },
+  { value: "restricted", label: "利用制限" },
 ];
 
 const ROLE_STYLE = {
@@ -18,6 +19,7 @@ const ROLE_STYLE = {
   chief: "bg-blue-100 text-blue-700",
   user: "bg-green-100 text-green-700",
   unapproved: "bg-amber-100 text-amber-700",
+  restricted: "bg-gray-600 text-white",
 };
 
 export default function UserRoleManager() {

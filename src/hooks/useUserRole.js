@@ -20,6 +20,7 @@ export function useUserRole() {
   const isAdmin = role === "admin";
   const isChief = role === "chief";
   const isPendingApproval = role === "unapproved";
+  const isRestricted = role === "restricted";
   const canEdit = isAdmin || isChief;
   const canManageSettings = isAdmin || isChief;
 
@@ -28,6 +29,7 @@ export function useUserRole() {
     isAdmin,
     isChief,
     isPendingApproval,
+    isRestricted,
     canEdit,
     canManageSettings,
   };
