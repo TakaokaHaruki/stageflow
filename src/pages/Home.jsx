@@ -22,7 +22,7 @@ function getTodayJST() {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { isAdmin, canEdit, isGuest } = useUserRole();
+  const { isAdmin, canEdit } = useUserRole();
   const today = getTodayJST();
 
   const { data: events = [], isLoading } = useQuery({
@@ -63,7 +63,7 @@ export default function Home() {
     return { slot, assigned, required };
   });
 
-  const quickLinks = getNavItems({ isAdmin, canEdit, isGuest }).filter((i) => i.id !== "home");
+  const quickLinks = getNavItems({ isAdmin, canEdit }).filter((i) => i.id !== "home");
 
   return (
     <div className="mx-auto max-w-5xl space-y-3 px-2 py-3">

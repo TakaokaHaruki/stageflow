@@ -12,7 +12,6 @@ export default function Landing() {
   // No auto-redirect for authenticated users on Landing page
 
   const handleLogin = () => {
-    localStorage.removeItem("guest_mode");
     navigate("/login");
   };
 

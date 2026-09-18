@@ -4,12 +4,7 @@ import { Home, CalendarDays, Settings, ShieldCheck, UserCircle, Info, MessageCir
  * 新タブ構成の共通ナビ定義。
  * ホーム / イベント一覧 / 管理設定(admin,chief) / 管理者設定(admin) / アカウント / インフォメーション
  */
-export function getNavItems({ isAdmin = false, canEdit = false, isGuest = false } = {}) {
-  if (isGuest) {
-    return [
-      { id: "events", label: "イベント一覧", short: "イベント", icon: CalendarDays, path: "/events", description: "公開中のイベントを確認できます" },
-    ];
-  }
+export function getNavItems({ isAdmin = false, canEdit = false } = {}) {
   return [
     { id: "home", label: "ホーム", short: "ホーム", icon: Home, path: "/home", description: "運営状況のサマリーと各機能への導線" },
     { id: "events", label: "イベント一覧", short: "イベント", icon: CalendarDays, path: "/events", description: "イベントの作成・管理と詳細設定" },

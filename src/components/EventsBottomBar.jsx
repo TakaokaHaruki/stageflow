@@ -62,7 +62,7 @@ export default function EventsBottomBar({ canEdit, isAdmin, currentUser, onNewEv
               {isGuest ? (
                 <button
                   type="button"
-                  onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); setMoreOpen(false); }}
+                  onClick={() => { navigate("/login"); setMoreOpen(false); }}
                   className="flex w-full min-h-10 items-center gap-2 rounded-md border border-border px-2.5 text-left text-xs font-semibold text-foreground hover:bg-muted"
                 >
                   <LogIn className="h-4 w-4 shrink-0" />

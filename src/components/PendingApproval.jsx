@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ShieldAlert, LogOut, Eye, Send, Clock, XCircle } from "lucide-react";
+import { ShieldAlert, LogOut, Send, Clock, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,11 +48,6 @@ export default function PendingApproval() {
     enabled: !!user,
   });
   const myRequest = existing[0];
-
-  const handleGuest = () => {
-    localStorage.setItem("guest_mode", "true");
-    base44.auth.logout("/events");
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -242,10 +237,6 @@ export default function PendingApproval() {
         )}
 
         <div className="flex flex-col gap-2 mt-6">
-          <Button variant="outline" className="gap-2 w-full" onClick={handleGuest}>
-            <Eye className="w-4 h-4" />
-            ゲストとして閲覧
-          </Button>
           <button
             onClick={() => base44.auth.logout()}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors py-1"

@@ -27,7 +27,7 @@ export default function Events() {
   const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
   const [showPast, setShowPast] = useState(false);
   const queryClient = useQueryClient();
-  const { canEdit, role, isGuest, isAdmin } = useUserRole();
+  const { canEdit, role, isAdmin } = useUserRole();
   const { limited, allowedIds, isLoading: limitLoading } = useEventViewLimit();
 
   const { data: allEvents = [], isLoading, refetch } = useQuery({
@@ -132,7 +132,6 @@ export default function Events() {
           isToday={isToday(date)}
           isAdmin={isAdmin}
           canEdit={canEdit}
-          isGuest={isGuest}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />

@@ -21,7 +21,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 export default function AppNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin, canEdit, isGuest } = useUserRole();
+  const { isAdmin, canEdit } = useUserRole();
   const [currentUser, setCurrentUser] = useState(null);
   const [profileError, setProfileError] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
@@ -48,10 +48,10 @@ export default function AppNav() {
   };
 
   useEffect(() => {
-    if (!isGuest) loadUser();
-  }, [isGuest]);
+    loadUser();
+  }, []);
 
-  const navItems = getNavItems({ isAdmin, canEdit, isGuest });
+  const navItems = getNavItems({ isAdmin, canEdit });
 
   // 表示中ページのタブ・タイトルをルートパスから解決
   const current =
@@ -76,7 +76,7 @@ export default function AppNav() {
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">{title}</h1>
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
-            {profileError && !isGuest ? (
+            {profileError ? (
               <Button
                 size="sm"
                 variant="outline"
@@ -85,12 +85,12 @@ export default function AppNav() {
               >
                 <RefreshCw className="w-3 h-3" />再試行
               </Button>
-            ) : isGuest || !currentUser ? (
+            ) : !currentUser ? (
               <Button
                 size="sm"
                 variant="outline"
                 className="gap-1 h-7 text-xs px-2 shrink-0"
-                onClick={() => { localStorage.removeItem("guest_mode"); navigate("/login"); }}
+                onClick={() => navigate("/login")}
               >
                 <LogIn className="w-3 h-3" />ログイン
               </Button>
@@ -115,9 +115,7 @@ export default function AppNav() {
       </div>
 
       <div className="sm:flex">
-        {!isGuest && (
-          <SidebarNav tabs={navItems} activeTab={activeTab} onSelectTab={handleSelect} topOffset={headerHeight} />
-        )}
+        <SidebarNav tabs={navItems} activeTab={activeTab} onSelectTab={handleSelect} topOffset={headerHeight} />
         <div className="flex-1 min-w-0 pb-16 sm:pb-0">
           <Outlet />
         </div>
