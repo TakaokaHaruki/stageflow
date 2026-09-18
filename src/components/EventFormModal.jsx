@@ -252,7 +252,7 @@ export default function EventFormModal({ event, onClose, onSaved }) {
                 <Label className="text-xs text-muted-foreground">終演</Label>
                 <TimeField value={form.time_end} onValueChange={(val) => setForm({ ...form, time_end: val })} label="終演時刻" onClear={() => setForm({ ...form, time_end: "" })} />
               </div>
-              <p className="text-[10px] text-muted-foreground leading-tight">※ デフォルトは10分刻みです。鉛筆アイコンで細かい時刻を直接入力できます。</p>
+              <p className="text-[10px] text-muted-foreground leading-tight">※ デフォルトは10分刻みです。鉛筆アイコンで細かい時刻を直接入力できます。再選択時は✓を押してください。</p>
             </div>
           </div>
           <div>
