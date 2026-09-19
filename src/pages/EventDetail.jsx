@@ -35,6 +35,10 @@ import TagManagement from "@/components/TagManagement";
 import EmergencyContactManager from "@/components/EmergencyContactManager";
 import SharedFileManager from "@/components/SharedFileManager";
 import { isEventLocked } from "@/lib/eventLock";
+import { useEditingPresence } from "@/hooks/useEditingPresence";
+import { useRealtimeSync } from "@/hooks/useRealtimeSync";
+import EditingPresenceBanner from "@/components/EditingPresenceBanner";
+import { PresenceContext } from "@/lib/presenceContext";
 
 const tabVariants = {
   initial: { opacity: 0, y: 8 },
@@ -67,6 +71,8 @@ export default function EventDetail() {
   const { isAdmin, isChief, canEdit, canManageSettings, role } = useUserRole();
   const { limited: eventLimitActive, allowedIds: eventLimitIds, isLoading: eventLimitLoading } = useEventViewLimit();
   const isPrivileged = isAdmin || isChief;
+  const { presences, currentUserId: presenceUserId, reportActivity } = useEditingPresence(eventId, tab, { canEdit: isPrivileged });
+  useRealtimeSync(eventId);
   const [currentUser, setCurrentUser] = useState(null);
   const [profileError, setProfileError] = useState(false);
 
@@ -334,7 +340,11 @@ export default function EventDetail() {
           )}
 
           <div className="max-w-[1400px] mx-auto px-1 py-1 pb-16 sm:pb-8">
+        <PresenceContext.Provider value={{ reportActivity, presences, currentUserId: presenceUserId ?? currentUser?.id }}>
         <UserRestrictionBanner role={role} />
+        {activeTab !== "seating_map" && (
+          <EditingPresenceBanner presences={presences} currentUserId={presenceUserId ?? currentUser?.id} />
+        )}
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={`${activeTab}-${activeManagementChild || "main"}-${tabResetKey}`}
@@ -362,6 +372,7 @@ export default function EventDetail() {
             {activeTab === "files" && <SharedFileManager eventId={eventId} showAll={true} isLocked={eventLocked} />}
           </motion.div>
         </AnimatePresence>
+        </PresenceContext.Provider>
       </div>
         </div>
       </div>

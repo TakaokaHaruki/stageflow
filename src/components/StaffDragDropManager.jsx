@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ClipboardList, Plus, Download, Users, Trash2, Wand2, ChevronDown } from "lucide-react";
+import { ClipboardList, Plus, Download, Users, Trash2, Wand2, ChevronDown, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import PositionCard from "@/components/PositionCard";
@@ -37,12 +37,30 @@ import { getParts } from "@/lib/showParts";
 import SectionHeader from "@/components/SectionHeader";
 import EventLockBanner from "@/components/EventLockBanner";
 import { LOCK_TOOLTIP_TEXT } from "@/lib/eventLock";
+import { usePresence, usePresenceActivity } from "@/lib/presenceContext";
+import { parseJst, ACTIVE_WINDOW_MS } from "@/lib/presenceTime";
 
 export default function StaffDragDropManager({ eventId, isLocked = false }) {
   const queryClient = useQueryClient();
   const { canEdit, canManageSettings, role } = useUserRole();
   const editable = canEdit && !isLocked;
   const { record } = useOperationLog(eventId);
+  const reportActivity = usePresenceActivity();
+  const { presences, currentUserId } = usePresence();
+
+  // 操作中ユーザーをポジション単位で集約（自分以外・直近60秒以内）
+  const editingMap = useMemo(() => {
+    const now = Date.now();
+    const map = {};
+    for (const p of presences || []) {
+      if (!p.user_id || p.user_id === currentUserId) continue;
+      if (!p.active_position_id) continue;
+      const lastAct = parseJst(p.last_active_at_jst);
+      if (!lastAct || now - lastAct >= ACTIVE_WINDOW_MS) continue;
+      (map[p.active_position_id] ||= []).push(p.user_name || "－");
+    }
+    return map;
+  }, [presences, currentUserId]);
   const [mobileSlot, setMobileSlot] = useState(null);
   const [selectedPart, setSelectedPart] = useState(1);
   const [showSyncModal, setShowSyncModal] = useState(false);
@@ -455,6 +473,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
         snapshot_after: { staff_names: nextStaffNames },
       },
     });
+    reportActivity({ positionId, staffName });
 
     // バラシ系ポジションへの配置で「バラシ」役割を自動付与（意図的な剥奪は管理者手動）
     const isBarashiPosition = (position.name && (position.name.includes("バラシ") || position.name.includes("突発"))) || position.category === "バラシ";
@@ -513,6 +532,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
         snapshot_after: { staff_names: (position.staff_names || []).filter((n) => n !== staffName) },
       },
     });
+    reportActivity({ positionId, staffName });
   };
 
   // Position reorder - also sync to active preset
@@ -555,6 +575,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
     const fromIdx = slotPositions.findIndex((p) => p.id === draggingPosId);
     const toIdx = slotPositions.findIndex((p) => p.id === targetPosId);
     if (fromIdx === -1 || toIdx === -1) { setDraggingPosId(null); setDragOverPosId(null); return; }
+    reportActivity({ positionId: draggingPosId });
     const reordered = [...slotPositions];
     const [moved] = reordered.splice(fromIdx, 1);
     reordered.splice(toIdx, 0, moved);
@@ -769,13 +790,20 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                   <p className="text-[11px] text-muted-foreground text-center py-1.5">ポジションがありません</p>
                 ) : (
                   <div className="grid gap-0.5">
-                    {slotPositions.map((pos) => (
+                    {slotPositions.map((pos) => {
+                      const editors = editingMap[pos.id] || [];
+                      return (
                       <div key={pos.id}
                         data-pos-id={pos.id}
-                        className={`${draggingPosId === pos.id ? "opacity-40" : ""} ${dragOverPosId === pos.id ? "ring-2 ring-primary rounded-lg" : ""}`}
+                        className={`relative ${draggingPosId === pos.id ? "opacity-40" : ""} ${dragOverPosId === pos.id ? "ring-2 ring-primary rounded-lg" : editors.length ? "ring-2 ring-primary/50 rounded-lg" : ""}`}
                         onDragOver={(e) => handlePosDragOver(e, pos.id)}
                         onDrop={(e) => handlePosDrop(e, slot, pos.id)}
                       >
+                        {editors.length > 0 && (
+                          <span className="absolute -top-1.5 -right-1 z-10 flex items-center gap-0.5 rounded-full bg-primary text-primary-foreground px-1 py-0.5 text-[9px] font-semibold leading-none shadow-sm max-w-[8rem] truncate">
+                            <Pencil className="w-2 h-2 shrink-0" />{editors.join("、")}
+                          </span>
+                        )}
                         <PositionCard
                           pos={pos}
                           eventId={eventId}
@@ -798,6 +826,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                           requiredCount={pos.required_count ?? 0}
                           onRequiredCountChange={(v) => {
                             const prevCount = pos.required_count ?? 0;
+                            reportActivity({ positionId: pos.id });
                             queryClient.setQueryData(["positions", eventId], (old) =>
                               old.map((p) => p.id === pos.id ? { ...p, required_count: v } : p)
                             );
@@ -828,7 +857,8 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                           multiShowMode={multiShowMode}
                         />
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
