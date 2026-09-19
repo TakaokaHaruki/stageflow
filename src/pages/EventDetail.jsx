@@ -85,7 +85,7 @@ export default function EventDetail() {
 
   // Reset section when switching between admin/settings tabs
   useEffect(() => {
-    if (tab === "admin") setAdminSection("users");
+    if (tab === "admin") setAdminSection("operation_logs");
     if (tab === "settings") setSettingsSection("positions");
   }, [tab]);
 
