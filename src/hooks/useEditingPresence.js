@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { toJstString, ONLINE_WINDOW_MS } from "@/lib/presenceTime";
+import { getUserDisplayName } from "@/lib/userDisplay";
 
 const HEARTBEAT_INTERVAL = 20_000;
 
@@ -76,6 +77,8 @@ export function useEditingPresence(eventId, tab, { canEdit = false } = {}) {
         const rec = existing?.[0];
         if (rec) {
           await base44.entities.EditingPresence.update(rec.id, {
+            user_name: getUserDisplayName(user),
+            role: user.role || "",
             tab: tabRef.current,
             last_heartbeat_at_jst: now,
             is_active: true,
@@ -85,7 +88,7 @@ export function useEditingPresence(eventId, tab, { canEdit = false } = {}) {
           const created = await base44.entities.EditingPresence.create({
             event_id: eventId,
             user_id: user.id,
-            user_name: user.full_name || user.email || "－",
+            user_name: getUserDisplayName(user),
             role: user.role || "",
             tab: tabRef.current,
             last_heartbeat_at_jst: now,
