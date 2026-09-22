@@ -110,6 +110,10 @@
   }
 }
 
+/* Fix native select dropdown in dark mode: render OS popup with dark scheme */
+select { color-scheme: light; }
+.dark select { color-scheme: dark; }
+
 /* Fix date/time input native UI */
 input[type="date"],
 input[type="time"] {
