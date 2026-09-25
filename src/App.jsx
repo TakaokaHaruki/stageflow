@@ -24,6 +24,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ManagementSettings from "./pages/ManagementSettings";
+import StaffSearch from "./pages/StaffSearch";
 import SupportChat from "./pages/SupportChat";
 import Concerts from "./pages/Concerts";
 import AccessInsights from "./pages/AccessInsights";
@@ -69,6 +70,7 @@ const AuthenticatedApp = () => {
           <Route path="/support" element={<SupportChat />} />
           <Route path="/concerts" element={<Concerts />} />
           <Route path="/management" element={<ManagementSettings />} />
+          <Route path="/staff-search" element={<StaffSearch />} />
           {/* 管理者専用ページ */}
           <Route element={<AdminRoute />}>
             <Route path="/access-insights" element={<AccessInsights />} />

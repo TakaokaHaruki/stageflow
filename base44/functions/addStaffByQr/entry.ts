@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { staffInPosition, getChiefNames } from '../../shared/positionStaff.ts';
 
 const unique = (items = []) => [...new Set(items.filter(Boolean))];
 
@@ -41,12 +42,7 @@ Deno.serve(async (req) => {
 
     // チーフ権限を確認（同一イベント内のいずれかのポジションの chief_names に含まれること）
     const eventAllPositions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
-    const isChiefInEvent = (eventAllPositions || []).some((p) => {
-      const chiefs = (p.chief_names && p.chief_names.length > 0)
-        ? p.chief_names
-        : (p.chief_name ? [p.chief_name] : []);
-      return chiefs.includes(chief.name);
-    });
+    const isChiefInEvent = (eventAllPositions || []).some((p) => getChiefNames(p).includes(chief.name));
     if (!isChiefInEvent) {
       return Response.json({ error: 'このイベントの担当チーフではありません' }, { status: 403 });
     }
@@ -73,12 +69,7 @@ Deno.serve(async (req) => {
 
     // 同一イベント内の他ポジションに既に配置されているか検索（移動対象）
     const otherPositions = (eventAllPositions || []).filter((p) => p.id !== positionId);
-    const removeFrom = otherPositions.filter((p) => {
-      const inMain = (p.staff_names || []).includes(target.name);
-      const inKamite = (p.staff_names_kamite || []).includes(target.name);
-      const inShimote = (p.staff_names_shimote || []).includes(target.name);
-      return inMain || inKamite || inShimote;
-    });
+    const removeFrom = otherPositions.filter((p) => staffInPosition(p, target.name));
 
     // 既に読み取りポジションに配置済み ＆ 他ポジションにも属していない → 操作不要
     if (inTarget && removeFrom.length === 0) {

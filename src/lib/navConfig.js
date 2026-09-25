@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Settings, ShieldCheck, UserCircle, Info, MessageCircle, BarChart3 } from "lucide-react";
+import { Home, CalendarDays, Settings, ShieldCheck, UserCircle, Info, MessageCircle, BarChart3, Users } from "lucide-react";
 
 /**
  * 新タブ構成の共通ナビ定義。
@@ -12,6 +12,7 @@ export function getNavItems({ isAdmin = false, canEdit = false } = {}) {
     ...(canEdit
       ? [
           { id: "management", label: "管理設定", short: "管理設定", icon: Settings, path: "/management", description: "ポジション・プリセット・会場・バックアップなどのアプリ共通設定" },
+          { id: "staff-search", label: "スタッフ分析", short: "スタッフ", icon: Users, path: "/staff-search", description: "スタッフ名で全イベントを横断検索し配置傾向を分析" },
         ]
       : []),
     ...(isAdmin
