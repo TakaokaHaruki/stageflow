@@ -14,7 +14,6 @@ import AdminRoute from '@/components/AdminRoute';
 // Add page imports here
 import Home from "./pages/Home";
 import Account from "./pages/Account";
-import Information from "./pages/Information";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
 import StaffPortal from "./pages/StaffPortal";
 import Events from "./pages/Events";
@@ -64,7 +63,6 @@ const AuthenticatedApp = () => {
         <Route element={<AppNav />}>
           <Route path="/home" element={<Home />} />
           <Route path="/account" element={<Account />} />
-          <Route path="/information" element={<Information />} />
           <Route path="/admin-settings" element={<AdminSettingsPage />} />
           <Route path="/events" element={<Events />} />
           <Route path="/support" element={<SupportChat />} />

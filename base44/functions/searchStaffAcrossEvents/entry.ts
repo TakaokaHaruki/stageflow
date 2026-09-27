@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { staffInPosition, staffSideInPosition, isChiefOfPosition } from '../../shared/positionStaff.ts';
+import { fuzzyMatch } from '../../shared/staffNameSearch.ts';
 
 const TIME_SLOTS = ["開場中", "開演中", "終演後", "通し"];
 
@@ -13,7 +14,7 @@ export default async function(req) {
     }
 
     const { query } = await req.json();
-    const q = (query || "").trim().toLowerCase();
+    const q = (query || "").trim();
 
     const [allStaff, allEvents] = await Promise.all([
       base44.asServiceRole.entities.Staff.filter({}, "-created_date", 5000),
@@ -22,16 +23,20 @@ export default async function(req) {
 
     const eventMap = new Map((allEvents || []).map(e => [e.id, e]));
     const matchedStaff = q
-      ? (allStaff || []).filter(s => (s.name || "").toLowerCase().includes(q))
+      ? (allStaff || []).filter(s => fuzzyMatch(q, s.name || "").matched)
       : (allStaff || []);
 
-    // 名前で集約
+    // 名前で集約（あいまい一致スコアを保持）
     const byName = new Map();
+    const nameScore = new Map();
     for (const s of matchedStaff) {
       if (!s.name) continue;
       const key = s.name.trim();
       if (!byName.has(key)) byName.set(key, []);
       byName.get(key).push(s);
+      const m = fuzzyMatch(q, s.name);
+      const prev = nameScore.get(key);
+      if (prev === undefined || m.score < prev) nameScore.set(key, m.score);
     }
 
     // 関連イベントのポジションを取得
@@ -108,6 +113,7 @@ export default async function(req) {
 
       results.push({
         name,
+        matchScore: nameScore.get(name) ?? 0,
         gender,
         roles: [...rolesSet],
         skills: [...skillsSet],
@@ -121,7 +127,9 @@ export default async function(req) {
       });
     }
 
-    results.sort((a, b) => b.eventCount - a.eventCount || a.name.localeCompare(b.name, "ja"));
+    results.sort((a, b) =>
+      (a.matchScore - b.matchScore) || (b.eventCount - a.eventCount) || a.name.localeCompare(b.name, "ja")
+    );
     const capped = q ? results : results.slice(0, 200);
 
     return Response.json({ results: capped, total: results.length });
