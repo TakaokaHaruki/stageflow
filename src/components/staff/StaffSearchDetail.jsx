@@ -1,6 +1,4 @@
-import { ArrowLeft, MapPin, Clock, Crown, Tag, CalendarDays } from "lucide-react";
-
-const TIME_SLOTS = ["開場中", "開演中", "終演後", "通し"];
+import { ArrowLeft, MapPin, Crown, Tag, CalendarDays } from "lucide-react";
 
 function BarRow({ label, count, max, color = "bg-primary" }) {
   const pct = max > 0 ? Math.round((count / max) * 100) : 0;
@@ -37,8 +35,6 @@ function Section({ icon: Icon, title, children }) {
 }
 
 export default function StaffSearchDetail({ staff, onBack }) {
-  const maxTime = Math.max(1, ...TIME_SLOTS.map(t => staff.timeSlotCounts?.[t] || 0));
-  const maxVenue = Math.max(1, ...staff.venueCounts.map(v => v.count));
   const maxPos = Math.max(1, ...staff.positionCounts.map(p => p.count));
 
   return (
@@ -64,24 +60,6 @@ export default function StaffSearchDetail({ staff, onBack }) {
           <Stat label="チーフ経験" value={staff.chiefCount} />
         </div>
       </div>
-
-      <Section icon={Clock} title="時間帯の傾向">
-        <div className="space-y-2">
-          {TIME_SLOTS.map(t => (
-            <BarRow key={t} label={t} count={staff.timeSlotCounts?.[t] || 0} max={maxTime} />
-          ))}
-        </div>
-      </Section>
-
-      {staff.venueCounts.length > 0 && (
-        <Section icon={MapPin} title="会場の傾向">
-          <div className="space-y-2">
-            {staff.venueCounts.slice(0, 5).map(v => (
-              <BarRow key={v.venue} label={v.venue} count={v.count} max={maxVenue} color="bg-emerald-500" />
-            ))}
-          </div>
-        </Section>
-      )}
 
       {staff.positionCounts.length > 0 && (
         <Section icon={Tag} title="ポジションの傾向">

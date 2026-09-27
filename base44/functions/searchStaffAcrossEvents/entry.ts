@@ -53,7 +53,8 @@ export default async function(req) {
 
     const results = [];
     for (const [name, staffRecords] of byName.entries()) {
-      const eids = [...new Set(staffRecords.map(s => s.event_id))];
+      // 削除済みイベント（存在しないevent_id）は除外
+      const eids = [...new Set(staffRecords.map(s => s.event_id))].filter(eid => eventMap.has(eid));
       const eventsOut = [];
       let positionCount = 0;
       let chiefCount = 0;
@@ -109,6 +110,7 @@ export default async function(req) {
       }
 
       eventsOut.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      if (eventsOut.length === 0) continue; // 有効なイベントがない（孤立したレコードのみ）スタッフは除外
       const gender = Object.entries(genderCounter).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
 
       results.push({
