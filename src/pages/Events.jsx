@@ -80,7 +80,7 @@ export default function Events() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Event.delete(id),
+    mutationFn: (id) => base44.functions.invoke('deleteEventCascade', { event_id: id }),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["events"] });
       const previousEvents = queryClient.getQueryData(["events"]);
@@ -238,7 +238,7 @@ export default function Events() {
 
       {confirmDeleteEvent &&
         <ConfirmDialog
-          message={`「${confirmDeleteEvent.name}」を削除しますか？`}
+          message={`「${confirmDeleteEvent.name}」を削除しますか？\nスタッフ・配置・操作ログ等の関連データもすべて削除されます。`}
           confirmLabel="削除"
           confirmVariant="destructive"
           onConfirm={() => {
