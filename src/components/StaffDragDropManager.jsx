@@ -53,7 +53,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
     const now = Date.now();
     const map = {};
     for (const p of presences || []) {
-      if (!p.user_id || p.user_id === currentUserId) continue;
+      if (!p.user_id || p.user_id === currentUserId || p.role === "admin") continue;
       if (!p.active_position_id) continue;
       const lastAct = parseJst(p.last_active_at_jst);
       if (!lastAct || now - lastAct >= ACTIVE_WINDOW_MS) continue;

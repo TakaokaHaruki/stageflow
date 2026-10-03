@@ -18,7 +18,7 @@ export default function EditingPresenceBanner({ presences, currentUserId }) {
 
   const now = Date.now();
   const others = presences
-    .filter((p) => p.user_id && p.user_id !== currentUserId)
+    .filter((p) => p.user_id && p.user_id !== currentUserId && p.role !== "admin")
     .map((p) => {
       const lastHb = parseJst(p.last_heartbeat_at_jst);
       const lastAct = parseJst(p.last_active_at_jst);
