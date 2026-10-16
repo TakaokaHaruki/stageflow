@@ -155,6 +155,18 @@ const SLOT_COLORS = {
 
 const SLOT_NOTE_KEY = { '開場中': 'note_before', '開演中': 'note_during', '終演後': 'note_after' };
 
+// 共通備考と該当時間帯の備考を統合して返す（重複は1つにまとめる）
+function getStaffNote(staffData, slot) {
+  if (!staffData) return '';
+  const common = staffData.note ? String(staffData.note) : '';
+  const slotNoteKey = SLOT_NOTE_KEY[slot];
+  const slotNote = slotNoteKey && staffData[slotNoteKey] ? String(staffData[slotNoteKey]) : '';
+  const parts = [];
+  if (common) parts.push(common);
+  if (slotNote && slotNote !== common) parts.push(slotNote);
+  return parts.join(' ／ ');
+}
+
 // スロット → イベント時刻フィールド対応（開場中=開場時間, 開演中=開演時間, 終演後=終演時間）
 const SLOT_TIME_FIELDS = {
   '開場中': ['time_open', 'time_open_end'],
@@ -196,6 +208,8 @@ const SIDE_HEADER_H = 3;
 const CHECKBOX_SIZE = 2;
 const CHECKBOX_GAP = 0.4;
 const CHIEF_LINE_H = 3.2; // チーフ印字行の高さ（チーフがある場合のみ）
+const NOTE_FONT_SIZE = 4.6; // 備考のフォントサイズ（スタッフ名の下に小さく印字）
+const NOTE_LINE_H = 2.4;    // 備考行の高さ
 
 function getChiefs(pos) {
   return (pos.chief_names && pos.chief_names.length > 0)
@@ -211,14 +225,26 @@ function getColX(index) {
   return MARGIN + index * (getColWidth() + COL_GAP);
 }
 
-function calcCardHeight(pos) {
+function calcCardHeight(pos, staffMap) {
   const splitBySide = Boolean(pos.split_by_side);
+  const staffNamesList = splitBySide ? (pos.staff_names_kamite || []) : (pos.staff_names || []);
   const staffCount = splitBySide
     ? Math.max((pos.staff_names_kamite || []).length, (pos.staff_names_shimote || []).length)
     : (pos.staff_names || []).length;
   const extraH = splitBySide ? SIDE_HEADER_H : 0;
   const chiefH = getChiefs(pos).length > 0 ? CHIEF_LINE_H : 0;
-  return CARD_HEADER_H + chiefH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + CARD_PADDING_V;
+  // 備考を持つスタッフの行は高さを追加（備考行の数だけ）
+  let noteExtra = 0;
+  if (staffMap) {
+    const slot = normalizeSlot(pos.time_slot);
+    const countNotes = (names) => names.reduce(
+      (sum, n) => sum + (getStaffNote(staffMap.get(n), slot) ? NOTE_LINE_H : 0), 0
+    );
+    noteExtra = splitBySide
+      ? Math.max(countNotes(pos.staff_names_kamite || []), countNotes(pos.staff_names_shimote || []))
+      : countNotes(staffNamesList);
+  }
+  return CARD_HEADER_H + chiefH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + noteExtra + CARD_PADDING_V;
 }
 
 function drawTitle(doc, event, partLabel) {
@@ -242,7 +268,9 @@ function drawTitle(doc, event, partLabel) {
 }
 
 function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
-  if (y + STAFF_LINE_H > cardBottom - 0.3) return false;
+  const note = getStaffNote(staffData, slot);
+  const rowH = STAFF_LINE_H + (note ? NOTE_LINE_H : 0);
+  if (y + rowH > cardBottom - 0.3) return 0;
   const textY = y + STAFF_LINE_H * 0.78;
   const nameX = x + CHECKBOX_SIZE + CHECKBOX_GAP;
 
@@ -265,13 +293,18 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
 
   let cursorX = nameX + doc.getTextWidth(name) + 1;
 
-  const slotNoteKey = SLOT_NOTE_KEY[slot];
-  const slotNote = slotNoteKey ? staffData?.[slotNoteKey] : null;
-  const displayNote = slotNote || staffData?.note;
-  if (displayNote && cursorX + 2 < x + w) {
-    doc.setTextColor(245, 158, 11);
-    doc.text('!', cursorX, textY);
-    cursorX += 2.5;
+  // 備考（共通＋該当時間帯を統合）をスタッフ名の下に小さく印字
+  if (note) {
+    doc.setFontSize(NOTE_FONT_SIZE);
+    doc.setTextColor(120, 113, 108);
+    let noteText = note;
+    const maxNoteW = x + w - nameX - 0.5;
+    while (noteText.length > 1 && doc.getTextWidth(noteText) > maxNoteW) {
+      noteText = noteText.slice(0, -1);
+    }
+    if (noteText !== note && noteText.length > 0) noteText = noteText.slice(0, -1) + '…';
+    doc.text(noteText, nameX, y + STAFF_LINE_H + NOTE_LINE_H * 0.75);
+    doc.setFontSize(STAFF_FONT_SIZE);
   }
 
   const badgeTop = y + 0.4;
@@ -322,7 +355,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
     doc.setFontSize(STAFF_FONT_SIZE);
   }
 
-  return true;
+  return rowH;
 }
 
 function drawCard(doc, pos, x, y, w, staffMap, slot) {
@@ -334,7 +367,7 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
     : (pos.staff_names || []);
   const assignedCount = staffNames.length;
   const requiredCount = pos.required_count || 0;
-  const cardH = calcCardHeight(pos);
+  const cardH = calcCardHeight(pos, staffMap);
 
   doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.15); doc.setFillColor(255, 255, 255);
   doc.roundedRect(x, y, w, cardH, 1, 1, 'FD');
@@ -409,18 +442,21 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
     const nameStartY = staffY + SIDE_HEADER_H;
     let ky = nameStartY;
     for (const nm of kamiteNames) {
-      if (drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 1.5, ky, halfW - 1.5, cardBottom)) ky += STAFF_LINE_H;
+      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 1.5, ky, halfW - 1.5, cardBottom);
+      if (drawnH > 0) ky += drawnH;
       else break;
     }
     let sy = nameStartY;
     for (const nm of shimoteNames) {
-      if (drawStaffRow(doc, nm, staffMap.get(nm), slot, x + halfW + 1.5, sy, halfW - 1.5, cardBottom)) sy += STAFF_LINE_H;
+      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + halfW + 1.5, sy, halfW - 1.5, cardBottom);
+      if (drawnH > 0) sy += drawnH;
       else break;
     }
   } else {
     let rowY = staffY + 0.3;
     for (const nm of staffNames) {
-      if (drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 2.5, rowY, w - 2.5, cardBottom)) rowY += STAFF_LINE_H;
+      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 2.5, rowY, w - 2.5, cardBottom);
+      if (drawnH > 0) rowY += drawnH;
       else break;
     }
     if (staffNames.length === 0) {
@@ -499,7 +535,7 @@ function drawColumns(doc, positions, staff, event) {
     let currentY = colStartY + COL_HEADER_H + 1.5;
 
     slotPositions.forEach(pos => {
-      const cardH = calcCardHeight(pos);
+      const cardH = calcCardHeight(pos, staffMap);
       if (currentY + cardH > pageBottom && currentPageCards.length > 0) {
         pages.push(currentPageCards);
         currentPageCards = [];
@@ -545,7 +581,7 @@ function drawColumns(doc, positions, staff, event) {
 
       pageCards.forEach(pos => {
         drawCard(doc, pos, x, cardY, colW, staffMap, slot);
-        cardY += calcCardHeight(pos) + CARD_GAP;
+        cardY += calcCardHeight(pos, staffMap) + CARD_GAP;
       });
 
       maxBottom = Math.max(maxBottom, cardY - CARD_GAP);
