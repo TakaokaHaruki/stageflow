@@ -8,7 +8,17 @@
     },
     "pin_hash": {
       "type": "string",
-      "description": "SHA-256\u30cf\u30c3\u30b7\u30e5\u5316\u3055\u308c\u305fPIN",
+      "description": "PBKDF2-SHA256\u3067\u30cf\u30c3\u30b7\u30e5\u5316\u3055\u308c\u305fPIN\uff08pbkdf2$\u53cd\u5fa9\u56de\u6570$\u30bd\u30eb\u30c8$\u30cf\u30c3\u30b7\u30e5\u5f62\u5f0f\uff09\u3002\u65e7\u5f62\u5f0f\uff08\u30bd\u30eb\u30c8\u306a\u3057SHA-256\uff09\u306f\u8a8d\u8a3c\u6210\u529f\u6642\u306b\u81ea\u52d5\u79fb\u884c",
+      "default": ""
+    },
+    "failed_attempts": {
+      "type": "number",
+      "description": "PIN\u9023\u7d9a\u4e0d\u4e00\u81f4\u56de\u6570\uff08\u30b5\u30fc\u30d0\u30fc\u5074\u30ec\u30fc\u30c8\u5236\u9650\u7528\uff09",
+      "default": 0
+    },
+    "locked_until_jst": {
+      "type": "string",
+      "description": "\u30ed\u30c3\u30af\u89e3\u9664\u65e5\u6642\uff08JST\u3001\u7a7a=\u30ed\u30c3\u30af\u306a\u3057\uff09",
       "default": ""
     },
     "reset_requested": {
@@ -29,9 +39,21 @@
     "acast_id"
   ],
   "rls": {
-    "create": true,
-    "read": true,
-    "update": true,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "delete": {
       "user_condition": {
         "role": "admin"
