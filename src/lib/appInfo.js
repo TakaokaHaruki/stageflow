@@ -1,6 +1,6 @@
-// Clewly アプリ情報の定義（バージョン表記・オープンソースライセンス）
+// Crewly アプリ情報の定義（バージョン表記・オープンソースライセンス）
 // バージョンを更新する場合は APP_VERSION を変更してください
-export const APP_NAME = "Clewly";
+export const APP_NAME = "Crewly";
 export const APP_VERSION = "1.0.0";
 export const APP_RELEASE_LABEL = "2026年9月";
 

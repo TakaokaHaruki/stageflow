@@ -4,7 +4,7 @@ export default function CrewlyLogo({ className = "", disableLink = false, admini
   const Wrapper = disableLink ? "div" : Link;
   const wrapperProps = disableLink
     ? { className: `flex items-center gap-1 select-none shrink-0 group ${className}` }
-    : { to: "/", className: `flex items-center gap-1 select-none shrink-0 group ${className}`, "aria-label": "Clewly トップへ" };
+    : { to: "/", className: `flex items-center gap-1 select-none shrink-0 group ${className}`, "aria-label": "Crewly トップへ" };
   const rectColor = administrator ? "hsl(335 72% 48%)" : "hsl(230 65% 45%)";
   const dotColor = administrator ? "hsl(45 95% 60%)" : "hsl(195 80% 65%)";
   return (
@@ -24,7 +24,7 @@ export default function CrewlyLogo({ className = "", disableLink = false, admini
       {!iconOnly && (
         <span className="flex flex-col justify-center leading-none group-hover:opacity-80 transition-opacity">
           <span className="text-[14px] font-black tracking-tight leading-none text-foreground">
-            Clew<span className={administrator ? "" : "text-primary"} style={administrator ? { color: rectColor } : undefined}>ly</span>
+            Crew<span className={administrator ? "" : "text-primary"} style={administrator ? { color: rectColor } : undefined}>ly</span>
           </span>
           {administrator && (
             <span className="mt-0.5 text-[5px] font-extrabold leading-none tracking-[0.25px]" style={{ color: rectColor }}>ADMINISTRATOR</span>
