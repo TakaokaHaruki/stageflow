@@ -79,7 +79,7 @@ export default function Register() {
         </div>
 
         <h1 className="text-2xl font-bold text-foreground mb-1 tracking-tight">新規登録</h1>
-        <p className="text-sm text-muted-foreground mb-8">Crewly - コンサート運営システム</p>
+        <p className="text-sm text-muted-foreground mb-8">Clewly - コンサート運営システム</p>
 
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
           <div className="text-left">
