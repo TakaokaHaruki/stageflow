@@ -11,6 +11,10 @@ export default async function (req) {
     const str = (v, max = 300) => (typeof v === "string" ? v.slice(0, max) : "");
     const base44 = createClientFromRequest(req);
 
+    // 認証情報はサーバー側で導出する（クライアント指定値は採用しない）
+    let user = null;
+    try { user = await base44.auth.me(); } catch {}
+
     const pagePath = str(body.page_path);
     const elementLabel = str(body.element_label, 200);
     if (!pagePath || !elementLabel) {
@@ -35,10 +39,10 @@ export default async function (req) {
       element_label: elementLabel,
       element_value: str(body.element_value, 200),
       ip_address: ip,
-      auth_type: ["anonymous", "app_user", "portal_staff"].includes(body.auth_type) ? body.auth_type : "anonymous",
-      user_email: str(body.user_email, 200),
-      user_role: str(body.user_role, 50),
-      portal_acast_id: str(body.portal_acast_id, 100),
+      auth_type: user ? "app_user" : (str(body.portal_acast_id, 100) ? "portal_staff" : "anonymous"),
+      user_email: user ? (user.email || "").slice(0, 200) : "",
+      user_role: user ? (user.role || "").slice(0, 50) : "",
+      portal_acast_id: user ? "" : str(body.portal_acast_id, 100),
       visitor_id: str(body.visitor_id, 64),
       session_id: str(body.session_id, 64),
       logged_at_jst: loggedAtJst,

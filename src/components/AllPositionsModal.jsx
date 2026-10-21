@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import QrCameraScanner from "@/components/QrCameraScanner";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { getPortalToken } from "@/lib/portalAuth";
 
 const TIME_SLOT_LABELS = {
   "通し": { label: "通し", color: "bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-800 dark:text-emerald-400" },
@@ -61,6 +62,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
         staffName: pendingRemove.staffName,
         positionId: pendingRemove.position.id,
         eventId: pendingRemove.position._eventId,
+        portal_token: getPortalToken(),
       });
       const data = res?.data;
       if (data?.error) {
@@ -88,6 +90,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
         targetAcastId: scannedData.trim(),
         positionId: qrScanPosition.id,
         eventId: qrScanPosition._eventId,
+        portal_token: getPortalToken(),
       });
       const data = res?.data;
       if (data?.error) {

@@ -13,13 +13,26 @@ export default async function (req) {
     const str = (v, max = 300) => (typeof v === "string" ? v.slice(0, max) : "");
     const base44 = createClientFromRequest(req);
 
+    // 認証情報はサーバー側で導出する（クライアント指定値は採用しない）
+    let user = null;
+    try { user = await base44.auth.me(); } catch {}
+
     // 直前ページの滞在時間を確定して更新（ページ遷移・離脱時）
+    // 改ざん防止: 同一セッションかつ直近60分以内に記録されたログのみ更新を許可する
     if (body.update_log_id) {
       const stay = Number(body.stay_seconds);
       if (Number.isFinite(stay) && stay >= 0) {
-        await base44.asServiceRole.entities.AccessLog.update(str(body.update_log_id, 100), {
-          stay_seconds: Math.round(stay),
-        });
+        try {
+          const rec = await base44.asServiceRole.entities.AccessLog.get(str(body.update_log_id, 100));
+          const sid = str(body.session_id, 64);
+          const sameSession = !!rec && !!sid && rec.session_id === sid;
+          const recent = !!rec && !!rec.created_date && (Date.now() - new Date(rec.created_date).getTime()) < 60 * 60000;
+          if (rec && sameSession && recent) {
+            await base44.asServiceRole.entities.AccessLog.update(rec.id, {
+              stay_seconds: Math.min(Math.round(stay), 24 * 3600),
+            });
+          }
+        } catch {}
       }
       // 更新のみ（離脱時のflush）の場合はここで終了
       if (!str(body.page_path)) {
@@ -58,10 +71,10 @@ export default async function (req) {
       os: str(body.os, 50),
       screen_size: str(body.screen_size, 20),
       user_agent: str(body.user_agent, 500),
-      auth_type: ["anonymous", "app_user", "portal_staff"].includes(body.auth_type) ? body.auth_type : "anonymous",
-      user_email: str(body.user_email, 200),
-      user_role: str(body.user_role, 50),
-      portal_acast_id: str(body.portal_acast_id, 100),
+      auth_type: user ? "app_user" : (str(body.portal_acast_id, 100) ? "portal_staff" : "anonymous"),
+      user_email: user ? (user.email || "").slice(0, 200) : "",
+      user_role: user ? (user.role || "").slice(0, 50) : "",
+      portal_acast_id: user ? "" : str(body.portal_acast_id, 100),
       visitor_id: str(body.visitor_id, 64),
       session_id: str(body.session_id, 64),
       logged_at_jst: loggedAtJst,

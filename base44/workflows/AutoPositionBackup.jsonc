@@ -31,7 +31,9 @@
           "call": "invoke_backend_function",
           "with": {
             "function_name": "autoBackupAllEvents",
-            "args": {}
+            "args": {
+              "trigger_token": "7dda1d210825105cf2e12f2e3e76a427bf0ecb0b0ad03b249c376530a766e05f"
+            }
           },
           "then": "end",
           "x-base44": {

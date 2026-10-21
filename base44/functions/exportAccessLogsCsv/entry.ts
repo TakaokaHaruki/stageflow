@@ -1,7 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 
 const esc = (v) => {
-  const s = v === null || v === undefined ? "" : String(v);
+  let s = v === null || v === undefined ? "" : String(v);
+  // CSV式インジェクション対策: セル先頭の数式開始文字（= + - @ タブ CR）はアポストロフィ前置で無効化
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
   return '"' + s.replace(/"/g, '""') + '"';
 };
 

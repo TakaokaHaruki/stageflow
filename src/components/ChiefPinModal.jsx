@@ -5,14 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ShieldCheck, Lock, AlertCircle, RefreshCw, KeyRound } from "lucide-react";
 import ModalShell from "@/components/ModalShell";
 import { toast } from "sonner";
-
-async function sha256(text) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(text);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
+import { setPortalToken } from "@/lib/portalAuth";
 
 function getJstNow() {
   const now = new Date();
@@ -36,13 +29,14 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
   useEffect(() => {
     (async () => {
       try {
-        const records = await base44.entities.PinCode.filter({ acast_id: acastId });
-        const existing = records?.[0];
-        if (!existing || !existing.pin_hash) {
-          setMode("setup");
-        } else {
+        const res = await base44.functions.invoke("portalPinAuth", { action: "status", acast_id: acastId });
+        const data = res?.data || {};
+        if (data.error) {
+          setError("PIN情報の取得に失敗しました");
           setMode("verify");
+          return;
         }
+        setMode(data.has_pin ? "verify" : "setup");
       } catch (e) {
         setError("PIN情報の取得に失敗しました");
         setMode("verify");
@@ -100,26 +94,16 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
 
     setSubmitting(true);
     try {
-      const hash = await sha256(pin);
-      const existing = (await base44.entities.PinCode.filter({ acast_id: acastId }))?.[0];
-      if (existing) {
-        await base44.entities.PinCode.update(existing.id, {
-          pin_hash: hash,
-          reset_requested: false,
-          reset_requested_at_jst: "",
-          created_at_jst: getJstNow(),
-        });
+      // PINはサーバー側でハッシュ化・保存する（pin_hashはクライアントに返さない）
+      const res = await base44.functions.invoke("portalPinAuth", { action: "setup", acast_id: acastId, pin });
+      const data = res?.data || {};
+      if (data.ok) {
+        if (data.token) setPortalToken(data.token);
+        toast.success("PINを設定しました");
+        onSuccess(data.token);
       } else {
-        await base44.entities.PinCode.create({
-          acast_id: acastId,
-          pin_hash: hash,
-          reset_requested: false,
-          reset_requested_at_jst: "",
-          created_at_jst: getJstNow(),
-        });
+        setError(data.error || "PINの保存に失敗しました。もう一度お試しください");
       }
-      toast.success("PINを設定しました");
-      onSuccess();
     } catch (e) {
       setError("PINの保存に失敗しました。もう一度お試しください");
     } finally {
@@ -137,25 +121,22 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
 
     setSubmitting(true);
     try {
-      const hash = await sha256(pin);
-      const records = await base44.entities.PinCode.filter({ acast_id: acastId });
-      const existing = records?.[0];
-      if (!existing) {
+      // PIN照合はサーバー側で行う（失敗回数・ロックもサーバー側で管理）
+      const res = await base44.functions.invoke("portalPinAuth", { action: "verify", acast_id: acastId, pin });
+      const data = res?.data || {};
+      if (data.ok && data.token) {
+        setPortalToken(data.token);
+        onSuccess(data.token);
+      } else if (data.setup) {
         setMode("setup");
-        return;
-      }
-      if (existing.pin_hash === hash) {
-        onSuccess();
+      } else if (data.locked) {
+        setMode("locked");
       } else {
-        const nextAttempts = attempts + 1;
+        const nextAttempts = data.attempts ?? attempts + 1;
         setAttempts(nextAttempts);
-        if (nextAttempts >= MAX_ATTEMPTS) {
-          setMode("locked");
-        } else {
-          setError(`PINが正しくありません（残り${MAX_ATTEMPTS - nextAttempts}回）`);
-          setDigits(["", "", "", ""]);
-          setTimeout(() => inputRefs.current[0]?.focus(), 100);
-        }
+        setError(`PINが正しくありません（残り${MAX_ATTEMPTS - nextAttempts}回）`);
+        setDigits(["", "", "", ""]);
+        setTimeout(() => inputRefs.current[0]?.focus(), 100);
       }
     } catch (e) {
       setError("認証に失敗しました");
@@ -167,14 +148,7 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
   const handleResetRequest = async () => {
     setSubmitting(true);
     try {
-      const records = await base44.entities.PinCode.filter({ acast_id: acastId });
-      const existing = records?.[0];
-      if (existing) {
-        await base44.entities.PinCode.update(existing.id, {
-          reset_requested: true,
-          reset_requested_at_jst: getJstNow(),
-        });
-      }
+      await base44.functions.invoke("portalPinAuth", { action: "reset_request", acast_id: acastId });
       setMode("resetSent");
     } catch (e) {
       toast.error("リセット申請の送信に失敗しました");

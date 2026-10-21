@@ -6,10 +6,10 @@ import { buildClusters, normalizeVenue } from "../../shared/concertMatch.ts";
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
-    // 手動更新は管理者・定期実行はユーザーなしで呼ばれるため、未ログインは許可する
+    // 管理者のみ実行可能（匿名・一般ユーザーからの呼び出しは拒否）
     let user = null;
     try { user = await base44.auth.me(); } catch (e) {}
-    if (user && user.role !== 'admin') {
+    if (!user || user.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 

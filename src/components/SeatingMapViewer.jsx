@@ -4,11 +4,9 @@ import { Check, ChevronRight, MapPin, UsersRound, ZoomIn, ZoomOut } from "lucide
 import { base44 } from "@/api/base44Client";
 import SectionHeader from "@/components/SectionHeader";
 
-function sanitizeSvg(svg) {
-  return (svg || "")
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/\s+on\w+="[^"]*"/gi, "")
-    .replace(/\s+on\w+='[^']*'/gi, "");
+// SVGは<img>経由で描画する（imgとして読み込まれたSVGはスクリプトを実行しないため安全）
+function svgDataUri(svg) {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg || "")}`;
 }
 
 function capacityLabel(capacity) {
@@ -81,7 +79,9 @@ function SvgDisplay({ svgUrl }) {
         onTouchEnd={() => { dragging.current = false; }}
       >
         <div className="flex h-full w-full items-center justify-center" style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`, transformOrigin: "center center" }}>
-          <div className="flex h-full w-full items-center justify-center [&_svg]:max-h-full [&_svg]:max-w-full" dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgContent) }} />
+          {svgContent ? (
+            <img src={svgDataUri(svgContent)} alt="客席配置図" className="max-h-full max-w-full" draggable={false} />
+          ) : null}
         </div>
       </div>
     </div>

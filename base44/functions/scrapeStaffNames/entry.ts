@@ -16,6 +16,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'urlとeventIdは必須です' }, { status: 400 });
     }
 
+    // SSRF対策: 取得先はA-CAST点呼表の正規ドメイン（https）に限定する
+    let parsedUrl;
+    try { parsedUrl = new URL(url); } catch {
+      return Response.json({ error: 'URLの形式が正しくありません' }, { status: 400 });
+    }
+    if (parsedUrl.protocol !== 'https:' || parsedUrl.username || parsedUrl.password) {
+      return Response.json({ error: 'httpsのA-CAST点呼表URLを指定してください' }, { status: 400 });
+    }
+    const requestHost = parsedUrl.hostname;
+    if (requestHost !== 'a-cast.co.jp' && !requestHost.endsWith('.a-cast.co.jp')) {
+      return Response.json({ error: 'A-CASTの点呼表URLのみ指定できます' }, { status: 400 });
+    }
+
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -23,7 +36,7 @@ Deno.serve(async (req) => {
     });
 
     if (!response.ok) {
-      return Response.json({ error: `ページの取得に失敗しました: ${response.status}` }, { status: 400 });
+      return Response.json({ error: 'ページの取得に失敗しました。A-CASTの点呼URLを確認してください' }, { status: 400 });
     }
 
     const html = await response.text();
@@ -159,6 +172,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ staffList });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('scrapeStaffNames error:', error);
+    return Response.json({ error: '処理中にエラーが発生しました' }, { status: 500 });
   }
 });

@@ -1,15 +1,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { collectEventRaw, cleanBackupData, backupSummary, jstNow } from "../../shared/eventBackup.ts";
+import { BACKUP_TRIGGER_TOKEN } from "../../shared/backupTrigger.ts";
 
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
+    const body = await req.json().catch(() => ({}));
     let user = null;
     try { user = await base44.auth.me(); } catch (e) {}
-    if (user && user.role !== 'admin' && user.role !== 'chief') {
+    const isPrivileged = !!user && (user.role === 'admin' || user.role === 'chief');
+    // 定期実行（ワークフロー）は内部トリガートークンで、手動実行はadmin/chiefでのみ許可
+    const triggerOk = !!body.trigger_token && body.trigger_token === BACKUP_TRIGGER_TOKEN;
+    if (!isPrivileged && !triggerOk) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
-    const body = await req.json().catch(() => ({}));
     const is_auto = body.is_auto !== undefined ? !!body.is_auto : true;
     const label = body.label || (is_auto ? '自動バックアップ' : '全イベント一括バックアップ');
     const createdBy = user ? (user.full_name || user.email || '').toString() : 'システム';

@@ -8,12 +8,19 @@ import { Input } from "@/components/ui/input";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SectionHeader from "@/components/SectionHeader";
 
-function sanitizeSvg(svg) {
-  if (!svg) return "";
-  return svg
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/\s+on\w+="[^"]*"/gi, "")
-    .replace(/\s+on\w+='[^']*'/gi, "");
+// プレビューも<img>経由で描画する（imgとして読み込まれたSVGはスクリプトを実行しないため安全）
+function svgDataUri(svg) {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg || "")}`;
+}
+
+// SVGがXMLとして完結しているか（未完成の入力はプレビューしない）
+function isWellFormedSvg(svg) {
+  try {
+    const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
+    return !doc.querySelector("parsererror");
+  } catch {
+    return false;
+  }
 }
 
 function VenueEditModal({ venue, seatingMap, onClose }) {
@@ -137,7 +144,13 @@ function VenueEditModal({ venue, seatingMap, onClose }) {
 
           {svgPreview.trim() && (
             <div className="max-h-80 overflow-auto rounded-md border border-border bg-white p-2">
-              <div className="flex min-h-48 items-center justify-center [&_svg]:max-h-72 [&_svg]:max-w-full" dangerouslySetInnerHTML={{ __html: sanitizeSvg(svgPreview) }} />
+              <div className="flex min-h-48 items-center justify-center">
+                {isWellFormedSvg(svgPreview) ? (
+                  <img src={svgDataUri(svgPreview)} alt="プレビュー" className="max-h-72 max-w-full" draggable={false} />
+                ) : (
+                  <p className="px-4 text-center text-xs text-muted-foreground">SVGが未完成のためプレビューできません</p>
+                )}
+              </div>
             </div>
           )}
           {error && <div className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</div>}

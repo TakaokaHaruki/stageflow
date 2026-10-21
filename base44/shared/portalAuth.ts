@@ -2,7 +2,7 @@
 // サーバー側（バックエンド関数）からのみ利用され、クライアントには公開されない。
 
 const AUTH_KEY = 'eef9245bfeadcabbd62c095963e02f80fc8fa0549d7222cad57bf39c47edbbde';
-const PBKDF2_ITERATIONS = 120000;
+const PBKDF2_ITERATIONS = 100000;
 
 function bytesToHex(bytes) {
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');

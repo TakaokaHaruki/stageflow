@@ -49,7 +49,7 @@ export default async function (req) {
         return Response.json({ error: 'すでにPINが設定されています。管理者にリセットを申請してください' });
       }
       const saltHex = randomSaltHex();
-      const hash = 'pbkdf2$120000$' + saltHex + '$' + (await pbkdf2Hash(pin, saltHex));
+      const hash = 'pbkdf2$100000$' + saltHex + '$' + (await pbkdf2Hash(pin, saltHex));
       const data = {
         pin_hash: hash,
         failed_attempts: 0,

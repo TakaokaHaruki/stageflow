@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { staffInPosition, getChiefNames } from '../../shared/positionStaff.ts';
+import { verifySessionToken } from '../../shared/portalAuth.ts';
 
 const unique = (items = []) => [...new Set(items.filter(Boolean))];
 
@@ -17,6 +18,20 @@ Deno.serve(async (req) => {
 
     if (!chiefAcastId || !targetAcastId || !positionId || !eventId) {
       return Response.json({ error: 'chiefAcastId, targetAcastId, positionId, eventId は必須です' }, { status: 400 });
+    }
+
+    // 認証: アプリユーザー（admin/chief）またはPIN認証済みポータルセッショントークンが必要
+    let isPrivileged = false;
+    try {
+      const caller = await base44.auth.me();
+      isPrivileged = !!caller && ['admin', 'chief'].includes(caller.role);
+    } catch {}
+    if (!isPrivileged) {
+      const portalToken = (body.portal_token || '').toString();
+      const tokenOk = portalToken ? await verifySessionToken(chiefAcastId, portalToken) : false;
+      if (!tokenOk) {
+        return Response.json({ error: 'チーフPIN認証が必要です' }, { status: 401 });
+      }
     }
 
     // チーフ情報を取得

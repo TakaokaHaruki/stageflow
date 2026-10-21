@@ -21,6 +21,7 @@ import StaffFileViewer from "@/components/StaffFileViewer";
 import PdfViewerModal from "@/components/PdfViewerModal";
 import { Phone } from "lucide-react";
 import { formatJaDate } from "@/lib/dateFormat";
+import { getPortalToken, clearPortalToken } from "@/lib/portalAuth";
 
 const STORAGE_KEY = "crewly_acast_id";
 const COMPLIANCE_STORAGE_PREFIX = "crewly_compliance_";
@@ -310,6 +311,7 @@ export default function StaffPortal() {
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
+    clearPortalToken();
     // Keep compliance agreements on logout
     setAcastId("");
     setStaffName(null);
@@ -343,6 +345,7 @@ export default function StaffPortal() {
         staffName: pendingRemove.staffName,
         positionId: pendingRemove.position.id,
         eventId: pendingRemove.position._eventId,
+        portal_token: getPortalToken(),
       });
       const data = res?.data;
       if (data?.error) {
@@ -443,6 +446,7 @@ export default function StaffPortal() {
         targetAcastId: scannedData.trim(),
         positionId: qrScanPosition.id,
         eventId: qrScanPosition._eventId,
+        portal_token: getPortalToken(),
       });
       const data = res?.data;
       if (data?.error) {
