@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, ShieldCheck, History, Lock, QrCode, Calendar, LayoutTemplate, Bell, HelpCircle, HardDriveDownload, UserCheck, Eye } from "lucide-react";
+import { Users, ShieldCheck, History, Lock, QrCode, Calendar, LayoutTemplate, Bell, HelpCircle, HardDriveDownload, UserCheck, Eye, KeyRound } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserRoleManager from "@/components/UserRoleManager";
 import ApprovalRequestManager from "@/components/ApprovalRequestManager";
@@ -15,6 +15,7 @@ import UserNotificationManager from "@/components/UserNotificationManager";
 import LoginHelpManager from "@/components/LoginHelpManager";
 import BackupManager from "@/components/BackupManager";
 import EventScopeSelector from "@/components/admin/EventScopeSelector";
+import PinCodeManager from "@/components/PinCodeManager";
 import { useUserRole } from "@/hooks/useUserRole";
 import SectionTabBar from "@/components/SectionTabBar";
 
@@ -22,6 +23,7 @@ const SECTIONS = [
   { id: "users", label: "ユーザー管理", icon: Users },
   { id: "approvals", label: "承認申請", icon: UserCheck },
   { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
+  { id: "pin_codes", label: "PIN管理", icon: KeyRound },
   { id: "operation_logs", label: "操作ログ", icon: History },
   { id: "access_restriction", label: "アクセス制限", icon: Lock },
   { id: "event_view_limit", label: "イベント閲覧制限", icon: Eye },
@@ -72,6 +74,7 @@ export default function AdminSettingsPage() {
       case "approvals": return <ApprovalRequestManager />;
       case "event_view_limit": return <EventViewLimitManager />;
       case "portal_restriction": return <PortalRestrictionManager />;
+      case "pin_codes": return <PinCodeManager />;
       case "venues": return <VenueManager />;
       case "global_banner": return <GlobalBannerManager />;
       case "user_notification": return <UserNotificationManager />;

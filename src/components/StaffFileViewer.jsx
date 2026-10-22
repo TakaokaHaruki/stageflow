@@ -5,6 +5,7 @@ import { FileText, ImageIcon, ChevronRight, Loader2, FolderOpen } from "lucide-r
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import PdfViewerModal from "@/components/PdfViewerModal";
 import { trackPortalView } from "@/lib/accessTracker";
+import { isSafeHttpUrl } from "@/lib/urlSafety";
 
 function isFileVisibleToStaff(file, staffName, staffRoles) {
   if (file.visibility === "public") return true;
@@ -77,7 +78,8 @@ export default function StaffFileViewer({ events, staffName, staffRoles, positio
     _positionName: r._positionName,
   }));
 
-  const allFiles = [...files, ...positionFiles];
+  // 危険なスキーム（javascript: 等）のURLは一覧に表示しない（window.open/PDFビュアのhrefへの流入を遮断）
+  const allFiles = [...files, ...positionFiles].filter((f) => isSafeHttpUrl(f.file_url));
 
   if (loading) {
     return (

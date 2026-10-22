@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerSource from "@/lib/pdfWorkerSource";
 import { FileWarning, Loader2 } from "lucide-react";
+import { isSafeHttpUrl } from "@/lib/urlSafety";
 
 // ワーカーソースは既存の src/lib/pdfWorkerSource.js（pdfjs v4 同梱のワーカ文字列）を使用。
 // Blob URL 化して workerSrc に設定することで、バンドラの解決問題を回避する。
@@ -102,6 +103,7 @@ export default function PdfCanvasViewer({ fileUrl, zoomScale, onStatus }) {
         <div className="flex flex-col items-center justify-center gap-3 py-20 text-white/80 px-4">
           <FileWarning className="w-10 h-10" />
           <p className="text-sm text-center">PDFを読み込めませんでした</p>
+          {isSafeHttpUrl(fileUrl) && (
           <a
             href={fileUrl}
             target="_blank"
@@ -110,6 +112,7 @@ export default function PdfCanvasViewer({ fileUrl, zoomScale, onStatus }) {
           >
             別タブで開く
           </a>
+          )}
         </div>
       )}
 

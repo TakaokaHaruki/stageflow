@@ -28,7 +28,16 @@ export default async function (req) {
     const svc = base44.asServiceRole;
     const findPin = async () => (await svc.entities.PinCode.filter({ acast_id: acastId }))[0] || null;
 
+    // 呼び出し元のアプリユーザーを取得（未ログイン・ポータル利用者はnull）
+    let caller = null;
+    try { caller = await base44.auth.me(); } catch (e) {}
+    const isAdminCaller = !!(caller && caller.role === 'admin');
+
     if (action === 'status') {
+      // has_pinの有無はacast_idの列挙に利用できるため、管理者のみ応答する
+      if (!isAdminCaller) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
       const rec = await findPin();
       const now = jstNowStr();
       const locked = !!(rec?.locked_until_jst && rec.locked_until_jst > now);
@@ -36,6 +45,10 @@ export default async function (req) {
     }
 
     if (action === 'setup') {
+      // PIN初回設定は本人確認できないacast_idを受け付けるため、ログイン済みの管理者のみ許可する
+      if (!isAdminCaller) {
+        return Response.json({ error: 'PINの設定はアプリの管理者アカウントから行ってください' }, { status: 403 });
+      }
       const pin = String(body.pin || '');
       if (!/^\d{4}$/.test(pin)) {
         return Response.json({ error: 'PINは4桁の数字で入力してください' });
@@ -101,6 +114,16 @@ export default async function (req) {
         await svc.entities.PinCode.update(rec.id, {
           reset_requested: true,
           reset_requested_at_jst: jstNowStr(),
+        });
+      } else {
+        // 未設定のスタッフからの申請も管理者に見えるよう、記録を作成する
+        await svc.entities.PinCode.create({
+          acast_id: acastId,
+          pin_hash: '',
+          failed_attempts: 0,
+          reset_requested: true,
+          reset_requested_at_jst: jstNowStr(),
+          created_at_jst: jstNowStr(),
         });
       }
       return Response.json({ ok: true });

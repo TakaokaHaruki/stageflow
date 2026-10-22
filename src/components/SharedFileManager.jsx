@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import SectionHeader from "@/components/SectionHeader";
+import { isSafeHttpUrl } from "@/lib/urlSafety";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import EventLockBanner from "@/components/EventLockBanner";
 import { LOCK_TOOLTIP_TEXT } from "@/lib/eventLock";
@@ -373,15 +374,22 @@ export default function SharedFileManager({ eventId, showAll = false, isLocked =
                   <FileText className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <a
-                    href={f.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-sm hover:text-primary hover:underline flex items-center gap-1 truncate"
-                  >
-                    {f.title}
-                    <Download className="w-3 h-3 shrink-0 opacity-60" />
-                  </a>
+                  {isSafeHttpUrl(f.file_url) ? (
+                    <a
+                      href={f.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-sm hover:text-primary hover:underline flex items-center gap-1 truncate"
+                    >
+                      {f.title}
+                      <Download className="w-3 h-3 shrink-0 opacity-60" />
+                    </a>
+                  ) : (
+                    <span className="font-medium text-sm text-destructive flex items-center gap-1 truncate">
+                      {f.title}
+                      <span className="text-[10px] text-muted-foreground shrink-0">（URLが不正なため開けません）</span>
+                    </span>
+                  )}
                   {f.description && <p className="text-xs text-muted-foreground mt-0.5">{f.description}</p>}
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <div className="relative">

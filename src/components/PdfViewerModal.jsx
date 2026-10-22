@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { X, FileWarning, ExternalLink, ZoomIn, ZoomOut, Maximize2, Hand } from "lucide-react";
 import PdfCanvasViewer from "@/components/PdfCanvasViewer";
+import { isSafeHttpUrl } from "@/lib/urlSafety";
 
 function getFileType(url, fileName, forcePdf) {
   if (forcePdf) return "pdf";
@@ -73,6 +74,33 @@ export default function PdfViewerModal({ fileUrl, fileName, forcePdf, onClose })
       container.removeEventListener("touchend", handleTouchEnd);
     };
   }, [zoomMode]);
+
+  // 危険なスキーム（javascript: 等）のURLは、href/img/workersいずれのシンクにも渡さない
+  if (!isSafeHttpUrl(fileUrl)) {
+    return (
+      <motion.div
+        className="fixed inset-0 z-[70] h-[100dvh] flex flex-col bg-black/85 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <div className="flex items-center justify-between px-3 py-2.5 bg-card border-b border-border shrink-0 safe-area-top">
+          <p className="text-sm font-semibold truncate pr-2">{fileName || "ファイル"}</p>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            aria-label="閉じる"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-white/70 py-20">
+          <FileWarning className="w-10 h-10" />
+          <p className="text-sm">このURLは開けません（許可されていない形式です）</p>
+        </div>
+      </motion.div>
+    );
+  }
 
   const zoomIn = () => setScale((s) => Math.min(5, s + 0.25));
   const zoomOut = () => setScale((s) => Math.max(0.5, s - 0.25));

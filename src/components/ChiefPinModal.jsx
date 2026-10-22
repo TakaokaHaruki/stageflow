@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -14,100 +14,32 @@ function getJstNow() {
 }
 
 export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }) {
-  const [mode, setMode] = useState("loading"); // loading | setup | verify | locked | resetSent
+  // PIN未設定時の初回設定はポータルからはできない（管理者がアプリ側で設定する）ため、
+  // ポータルでは verify / notSet / locked / resetSent のみを扱う
+  const [mode, setMode] = useState("verify");
   const [digits, setDigits] = useState(["", "", "", ""]);
-  const [confirmDigits, setConfirmDigits] = useState(["", "", "", ""]);
   const [error, setError] = useState("");
   const [attempts, setAttempts] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  const [showConfirmStep, setShowConfirmStep] = useState(false);
   const inputRefs = useRef([]);
-  const confirmInputRefs = useRef([]);
 
   const MAX_ATTEMPTS = 5;
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await base44.functions.invoke("portalPinAuth", { action: "status", acast_id: acastId });
-        const data = res?.data || {};
-        if (data.error) {
-          setError("PIN情報の取得に失敗しました");
-          setMode("verify");
-          return;
-        }
-        setMode(data.has_pin ? "verify" : "setup");
-      } catch (e) {
-        setError("PIN情報の取得に失敗しました");
-        setMode("verify");
-      }
-    })();
-  }, [acastId]);
-
-  const handleDigitChange = (index, value, isConfirm = false) => {
+  const handleDigitChange = (index, value) => {
     const digit = value.replace(/\D/g, "").slice(-1);
-    const setter = isConfirm ? setConfirmDigits : setDigits;
-    const refs = isConfirm ? confirmInputRefs : inputRefs;
-    setter((prev) => {
+    setDigits((prev) => {
       const next = [...prev];
       next[index] = digit;
       return next;
     });
     if (digit && index < 3) {
-      refs.current[index + 1]?.focus();
+      inputRefs.current[index + 1]?.focus();
     }
   };
 
-  const handleKeyDown = (index, e, isConfirm = false) => {
+  const handleKeyDown = (index, e) => {
     if (e.key === "Backspace" && !digits[index] && index > 0) {
-      const refs = isConfirm ? confirmInputRefs : inputRefs;
-      refs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleSetup = async () => {
-    setError("");
-    const pin = digits.join("");
-    if (pin.length !== 4) {
-      setError("4桁すべて入力してください");
-      return;
-    }
-
-    if (!showConfirmStep) {
-      setShowConfirmStep(true);
-      setTimeout(() => confirmInputRefs.current[0]?.focus(), 100);
-      return;
-    }
-
-    const confirmPin = confirmDigits.join("");
-    if (confirmPin.length !== 4) {
-      setError("確認用の4桁をすべて入力してください");
-      return;
-    }
-
-    if (pin !== confirmPin) {
-      setError("PINが一致しません。もう一度入力してください");
-      setConfirmDigits(["", "", "", ""]);
-      setTimeout(() => confirmInputRefs.current[0]?.focus(), 100);
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      // PINはサーバー側でハッシュ化・保存する（pin_hashはクライアントに返さない）
-      const res = await base44.functions.invoke("portalPinAuth", { action: "setup", acast_id: acastId, pin });
-      const data = res?.data || {};
-      if (data.ok) {
-        if (data.token) setPortalToken(data.token);
-        toast.success("PINを設定しました");
-        onSuccess(data.token);
-      } else {
-        setError(data.error || "PINの保存に失敗しました。もう一度お試しください");
-      }
-    } catch (e) {
-      setError("PINの保存に失敗しました。もう一度お試しください");
-    } finally {
-      setSubmitting(false);
+      inputRefs.current[index - 1]?.focus();
     }
   };
 
@@ -128,7 +60,7 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
         setPortalToken(data.token);
         onSuccess(data.token);
       } else if (data.setup) {
-        setMode("setup");
+        setMode("notSet");
       } else if (data.locked) {
         setMode("locked");
       } else {
@@ -145,19 +77,19 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
     }
   };
 
-  const handleResetRequest = async () => {
+  const handleSetupRequest = async () => {
     setSubmitting(true);
     try {
       await base44.functions.invoke("portalPinAuth", { action: "reset_request", acast_id: acastId });
       setMode("resetSent");
     } catch (e) {
-      toast.error("リセット申請の送信に失敗しました");
+      toast.error("設定申請の送信に失敗しました");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const renderDigitInputs = (values, refs, isConfirm) => (
+  const renderDigitInputs = (values, refs) => (
     <div className="flex justify-center gap-3">
       {values.map((d, i) => (
         <input
@@ -167,30 +99,22 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
           inputMode="numeric"
           maxLength={1}
           value={d}
-          onChange={(e) => handleDigitChange(i, e.target.value, isConfirm)}
-          onKeyDown={(e) => handleKeyDown(i, e, isConfirm)}
+          onChange={(e) => handleDigitChange(i, e.target.value)}
+          onKeyDown={(e) => handleKeyDown(i, e)}
           className="w-14 h-14 text-center text-2xl font-bold rounded-xl border-2 border-border bg-background focus:border-primary focus:outline-none transition-colors"
-          autoFocus={i === 0 && !isConfirm}
+          autoFocus={i === 0}
           autoComplete="off"
         />
       ))}
     </div>
   );
 
-  if (mode === "loading") {
-    return (
-      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-md">
-        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <ModalShell onClose={onClose} maxWidth="max-w-sm">
           {/* Header */}
           <div className="flex flex-col items-center text-center mb-5">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-              {mode === "setup" ? (
+              {mode === "notSet" ? (
                 <KeyRound className="w-6 h-6 text-primary" />
               ) : mode === "locked" ? (
                 <Lock className="w-6 h-6 text-destructive" />
@@ -199,10 +123,8 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
               )}
             </div>
             <h2 className="font-bold text-base">
-              {mode === "setup"
-                ? showConfirmStep
-                  ? "PINを再入力"
-                  : "PINを設定"
+              {mode === "notSet"
+                ? "PINが未設定です"
                 : mode === "verify"
                   ? "PIN認証"
                   : mode === "locked"
@@ -210,10 +132,8 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
                     : "申請送信済み"}
             </h2>
             <p className="text-xs text-muted-foreground mt-1">
-              {mode === "setup"
-                ? showConfirmStep
-                  ? "確認のため同じPINを入力してください"
-                  : `${staffName}さん、チーフ認証用の4桁PINを設定してください`
+              {mode === "notSet"
+                ? `${staffName}さんのチーフPINはまだ設定されていません`
                 : mode === "verify"
                   ? "チーフ認証用のPINを入力してください"
                   : mode === "locked"
@@ -222,64 +142,10 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
             </p>
           </div>
 
-          {/* Setup mode */}
-          {mode === "setup" && (
-            <>
-              {renderDigitInputs(digits, inputRefs, false)}
-              {showConfirmStep && (
-                <>
-                  <p className="text-center text-xs text-muted-foreground mt-4 mb-2">確認用</p>
-                  {renderDigitInputs(confirmDigits, confirmInputRefs, true)}
-                </>
-              )}
-              <AnimatePresence>
-                {error && (
-                  <motion.p
-                    className="flex items-center justify-center gap-1.5 text-xs text-destructive mt-3"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                  >
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    {error}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-              <div className="flex gap-2 mt-5">
-                <Button variant="outline" className="flex-1" onClick={onClose} disabled={submitting}>
-                  キャンセル
-                </Button>
-                <Button className="flex-1 gap-1.5" onClick={handleSetup} disabled={submitting}>
-                  {submitting ? (
-                    <><RefreshCw className="w-4 h-4 animate-spin" />処理中...</>
-                  ) : showConfirmStep ? (
-                    "設定する"
-                  ) : (
-                    "次へ"
-                  )}
-                </Button>
-              </div>
-              {showConfirmStep && (
-                <button
-                  className="w-full text-center text-xs text-muted-foreground hover:text-foreground mt-3"
-                  onClick={() => {
-                    setShowConfirmStep(false);
-                    setDigits(["", "", "", ""]);
-                    setConfirmDigits(["", "", "", ""]);
-                    setError("");
-                    setTimeout(() => inputRefs.current[0]?.focus(), 100);
-                  }}
-                >
-                  入力し直す
-                </button>
-              )}
-            </>
-          )}
-
           {/* Verify mode */}
           {mode === "verify" && (
             <>
-              {renderDigitInputs(digits, inputRefs, false)}
+              {renderDigitInputs(digits, inputRefs)}
               <AnimatePresence>
                 {error && (
                   <motion.p
@@ -302,10 +168,35 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
               </Button>
               <button
                 className="w-full text-center text-xs text-muted-foreground hover:text-foreground mt-3"
-                onClick={handleResetRequest}
+                onClick={handleSetupRequest}
                 disabled={submitting}
               >
                 PINを忘れた方はこちら
+              </button>
+            </>
+          )}
+
+          {/* Not set mode */}
+          {mode === "notSet" && (
+            <>
+              <p className="text-center text-sm text-muted-foreground mt-2 leading-relaxed">
+                チーフPINの設定はアプリの管理者が行います。
+                <br />
+                管理者に設定を依頼してください。
+              </p>
+              <Button
+                variant="outline"
+                className="w-full gap-1.5 mt-5"
+                onClick={handleSetupRequest}
+                disabled={submitting}
+              >
+                {submitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : "設定を申請"}
+              </Button>
+              <button
+                className="w-full text-center text-xs text-muted-foreground hover:text-foreground mt-3"
+                onClick={onClose}
+              >
+                閉じる
               </button>
             </>
           )}
@@ -319,7 +210,7 @@ export default function ChiefPinModal({ acastId, staffName, onSuccess, onClose }
               <Button
                 variant="outline"
                 className="w-full gap-1.5 mt-5"
-                onClick={handleResetRequest}
+                onClick={handleSetupRequest}
                 disabled={submitting}
               >
                 {submitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : "リセット申請"}
