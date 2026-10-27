@@ -17,6 +17,7 @@ import Account from "./pages/Account";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
 import StaffPortal from "./pages/StaffPortal";
 import Events from "./pages/Events";
+import EventRecords from "./pages/EventRecords";
 import EventDetail from "./pages/EventDetail";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -65,6 +66,7 @@ const AuthenticatedApp = () => {
           <Route path="/account" element={<Account />} />
           <Route path="/admin-settings" element={<AdminSettingsPage />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/event-records" element={<EventRecords />} />
           <Route path="/support" element={<SupportChat />} />
           <Route path="/concerts" element={<Concerts />} />
           <Route path="/management" element={<ManagementSettings />} />
