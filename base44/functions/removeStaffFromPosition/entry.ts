@@ -1,28 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { verifySessionToken } from '../../shared/portalAuth.ts';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { chiefAcastId, staffName, positionId, eventId, portal_token } = await req.json();
+    const { chiefAcastId, staffName, positionId, eventId } = await req.json();
 
     // 入力検証
     if (!chiefAcastId || !staffName || !positionId || !eventId) {
       return Response.json({ error: '必要なパラメータが不足しています' }, { status: 400 });
-    }
-
-    // 認証: アプリユーザー（admin/chief）またはPIN認証済みポータルセッショントークンが必要
-    let isPrivileged = false;
-    try {
-      const caller = await base44.auth.me();
-      isPrivileged = !!caller && ['admin', 'chief'].includes(caller.role);
-    } catch {}
-    if (!isPrivileged) {
-      const portalToken = (portal_token || '').toString();
-      const tokenOk = portalToken ? await verifySessionToken(chiefAcastId, portalToken) : false;
-      if (!tokenOk) {
-        return Response.json({ error: 'チーフPIN認証が必要です' }, { status: 401 });
-      }
     }
 
     // チーフの存在確認（asServiceRole を使用 - ポータルの未ログインユーザー対応）

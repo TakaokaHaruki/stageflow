@@ -15,13 +15,11 @@ import EventTimeDisplay from "@/components/EventTimeDisplay";
 import PortalMaintenance from "@/components/PortalMaintenance";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import AllPositionsModal from "@/components/AllPositionsModal";
-import ChiefPinModal from "@/components/ChiefPinModal";
 import PositionDetailExpand from "@/components/PositionDetailExpand";
 import StaffFileViewer from "@/components/StaffFileViewer";
 import PdfViewerModal from "@/components/PdfViewerModal";
 import { Phone } from "lucide-react";
 import { formatJaDate } from "@/lib/dateFormat";
-import { getPortalToken, clearPortalToken } from "@/lib/portalAuth";
 
 const STORAGE_KEY = "crewly_acast_id";
 const COMPLIANCE_STORAGE_PREFIX = "crewly_compliance_";
@@ -59,7 +57,6 @@ export default function StaffPortal() {
   const [showAllPositions, setShowAllPositions] = useState(false);
   const [emergencyContacts, setEmergencyContacts] = useState([]);
   const [contactsError, setContactsError] = useState(false);
-  const [showPinModal, setShowPinModal] = useState(false);
   const [myChiefEventIds, setMyChiefEventIds] = useState(new Set());
   const [loginHelpText, setLoginHelpText] = useState("");
   const [loginHelpPdfUrl, setLoginHelpPdfUrl] = useState("");
@@ -197,22 +194,12 @@ export default function StaffPortal() {
 
       const isChiefUser = myChiefSet.size > 0;
 
-      // Check if chief PIN auth is enabled
-      let pinAuthEnabled = true;
-      try {
-        const pinConfigs = await base44.entities.AppConfig.filter({ key: "chief_pin_auth_enabled" });
-        if (pinConfigs?.[0]) {
-          pinAuthEnabled = pinConfigs[0].value_bool !== false;
-        }
-      } catch (_) {}
-
       // Store auth data temporarily and show confirmation modal
       setPendingAuthData({
         staffName: staff.name,
         acastId: id,
         eventId: activeEvents[0]?.id || null,
         isChief: isChiefUser,
-        pinAuthEnabled
       });
       setPositions(allPositions);
       setEvents(activeEvents.filter((e) => allPositions.some((p) => p._eventId === e.id)));
@@ -221,14 +208,10 @@ export default function StaffPortal() {
         setShowConfirmation(true);
       } else {
         // Already agreed, skip to login
-        if (isChiefUser && pinAuthEnabled) {
-          setShowPinModal(true);
-        } else {
-          setStaffName(staff.name);
-          localStorage.setItem(STORAGE_KEY, id);
-          setAcastId(id);
-          setPendingAuthData(null);
-        }
+        setStaffName(staff.name);
+        localStorage.setItem(STORAGE_KEY, id);
+        setAcastId(id);
+        setPendingAuthData(null);
       }
     } catch (e) {
       setError("データの取得に失敗しました。");
@@ -253,28 +236,9 @@ export default function StaffPortal() {
 
     setShowComplianceModal(false);
 
-    if (pendingAuthData.isChief && pendingAuthData.pinAuthEnabled !== false) {
-      setShowPinModal(true);
-      return;
-    }
-
     setStaffName(pendingAuthData.staffName);
     localStorage.setItem(STORAGE_KEY, pendingAuthData.acastId);
     setAcastId(pendingAuthData.acastId);
-    setPendingAuthData(null);
-  };
-
-  const handlePinSuccess = () => {
-    if (!pendingAuthData) return;
-    setStaffName(pendingAuthData.staffName);
-    localStorage.setItem(STORAGE_KEY, pendingAuthData.acastId);
-    setAcastId(pendingAuthData.acastId);
-    setPendingAuthData(null);
-    setShowPinModal(false);
-  };
-
-  const handlePinClose = () => {
-    setShowPinModal(false);
     setPendingAuthData(null);
   };
 
@@ -311,7 +275,6 @@ export default function StaffPortal() {
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
-    clearPortalToken();
     // Keep compliance agreements on logout
     setAcastId("");
     setStaffName(null);
@@ -328,7 +291,6 @@ export default function StaffPortal() {
     setRemoving(false);
     setEmergencyContacts([]);
     setContactsError(false);
-    setShowPinModal(false);
     setMyChiefEventIds(new Set());
   }, []);
 
@@ -345,7 +307,6 @@ export default function StaffPortal() {
         staffName: pendingRemove.staffName,
         positionId: pendingRemove.position.id,
         eventId: pendingRemove.position._eventId,
-        portal_token: getPortalToken(),
       });
       const data = res?.data;
       if (data?.error) {
@@ -446,7 +407,6 @@ export default function StaffPortal() {
         targetAcastId: scannedData.trim(),
         positionId: qrScanPosition.id,
         eventId: qrScanPosition._eventId,
-        portal_token: getPortalToken(),
       });
       const data = res?.data;
       if (data?.error) {
@@ -666,15 +626,6 @@ export default function StaffPortal() {
           )}
 
         </motion.div>
-
-        {showPinModal && pendingAuthData && (
-          <ChiefPinModal
-            acastId={pendingAuthData.acastId}
-            staffName={pendingAuthData.staffName}
-            onSuccess={handlePinSuccess}
-            onClose={handlePinClose}
-          />
-        )}
 
         {showLoginHelpPdf && (
           <PdfViewerModal
@@ -1001,14 +952,6 @@ export default function StaffPortal() {
         />
       )}
 
-      {showPinModal && pendingAuthData && (
-        <ChiefPinModal
-          acastId={pendingAuthData.acastId}
-          staffName={pendingAuthData.staffName}
-          onSuccess={handlePinSuccess}
-          onClose={handlePinClose}
-        />
-      )}
     </div>
   );
 }
