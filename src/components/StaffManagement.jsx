@@ -225,9 +225,8 @@ export default function StaffManagement({ eventId, isLocked = false }) {
               size="sm"
               variant="outline"
               className="gap-1 text-xs shrink-0"
-              onClick={() => editable && setShowScrapeModal(true)}
-              disabled={!editable}
-              title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}
+              disabled
+              title="A-CASTがアプリからのアクセスを遮断しているため、現在は自動取得できません。CSV登録をご利用ください。"
             >
               <Download className="w-3 h-3" />点呼表から取得
             </Button>
