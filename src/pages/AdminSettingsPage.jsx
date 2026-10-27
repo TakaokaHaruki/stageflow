@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, ShieldCheck, History, Calendar, LayoutTemplate, HardDriveDownload } from "lucide-react";
+import { Users, UserCheck, HelpCircle, ShieldCheck, Lock, Eye, History, QrCode, LayoutTemplate, Bell, HardDriveDownload, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserRoleManager from "@/components/UserRoleManager";
 import ApprovalRequestManager from "@/components/ApprovalRequestManager";
@@ -25,9 +25,9 @@ const GROUPS = [
     label: "ユーザーと承認",
     icon: Users,
     children: [
-      { id: "users", label: "ユーザー管理" },
-      { id: "approvals", label: "承認申請" },
-      { id: "login_help", label: "ログイン案内" },
+      { id: "users", label: "ユーザー管理", icon: Users },
+      { id: "approvals", label: "承認申請", icon: UserCheck },
+      { id: "login_help", label: "ログイン案内", icon: HelpCircle },
     ],
   },
   {
@@ -35,9 +35,9 @@ const GROUPS = [
     label: "アクセス制御",
     icon: ShieldCheck,
     children: [
-      { id: "portal_restriction", label: "ポータル制限" },
-      { id: "access_restriction", label: "アクセス制限" },
-      { id: "event_view_limit", label: "イベント閲覧制限" },
+      { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
+      { id: "access_restriction", label: "アクセス制限", icon: Lock },
+      { id: "event_view_limit", label: "イベント閲覧制限", icon: Eye },
     ],
   },
   {
@@ -45,8 +45,8 @@ const GROUPS = [
     label: "ログとQR",
     icon: History,
     children: [
-      { id: "operation_logs", label: "操作ログ" },
-      { id: "staff_qr", label: "スタッフQR" },
+      { id: "operation_logs", label: "操作ログ", icon: History },
+      { id: "staff_qr", label: "スタッフQR", icon: QrCode },
     ],
   },
   {
@@ -54,16 +54,16 @@ const GROUPS = [
     label: "会場と通知",
     icon: LayoutTemplate,
     children: [
-      { id: "venues", label: "会場管理" },
-      { id: "global_banner", label: "グローバル通知" },
-      { id: "user_notification", label: "ユーザー通知" },
+      { id: "venues", label: "会場管理", icon: LayoutTemplate },
+      { id: "global_banner", label: "グローバル通知", icon: Bell },
+      { id: "user_notification", label: "ユーザー通知", icon: Bell },
     ],
   },
   {
     id: "backup",
     label: "バックアップ",
     icon: HardDriveDownload,
-    children: [{ id: "backup", label: "バックアップ" }],
+    children: [{ id: "backup", label: "バックアップ", icon: HardDriveDownload }],
   },
 ];
 
