@@ -20,6 +20,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
   const [existingNames, setExistingNames] = useState(new Set());
   const [editedNames, setEditedNames] = useState({});
   const [editingIndex, setEditingIndex] = useState(null);
+  const [errorDetail, setErrorDetail] = useState(null);
   // which tab triggered Phase2 (to return to correct tab)
   const [sourceTab, setSourceTab] = useState("history");
 
@@ -41,6 +42,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
     if (!targetUrl) return;
     setLoading(true);
     setError(null);
+    setErrorDetail(null);
     setStaffList(null);
     setResult(null);
 
@@ -59,6 +61,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
       const data = unwrapFunctionResponse(res);
       if (data.error) {
         setError(data.error);
+        setErrorDetail(data.detail || null);
       } else if (!data.staffList || data.staffList.length === 0) {
         setError(data.message || '名前が見つかりませんでした');
       } else {
@@ -75,7 +78,9 @@ export default function StaffScrapeModal({ eventId, onClose }) {
         setGenders(initGenders);
       }
     } catch (err) {
-      setError(err?.response?.data?.error || err.message || "取得中にエラーが発生しました");
+      const body = err?.response?.data || null;
+      setError(body?.error || err.message || "取得中にエラーが発生しました");
+      setErrorDetail(body?.detail || null);
     } finally {
       setLoading(false);
     }
@@ -104,6 +109,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
     if (selectedStaff.length === 0) { setError("スタッフが選択されていません"); return; }
     setLoading(true);
     setError(null);
+    setErrorDetail(null);
     try {
       const res = await base44.functions.invoke("scrapeStaffNames", { url: url.trim(), eventId, selectedStaff });
       const data = unwrapFunctionResponse(res);
@@ -416,8 +422,19 @@ export default function StaffScrapeModal({ eventId, onClose }) {
 
           {/* Error */}
           {error && (
-            <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-3 text-sm text-destructive flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />{error}
+            <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-3 text-sm text-destructive">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />{error}
+              </div>
+              {errorDetail && (
+                <div className="mt-2 pt-2 border-t border-destructive/20 text-[10px] leading-relaxed text-destructive/80 space-y-0.5">
+                  <p>取得状況：{errorDetail.status ? `HTTP ${errorDetail.status}` : "接続できませんでした"}／文字コード {errorDetail.charset || "不明"}／本文 {errorDetail.htmlLength ?? 0} 文字{errorDetail.hasStaffTable ? "／スタッフ表あり" : ""}</p>
+                  {errorDetail.finalUrl && errorDetail.finalUrl !== url.trim() && (
+                    <p className="break-all">遷移先：{errorDetail.finalUrl}</p>
+                  )}
+                  <p className="text-destructive/60">この情報を添えてご連絡いただくと調査がスムーズです。</p>
+                </div>
+              )}
             </div>
           )}
         </div>
