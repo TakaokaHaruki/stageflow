@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, ShieldCheck, History, Lock, QrCode, Calendar, LayoutTemplate, Bell, HelpCircle, HardDriveDownload, UserCheck, Eye } from "lucide-react";
+import { Users, ShieldCheck, History, Calendar, LayoutTemplate, HardDriveDownload } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserRoleManager from "@/components/UserRoleManager";
 import ApprovalRequestManager from "@/components/ApprovalRequestManager";
@@ -16,21 +16,55 @@ import LoginHelpManager from "@/components/LoginHelpManager";
 import BackupManager from "@/components/BackupManager";
 import EventScopeSelector from "@/components/admin/EventScopeSelector";
 import { useUserRole } from "@/hooks/useUserRole";
-import SectionTabBar from "@/components/SectionTabBar";
+import AdminSettingsNav from "@/components/admin/AdminSettingsNav";
 
-const SECTIONS = [
-  { id: "users", label: "ユーザー管理", icon: Users },
-  { id: "approvals", label: "承認申請", icon: UserCheck },
-  { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
-  { id: "operation_logs", label: "操作ログ", icon: History },
-  { id: "access_restriction", label: "アクセス制限", icon: Lock },
-  { id: "event_view_limit", label: "イベント閲覧制限", icon: Eye },
-  { id: "staff_qr", label: "スタッフQR", icon: QrCode },
-  { id: "venues", label: "会場管理", icon: LayoutTemplate },
-  { id: "global_banner", label: "グローバル通知", icon: Bell },
-  { id: "user_notification", label: "ユーザー通知", icon: Bell },
-  { id: "login_help", label: "ログイン案内", icon: HelpCircle },
-  { id: "backup", label: "バックアップ", icon: HardDriveDownload },
+// 似た機能をグループ化してタブの増殖を防ぐ
+const GROUPS = [
+  {
+    id: "users",
+    label: "ユーザーと承認",
+    icon: Users,
+    children: [
+      { id: "users", label: "ユーザー管理" },
+      { id: "approvals", label: "承認申請" },
+      { id: "login_help", label: "ログイン案内" },
+    ],
+  },
+  {
+    id: "access",
+    label: "アクセス制御",
+    icon: ShieldCheck,
+    children: [
+      { id: "portal_restriction", label: "ポータル制限" },
+      { id: "access_restriction", label: "アクセス制限" },
+      { id: "event_view_limit", label: "イベント閲覧制限" },
+    ],
+  },
+  {
+    id: "records",
+    label: "ログとQR",
+    icon: History,
+    children: [
+      { id: "operation_logs", label: "操作ログ" },
+      { id: "staff_qr", label: "スタッフQR" },
+    ],
+  },
+  {
+    id: "venue",
+    label: "会場と通知",
+    icon: LayoutTemplate,
+    children: [
+      { id: "venues", label: "会場管理" },
+      { id: "global_banner", label: "グローバル通知" },
+      { id: "user_notification", label: "ユーザー通知" },
+    ],
+  },
+  {
+    id: "backup",
+    label: "バックアップ",
+    icon: HardDriveDownload,
+    children: [{ id: "backup", label: "バックアップ" }],
+  },
 ];
 
 const EVENT_SCOPED = new Set(["operation_logs", "access_restriction", "staff_qr"]);
@@ -84,12 +118,7 @@ export default function AdminSettingsPage() {
   return (
     <div className="mx-auto max-w-[1400px] px-1.5 pb-2">
         {/* Section bar */}
-        <SectionTabBar
-          items={SECTIONS}
-          activeId={section}
-          onSelect={setSection}
-          className="sticky top-[var(--app-header-height)] z-40 mb-3"
-        />
+        <AdminSettingsNav groups={GROUPS} activeSection={section} onSelect={setSection} />
 
         {EVENT_SCOPED.has(section) && (
           <EventScopeSelector value={selectedEventId} onChange={setSelectedEventId} />
