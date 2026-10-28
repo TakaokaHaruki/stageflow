@@ -60,7 +60,7 @@ export default function EventRecords() {
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-3 px-2 py-2">
-      <SectionTabBar items={VIEW_MODES} activeId={mode} onSelect={setMode} className="rounded-lg" />
+      <SectionTabBar items={VIEW_MODES} activeId={mode} onSelect={setMode} />
 
       {mode === "event" && eventOptions.length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
@@ -109,7 +109,6 @@ export default function EventRecords() {
           ]}
           activeId={category}
           onSelect={setCategory}
-          className="rounded-lg"
         />
       </div>
 

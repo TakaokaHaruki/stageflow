@@ -98,7 +98,6 @@ export default function EventRecordManager({ eventId, eventName = "", eventDate 
         items={filterItems}
         activeId={filter}
         onSelect={setFilter}
-        className="rounded-lg"
       />
 
       {isLoading ? (
