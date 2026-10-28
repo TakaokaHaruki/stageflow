@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Camera } from "lucide-react";
+import { Camera, Layers } from "lucide-react";
 import { toast } from "sonner";
 import SectionHeader from "@/components/SectionHeader";
+import SectionTabBar from "@/components/SectionTabBar";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import EventRecordForm from "@/components/records/EventRecordForm";
 import EventRecordCard from "@/components/records/EventRecordCard";
@@ -66,6 +67,10 @@ export default function EventRecordManager({ eventId, eventName = "", eventDate 
 
   const canModify = (record) => isAdmin || (!!user?.id && record.created_by_id === user.id);
   const visible = records.filter((r) => filter === "すべて" || (r.category || "その他") === filter);
+  const filterItems = [
+    { id: "すべて", label: "すべて", icon: Layers },
+    ...RECORD_CATEGORIES.map(({ name, icon }) => ({ id: name, label: name, icon })),
+  ];
 
   return (
     <div className="space-y-3">
@@ -89,22 +94,12 @@ export default function EventRecordManager({ eventId, eventName = "", eventDate 
         />
       )}
 
-      <div className="flex flex-wrap gap-1.5">
-        {["すべて", ...RECORD_CATEGORIES.map((c) => c.name)].map((name) => (
-          <button
-            key={name}
-            type="button"
-            onClick={() => setFilter(name)}
-            className={`min-h-8 rounded-full border px-2.5 text-xs font-medium transition-colors ${
-              filter === name
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-border bg-muted text-muted-foreground hover:bg-secondary"
-            }`}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
+      <SectionTabBar
+        items={filterItems}
+        activeId={filter}
+        onSelect={setFilter}
+        className="rounded-lg"
+      />
 
       {isLoading ? (
         <div className="flex justify-center py-10">

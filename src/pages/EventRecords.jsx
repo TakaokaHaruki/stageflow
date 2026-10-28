@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { CalendarDays, Camera, ListOrdered, Search, X } from "lucide-react";
+import { CalendarDays, Camera, Layers, ListOrdered, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import SectionTabBar from "@/components/SectionTabBar";
 import EventRecordCard from "@/components/records/EventRecordCard";
@@ -102,22 +102,15 @@ export default function EventRecords() {
             </button>
           )}
         </div>
-        <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
-          {["すべて", ...RECORD_CATEGORIES.map((c) => c.name)].map((name) => (
-            <button
-              key={name}
-              type="button"
-              onClick={() => setCategory(name)}
-              className={`min-h-8 shrink-0 rounded-full border px-2.5 text-xs font-medium transition-colors ${
-                category === name
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-muted text-muted-foreground hover:bg-secondary"
-              }`}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
+        <SectionTabBar
+          items={[
+            { id: "すべて", label: "すべて", icon: Layers },
+            ...RECORD_CATEGORIES.map(({ name, icon }) => ({ id: name, label: name, icon })),
+          ]}
+          activeId={category}
+          onSelect={setCategory}
+          className="rounded-lg"
+        />
       </div>
 
       {isLoading ? (
