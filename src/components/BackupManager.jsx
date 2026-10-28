@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Database, RotateCcw, Plus, Trash2, ShieldCheck, Clock, GitCompare } from "lucide-react";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -113,20 +114,23 @@ export default function BackupManager() {
         <div className="space-y-2">
           <label className="text-xs font-semibold text-muted-foreground">対象イベント</label>
           <div className="flex flex-col sm:flex-row gap-2">
-            <select
+            <Select
               value={selectedEventId}
-              onChange={(e) => {
-                setSelectedEventId(e.target.value);
+              onValueChange={(v) => {
+                setSelectedEventId(v);
                 setCompareIds([]);
                 setDiffOpen(false);
               }}
-              className="flex-1 h-9 rounded-md border border-input bg-transparent px-2 text-sm"
             >
-              <option value="">イベントを選択...</option>
-              {events.map((ev) => (
-                <option key={ev.id} value={ev.id}>{ev.name} ({ev.date || "日付未定"})</option>
-              ))}
-            </select>
+              <SelectTrigger className="h-9 flex-1 text-sm">
+                <SelectValue placeholder="イベントを選択..." />
+              </SelectTrigger>
+              <SelectContent>
+                {events.map((ev) => (
+                  <SelectItem key={ev.id} value={ev.id}>{ev.name} ({ev.date || "日付未定"})</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               size="sm"
               disabled={!selectedEventId || createBackupMutation.isPending}
