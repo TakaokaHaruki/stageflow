@@ -82,35 +82,34 @@ export default function EventRecords() {
         </div>
       )}
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="メモ・イベント名・投稿者で検索"
-            className="h-9 pl-8 pr-8 text-sm"
-          />
-          {search && (
-            <button
-              type="button"
-              onClick={() => setSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label="検索をクリア"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
-        <SectionTabBar
-          items={[
-            { id: "すべて", label: "すべて", icon: Layers },
-            ...RECORD_CATEGORIES.map(({ name, icon }) => ({ id: name, label: name, icon })),
-          ]}
-          activeId={category}
-          onSelect={setCategory}
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="メモ・イベント名・投稿者で検索"
+          className="h-9 pl-8 pr-8 text-sm"
         />
+        {search && (
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label="検索をクリア"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
+
+      <SectionTabBar
+        items={[
+          { id: "すべて", label: "すべて", icon: Layers },
+          ...RECORD_CATEGORIES.map(({ name, icon }) => ({ id: name, label: name, icon })),
+        ]}
+        activeId={category}
+        onSelect={setCategory}
+      />
 
       {isLoading ? (
         <div className="flex justify-center py-16">
