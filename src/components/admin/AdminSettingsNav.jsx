@@ -4,12 +4,12 @@ import SectionTabBar from "@/components/SectionTabBar";
  * 管理者設定の2段ナビゲーション。
  * どちらも全画面共通の SectionTabBar を使い、子タブはインデントで階層を表現する。
  */
-export default function AdminSettingsNav({ groups, activeSection, onSelect, className = "" }) {
+export default function AdminSettingsNav({ groups, activeSection, onSelect, className = "", style }) {
   const activeGroup = groups.find((g) => g.children.some((c) => c.id === activeSection)) ?? groups[0];
   const groupItems = groups.map(({ id, label, icon }) => ({ id, label, icon }));
 
   return (
-    <div className={`sticky top-[var(--app-header-height)] z-40 mb-3 border-b border-border/70 bg-muted/40 ${className}`}>
+    <div className={`sticky top-[var(--app-header-height)] z-40 mb-3 border-b border-border/70 bg-muted/40 ${className}`} style={style}>
       <SectionTabBar
         items={groupItems}
         activeId={activeGroup.id}

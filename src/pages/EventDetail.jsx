@@ -13,7 +13,7 @@ import StaffDragDropManager from "@/components/StaffDragDropManager";
 import PositionNotesEditor from "@/components/PositionNotesEditor";
 import BottomTabBar from "@/components/BottomTabBar";
 import SidebarNav from "@/components/SidebarNav";
-import SectionTabBar from "@/components/SectionTabBar";
+import AdminSettingsNav from "@/components/admin/AdminSettingsNav";
 import { getUserDisplayName } from "@/lib/userDisplay";
 import UserRestrictionBanner from "@/components/UserRestrictionBanner";
 import GlobalBanner from "@/components/GlobalBanner";
@@ -213,30 +213,45 @@ export default function EventDetail() {
   const allowedTabIds = desktopTabs.map((t) => t.id);
   const activeTab = allowedTabIds.includes(tab) ? tab : "staff";
 
-  const managementTabs = desktopTabs
-    .filter(({ id }) => id === "settings" || id === "admin")
-    .map((item) => ({
-      ...item,
-      label: item.id === "admin" ? "管理者設定" : "管理設定",
-    }));
-  const isManagementTab = managementTabs.some(({ id }) => id === activeTab);
-  const activeManagementChildren = activeTab === "admin"
-    ? [
-        { id: "operation_logs", label: "操作ログ", icon: FileText },
-        { id: "access_restriction", label: "アクセス制限", icon: Lock },
-        { id: "staff_qr", label: "スタッフ QR 出力", icon: QrCode },
-      ]
-    : activeTab === "settings"
-      ? [
-          { id: "positions", label: "ポジション個別設定", icon: Settings },
-          { id: "presets", label: "プリセット保存", icon: ClipboardList },
-          { id: "tag_management", label: "タグ・役割管理", icon: Tag },
-          { id: "pos_notes", label: "ポジション説明", icon: FileText },
-          { id: "side_split", label: "上手/下手分割", icon: Settings },
-          { id: "preset_apply", label: "プリセット適用", icon: ClipboardList },
-          { id: "emergency_contacts", label: "緊急連絡先", icon: Phone },
-        ]
-      : [];
+  const isManagementTab = activeTab === "admin" || activeTab === "settings";
+
+  // 管理設定／管理者設定のタブは、他画面と同じ2段ナビゲーション（グループ→子タブ）で統一
+  const ADMIN_GROUPS = [
+    { id: "logs", label: "操作ログ", icon: FileText, children: [{ id: "operation_logs", label: "操作ログ", icon: FileText }] },
+    { id: "access", label: "アクセス制限", icon: Lock, children: [{ id: "access_restriction", label: "アクセス制限", icon: Lock }] },
+    { id: "qr", label: "スタッフ QR 出力", icon: QrCode, children: [{ id: "staff_qr", label: "スタッフ QR 出力", icon: QrCode }] },
+  ];
+  const SETTINGS_GROUPS = [
+    {
+      id: "positions",
+      label: "ポジション",
+      icon: Settings,
+      children: [
+        { id: "positions", label: "ポジション個別設定", icon: Settings },
+        { id: "pos_notes", label: "ポジション説明", icon: FileText },
+        { id: "side_split", label: "上手/下手分割", icon: Settings },
+      ],
+    },
+    {
+      id: "presets",
+      label: "プリセット",
+      icon: ClipboardList,
+      children: [
+        { id: "presets", label: "プリセット保存", icon: ClipboardList },
+        { id: "preset_apply", label: "プリセット適用", icon: ClipboardList },
+      ],
+    },
+    {
+      id: "others",
+      label: "その他",
+      icon: Tag,
+      children: [
+        { id: "tag_management", label: "タグ・役割管理", icon: Tag },
+        { id: "emergency_contacts", label: "緊急連絡先", icon: Phone },
+      ],
+    },
+  ];
+  const activeManagementGroups = activeTab === "admin" ? ADMIN_GROUPS : SETTINGS_GROUPS;
   const activeManagementChild = activeTab === "admin" ? adminSection : settingsSection;
 
   const selectManagementChild = (childId) => {
@@ -332,11 +347,10 @@ export default function EventDetail() {
         <div className="flex-1 min-w-0">
           {/* Child tab bar */}
           {isManagementTab && (
-            <SectionTabBar
-              items={activeManagementChildren}
-              activeId={activeManagementChild}
+            <AdminSettingsNav
+              groups={activeManagementGroups}
+              activeSection={activeManagementChild}
               onSelect={selectManagementChild}
-              className="sm:sticky sm:z-40"
               style={{ top: topBarHeight }}
             />
           )}
