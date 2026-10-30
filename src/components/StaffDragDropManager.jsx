@@ -844,7 +844,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                           onStaffRemove={removeStaffFromPosition}
                           onStaffEdit={(staff, pos) => setEditingStaff({ staff, pos })}
                           onEdit={(p) => { setEditing(p); setShowModal(true); }}
-                          emptyLabel="スタッフを配置にドラッグ"
+                          emptyLabel={isView ? "" : "スタッフを配置にドラッグ"}
                           staffList={staffList}
                           viewMode={viewMode}
                           onStaffCheck={(staffId, field, next) => toggleCheck(staffId, field, next)}
