@@ -194,8 +194,8 @@ export default function PositionCard({
         {splitBySide ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border/40">
             {[
-              { key: "kamite", label: "上手", names: kamiteStaffNames },
-              { key: "shimote", label: "下手", names: shimoteStaffNames },
+              { key: "shimote", label: "← 下手", names: shimoteStaffNames },
+              { key: "kamite", label: "上手 →", names: kamiteStaffNames },
             ].map((side) => (
               <div
                 key={side.key}

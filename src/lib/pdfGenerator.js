@@ -514,19 +514,21 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
     doc.line(x + halfW, staffY, x + halfW, cardBottom);
     doc.line(x, staffY + SIDE_HEADER_H, x + w, staffY + SIDE_HEADER_H);
     doc.setFontSize(6); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(100, 116, 139);
-    doc.text('上手', x + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
-    doc.text('下手', x + halfW + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
+    // 左側=下手(←)、右側=上手(→)。矢印で舞台向きを明示
+    doc.text('← 下手', x + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
+    doc.text('上手 →', x + halfW + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
     const nameStartY = staffY + SIDE_HEADER_H;
-    let ky = nameStartY;
-    for (const nm of kamiteNames) {
-      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 1.5, ky, halfW - 1.5, cardBottom);
-      if (drawnH > 0) ky += drawnH;
-      else break;
-    }
+    // 左側に下手、右側に上手の担当者を配置（順番入れ替え）
     let sy = nameStartY;
     for (const nm of shimoteNames) {
-      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + halfW + 1.5, sy, halfW - 1.5, cardBottom);
+      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 1.5, sy, halfW - 1.5, cardBottom);
       if (drawnH > 0) sy += drawnH;
+      else break;
+    }
+    let ky = nameStartY;
+    for (const nm of kamiteNames) {
+      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + halfW + 1.5, ky, halfW - 1.5, cardBottom);
+      if (drawnH > 0) ky += drawnH;
       else break;
     }
   } else {
