@@ -210,45 +210,55 @@ const CHECKBOX_GAP = 0.4;
 const CHIEF_LINE_H = 3.2; // チーフ印字行の高さ（チーフがある場合のみ）
 const NOTE_FONT_SIZE = 4.6; // 備考のフォントサイズ（スタッフ名の下に小さく印字）
 const NOTE_LINE_H = 2.4;    // 備考行の高さ
-const PENLIGHT_ICON_R = 0.8;   // ペンライトアイコン（電球）の半径
+const PENLIGHT_ICON_W = 2.6;   // ペンライトアイコン（筒＋光束）の幅
+const PENLIGHT_ICON_H = 1.4;   // ペンライトアイコンの高さ
 const BENTO_ICON_W = 1.8;      // 弁当アイコン（箱）の幅
-const BENTO_ICON_H = 1.4;      // 弁当アイコン（箱）の高さ
+const BENTO_ICON_H = 1.6;      // 弁当アイコン（箱＋箸）の高さ
 const CHECK_ICON_GAP = 0.5;    // アイコンとチェック欄の間隔
 const CHECK_ITEM_GAP = 1.2;    // ペンライト項目と弁当項目の間隔
 
-// ペンライト（電球）アイコンを描画
+// ペンライト（筒＋光束）アイコンを描画
 function drawPenlightIcon(doc, cx, cy) {
-  doc.setFillColor(245, 158, 11);
-  doc.setDrawColor(180, 130, 8);
+  const bodyW = 1.0, bodyH = 0.6;
+  const bodyX = cx - PENLIGHT_ICON_W / 2;
+  // 本体（筒）
+  doc.setFillColor(59, 130, 246);
+  doc.setDrawColor(37, 99, 235);
   doc.setLineWidth(0.12);
-  doc.circle(cx, cy, PENLIGHT_ICON_R, 'FD');
-  // 光線（3本）
-  doc.setDrawColor(245, 158, 11);
-  doc.setLineWidth(0.15);
-  const rays = [-0.9, 0, 0.9];
-  rays.forEach((dx) => {
-    const ang = dx === 0 ? Math.PI / 2 : (dx > 0 ? Math.PI / 3 : (Math.PI - Math.PI / 3));
-    const x1 = cx + Math.cos(ang) * (PENLIGHT_ICON_R + 0.2);
-    const y1 = cy + Math.sin(ang) * (PENLIGHT_ICON_R + 0.2);
-    const x2 = cx + Math.cos(ang) * (PENLIGHT_ICON_R + 0.7);
-    const y2 = cy + Math.sin(ang) * (PENLIGHT_ICON_R + 0.7);
-    doc.line(x1, y1, x2, y2);
-  });
-  // 土台
-  doc.setFillColor(120, 90, 6);
-  doc.rect(cx - 0.4, cy - PENLIGHT_ICON_R - 0.35, 0.8, 0.35, 'F');
+  doc.roundedRect(bodyX, cy - bodyH / 2, bodyW, bodyH, 0.18, 0.18, 'FD');
+  // 発光先端
+  doc.setFillColor(252, 211, 77);
+  doc.circle(bodyX + bodyW, cy, 0.26, 'F');
+  // 光束（三角コーン）
+  doc.setFillColor(254, 240, 138);
+  doc.setDrawColor(252, 211, 77);
+  doc.setLineWidth(0.08);
+  const beamStart = bodyX + bodyW + 0.26;
+  const beamEnd = cx + PENLIGHT_ICON_W / 2;
+  doc.triangle(beamStart, cy, beamEnd, cy - 0.55, beamEnd, cy + 0.55, 'F');
 }
 
-// 弁当（箱）アイコンを描画
+// 弁当（箱＋箸）アイコンを描画
 function drawBentoIcon(doc, cx, cy) {
+  const boxW = 1.7, boxH = 1.0;
+  const boxX = cx - boxW / 2;
+  const boxY = cy - BENTO_ICON_H / 2 + 0.3;
+  // 箸（2本）を箱の上に斜めに置く
+  doc.setDrawColor(146, 109, 50);
+  doc.setLineWidth(0.16);
+  const stickLeft = boxX + 0.25;
+  const stickRight = boxX + boxW - 0.15;
+  doc.line(stickLeft, boxY - 0.05, stickRight, boxY - 0.3);
+  doc.line(stickLeft + 0.05, boxY + 0.05, stickRight + 0.05, boxY - 0.2);
+  // 箱
   doc.setFillColor(34, 197, 94);
   doc.setDrawColor(21, 128, 61);
   doc.setLineWidth(0.12);
-  doc.roundedRect(cx - BENTO_ICON_W / 2, cy - BENTO_ICON_H / 2, BENTO_ICON_W, BENTO_ICON_H, 0.25, 0.25, 'FD');
+  doc.roundedRect(boxX, boxY, boxW, boxH, 0.2, 0.2, 'FD');
   // 蓋の線
   doc.setDrawColor(21, 128, 61);
   doc.setLineWidth(0.1);
-  doc.line(cx - BENTO_ICON_W / 2 + 0.2, cy, cx + BENTO_ICON_W / 2 - 0.2, cy);
+  doc.line(boxX + 0.2, boxY + boxH * 0.4, boxX + boxW - 0.2, boxY + boxH * 0.4);
 }
 
 // アイコン＋手書きチェック欄1組を描画。右端 xRight に揃えて左に描画し、消費幅を返す
@@ -259,10 +269,11 @@ function drawCheckItem(doc, xRight, y, type) {
   doc.setDrawColor(120, 120, 120);
   doc.setLineWidth(0.15);
   doc.rect(xRight - CHECKBOX_SIZE, boxY, CHECKBOX_SIZE, CHECKBOX_SIZE, 'S');
-  const iconX = xRight - CHECKBOX_SIZE - CHECK_ICON_GAP - (type === 'penlight' ? PENLIGHT_ICON_R * 2 : BENTO_ICON_W) / 2;
+  const iconW = type === 'penlight' ? PENLIGHT_ICON_W : BENTO_ICON_W;
+  const iconX = xRight - CHECKBOX_SIZE - CHECK_ICON_GAP - iconW / 2;
   if (type === 'penlight') drawPenlightIcon(doc, iconX, iconCy);
   else drawBentoIcon(doc, iconX, iconCy);
-  return CHECKBOX_SIZE + CHECK_ICON_GAP + (type === 'penlight' ? PENLIGHT_ICON_R * 2 : BENTO_ICON_W);
+  return CHECKBOX_SIZE + CHECK_ICON_GAP + iconW;
 }
 
 function getChiefs(pos) {
@@ -365,7 +376,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const badgeH = STAFF_LINE_H - 0.8;
   const badgeTextY = badgeTop + badgeH * 0.72;
   // 右端のペンライト・弁当チェック欄のためにバッジ領域を予約
-  const checkReserved = (CHECKBOX_SIZE + CHECK_ICON_GAP + BENTO_ICON_W) + CHECK_ITEM_GAP + (CHECKBOX_SIZE + CHECK_ICON_GAP + PENLIGHT_ICON_R * 2) + 1;
+  const checkReserved = (CHECKBOX_SIZE + CHECK_ICON_GAP + BENTO_ICON_W) + CHECK_ITEM_GAP + (CHECKBOX_SIZE + CHECK_ICON_GAP + PENLIGHT_ICON_W) + 1;
   const badgeMaxRight = x + w - checkReserved;
 
   if (staffData?.costume_change && cursorX + 6 < badgeMaxRight) {
