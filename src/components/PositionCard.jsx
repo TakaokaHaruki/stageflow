@@ -51,7 +51,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, is
         draggable && draggedStaff === name ? "opacity-50" : ""].join(" ")}
     >
       <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-1 gap-y-0.5">
-        {isLocked && <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />}
+        {isLocked && viewMode !== "view" && <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />}
         <span className={`text-xs font-medium ${isRemoving ? "opacity-50" : ""}`} style={{ color: nameColor }}>{displayName}</span>
         {displayNote && (
           <div className="relative shrink-0" ref={noteIconRef}>
@@ -93,7 +93,11 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, is
         )}
       </div>
       {viewMode === "view" ? (
-        <StaffCheckControls staffData={staffData} onToggle={onStaffCheck} canCheck={isAdmin} />
+        <StaffCheckControls
+          staffData={staffData}
+          onToggle={staffData && onStaffCheck ? (field, next) => onStaffCheck(staffData.id, field, next) : undefined}
+          canCheck={isAdmin}
+        />
       ) : isAdmin && (
         <div className="flex items-center gap-0.5 shrink-0">
           {onStaffEdit && staffData && (

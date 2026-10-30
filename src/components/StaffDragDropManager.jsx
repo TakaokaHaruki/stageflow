@@ -639,8 +639,26 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
         description={continuousMode ? "一日通しモードです　各セクションチーフがスタッフを追加することができます" : multiShowMode ? (partViewMode === "overview" ? "全ての部のスタッフ配置と人員過不足を一覧で確認できます" : `${selectedPart}部目の配置です　部を切り替えて編集できます`) : undefined}
         actions={(
           <>
-          {canManageSettings && !isLocked && <PresetSelector eventId={eventId} compact positions={positions} />}
-          {canEdit && (
+          <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/60 p-0.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode("edit")}
+              className={`flex min-h-7 items-center gap-1 rounded px-2 text-xs font-semibold transition-colors ${!isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              aria-pressed={!isView}
+            >
+              <PencilLine className="w-3 h-3" />編集
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("view")}
+              className={`flex min-h-7 items-center gap-1 rounded px-2 text-xs font-semibold transition-colors ${isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              aria-pressed={isView}
+            >
+              <Eye className="w-3 h-3" />表示
+            </button>
+          </div>
+          {canManageSettings && !isLocked && !isView && <PresetSelector eventId={eventId} compact positions={positions} />}
+          {canEdit && !isView && (
             <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 shrink-0" onClick={() => editable && setShowAutoAssign(true)} disabled={!editable || positions.length === 0} title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>
               <Wand2 className="w-3 h-3" />自動配置
             </Button>
@@ -695,7 +713,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
               全体一覧
             </button>
           </div>
-          {canManageSettings && !isLocked && (
+          {canManageSettings && !isLocked && !isView && (
             <>
               <button type="button" onClick={handleAddPart} className="min-h-7 rounded-md px-2 text-xs font-medium border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors">＋部追加</button>
               <button type="button" onClick={() => setShowSyncModal(true)} className="min-h-7 rounded-md px-2 text-xs font-medium border border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors ml-auto">部間同期</button>
@@ -765,12 +783,12 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                   <span className="text-[10px] opacity-70 flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />配置：{slotAssignedCount}/{staffList.length}名</span>
                   <span className="text-[10px] opacity-50">（必要合計：{slotRequiredTotal}）</span>
                 </div>
-                {canEdit && isLocked && (
+                {canEdit && isLocked && !isView && (
                   <button disabled className="flex min-h-8 items-center gap-0.5 rounded bg-white/40 px-1.5 text-[11px] font-medium text-muted-foreground/60 sm:min-h-0 sm:py-0.5 sm:text-[10px] select-none cursor-not-allowed" title={LOCK_TOOLTIP_TEXT}>
                     編集<ChevronDown className="w-2.5 h-2.5" />
                   </button>
                 )}
-                {isAdmin && (
+                {isAdmin && !isView && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="flex min-h-8 items-center gap-0.5 rounded bg-white/60 px-1.5 text-[11px] font-medium text-current transition-colors hover:bg-white/90 dark:bg-white/10 dark:hover:bg-white/20 sm:min-h-0 sm:py-0.5 sm:text-[10px] select-none">
@@ -813,7 +831,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                           pos={pos}
                           eventId={eventId}
                           isAdmin={isAdmin}
-                          draggable={true}
+                          draggable={!isView}
                           draggedStaff={draggedStaff}
                           onDragOver={handleDragOver}
                           onDrop={(e) => handleDropOnPosition(e, pos.id)}
@@ -828,6 +846,8 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                           onEdit={(p) => { setEditing(p); setShowModal(true); }}
                           emptyLabel="スタッフを配置にドラッグ"
                           staffList={staffList}
+                          viewMode={viewMode}
+                          onStaffCheck={(staffId, field, next) => toggleCheck(staffId, field, next)}
                           requiredCount={pos.required_count ?? 0}
                           onRequiredCountChange={(v) => {
                             const prevCount = pos.required_count ?? 0;
@@ -854,10 +874,10 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                             slotPositions.filter((p) => p.id !== pos.id).flatMap((p) => p.staff_names || [])
                           )]}
                           maskStaffNames={shouldMaskStaffNames}
-                          onToggleLock={isAdmin ? toggleLock : undefined}
+                          onToggleLock={isAdmin && !isView ? toggleLock : undefined}
                           lockedNames={lockedNames}
-                          onPosDragStart={isAdmin ? (e) => handlePosDragStart(e, pos.id) : undefined}
-                          onPosDragEnd={isAdmin ? handlePosDragEnd : undefined}
+                          onPosDragStart={isAdmin && !isView ? (e) => handlePosDragStart(e, pos.id) : undefined}
+                          onPosDragEnd={isAdmin && !isView ? handlePosDragEnd : undefined}
                           continuousMode={continuousMode}
                           multiShowMode={multiShowMode}
                         />
@@ -878,7 +898,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
               <span className="text-[10px] opacity-70">{unassigned.length}名</span>
             </div>
           </div>
-          <div className="bg-card p-1" onDragOver={isAdmin ? handleDragOver : undefined} onDrop={isAdmin ? handleDropUnassigned : undefined}>
+          <div className="bg-card p-1" onDragOver={isAdmin && !isView ? handleDragOver : undefined} onDrop={isAdmin && !isView ? handleDropUnassigned : undefined}>
             {unassigned.length === 0 ? (
               <p className="text-[11px] text-muted-foreground text-center py-1.5">未配置スタッフはいません</p>
             ) : (
@@ -887,18 +907,18 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                    const displayName = getStaffDisplayName(s.name, shouldMaskStaffNames);
                    const nameColor = getStaffColor(s);
                    return (
-                   <div key={s.id} draggable={isAdmin}
-                    onDragStart={isAdmin ? (e) => handleStaffDragStart(e, s.name) : undefined}
-                    onDragEnd={isAdmin ? handleStaffDragEnd : undefined}
-                    className={`flex min-h-8 items-center justify-between gap-1.5 px-2 py-0.5 select-none bg-card border border-border rounded ${isAdmin ? "cursor-move hover:bg-muted/50" : "cursor-default"} ${draggedStaff === s.name ? "opacity-50" : ""}`}>
-                    <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-medium" style={{ color: nameColor }}>{displayName}</span>
-                      {(s.roles || []).map((role) => (
-                        <RoleIcon key={role} role={role} />
-                      ))}
-                      {s.note && <span className="text-[10px] text-muted-foreground">({s.note})</span>}
-                    </div>
+                   <div key={s.id} draggable={isAdmin && !isView}
+                    onDragStart={isAdmin && !isView ? (e) => handleStaffDragStart(e, s.name) : undefined}
+                    onDragEnd={isAdmin && !isView ? handleStaffDragEnd : undefined}
+                    className={`flex min-h-8 items-center justify-between gap-1.5 px-2 py-0.5 select-none bg-card border border-border rounded ${isAdmin && !isView ? "cursor-move hover:bg-muted/50" : "cursor-default"} ${draggedStaff === s.name ? "opacity-50" : ""}`}>
+                   <div className="min-w-0 flex-1">
+                   <div className="flex items-center gap-1.5 flex-wrap">
+                     <span className="text-xs font-medium" style={{ color: nameColor }}>{displayName}</span>
+                     {(s.roles || []).map((role) => (
+                       <RoleIcon key={role} role={role} />
+                     ))}
+                     {s.note && <span className="text-[10px] text-muted-foreground">({s.note})</span>}
+                   </div>
                     <div className="flex flex-wrap gap-1 mt-0.5">
                       {(s.skills || []).map((skill) => (
                         <span key={skill} className="text-[10px] px-1 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary font-medium">{skill}</span>
@@ -924,9 +944,16 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                       );
                       })()}
                       </div>
+                      {isView && (
+                        <StaffCheckControls
+                          staffData={s}
+                          onToggle={(field, next) => toggleCheck(s.id, field, next)}
+                          canCheck={isAdmin}
+                        />
+                      )}
                       </div>
-                  );
-                })}
+                      );
+                      })}
               </div>
             )}
           </div>

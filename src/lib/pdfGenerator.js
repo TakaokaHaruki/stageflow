@@ -210,6 +210,60 @@ const CHECKBOX_GAP = 0.4;
 const CHIEF_LINE_H = 3.2; // チーフ印字行の高さ（チーフがある場合のみ）
 const NOTE_FONT_SIZE = 4.6; // 備考のフォントサイズ（スタッフ名の下に小さく印字）
 const NOTE_LINE_H = 2.4;    // 備考行の高さ
+const PENLIGHT_ICON_R = 0.8;   // ペンライトアイコン（電球）の半径
+const BENTO_ICON_W = 1.8;      // 弁当アイコン（箱）の幅
+const BENTO_ICON_H = 1.4;      // 弁当アイコン（箱）の高さ
+const CHECK_ICON_GAP = 0.5;    // アイコンとチェック欄の間隔
+const CHECK_ITEM_GAP = 1.2;    // ペンライト項目と弁当項目の間隔
+
+// ペンライト（電球）アイコンを描画
+function drawPenlightIcon(doc, cx, cy) {
+  doc.setFillColor(245, 158, 11);
+  doc.setDrawColor(180, 130, 8);
+  doc.setLineWidth(0.12);
+  doc.circle(cx, cy, PENLIGHT_ICON_R, 'FD');
+  // 光線（3本）
+  doc.setDrawColor(245, 158, 11);
+  doc.setLineWidth(0.15);
+  const rays = [-0.9, 0, 0.9];
+  rays.forEach((dx) => {
+    const ang = dx === 0 ? Math.PI / 2 : (dx > 0 ? Math.PI / 3 : (Math.PI - Math.PI / 3));
+    const x1 = cx + Math.cos(ang) * (PENLIGHT_ICON_R + 0.2);
+    const y1 = cy + Math.sin(ang) * (PENLIGHT_ICON_R + 0.2);
+    const x2 = cx + Math.cos(ang) * (PENLIGHT_ICON_R + 0.7);
+    const y2 = cy + Math.sin(ang) * (PENLIGHT_ICON_R + 0.7);
+    doc.line(x1, y1, x2, y2);
+  });
+  // 土台
+  doc.setFillColor(120, 90, 6);
+  doc.rect(cx - 0.4, cy - PENLIGHT_ICON_R - 0.35, 0.8, 0.35, 'F');
+}
+
+// 弁当（箱）アイコンを描画
+function drawBentoIcon(doc, cx, cy) {
+  doc.setFillColor(34, 197, 94);
+  doc.setDrawColor(21, 128, 61);
+  doc.setLineWidth(0.12);
+  doc.roundedRect(cx - BENTO_ICON_W / 2, cy - BENTO_ICON_H / 2, BENTO_ICON_W, BENTO_ICON_H, 0.25, 0.25, 'FD');
+  // 蓋の線
+  doc.setDrawColor(21, 128, 61);
+  doc.setLineWidth(0.1);
+  doc.line(cx - BENTO_ICON_W / 2 + 0.2, cy, cx + BENTO_ICON_W / 2 - 0.2, cy);
+}
+
+// アイコン＋手書きチェック欄1組を描画。右端 xRight に揃えて左に描画し、消費幅を返す
+function drawCheckItem(doc, xRight, y, type) {
+  const boxY = y + (STAFF_LINE_H - CHECKBOX_SIZE) / 2;
+  const iconCy = y + STAFF_LINE_H / 2;
+  // 右側にチェック欄
+  doc.setDrawColor(120, 120, 120);
+  doc.setLineWidth(0.15);
+  doc.rect(xRight - CHECKBOX_SIZE, boxY, CHECKBOX_SIZE, CHECKBOX_SIZE, 'S');
+  const iconX = xRight - CHECKBOX_SIZE - CHECK_ICON_GAP - (type === 'penlight' ? PENLIGHT_ICON_R * 2 : BENTO_ICON_W) / 2;
+  if (type === 'penlight') drawPenlightIcon(doc, iconX, iconCy);
+  else drawBentoIcon(doc, iconX, iconCy);
+  return CHECKBOX_SIZE + CHECK_ICON_GAP + (type === 'penlight' ? PENLIGHT_ICON_R * 2 : BENTO_ICON_W);
+}
 
 function getChiefs(pos) {
   return (pos.chief_names && pos.chief_names.length > 0)
@@ -310,8 +364,11 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const badgeTop = y + 0.4;
   const badgeH = STAFF_LINE_H - 0.8;
   const badgeTextY = badgeTop + badgeH * 0.72;
+  // 右端のペンライト・弁当チェック欄のためにバッジ領域を予約
+  const checkReserved = (CHECKBOX_SIZE + CHECK_ICON_GAP + BENTO_ICON_W) + CHECK_ITEM_GAP + (CHECKBOX_SIZE + CHECK_ICON_GAP + PENLIGHT_ICON_R * 2) + 1;
+  const badgeMaxRight = x + w - checkReserved;
 
-  if (staffData?.costume_change && cursorX + 6 < x + w) {
+  if (staffData?.costume_change && cursorX + 6 < badgeMaxRight) {
     doc.setFontSize(5.5);
     const badgeText = '着替';
     const badgeW = doc.getTextWidth(badgeText) + 1.5;
@@ -323,7 +380,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
     doc.setFontSize(STAFF_FONT_SIZE);
   }
 
-  if (staffData?.break && cursorX + 6 < x + w) {
+  if (staffData?.break && cursorX + 6 < badgeMaxRight) {
     doc.setFontSize(5.5);
     const badgeText = '休憩';
     const badgeW = doc.getTextWidth(badgeText) + 1.5;
@@ -343,7 +400,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
       const roleText = String(role);
       const style = ROLE_BADGE_STYLES[roleText] || ROLE_BADGE_DEFAULT;
       const badgeW = doc.getTextWidth(roleText) + 1.5;
-      if (cursorX + badgeW > x + w) break;
+      if (cursorX + badgeW > badgeMaxRight) break;
       doc.setFillColor(style.bg[0], style.bg[1], style.bg[2]);
       doc.setDrawColor(style.border[0], style.border[1], style.border[2]);
       doc.setLineWidth(0.15);
@@ -354,6 +411,11 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
     }
     doc.setFontSize(STAFF_FONT_SIZE);
   }
+
+  // 右端にペンライト貸出・弁当確認のアイコン＋手書きチェック欄
+  const rightEdge = x + w - 0.5;
+  const bentoW = drawCheckItem(doc, rightEdge, y, 'bento');
+  const penW = drawCheckItem(doc, rightEdge - bentoW - CHECK_ITEM_GAP, y, 'penlight');
 
   return rowH;
 }
