@@ -203,7 +203,7 @@ export default function PositionCard({
                 onDrop={onDropSide ? (e) => onDropSide(e, side.key) : undefined}
                 className="min-h-14"
               >
-                <div className="px-2 py-1 text-[10px] font-bold text-muted-foreground bg-muted/30">{side.label}</div>
+                <div className="px-2 py-1 text-[10px] font-bold text-center text-muted-foreground bg-muted/30">{side.label}</div>
                 {side.names.length > 0 ? side.names.map((name, i) => (
                   <StaffRow key={`${pos.id}-${side.key}-${name}-${i}`} name={name} isLocked={lockedNames.includes(name)} showSkills={showSkills} {...commonRowProps} />
                 )) : (
