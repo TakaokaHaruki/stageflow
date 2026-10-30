@@ -32,20 +32,33 @@ export function useStaffTrends(eventId) {
       const positionsPerEvent = await Promise.all(
         recentEvents.map((e) => base44.entities.Position.filter({ event_id: e.id }))
       );
-      const allPositions = positionsPerEvent.flat();
 
       const tally = {};
-      allPositions.forEach((pos) => {
-        const slot = normalizeSlot(pos.time_slot);
-        const names = pos.split_by_side
-          ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
-          : (pos.staff_names || []);
-        const posName = pos.name || pos.role || "";
-        if (!posName) return;
-        names.forEach((n) => {
+      // 同一イベント内で同名ポジションが複数あっても1件として計上するため、
+      // (スタッフ, 時間帯) ごとにイベント内のポジション名を重複排除してから集計する
+      positionsPerEvent.forEach((eventPositions) => {
+        const byStaffSlot = {}; // { staffName: { slot: Set<posName> } }
+        eventPositions.forEach((pos) => {
+          const slot = normalizeSlot(pos.time_slot);
+          const names = pos.split_by_side
+            ? [...new Set([...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])])]
+            : (pos.staff_names || []);
+          const posName = pos.name || pos.role || "";
+          if (!posName) return;
+          names.forEach((n) => {
+            if (!byStaffSlot[n]) byStaffSlot[n] = {};
+            if (!byStaffSlot[n][slot]) byStaffSlot[n][slot] = new Set();
+            byStaffSlot[n][slot].add(posName);
+          });
+        });
+        Object.entries(byStaffSlot).forEach(([n, slots]) => {
           if (!tally[n]) tally[n] = {};
-          if (!tally[n][slot]) tally[n][slot] = {};
-          tally[n][slot][posName] = (tally[n][slot][posName] || 0) + 1;
+          Object.entries(slots).forEach(([slot, nameSet]) => {
+            if (!tally[n][slot]) tally[n][slot] = {};
+            nameSet.forEach((posName) => {
+              tally[n][slot][posName] = (tally[n][slot][posName] || 0) + 1;
+            });
+          });
         });
       });
 

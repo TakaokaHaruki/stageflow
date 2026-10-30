@@ -76,6 +76,9 @@ export default async function(req) {
         const evPositions = positionsByEvent.get(eid) || [];
         const staffRecord = staffRecords.find(s => s.event_id === eid);
         const myPositions = [];
+        // 同一イベント内で同名ポジションが複数あっても1件として計上するため、
+        // ポジション名で重複排除してから集計する
+        const seenPosNames = new Set();
         for (const p of evPositions) {
           if (!staffInPosition(p, name)) continue;
           const side = staffSideInPosition(p, name);
@@ -87,10 +90,12 @@ export default async function(req) {
             is_chief: isChief,
             category: p.category || "",
           });
-          positionCount++;
-          if (isChief) chiefCount++;
           if (p.time_slot) timeSlotCounts[p.time_slot] = (timeSlotCounts[p.time_slot] || 0) + 1;
-          if (p.name) positionCountsMap[p.name] = (positionCountsMap[p.name] || 0) + 1;
+          if (isChief) chiefCount++;
+          if (!p.name || seenPosNames.has(p.name)) continue;
+          seenPosNames.add(p.name);
+          positionCount++;
+          positionCountsMap[p.name] = (positionCountsMap[p.name] || 0) + 1;
         }
         if (ev && ev.venue) venueCountsMap[ev.venue] = (venueCountsMap[ev.venue] || 0) + 1;
         eventsOut.push({
