@@ -3,10 +3,11 @@ import { Pencil, Minus, Plus, Lock, AlertCircle } from "lucide-react";
 import { getStaffDisplayName, getStaffColor } from "@/lib/staffName";
 import { getParts, partLabel } from "@/lib/showParts";
 import RoleIcon from "@/components/RoleIcon";
+import StaffCheckControls from "@/components/StaffCheckControls";
 
 const SLOT_NOTE_KEY = { "開場中": "note_before", "開演中": "note_during", "終演後": "note_after" };
 
-function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, isChief, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, isLocked, showSkills = false, side = null, isRemoving = false }) {
+function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, isChief, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, isLocked, showSkills = false, side = null, isRemoving = false, viewMode = "edit", onStaffCheck }) {
   const [showNotePopup, setShowNotePopup] = useState(false);
   const [notePopupPos, setNotePopupPos] = useState(null);
   const noteIconRef = useRef(null);
@@ -91,7 +92,9 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, is
           <span className="text-[10px] px-1 py-0.5 rounded bg-sky-100 border border-sky-300 text-sky-700 dark:bg-sky-900/40 dark:border-sky-700 dark:text-sky-300 font-medium">休憩</span>
         )}
       </div>
-      {isAdmin && (
+      {viewMode === "view" ? (
+        <StaffCheckControls staffData={staffData} onToggle={onStaffCheck} canCheck={isAdmin} />
+      ) : isAdmin && (
         <div className="flex items-center gap-0.5 shrink-0">
           {onStaffEdit && staffData && (
             <button onClick={() => onStaffEdit(staffData, pos)} className="flex h-7 w-7 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors sm:h-5 sm:w-5" title="スタッフ編集">
@@ -115,6 +118,8 @@ export default function PositionCard({
   continuousMode = false,
   multiShowMode = false,
   eventId = null,
+  viewMode = "edit",
+  onStaffCheck,
 }) {
   const splitBySide = Boolean(pos.split_by_side);
   const kamiteStaffNames = pos.staff_names_kamite || [];
@@ -130,8 +135,9 @@ export default function PositionCard({
     else statusBadge = { label: `超過${Math.abs(diff)}名`, cls: "bg-red-100 border-red-300 text-red-800 dark:bg-red-900/40 dark:border-red-700 dark:text-red-300" };
   }
 
-  const commonRowProps = { pos, staffList, maskStaffNames, draggable, isAdmin, isChief: isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock };
+  const commonRowProps = { pos, staffList, maskStaffNames, draggable, isAdmin, isChief: isAdmin, draggedStaff, onStaffDragStart, onStaffDragEnd, onStaffEdit, onStaffRemove, onToggleLock, viewMode, onStaffCheck };
   const showSkills = pos.time_slot === "終演後";
+  const isView = viewMode === "view";
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-colors"
@@ -147,7 +153,7 @@ export default function PositionCard({
         {multiShowMode && getParts(pos).length > 1 && (
           <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-violet-500/15 text-violet-600 dark:text-violet-300 border border-violet-500/30 shrink-0">{partLabel(getParts(pos))}</span>
         )}
-        {onRequiredCountChange && isAdmin ? (
+        {onRequiredCountChange && isAdmin && !isView ? (
           <div className="flex items-center border border-border/60 rounded overflow-hidden bg-background ml-1">
             <button type="button" onClick={() => onRequiredCountChange(Math.max(0, requiredCount - 1))}
               className="flex h-7 w-7 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-4 sm:w-4"><Minus className="w-2 h-2" /></button>
@@ -173,7 +179,7 @@ export default function PositionCard({
           );
         })()}
         {pos.notes && <span className="text-[10px] text-muted-foreground truncate flex-1">{pos.notes}</span>}
-        {onEdit && (
+        {onEdit && !isView && (
           <div className="flex gap-1 ml-auto flex-shrink-0">
             <button onClick={() => onEdit(pos)} disabled={!isAdmin} className="flex h-7 w-7 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-5 sm:w-5" aria-label={`${pos.name}を編集`}><Pencil className="w-3 h-3" /></button>
           </div>

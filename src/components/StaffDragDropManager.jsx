@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ClipboardList, Plus, Download, Users, Trash2, Wand2, ChevronDown, Pencil } from "lucide-react";
+import { ClipboardList, Plus, Download, Users, Trash2, Wand2, ChevronDown, Pencil, Eye, PencilLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import PositionCard from "@/components/PositionCard";
@@ -20,6 +20,8 @@ import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { useOperationLog } from "@/hooks/useOperationLog";
 import { useLockedStaff } from "@/hooks/useLockedStaff";
 import RoleIcon from "@/components/RoleIcon";
+import StaffCheckControls from "@/components/StaffCheckControls";
+import { useStaffChecks } from "@/hooks/useStaffChecks";
 import {
   applyPositionSideMutation,
   applyPositionSideSettingsToPositions,
@@ -47,6 +49,9 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   const { record } = useOperationLog(eventId);
   const reportActivity = usePresenceActivity();
   const { presences, currentUserId } = usePresence();
+  const { toggleCheck } = useStaffChecks(eventId);
+  const [viewMode, setViewMode] = useState("edit"); // "edit" | "view"
+  const isView = viewMode === "view";
 
   // 操作中ユーザーをポジション単位で集約（自分以外・直近60秒以内）
   const editingMap = useMemo(() => {

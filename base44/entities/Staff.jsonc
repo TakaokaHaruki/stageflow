@@ -69,6 +69,16 @@
       },
       "description": "\u5f79\u5272\uff08\u4f8b\uff1a\u30a4\u30f3\u30ab\u30e0\u3001\u30bb\u30af\u30b7\u30e7\u30f3\u30c1\u30fc\u30d5\uff09",
       "default": []
+    },
+    "penlight_checked": {
+      "type": "boolean",
+      "description": "\u30da\u30f3\u30e9\u30a4\u30c8\u8cb8\u51fa\u78ba\u8a8d\uff08\u8868\u793a\u30e2\u30fc\u30c9\u3067\u30a4\u30d9\u30f3\u30c8\u5171\u6709\uff09",
+      "default": false
+    },
+    "bento_checked": {
+      "type": "boolean",
+      "description": "\u5f01\u5f53\u78ba\u8a8d\uff08\u8868\u793a\u30e2\u30fc\u30c9\u3067\u30a4\u30d9\u30f3\u30c8\u5171\u6709\uff09",
+      "default": false
     }
   },
   "required": [
