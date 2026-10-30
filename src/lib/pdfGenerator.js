@@ -261,19 +261,21 @@ function drawBentoIcon(doc, cx, cy) {
   doc.line(boxX + 0.2, boxY + boxH * 0.4, boxX + boxW - 0.2, boxY + boxH * 0.4);
 }
 
-// アイコン＋手書きチェック欄1組を描画。右端 xRight に揃えて左に描画し、消費幅を返す
+// ラベル文字（ペンライト=ラ、弁当=弁）＋手書きチェック欄1組を描画。右端 xRight に揃えて左に描画し、消費幅を返す
 function drawCheckItem(doc, xRight, y, type) {
   const boxY = y + (STAFF_LINE_H - CHECKBOX_SIZE) / 2;
-  const iconCy = y + STAFF_LINE_H / 2;
   // 右側にチェック欄
   doc.setDrawColor(120, 120, 120);
   doc.setLineWidth(0.15);
   doc.rect(xRight - CHECKBOX_SIZE, boxY, CHECKBOX_SIZE, CHECKBOX_SIZE, 'S');
-  const iconW = type === 'penlight' ? PENLIGHT_ICON_W : BENTO_ICON_W;
-  const iconX = xRight - CHECKBOX_SIZE - CHECK_ICON_GAP - iconW / 2;
-  if (type === 'penlight') drawPenlightIcon(doc, iconX, iconCy);
-  else drawBentoIcon(doc, iconX, iconCy);
-  return CHECKBOX_SIZE + CHECK_ICON_GAP + iconW;
+  const label = type === 'penlight' ? 'ラ' : '弁';
+  doc.setFontSize(STAFF_FONT_SIZE);
+  doc.setFont('NotoSansJP', 'normal');
+  const labelW = doc.getTextWidth(label);
+  const labelX = xRight - CHECKBOX_SIZE - CHECK_ICON_GAP - labelW;
+  doc.setTextColor(type === 'penlight' ? 37 : 21, type === 'penlight' ? 99 : 128, type === 'penlight' ? 235 : 61);
+  doc.text(label, labelX, y + STAFF_LINE_H * 0.78);
+  return CHECKBOX_SIZE + CHECK_ICON_GAP + labelW;
 }
 
 function getChiefs(pos) {
@@ -376,7 +378,9 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const badgeH = STAFF_LINE_H - 0.8;
   const badgeTextY = badgeTop + badgeH * 0.72;
   // 右端のペンライト・弁当チェック欄のためにバッジ領域を予約
-  const checkReserved = (CHECKBOX_SIZE + CHECK_ICON_GAP + BENTO_ICON_W) + CHECK_ITEM_GAP + (CHECKBOX_SIZE + CHECK_ICON_GAP + PENLIGHT_ICON_W) + 1;
+  // 右端のラ・弁チェック欄の予約幅（フォントサイズ6相当の1文字幅を確保）
+  const labelW = STAFF_FONT_SIZE * 0.35; // 1文字分の概算幅
+  const checkReserved = (CHECKBOX_SIZE + CHECK_ICON_GAP + labelW) + CHECK_ITEM_GAP + (CHECKBOX_SIZE + CHECK_ICON_GAP + labelW) + 1;
   const badgeMaxRight = x + w - checkReserved;
 
   if (staffData?.costume_change && cursorX + 6 < badgeMaxRight) {
