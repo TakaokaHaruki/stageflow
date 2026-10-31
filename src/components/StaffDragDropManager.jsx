@@ -741,6 +741,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
         />
       ) : (
       <>
+      {!isView && (
       <div className={`mb-1.5 ${continuousMode ? "grid-cols-2" : "grid-cols-4"} grid gap-1 rounded-lg border border-border bg-muted/40 p-0.5 sm:hidden`}>
         {activeSlots.map((slot) => (
           <button
@@ -766,8 +767,9 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           未配置
         </button>
       </div>
+      )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-1">
+      <div className={`grid grid-cols-1 ${isView ? (continuousMode ? "sm:grid-cols-1" : "sm:grid-cols-3") : "sm:grid-cols-4"} gap-1`}>
         {activeSlots.map((slot) => {
           const style = TIME_SLOT_STYLES[slot];
           const slotPositions = grouped[slot];
@@ -776,7 +778,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           const slotRequiredTotal = slotPositions.reduce((sum, p) => sum + (p.required_count ?? 0), 0);
           const slotBorderClass = slot === "開場中" ? "border-amber-400 dark:border-amber-500" : slot === "開演中" ? "border-blue-400 dark:border-blue-500" : slot === "通し" ? "border-emerald-400 dark:border-emerald-500" : "border-slate-400 dark:border-slate-400";
           return (
-            <div key={slot} className={`${currentMobileSlot === slot ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block ${continuousMode ? "sm:col-span-2" : ""} ${slotBorderClass}`}>
+            <div key={slot} className={`${isView ? "block" : (currentMobileSlot === slot ? "block" : "hidden")} border-2 rounded-lg overflow-hidden sm:block ${continuousMode && !isView ? "sm:col-span-2" : ""} ${slotBorderClass}`}>
               <div className={`flex items-center justify-between px-2 py-1 ${style.header}`}>
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-xs">{slot}</span>
@@ -891,7 +893,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           );
         })}
         {/* 未配置列 */}
-        <div className={`${currentMobileSlot === "未配置" ? "block" : "hidden"} border-2 rounded-lg overflow-hidden sm:block ${continuousMode ? "sm:col-span-2" : ""} border-amber-400 dark:border-amber-500`}>
+        <div className={`${isView ? "block" : (currentMobileSlot === "未配置" ? "block" : "hidden")} border-2 rounded-lg overflow-hidden sm:block ${isView ? (continuousMode ? "" : "sm:col-span-3") : (continuousMode ? "sm:col-span-2" : "")} border-amber-400 dark:border-amber-500`}>
           <div className="flex items-center justify-between px-2 py-1 bg-amber-100 border-amber-300 text-amber-800 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-300">
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-xs">未配置</span>
