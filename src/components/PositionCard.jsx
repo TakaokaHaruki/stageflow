@@ -93,11 +93,13 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, is
         )}
       </div>
       {viewMode === "view" ? (
-        <StaffCheckControls
-          staffData={staffData}
-          onToggle={staffData && onStaffCheck ? (field, next) => onStaffCheck(staffData.id, field, next) : undefined}
-          canCheck={isAdmin}
-        />
+        pos.time_slot === "開演中" ? (
+          <StaffCheckControls
+            staffData={staffData}
+            onToggle={staffData && onStaffCheck ? (field, next) => onStaffCheck(staffData.id, field, next) : undefined}
+            canCheck={isAdmin}
+          />
+        ) : null
       ) : isAdmin && (
         <div className="flex items-center gap-0.5 shrink-0">
           {onStaffEdit && staffData && (

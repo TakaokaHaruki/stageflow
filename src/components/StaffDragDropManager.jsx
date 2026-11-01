@@ -20,7 +20,6 @@ import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { useOperationLog } from "@/hooks/useOperationLog";
 import { useLockedStaff } from "@/hooks/useLockedStaff";
 import RoleIcon from "@/components/RoleIcon";
-import StaffCheckControls from "@/components/StaffCheckControls";
 import { useStaffChecks } from "@/hooks/useStaffChecks";
 import {
   applyPositionSideMutation,
@@ -946,13 +945,6 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                       );
                       })()}
                       </div>
-                      {isView && (
-                        <StaffCheckControls
-                          staffData={s}
-                          onToggle={(field, next) => toggleCheck(s.id, field, next)}
-                          canCheck={isAdmin}
-                        />
-                      )}
                       </div>
                       );
                       })}
