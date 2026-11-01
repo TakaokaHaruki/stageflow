@@ -377,10 +377,12 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const badgeTop = y + 0.4;
   const badgeH = STAFF_LINE_H - 0.8;
   const badgeTextY = badgeTop + badgeH * 0.72;
-  // 右端のペンライト・弁当チェック欄のためにバッジ領域を予約
+  // 右端のペンライト・弁当チェック欄のためにバッジ領域を予約（開演中のみ）
   // 右端のラ・弁チェック欄の予約幅（フォントサイズ6相当の1文字幅を確保）
   const labelW = STAFF_FONT_SIZE * 0.35; // 1文字分の概算幅
-  const checkReserved = (CHECKBOX_SIZE + CHECK_ICON_GAP + labelW) + CHECK_ITEM_GAP + (CHECKBOX_SIZE + CHECK_ICON_GAP + labelW) + 1;
+  const checkReserved = slot === '開演中'
+    ? (CHECKBOX_SIZE + CHECK_ICON_GAP + labelW) + CHECK_ITEM_GAP + (CHECKBOX_SIZE + CHECK_ICON_GAP + labelW) + 1
+    : 0;
   const badgeMaxRight = x + w - checkReserved;
 
   if (staffData?.costume_change && cursorX + 6 < badgeMaxRight) {
@@ -427,10 +429,12 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
     doc.setFontSize(STAFF_FONT_SIZE);
   }
 
-  // 右端にペンライト貸出・弁当確認のアイコン＋手書きチェック欄
-  const rightEdge = x + w - 0.5;
-  const bentoW = drawCheckItem(doc, rightEdge, y, 'bento');
-  const penW = drawCheckItem(doc, rightEdge - bentoW - CHECK_ITEM_GAP, y, 'penlight');
+  // 右端にペンライト貸出・弁当確認のアイコン＋手書きチェック欄（開演中のみ）
+  if (slot === '開演中') {
+    const rightEdge = x + w - 0.5;
+    const bentoW = drawCheckItem(doc, rightEdge, y, 'bento');
+    const penW = drawCheckItem(doc, rightEdge - bentoW - CHECK_ITEM_GAP, y, 'penlight');
+  }
 
   return rowH;
 }
