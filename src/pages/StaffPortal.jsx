@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LogIn, MapPin, Clock, RefreshCw, LogOut, AlertCircle, Keyboard, QrCode, UserPlus, X, Eye, ChevronDown, FileText } from "lucide-react";
 import { toast } from "sonner";
 import CrewlyLogo from "@/components/CrewlyLogo";
+import SiteSeal from "@/components/SiteSeal";
 import QRCodeUpload from "@/components/QRCodeUpload";
 import QrCameraScanner from "@/components/QrCameraScanner";
 import StaffConfirmationModal from "@/components/StaffConfirmationModal";
@@ -512,8 +513,12 @@ export default function StaffPortal() {
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="flex flex-col items-center mb-8">
-            <div onClick={handleLogoClick} className="cursor-pointer">
-              <CrewlyLogo />
+            <div className="flex items-center justify-center gap-2">
+              <div onClick={handleLogoClick} className="cursor-pointer">
+                <CrewlyLogo />
+              </div>
+              <span className="h-10 w-px bg-border" />
+              <SiteSeal />
             </div>
             <p className="mt-3 text-sm text-muted-foreground">スタッフポータル</p>
           </div>
@@ -655,7 +660,11 @@ export default function StaffPortal() {
       {/* Header */}
       <div className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <CrewlyLogo />
+          <div className="flex items-center gap-2">
+            <CrewlyLogo />
+            <span className="h-10 w-px bg-border" />
+            <SiteSeal />
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => authenticate(acastId)}
