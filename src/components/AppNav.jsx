@@ -3,7 +3,6 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { LogIn, LogOut, User as UserIcon, RefreshCw } from "lucide-react";
 import CrewlyLogo from "@/components/CrewlyLogo";
-import SiteSeal from "@/components/SiteSeal";
 import ThemeToggle from "@/components/ThemeToggle";
 import SidebarNav from "@/components/SidebarNav";
 import GlobalBanner from "@/components/GlobalBanner";
@@ -73,11 +72,7 @@ export default function AppNav() {
       {/* 共通ヘッダ */}
       <div ref={headerRef} className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
         <div className="max-w-[1400px] mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
-          <div className="flex items-center gap-1.5 mr-1">
-            <CrewlyLogo administrator={isAdmin} />
-            <span className="hidden h-10 w-px bg-border shrink-0 sm:block" />
-            <SiteSeal className="hidden sm:block shrink-0" />
-          </div>
+          <CrewlyLogo className="mr-1" administrator={isAdmin} />
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">{title}</h1>
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
