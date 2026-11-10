@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
 
-const CACHE_KEY = "crewly_geo_access";
+const CACHE_KEY = "crewly_geo_access_v2";
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6時間キャッシュ
 
 function readCache() {
@@ -45,16 +44,24 @@ export default function GeoGuard({ children }) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await base44.functions.invoke("checkGeoAccess", {});
-        const data = res?.data || {};
-        const allowed = data.allowed !== false; // 判定不能時は true（fail-open）を尊重
-        const country = data.country || "";
+        // ブラウザから直接geo IP APIを呼び、ユーザーの実IPで国判定する。
+        // (base44.functions.invoke経由だと関数にBase44サーバーのIPが渡され、
+        //  日本ユーザーもUS判定でブロックされてしまうため)
+        const res = await fetch("https://ipapi.co/json/", {
+          headers: { Accept: "application/json" },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (!res.ok) throw new Error("geo api failed");
+        const data = await res.json();
+        const country = (data.country || "").toUpperCase();
+        // 判定不能時は fail-open（許可）
+        const allowed = country ? country === "JP" : true;
         if (cancelled) return;
         writeCache(allowed, country);
         setState(allowed ? "allowed" : "blocked");
       } catch {
         if (cancelled) return;
-        // バックエンド呼び出し失敗時は fail-open（許可）
+        // API失敗時は fail-open（許可）
         writeCache(true, "");
         setState("allowed");
       }
