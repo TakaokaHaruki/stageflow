@@ -29,6 +29,7 @@ import SupportChat from "./pages/SupportChat";
 import Concerts from "./pages/Concerts";
 import AccessInsights from "./pages/AccessInsights";
 import AccessLogTracker from "./components/AccessLogTracker";
+import GeoGuard from "./components/GeoGuard";
 
 const AuthenticatedApp = () => {
   const { authError, user } = useAuth();
@@ -95,7 +96,9 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
-            <AuthenticatedApp />
+            <GeoGuard>
+              <AuthenticatedApp />
+            </GeoGuard>
           </Router>
           <Toaster position="top-center" zIndex={99999} />
         </QueryClientProvider>

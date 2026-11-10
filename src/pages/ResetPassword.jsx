@@ -60,9 +60,9 @@ export default function ResetPassword() {
               <p className="text-sm font-medium text-primary mb-1">パスワードを変更しました</p>
               <p className="text-xs text-muted-foreground">新しいパスワードでログインしてください。</p>
             </div>
-            <Link to="/login">
-              <Button className="w-full h-11 text-sm font-semibold">ログインページへ</Button>
-            </Link>
+            <Button asChild className="w-full h-11 text-sm font-semibold">
+              <Link to="/login">ログインページへ</Link>
+            </Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
