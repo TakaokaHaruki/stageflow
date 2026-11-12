@@ -30,6 +30,7 @@ import {
 } from "@/lib/positionSideSettings";
 import PresetSelector from "@/components/PresetSelector";
 import AutoAssignModal from "@/components/AutoAssignModal";
+import RoleTallyBar from "@/components/RoleTallyBar";
 import { useStaffTrends } from "@/hooks/useStaffTrends";
 import BulkDeleteDialog from "@/components/BulkDeleteDialog";
 import ShowSyncModal from "@/components/ShowSyncModal";
@@ -668,6 +669,10 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           </>
         )}
       />
+
+      <div className="mb-1.5">
+        <RoleTallyBar staffList={staffList} />
+      </div>
 
       {isLocked && <div className="mb-1.5"><EventLockBanner /></div>}
 
