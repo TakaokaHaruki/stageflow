@@ -51,7 +51,7 @@ export default function SaveAsPresetModal({ positions, positionTypes, eventId, c
         action_type: "preset_save",
         description: `現在の配置を「${savedName}」として保存しました`,
         entity_type: "PositionPreset",
-        entity_id: result?.data?.preset?.id || result?.id || "",
+        entity_id: result?.data?.record?.id || "",
       });
       onClose();
     },
