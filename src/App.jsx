@@ -16,6 +16,7 @@ import Home from "./pages/Home";
 import Account from "./pages/Account";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
 import StaffPortal from "./pages/StaffPortal";
+import StaffShareManage from "./pages/StaffShareManage";
 import Events from "./pages/Events";
 import EventRecords from "./pages/EventRecords";
 import EventDetail from "./pages/EventDetail";
@@ -58,6 +59,7 @@ const AuthenticatedApp = () => {
 
       {/* Public pages - accessible without login */}
       <Route path="/" element={<StaffPortal />} />
+      <Route path="/events/:eventId/share" element={<StaffShareManage />} />
 
       {/* Protected app routes - require login */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to={loginPath} replace />} />}>

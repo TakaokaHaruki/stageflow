@@ -79,6 +79,41 @@
       "type": "boolean",
       "description": "\u5f01\u5f53\u78ba\u8a8d\uff08\u8868\u793a\u30e2\u30fc\u30c9\u3067\u30a4\u30d9\u30f3\u30c8\u5171\u6709\uff09",
       "default": false
+    },
+    "pass_checked": {
+      "type": "boolean",
+      "description": "\u30b9\u30bf\u30c3\u30d5\u30d1\u30b9\u8cb8\u51fa\u78ba\u8a8d\uff08\u5171\u6709URL\u3067\u30a4\u30d9\u30f3\u30c8\u5171\u6709\uff09",
+      "default": false
+    },
+    "pass_number": {
+      "type": "string",
+      "description": "\u30b9\u30bf\u30c3\u30d5\u30d1\u30b9\u756a\u53f7",
+      "default": ""
+    },
+    "pass_returned": {
+      "type": "boolean",
+      "description": "\u30b9\u30bf\u30c3\u30d5\u30d1\u30b9\u8fd4\u5374\u78ba\u8a8d\uff08\u5171\u6709URL\u3067\u30a4\u30d9\u30f3\u30c8\u5171\u6709\uff09",
+      "default": false
+    },
+    "penlight_number": {
+      "type": "string",
+      "description": "\u30da\u30f3\u30e9\u30a4\u30c8\u756a\u53f7",
+      "default": ""
+    },
+    "penlight_returned": {
+      "type": "boolean",
+      "description": "\u30da\u30f3\u30e9\u30a4\u30c8\u8fd4\u5374\u78ba\u8a8d\uff08\u5171\u6709URL\u3067\u30a4\u30d9\u30f3\u30c8\u5171\u6709\uff09",
+      "default": false
+    },
+    "bento_day_checked": {
+      "type": "boolean",
+      "description": "\u663c\u5f01\u5f53\u6e21\u3057\u78ba\u8a8d\uff08\u5171\u6709URL\u3067\u30a4\u30d9\u30f3\u30c8\u5171\u6709\uff09",
+      "default": false
+    },
+    "bento_night_checked": {
+      "type": "boolean",
+      "description": "\u591c\u5f01\u5f53\u6e21\u3057\u78ba\u8a8d\uff08\u5171\u6709URL\u3067\u30a4\u30d9\u30f3\u30c8\u5171\u6709\uff09",
+      "default": false
     }
   },
   "required": [

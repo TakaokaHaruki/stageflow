@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Users, AlertCircle, Pencil, UserCog, Download, Bug } from "lucide-react";
+import { Plus, Trash2, Users, AlertCircle, Pencil, UserCog, Download, Bug, Share2 } from "lucide-react";
 import StaffScrapeModal from "@/components/StaffScrapeModal";
 import StaffCsvImportModal from "@/components/StaffCsvImportModal";
 import StaffEditModal from "@/components/StaffEditModal";
@@ -210,6 +210,18 @@ export default function StaffManagement({ eventId, isLocked = false }) {
         }
         actions={(
           <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1 text-xs shrink-0 border-primary/30 text-primary hover:bg-primary/10"
+              onClick={() => {
+                const url = `${window.location.origin}/events/${eventId}/share`;
+                navigator.clipboard.writeText(url).then(() => toast.success("共有URLをコピーしました"));
+              }}
+              title="スタッフ貸出・弁当管理の共有URLをコピー"
+            >
+              <Share2 className="w-3 h-3" />貸出管理URL
+            </Button>
             {isAdmin && (
             <Button
               size="sm"
