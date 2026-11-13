@@ -261,16 +261,6 @@ function drawBentoIcon(doc, cx, cy) {
   doc.line(boxX + 0.2, boxY + boxH * 0.4, boxX + boxW - 0.2, boxY + boxH * 0.4);
 }
 
-// ラベル文字（ペンライト=ラ、弁当=弁）＋手書きチェック欄1組を描画。右端 xRight に揃えて左に描画し、消費幅を返す
-function drawCheckItem(doc, xRight, y, type) {
-  const boxY = y + (STAFF_LINE_H - CHECKBOX_SIZE) / 2;
-  // 右側にチェック欄
-  doc.setDrawColor(120, 120, 120);
-  doc.setLineWidth(0.15);
-  doc.rect(xRight - CHECKBOX_SIZE, boxY, CHECKBOX_SIZE, CHECKBOX_SIZE, 'S');
-  return CHECKBOX_SIZE;
-}
-
 function getChiefs(pos) {
   return (pos.chief_names && pos.chief_names.length > 0)
     ? pos.chief_names
@@ -332,13 +322,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const rowH = STAFF_LINE_H + (note ? NOTE_LINE_H : 0);
   if (y + rowH > cardBottom - 0.3) return 0;
   const textY = y + STAFF_LINE_H * 0.78;
-  const nameX = x + CHECKBOX_SIZE + CHECKBOX_GAP;
-
-  // 手書きチェック用空欄ボックス（枠線のみ）— 名前の左側
-  const boxY = y + (STAFF_LINE_H - CHECKBOX_SIZE) / 2;
-  doc.setDrawColor(120, 120, 120);
-  doc.setLineWidth(0.15);
-  doc.rect(x, boxY, CHECKBOX_SIZE, CHECKBOX_SIZE, 'S');
+  const nameX = x + 1;
 
   doc.setFontSize(STAFF_FONT_SIZE);
   doc.setFont('NotoSansJP', 'normal');
@@ -370,11 +354,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const badgeTop = y + 0.4;
   const badgeH = STAFF_LINE_H - 0.8;
   const badgeTextY = badgeTop + badgeH * 0.72;
-  // 右端のペンライト・弁当チェック欄のためにバッジ領域を予約（開演中のみ）
-  const checkReserved = slot === '開演中'
-    ? CHECKBOX_SIZE + CHECK_ITEM_GAP + CHECKBOX_SIZE + 1
-    : 0;
-  const badgeMaxRight = x + w - checkReserved;
+  const badgeMaxRight = x + w - 1;
 
   if (staffData?.costume_change && cursorX + 6 < badgeMaxRight) {
     doc.setFontSize(5.5);
@@ -418,13 +398,6 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
       cursorX += badgeW + 0.8;
     }
     doc.setFontSize(STAFF_FONT_SIZE);
-  }
-
-  // 右端にペンライト貸出・弁当確認のアイコン＋手書きチェック欄（開演中のみ）
-  if (slot === '開演中') {
-    const rightEdge = x + w - 0.5;
-    const bentoW = drawCheckItem(doc, rightEdge, y, 'bento');
-    const penW = drawCheckItem(doc, rightEdge - bentoW - CHECK_ITEM_GAP, y, 'penlight');
   }
 
   return rowH;
