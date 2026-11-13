@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -20,6 +20,28 @@ export default function StaffShareManage() {
   const [copied, setCopied] = useState(false);
   const [search, setSearch] = useState("");
   const [updatingIds, setUpdatingIds] = useState(new Set());
+
+  // 配置表と同じリアルタイム購読: Staff/Event の変更を即時無効化（ポーリングはフォールバック）
+  useEffect(() => {
+    if (!eventId) return undefined;
+    let staffUnsub = null;
+    let eventUnsub = null;
+    try {
+      staffUnsub = base44.entities.Staff.subscribe((event) => {
+        if (event?.data?.event_id !== eventId) return;
+        queryClient.invalidateQueries({ queryKey: ["share-staff", eventId] });
+      });
+    } catch {}
+    try {
+      eventUnsub = base44.entities.Event.subscribe((event) => {
+        if (event?.data?.id !== eventId) return;
+        queryClient.invalidateQueries({ queryKey: ["share-event", eventId] });
+      });
+    } catch {}
+    return () => {
+      [staffUnsub, eventUnsub].forEach((u) => { if (u) { try { u(); } catch {} } });
+    };
+  }, [eventId, queryClient]);
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["share-event", eventId],
