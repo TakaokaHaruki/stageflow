@@ -268,14 +268,7 @@ function drawCheckItem(doc, xRight, y, type) {
   doc.setDrawColor(120, 120, 120);
   doc.setLineWidth(0.15);
   doc.rect(xRight - CHECKBOX_SIZE, boxY, CHECKBOX_SIZE, CHECKBOX_SIZE, 'S');
-  const label = type === 'penlight' ? 'ラ' : '弁';
-  doc.setFontSize(STAFF_FONT_SIZE);
-  doc.setFont('NotoSansJP', 'normal');
-  const labelW = doc.getTextWidth(label);
-  const labelX = xRight - CHECKBOX_SIZE - CHECK_ICON_GAP - labelW;
-  doc.setTextColor(type === 'penlight' ? 37 : 21, type === 'penlight' ? 99 : 128, type === 'penlight' ? 235 : 61);
-  doc.text(label, labelX, y + STAFF_LINE_H * 0.78);
-  return CHECKBOX_SIZE + CHECK_ICON_GAP + labelW;
+  return CHECKBOX_SIZE;
 }
 
 function getChiefs(pos) {
@@ -378,10 +371,8 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const badgeH = STAFF_LINE_H - 0.8;
   const badgeTextY = badgeTop + badgeH * 0.72;
   // 右端のペンライト・弁当チェック欄のためにバッジ領域を予約（開演中のみ）
-  // 右端のラ・弁チェック欄の予約幅（フォントサイズ6相当の1文字幅を確保）
-  const labelW = STAFF_FONT_SIZE * 0.35; // 1文字分の概算幅
   const checkReserved = slot === '開演中'
-    ? (CHECKBOX_SIZE + CHECK_ICON_GAP + labelW) + CHECK_ITEM_GAP + (CHECKBOX_SIZE + CHECK_ICON_GAP + labelW) + 1
+    ? CHECKBOX_SIZE + CHECK_ITEM_GAP + CHECKBOX_SIZE + 1
     : 0;
   const badgeMaxRight = x + w - checkReserved;
 
