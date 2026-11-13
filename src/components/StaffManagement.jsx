@@ -215,7 +215,7 @@ export default function StaffManagement({ eventId, isLocked = false }) {
               variant="outline"
               className="gap-1 text-xs shrink-0 border-primary/30 text-primary hover:bg-primary/10"
               onClick={() => {
-                const url = `${window.location.origin}/events/${eventId}/share`;
+                const url = `https://clewly.jp/events/${eventId}/share`;
                 navigator.clipboard.writeText(url).then(() => toast.success("共有URLをコピーしました"));
               }}
               title="スタッフ貸出・弁当管理の共有URLをコピー"

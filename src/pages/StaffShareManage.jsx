@@ -68,7 +68,8 @@ export default function StaffShareManage() {
   };
 
   const handleCopyUrl = () => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
+    const shareUrl = `https://clewly.jp/events/${eventId}/share`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
       setCopied(true);
       toast.success("共有URLをコピーしました");
       setTimeout(() => setCopied(false), 2000);
