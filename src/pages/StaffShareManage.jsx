@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Ticket, Lightbulb, Utensils, Moon, Check, RotateCcw, Users, Share2, Lock, Search } from "lucide-react";
+import { ArrowLeft, Ticket, Lightbulb, Utensils, Moon, Check, Users, Share2, Lock, Search } from "lucide-react";
 import { toast } from "sonner";
 import { LIVE_SYNC_INTERVAL } from "@/lib/liveSync";
 import { formatJaDate } from "@/lib/dateFormat";
@@ -170,15 +170,11 @@ export default function StaffShareManage() {
           <>
             {/* ヘッダー行 */}
             <div className="flex items-center gap-0.5 px-1 pb-1 text-[9px] font-bold text-muted-foreground">
-              <div className="w-20 shrink-0">名前</div>
-              <div className="flex-1 min-w-0 grid grid-cols-2 gap-0.5">
-                <div className="flex items-center justify-center gap-0.5"><Ticket className="w-2.5 h-2.5" />パス</div>
-                <div className="flex items-center justify-center gap-0.5"><Lightbulb className="w-2.5 h-2.5" />ペン</div>
-              </div>
-              <div className="w-16 shrink-0 grid grid-cols-2 gap-0.5">
-                <div className="flex items-center justify-center gap-0.5"><Utensils className="w-2.5 h-2.5" />昼</div>
-                <div className="flex items-center justify-center gap-0.5"><Moon className="w-2.5 h-2.5" />夜</div>
-              </div>
+              <div className="flex-1 min-w-0">名前</div>
+              <div className="w-[76px] shrink-0 text-center flex items-center justify-center gap-0.5"><Ticket className="w-2.5 h-2.5" />パス</div>
+              <div className="w-[76px] shrink-0 text-center flex items-center justify-center gap-0.5"><Lightbulb className="w-2.5 h-2.5" />ペン</div>
+              <div className="w-7 shrink-0 text-center flex items-center justify-center"><Utensils className="w-2.5 h-2.5" /></div>
+              <div className="w-7 shrink-0 text-center flex items-center justify-center"><Moon className="w-2.5 h-2.5" /></div>
             </div>
 
             {/* スタッフ行 */}
@@ -222,91 +218,76 @@ function MiniStat({ icon: Icon, label, checked, total, returned, colorClass }) {
 
 function StaffRow({ staff, onUpdate, updating }) {
   return (
-    <div className={`flex items-stretch gap-0.5 rounded-xl border border-border bg-card shadow-sm transition-opacity ${updating ? "opacity-60" : ""}`}>
-      {/* 名前（縦軸・固定幅） */}
-      <div className="w-20 shrink-0 flex flex-col justify-center px-2 py-1.5 border-r border-border/50 min-w-0">
-        <p className="text-xs font-bold leading-tight truncate">{staff.name}</p>
+    <div className={`flex items-center gap-0.5 rounded-xl border border-border bg-card shadow-sm transition-opacity ${updating ? "opacity-60" : ""}`}>
+      {/* 名前（縦軸・1行・見切れなし） */}
+      <div className="flex-1 min-w-0 flex items-center gap-1 px-2 py-2 border-r border-border/50">
+        <p className="text-xs font-bold whitespace-nowrap">{staff.name}</p>
         {staff.gender && (
-          <span className={`text-[8px] font-bold mt-0.5 w-fit ${staff.gender === "男" ? "text-blue-500" : "text-pink-500"}`}>{staff.gender}</span>
+          <span className={`text-[8px] font-bold shrink-0 ${staff.gender === "男" ? "text-blue-500" : "text-pink-500"}`}>{staff.gender}</span>
         )}
       </div>
 
-      {/* パス・ペンライト（貸出チェック+番号+返却） */}
-      <div className="flex-1 min-w-0 grid grid-cols-2 gap-0.5">
-        <LoanCell
-          checked={staff.pass_checked}
-          number={staff.pass_number}
-          returned={staff.pass_returned}
-          onToggleCheck={() => onUpdate(staff.id, "pass_checked", !staff.pass_checked)}
-          onNumberChange={(v) => onUpdate(staff.id, "pass_number", v)}
-          onToggleReturn={() => onUpdate(staff.id, "pass_returned", !staff.pass_returned)}
-          checkColor="indigo"
-        />
-        <LoanCell
-          checked={staff.penlight_checked}
-          number={staff.penlight_number}
-          returned={staff.penlight_returned}
-          onToggleCheck={() => onUpdate(staff.id, "penlight_checked", !staff.penlight_checked)}
-          onNumberChange={(v) => onUpdate(staff.id, "penlight_number", v)}
-          onToggleReturn={() => onUpdate(staff.id, "penlight_returned", !staff.penlight_returned)}
-          checkColor="amber"
-        />
-      </div>
+      {/* パス・ペンライト（番号+返却） */}
+      <LoanCell
+        number={staff.pass_number}
+        returned={staff.pass_returned}
+        onNumberChange={(v) => {
+          onUpdate(staff.id, "pass_number", v);
+          onUpdate(staff.id, "pass_checked", v !== "");
+        }}
+        onToggleReturn={() => onUpdate(staff.id, "pass_returned", !staff.pass_returned)}
+        checkColor="indigo"
+      />
+      <LoanCell
+        number={staff.penlight_number}
+        returned={staff.penlight_returned}
+        onNumberChange={(v) => {
+          onUpdate(staff.id, "penlight_number", v);
+          onUpdate(staff.id, "penlight_checked", v !== "");
+        }}
+        onToggleReturn={() => onUpdate(staff.id, "penlight_returned", !staff.penlight_returned)}
+        checkColor="amber"
+      />
 
       {/* 昼・夜弁当 */}
-      <div className="w-16 shrink-0 grid grid-cols-2 gap-0.5 border-l border-border/50">
-        <BentoCell checked={staff.bento_day_checked} onClick={() => onUpdate(staff.id, "bento_day_checked", !staff.bento_day_checked)} color="green" />
-        <BentoCell checked={staff.bento_night_checked} onClick={() => onUpdate(staff.id, "bento_night_checked", !staff.bento_night_checked)} color="purple" />
-      </div>
+      <BentoCell checked={staff.bento_day_checked} onClick={() => onUpdate(staff.id, "bento_day_checked", !staff.bento_day_checked)} color="green" />
+      <BentoCell checked={staff.bento_night_checked} onClick={() => onUpdate(staff.id, "bento_night_checked", !staff.bento_night_checked)} color="purple" />
     </div>
   );
 }
 
-function LoanCell({ checked, number, returned, onToggleCheck, onNumberChange, onToggleReturn, checkColor }) {
+function LoanCell({ number, returned, onNumberChange, onToggleReturn, checkColor }) {
   const colorMap = {
-    indigo: { on: "bg-indigo-100 dark:bg-indigo-900/40 border-indigo-400 dark:border-indigo-600 text-indigo-600 dark:text-indigo-400", dot: "bg-indigo-500" },
-    amber: { on: "bg-amber-100 dark:bg-amber-900/40 border-amber-400 dark:border-amber-600 text-amber-600 dark:text-amber-400", dot: "bg-amber-500" },
+    indigo: "border-indigo-300 dark:border-indigo-700",
+    amber: "border-amber-300 dark:border-amber-700",
   };
-  const c = colorMap[checkColor];
   return (
-    <div className="flex flex-col gap-0.5 px-1 py-1 min-w-0">
-      {/* 貸出＋返却 */}
-      <div className="flex items-center gap-0.5">
-        <button
-          type="button"
-          onClick={onToggleCheck}
-          className={`flex h-6 flex-1 items-center justify-center rounded-md border text-[10px] font-bold transition-colors min-w-0 ${
-            checked ? c.on : "bg-transparent border-border text-muted-foreground/60"
-          }`}
-          aria-pressed={checked}
-        >
-          <Check className="w-3 h-3 shrink-0" />
-          {checked && <span className="ml-0.5 text-[8px]">貸</span>}
-        </button>
-        <button
-          type="button"
-          onClick={onToggleReturn}
-          className={`flex h-6 w-6 items-center justify-center rounded-md border transition-colors shrink-0 ${
-            returned
-              ? "bg-emerald-100 dark:bg-emerald-900/40 border-emerald-400 dark:border-emerald-600 text-emerald-600 dark:text-emerald-400"
-              : "bg-transparent border-border text-muted-foreground/60"
-          }`}
-          aria-pressed={returned}
-          title="返却"
-        >
-          <RotateCcw className="w-3 h-3" />
-        </button>
-      </div>
-      {/* 番号 */}
+    <div className="w-[76px] shrink-0 flex items-center gap-0.5 px-0.5 border-r border-border/50">
+      {/* 番号（貸出＝番号入力のみ） */}
       <input
         type="text"
+        inputMode="text"
         value={number || ""}
         onChange={(e) => onNumberChange(e.target.value)}
         placeholder="No."
-        className={`h-5 w-full rounded border px-1 text-[10px] font-medium text-center focus:outline-none focus:ring-1 focus:ring-ring min-w-0 ${
-          checked ? "border-border bg-background" : "border-border/50 bg-muted/30 text-muted-foreground"
+        className={`h-7 flex-1 min-w-0 rounded-md border px-1 text-[10px] font-medium text-center focus:outline-none focus:ring-1 focus:ring-ring ${
+          number ? `bg-background ${colorMap[checkColor]}` : "bg-muted/30 border-border/50 text-muted-foreground"
         }`}
       />
+      {/* 返却チェック */}
+      <button
+        type="button"
+        onClick={onToggleReturn}
+        className={`flex h-7 w-6 items-center justify-center rounded-md border transition-colors shrink-0 ${
+          returned
+            ? "bg-emerald-100 dark:bg-emerald-900/40 border-emerald-400 dark:border-emerald-600 text-emerald-600 dark:text-emerald-400"
+            : "bg-transparent border-border text-muted-foreground/60"
+        }`}
+        aria-pressed={returned}
+        title="返却済み"
+      >
+        <Check className="w-3 h-3" />
+      </button>
     </div>
   );
 }
@@ -317,11 +298,11 @@ function BentoCell({ checked, onClick, color }) {
     purple: "bg-purple-100 dark:bg-purple-900/40 border-purple-400 dark:border-purple-600 text-purple-600 dark:text-purple-400",
   };
   return (
-    <div className="flex items-center justify-center px-0.5 py-1">
+    <div className="w-7 shrink-0 flex items-center px-0.5">
       <button
         type="button"
         onClick={onClick}
-        className={`flex h-full w-full min-h-7 items-center justify-center rounded-md border text-[10px] font-bold transition-colors ${
+        className={`flex h-7 w-full items-center justify-center rounded-md border transition-colors ${
           checked ? colorMap[color] : "bg-transparent border-border text-muted-foreground/60"
         }`}
         aria-pressed={checked}
