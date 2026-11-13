@@ -763,6 +763,210 @@ function drawTimelineTable(doc, positions, staff) {
   });
 }
 
+// 貸出・返却 管理チェック表（紙ベース管理用）を描画
+// スタッフ名のみ印字し、番号欄は空欄、チェック欄は空の四角枠で紙に直接書き込める前提
+function drawCheckListSheet(doc, staff, event) {
+  const sortedStaff = [...staff].sort(compareByOrder);
+  if (sortedStaff.length === 0) return;
+
+  const pageW = 210;
+  const pageH = 297;
+  const margin = 8;
+  const titleH = 13;
+  const headerH = 12;
+  const rowH = 10;
+  const pageBottom = pageH - margin;
+  const tableW = pageW - 2 * margin;
+  const checkboxSize = 5;
+
+  // 列定義（group: パス/ペン/弁当の視覚グループ）
+  const cols = [
+    { key: 'no',         label: 'No',        w: 7,  group: 0 },
+    { key: 'name',       label: 'スタッフ名',  w: 33, group: 0 },
+    { key: 'passNo',     label: 'パス\nNo',    w: 20, group: 1 },
+    { key: 'passLoan',   label: 'パス\n貸出',  w: 11, group: 1, type: 'check' },
+    { key: 'passReturn', label: 'パス\n返却',  w: 11, group: 1, type: 'check' },
+    { key: 'penNo',      label: 'ペン\nNo',    w: 20, group: 2 },
+    { key: 'penLoan',    label: 'ペン\n貸出',  w: 11, group: 2, type: 'check' },
+    { key: 'penReturn',  label: 'ペン\n返却',  w: 11, group: 2, type: 'check' },
+    { key: 'bentoDay',   label: '昼\n弁当',    w: 11, group: 3, type: 'check' },
+    { key: 'bentoNight', label: '夜\n弁当',    w: 11, group: 3, type: 'check' },
+    { key: 'note',       label: '備考',       w: 0,  group: 0 },
+  ];
+  const fixedW = cols.slice(0, -1).reduce((s, c) => s + c.w, 0);
+  cols[cols.length - 1].w = tableW - fixedW;
+
+  // グループごとのヘッダー色
+  const GROUP_COLORS = {
+    0: { bg: [71, 85, 105],   border: [51, 65, 85]  }, // No/名前/備考 = スレート
+    1: { bg: [194, 95, 28],   border: [154, 70, 18]  }, // パス = オレンジ
+    2: { bg: [37, 99, 235],   border: [29, 78, 216]  }, // ペン = ブルー
+    3: { bg: [22, 163, 74],   border: [21, 128, 61]  }, // 弁当 = グリーン
+  };
+
+  function drawHeader(y) {
+    let x = margin;
+    // グループごとに背景色を分けて描画
+    doc.setLineWidth(0.3);
+    let cx = x;
+    cols.forEach((col, i) => {
+      const c = GROUP_COLORS[col.group];
+      doc.setFillColor(c.bg[0], c.bg[1], c.bg[2]);
+      doc.setDrawColor(c.border[0], c.border[1], c.border[2]);
+      doc.rect(cx, y, col.w, headerH, 'FD');
+      cx += col.w;
+    });
+    // 外枠
+    doc.setDrawColor(30, 41, 59);
+    doc.setLineWidth(0.35);
+    doc.rect(x, y, tableW, headerH, 'S');
+
+    // ヘッダーテキスト
+    doc.setFontSize(7);
+    doc.setFont('NotoSansJP', 'normal');
+    doc.setTextColor(255, 255, 255);
+    let tx = x;
+    cols.forEach(col => {
+      const lines = col.label.split('\n');
+      if (lines.length > 1) {
+        doc.text(lines[0], tx + col.w / 2, y + 4.8, { align: 'center' });
+        doc.text(lines[1], tx + col.w / 2, y + 9.5, { align: 'center' });
+      } else {
+        doc.text(col.label, tx + col.w / 2, y + 7.5, { align: 'center' });
+      }
+      tx += col.w;
+    });
+    return y + headerH;
+  }
+
+  function drawTitleRow(y) {
+    doc.setFontSize(12);
+    doc.setFont('NotoSansJP', 'normal');
+    doc.setTextColor(0, 0, 0);
+    doc.text(event?.name || '', margin, y + 5);
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text('貸出・返却 管理チェック表', margin, y + 10.5);
+
+    let dateStr = '';
+    if (event?.date) {
+      const d = new Date(event.date);
+      dateStr = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+    }
+    const subText = [dateStr, event?.venue].filter(Boolean).join('　');
+    if (subText) {
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(subText, pageW - margin, y + 5, { align: 'right' });
+    }
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text('※番号欄・備考欄は空欄です。直接筆記して使用してください。', pageW - margin, y + 10.5, { align: 'right' });
+    return y + titleH;
+  }
+
+  // チェックボックス（空欄四角）をセル中央に描画
+  function drawCheckbox(cx, cy) {
+    doc.setDrawColor(80, 80, 80);
+    doc.setLineWidth(0.25);
+    doc.rect(cx - checkboxSize / 2, cy - checkboxSize / 2, checkboxSize, checkboxSize, 'S');
+  }
+
+  // 新しいページ
+  doc.addPage();
+  let y = margin;
+  y = drawTitleRow(y);
+  y = drawHeader(y);
+
+  doc.setFontSize(8);
+  doc.setFont('NotoSansJP', 'normal');
+
+  sortedStaff.forEach((s, idx) => {
+    if (y + rowH > pageBottom) {
+      doc.addPage();
+      y = margin;
+      y = drawHeader(y);
+      doc.setFontSize(8);
+      doc.setFont('NotoSansJP', 'normal');
+    }
+
+    const x = margin;
+
+    // 交互縞
+    if (idx % 2 === 1) {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(x, y, tableW, rowH, 'F');
+    }
+
+    // 行枠線
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.2);
+    doc.rect(x, y, tableW, rowH, 'S');
+
+    // 縦線（グループ境界は太く）
+    let cx = x;
+    let prevGroup = cols[0].group;
+    cols.forEach((col, i) => {
+      cx += col.w;
+      if (cx < x + tableW) {
+        const nextCol = cols[i + 1];
+        if (nextCol && nextCol.group !== col.group) {
+          doc.setLineWidth(0.4);
+          doc.setDrawColor(100, 116, 139);
+        } else {
+          doc.setLineWidth(0.2);
+          doc.setDrawColor(203, 213, 225);
+        }
+        doc.line(cx, y, cx, y + rowH);
+      }
+    });
+
+    let cellX = x;
+
+    // No
+    doc.setTextColor(100, 116, 139);
+    doc.text(String(idx + 1), cellX + cols[0].w / 2, y + rowH * 0.62, { align: 'center' });
+    cellX += cols[0].w;
+
+    // スタッフ名
+    doc.setTextColor(15, 23, 42);
+    let name = s.name || '';
+    const nameMaxW = cols[1].w - 2;
+    while (name.length > 1 && doc.getTextWidth(name) > nameMaxW) name = name.slice(0, -1);
+    if (name !== (s.name || '') && name.length > 0) name = name.slice(0, -1) + '…';
+    doc.text(name, cellX + 1.5, y + rowH * 0.62);
+    cellX += cols[1].w;
+
+    // パスNo（空欄）
+    cellX += cols[2].w;
+    // パス貸出
+    drawCheckbox(cellX + cols[3].w / 2, y + rowH / 2);
+    cellX += cols[3].w;
+    // パス返却
+    drawCheckbox(cellX + cols[4].w / 2, y + rowH / 2);
+    cellX += cols[4].w;
+
+    // ペンNo（空欄）
+    cellX += cols[5].w;
+    // ペン貸出
+    drawCheckbox(cellX + cols[6].w / 2, y + rowH / 2);
+    cellX += cols[6].w;
+    // ペン返却
+    drawCheckbox(cellX + cols[7].w / 2, y + rowH / 2);
+    cellX += cols[7].w;
+
+    // 昼弁当
+    drawCheckbox(cellX + cols[8].w / 2, y + rowH / 2);
+    cellX += cols[8].w;
+    // 夜弁当
+    drawCheckbox(cellX + cols[9].w / 2, y + rowH / 2);
+    cellX += cols[9].w;
+
+    // 備考（空欄）
+    y += rowH;
+  });
+}
+
 export async function generatePositionPDF(data, filename) {
   const { jsPDF } = await import('jspdf');
   const { bizud: bizudFontBase64, full: fullFontBase64, medium: mediumFontBase64 } = await loadJapaneseFont();
@@ -865,6 +1069,11 @@ export async function generatePositionPDF(data, filename) {
     } else {
       drawTitle(doc, event);
       drawColumns(doc, data.positions || [], data.staff || [], event);
+    }
+
+    // 配置表の2枚目以降: 貸出・返却 管理チェック表（紙ベース管理用）
+    if (data.type === 'staff') {
+      drawCheckListSheet(doc, data.staff || [], event);
     }
   }
 
