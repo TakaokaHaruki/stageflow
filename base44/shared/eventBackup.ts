@@ -112,14 +112,17 @@ export function buildFullComparison(backupData, currentClean) {
   }));
 }
 
-export async function restoreEventBackup(client, event_id, backupData) {
+export async function restoreEventBackup(client, event_id, backupData, fallbackEventName = '') {
   const rawCurrent = await collectEventRaw(client, event_id);
   const result = { deleted: {}, restored: {}, event_restored: false, new_event_id: null };
 
   // イベント本体が削除されている場合はバックアップから新規作成
   let targetEventId = event_id;
-  if (!rawCurrent.event && backupData.event) {
-    const eventFields = cleanRecord(backupData.event);
+  if (!rawCurrent.event) {
+    // バックアップにイベント本体があればそれを使用、なければ最小限のイベントを作成
+    const eventFields = backupData.event
+      ? cleanRecord(backupData.event)
+      : { name: fallbackEventName || '復元されたイベント' };
     delete eventFields.id; // 新しいIDを自動生成
     const newEvent = await client.entities.Event.create(eventFields);
     targetEventId = newEvent.id;

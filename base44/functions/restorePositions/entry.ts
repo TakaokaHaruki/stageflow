@@ -37,7 +37,7 @@ export default async function(req) {
       return Response.json({ ok: true, event_id, event_deleted: !rawCurrent.event, backup_label: backup.label, backup_created_at_jst: backup.created_at_jst, comparison });
     }
 
-    const result = await restoreEventBackup(base44, event_id, backupData);
+    const result = await restoreEventBackup(base44, event_id, backupData, backup.event_name || '');
 
     // 削除済みイベントから新規作成した場合、同一イベントの全バックアップを新IDに付け替え
     if (result.event_restored && result.new_event_id) {
