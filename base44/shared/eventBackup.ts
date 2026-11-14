@@ -36,7 +36,7 @@ export const SECTIONS = [
 export async function collectEventRaw(client, event_id) {
   const [
     positions, staff, emergencyContacts,
-    sharedFiles, sideSettings, typeOverrides
+    sharedFiles, sideSettings, typeOverrides, event
   ] = await Promise.all([
     client.entities.Position.filter({ event_id }, '-created_date', 500),
     client.entities.Staff.filter({ event_id }, '-created_date', 500),
@@ -44,11 +44,13 @@ export async function collectEventRaw(client, event_id) {
     client.entities.SharedFile.filter({ event_id }, '-created_date', 200),
     client.entities.PositionSideSettings.filter({ event_id }, '-created_date', 50),
     client.entities.PositionTypeOverride.filter({ event_id }, '-created_date', 200),
+    client.entities.Event.get(event_id).catch(() => null),
   ]);
   return {
     positions, staff, emergency_contacts: emergencyContacts,
     shared_files: sharedFiles, side_settings: sideSettings,
     position_type_overrides: typeOverrides,
+    event,
   };
 }
 
@@ -64,6 +66,7 @@ export function cleanBackupData(raw) {
   for (const key of Object.keys(ENTITY_MAP)) {
     out[key] = (raw[key] || []).map(cleanRecord);
   }
+  out.event = raw.event ? cleanRecord(raw.event) : null;
   return out;
 }
 
@@ -111,7 +114,19 @@ export function buildFullComparison(backupData, currentClean) {
 
 export async function restoreEventBackup(client, event_id, backupData) {
   const rawCurrent = await collectEventRaw(client, event_id);
-  const result = { deleted: {}, restored: {} };
+  const result = { deleted: {}, restored: {}, event_restored: false, new_event_id: null };
+
+  // イベント本体が削除されている場合はバックアップから新規作成
+  let targetEventId = event_id;
+  if (!rawCurrent.event && backupData.event) {
+    const eventFields = cleanRecord(backupData.event);
+    delete eventFields.id; // 新しいIDを自動生成
+    const newEvent = await client.entities.Event.create(eventFields);
+    targetEventId = newEvent.id;
+    result.event_restored = true;
+    result.new_event_id = newEvent.id;
+  }
+
   for (const key of Object.keys(ENTITY_MAP)) {
     const entityName = ENTITY_MAP[key];
     for (const r of rawCurrent[key]) {
@@ -119,7 +134,9 @@ export async function restoreEventBackup(client, event_id, backupData) {
     }
     const backupRecords = backupData[key] || [];
     if (backupRecords.length) {
-      await client.entities[entityName].bulkCreate(backupRecords.map(cleanRecord));
+      await client.entities[entityName].bulkCreate(
+        backupRecords.map(cleanRecord).map(r => ({ ...r, event_id: targetEventId }))
+      );
       result.restored[key] = backupRecords.length;
     }
   }

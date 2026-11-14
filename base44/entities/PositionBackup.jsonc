@@ -6,6 +6,11 @@
       "type": "string",
       "description": "\u30a4\u30d9\u30f3\u30c8ID"
     },
+    "event_name": {
+      "type": "string",
+      "description": "\u30a4\u30d9\u30f3\u30c8\u540d\uff08\u524a\u9664\u6e08\u307f\u30a4\u30d9\u30f3\u30c8\u5fa9\u5143\u7528\uff09",
+      "default": ""
+    },
     "label": {
       "type": "string",
       "description": "\u30d0\u30c3\u30af\u30a2\u30c3\u30d7\u30e9\u30d9\u30eb",
@@ -13,7 +18,7 @@
     },
     "backup_data": {
       "type": "object",
-      "description": "\u30a4\u30d9\u30f3\u30c8\u56fa\u6709\u30c7\u30fc\u30bf\u306e\u30b9\u30ca\u30c3\u30d7\u30b7\u30e7\u30c3\u30c8 {positions, staff, emergency_contacts, event_sheets, announcements, shared_files, side_settings, map_areas, tasks, position_type_overrides}",
+      "description": "\u30a4\u30d9\u30f3\u30c8\u56fa\u6709\u30c7\u30fc\u30bf\u306e\u30b9\u30ca\u30c3\u30d7\u30b7\u30e7\u30c3\u30c8 {event, positions, staff, emergency_contacts, shared_files, side_settings, position_type_overrides}",
       "default": {}
     },
     "position_count": {

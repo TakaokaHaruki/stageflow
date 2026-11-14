@@ -34,11 +34,22 @@ export default async function(req) {
     const comparison = buildFullComparison(backupData, currentClean);
 
     if (compare_only) {
-      return Response.json({ ok: true, event_id, backup_label: backup.label, backup_created_at_jst: backup.created_at_jst, comparison });
+      return Response.json({ ok: true, event_id, event_deleted: !rawCurrent.event, backup_label: backup.label, backup_created_at_jst: backup.created_at_jst, comparison });
     }
 
     const result = await restoreEventBackup(base44, event_id, backupData);
-    return Response.json({ ok: true, comparison, deleted: result.deleted, restored: result.restored });
+
+    // 削除済みイベントから新規作成した場合、同一イベントの全バックアップを新IDに付け替え
+    if (result.event_restored && result.new_event_id) {
+      const oldBackups = await base44.entities.PositionBackup.filter({ event_id }, '-created_date', 100);
+      if (oldBackups.length) {
+        await base44.entities.PositionBackup.bulkUpdate(
+          oldBackups.map(b => ({ id: b.id, event_id: result.new_event_id }))
+        );
+      }
+    }
+
+    return Response.json({ ok: true, comparison, deleted: result.deleted, restored: result.restored, event_restored: result.event_restored, new_event_id: result.new_event_id });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -21,6 +21,7 @@ export default async function(req) {
 
     const created = await base44.entities.PositionBackup.create({
       event_id,
+      event_name: raw.event?.name || '',
       label,
       backup_data,
       position_count: backup_data.positions.length,

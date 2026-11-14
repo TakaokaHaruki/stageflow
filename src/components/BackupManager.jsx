@@ -23,6 +23,11 @@ export default function BackupManager() {
     queryFn: () => base44.entities.Event.list("-date", 100),
   });
 
+  const allBackupsQuery = useQuery({
+    queryKey: ["all-position-backups"],
+    queryFn: () => base44.entities.PositionBackup.list("-created_date", 200),
+  });
+
   const backupsQuery = useQuery({
     queryKey: ["position-backups", selectedEventId],
     queryFn: () => base44.entities.PositionBackup.filter({ event_id: selectedEventId }, "-created_date", 20),
@@ -36,6 +41,7 @@ export default function BackupManager() {
       toast.success("バックアップを作成しました");
       queryClient.invalidateQueries({ queryKey: ["position-backups", eventId] });
       queryClient.invalidateQueries({ queryKey: ["position-backups", selectedEventId] });
+      queryClient.invalidateQueries({ queryKey: ["all-position-backups"] });
     },
     onError: (e) => toast.error(e?.message || "バックアップ作成に失敗しました"),
   });
@@ -53,6 +59,7 @@ export default function BackupManager() {
         toast.success(`全イベント（${ok}件）のバックアップを作成しました`);
       }
       queryClient.invalidateQueries({ queryKey: ["position-backups", selectedEventId] });
+      queryClient.invalidateQueries({ queryKey: ["all-position-backups"] });
     },
     onError: (e) => toast.error(e?.message || "一括バックアップに失敗しました"),
   });
@@ -63,7 +70,13 @@ export default function BackupManager() {
       const data = res?.data || res;
       const restored = data?.restored || {};
       const total = Object.values(restored).reduce((a, b) => a + (b || 0), 0);
-      toast.success(`${total}件のデータを復元しました`);
+      if (data?.event_restored) {
+        toast.success(`削除済みイベントを復元しました（${total}件のデータを復元）`);
+        queryClient.invalidateQueries({ queryKey: ["events-for-backup"] });
+        queryClient.invalidateQueries({ queryKey: ["all-position-backups"] });
+      } else {
+        toast.success(`${total}件のデータを復元しました`);
+      }
       queryClient.invalidateQueries({ queryKey: ["position-backups", selectedEventId] });
       queryClient.invalidateQueries({ queryKey: ["positions", selectedEventId] });
       setPendingCompare(null);
@@ -76,6 +89,7 @@ export default function BackupManager() {
     onSuccess: () => {
       toast.success("バックアップを削除しました");
       queryClient.invalidateQueries({ queryKey: ["position-backups", selectedEventId] });
+      queryClient.invalidateQueries({ queryKey: ["all-position-backups"] });
       setPendingDelete(null);
     },
     onError: () => toast.error("削除に失敗しました"),
@@ -83,6 +97,8 @@ export default function BackupManager() {
 
   const events = eventsQuery.data || [];
   const backups = backupsQuery.data || [];
+  const eventIds = new Set(events.map((e) => e.id));
+  const orphanBackups = (allBackupsQuery.data || []).filter((b) => !eventIds.has(b.event_id));
 
   const toggleCompare = (id) => {
     setCompareIds((prev) => {
@@ -220,6 +236,51 @@ export default function BackupManager() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {orphanBackups.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
+          <div className="flex items-center gap-2 mb-3">
+            <Database className="w-4 h-4 text-muted-foreground" />
+            <h3 className="text-sm font-bold flex-1">削除済みイベントのバックアップ</h3>
+            <Badge variant="outline" className="text-[10px]">{orphanBackups.length}件</Badge>
+          </div>
+          <p className="text-[11px] text-muted-foreground mb-2 leading-relaxed">
+            元のイベントが削除されています。復元すると新しいイベントとして再作成されます。
+          </p>
+          <div className="space-y-2">
+            {orphanBackups.map((b) => (
+              <div key={b.id} className="flex items-center gap-2 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/10 p-2.5">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-sm font-medium truncate">{b.event_name || "（イベント名不明）"}</span>
+                    {b.is_auto && <Badge variant="outline" className="text-[10px] h-4">自動</Badge>}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {b.label || "バックアップ"} ・ {b.created_at_jst || "日時不明"}
+                  </p>
+                  {b.summary && <p className="text-[11px] text-foreground mt-0.5">{b.summary}</p>}
+                </div>
+                <Button
+                  size="sm"
+                  disabled={restoreMutation.isPending}
+                  onClick={() => setPendingCompare(b)}
+                  className="gap-1 shrink-0"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />復元
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setPendingDelete(b)}
+                  className="shrink-0 text-muted-foreground hover:text-destructive px-2"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

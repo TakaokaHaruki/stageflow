@@ -99,6 +99,13 @@ export default function BackupCompareModal({ backup, onClose, onRestore, isResto
 
         {!loading && !error && (
           <>
+            {comparison?.event_deleted && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-400 text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>このイベントは削除されています。復元すると新しいイベントとして再作成されます。</span>
+              </div>
+            )}
+
             <div className="rounded-lg border border-border bg-muted/30 p-2.5">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {totalChanges > 0 ? (

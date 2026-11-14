@@ -28,6 +28,7 @@ export default async function(req) {
         const summary = backupSummary(backup_data);
         await svc.entities.PositionBackup.create({
           event_id: ev.id,
+          event_name: ev.name || '',
           label,
           backup_data,
           position_count: backup_data.positions.length,

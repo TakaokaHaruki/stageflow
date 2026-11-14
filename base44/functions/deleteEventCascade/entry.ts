@@ -24,7 +24,7 @@ export default async function(req) {
     related.EmergencyContact = await svc.entities.EmergencyContact.deleteMany(q);
     related.PositionTypeOverride = await svc.entities.PositionTypeOverride.deleteMany(q);
     related.PositionSideSettings = await svc.entities.PositionSideSettings.deleteMany(q);
-    related.PositionBackup = await svc.entities.PositionBackup.deleteMany(q);
+    // バックアップは削除済みイベント復元のため残す
     related.EditingPresence = await svc.entities.EditingPresence.deleteMany(q);
     // 最後にイベント本体を削除
     await svc.entities.Event.delete(eventId);
