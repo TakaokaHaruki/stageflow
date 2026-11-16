@@ -340,7 +340,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   // 備考（共通＋該当時間帯を統合）をスタッフ名の下に小さく印字
   if (note) {
     doc.setFontSize(NOTE_FONT_SIZE);
-    doc.setTextColor(100, 100, 95);
+    doc.setTextColor(120, 113, 108);
     let noteText = note;
     const maxNoteW = x + w - nameX - 0.5;
     while (noteText.length > 1 && doc.getTextWidth(noteText) > maxNoteW) {
@@ -383,7 +383,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   // 役割バッジ（着替・休憩の直後に描画）
   const roles = staffData?.roles || [];
   if (roles.length > 0) {
-    doc.setFontSize(6.5);
+    doc.setFontSize(5.5);
     for (const role of roles) {
       const roleText = String(role);
       const style = ROLE_BADGE_STYLES[roleText] || ROLE_BADGE_DEFAULT;
@@ -456,7 +456,7 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
     const pillX = x + 2.5;
     const maxPillW = w - 5;
     let chiefText = `チーフ ${chiefs.join('・')}`;
-    doc.setFontSize(6.5);
+    doc.setFontSize(5.5);
     while (maxPillW > 0 && doc.getTextWidth(chiefText) + 3 > maxPillW && chiefText.length > 1) {
       chiefText = chiefText.slice(0, -1);
     }
@@ -517,16 +517,16 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
 // カラムヘッダーをY座標指定で描画
 function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, startY) {
   const colors = SLOT_COLORS[slot];
-  const line1Y = startY + 2.8;
-  const line2Y = startY + 5.6;
+  const line1Y = startY + 3.2;
+  const line2Y = startY + 6.8;
 
   doc.setDrawColor(...colors.border); doc.setLineWidth(0.4); doc.setFillColor(...colors.headerBg);
   doc.roundedRect(x, startY, colW, COL_HEADER_H, 1.5, 1.5, 'FD');
 
-  doc.setFontSize(9.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...colors.headerText);
+  doc.setFontSize(9); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...colors.headerText);
   doc.text(slot, x + 2.5, line1Y);
 
-  doc.setFontSize(6.5);
+  doc.setFontSize(6);
   const numCards = slotPositions.length;
   const slotRequiredCount = slotPositions.reduce((sum, p) => sum + (p.required_count || 0), 0);
   const slotAssignedNames = new Set();
@@ -545,7 +545,7 @@ function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, sta
   // 時間帯（開場時刻など）
   const timeRange = formatSlotTimeRange(event, slot);
   if (timeRange) {
-    doc.setFontSize(6.5); doc.setTextColor(...colors.headerText);
+    doc.setFontSize(6); doc.setTextColor(...colors.headerText);
     doc.text(timeRange, x + 2.5, line2Y);
   }
 
