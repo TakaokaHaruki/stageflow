@@ -199,17 +199,17 @@ const MARGIN = 5;
 const COL_GAP = 2.5;
 const CARD_GAP = 1.2;
 const TITLE_H = 12;
-const COL_HEADER_H = 8.5;
-const CARD_HEADER_H = 5;
-const STAFF_FONT_SIZE = 6;
-const STAFF_LINE_H = 3.3;
-const CARD_PADDING_V = 1;   // スタッフエリア上下パディング合計
-const SIDE_HEADER_H = 3;
+const COL_HEADER_H = 7;
+const CARD_HEADER_H = 4.2;
+const STAFF_FONT_SIZE = 7.5;
+const STAFF_LINE_H = 4.3;
+const CARD_PADDING_V = 0.6;   // スタッフエリア上下パディング合計
+const SIDE_HEADER_H = 2.8;
 const CHECKBOX_SIZE = 2;
 const CHECKBOX_GAP = 0.4;
 const CHIEF_LINE_H = 3.2; // チーフ印字行の高さ（チーフがある場合のみ）
-const NOTE_FONT_SIZE = 4.6; // 備考のフォントサイズ（スタッフ名の下に小さく印字）
-const NOTE_LINE_H = 2.4;    // 備考行の高さ
+const NOTE_FONT_SIZE = 5.4; // 備考のフォントサイズ（スタッフ名の下に小さく印字）
+const NOTE_LINE_H = 2.8;    // 備考行の高さ
 const PENLIGHT_ICON_W = 2.6;   // ペンライトアイコン（筒＋光束）の幅
 const PENLIGHT_ICON_H = 1.4;   // ペンライトアイコンの高さ
 const BENTO_ICON_W = 1.8;      // 弁当アイコン（箱）の幅
@@ -340,7 +340,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   // 備考（共通＋該当時間帯を統合）をスタッフ名の下に小さく印字
   if (note) {
     doc.setFontSize(NOTE_FONT_SIZE);
-    doc.setTextColor(120, 113, 108);
+    doc.setTextColor(100, 100, 95);
     let noteText = note;
     const maxNoteW = x + w - nameX - 0.5;
     while (noteText.length > 1 && doc.getTextWidth(noteText) > maxNoteW) {
@@ -357,7 +357,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const badgeMaxRight = x + w - 1;
 
   if (staffData?.costume_change && cursorX + 6 < badgeMaxRight) {
-    doc.setFontSize(5.5);
+    doc.setFontSize(6.5);
     const badgeText = '着替';
     const badgeW = doc.getTextWidth(badgeText) + 1.5;
     doc.setFillColor(243, 232, 255); doc.setDrawColor(216, 180, 254); doc.setLineWidth(0.15);
@@ -369,7 +369,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   }
 
   if (staffData?.break && cursorX + 6 < badgeMaxRight) {
-    doc.setFontSize(5.5);
+    doc.setFontSize(6.5);
     const badgeText = '休憩';
     const badgeW = doc.getTextWidth(badgeText) + 1.5;
     doc.setFillColor(224, 242, 254); doc.setDrawColor(125, 211, 252); doc.setLineWidth(0.15);
@@ -383,7 +383,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   // 役割バッジ（着替・休憩の直後に描画）
   const roles = staffData?.roles || [];
   if (roles.length > 0) {
-    doc.setFontSize(5.5);
+    doc.setFontSize(6.5);
     for (const role of roles) {
       const roleText = String(role);
       const style = ROLE_BADGE_STYLES[roleText] || ROLE_BADGE_DEFAULT;
@@ -429,12 +429,12 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
   doc.setFillColor(r, g, b);
   doc.circle(x + 2.2, y + CARD_HEADER_H / 2, 0.9, 'F');
 
-  doc.setFontSize(5.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(100, 116, 139);
+  doc.setFontSize(6.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(71, 85, 105);
   const countText = requiredCount > 0 ? `${assignedCount}/${requiredCount}名` : `${assignedCount}名`;
   doc.text(countText, x + w - 1.5, headerTextY, { align: 'right' });
   const countTextW = doc.getTextWidth(countText);
 
-  doc.setFontSize(7); doc.setTextColor(15, 23, 42);
+  doc.setFontSize(7.5); doc.setTextColor(15, 23, 42);
   let posName = pos.name || '';
   const maxNameW = (x + w - 1.5 - countTextW - 1.5) - (x + 5);
   while (maxNameW > 0 && doc.getTextWidth(posName) > maxNameW && posName.length > 1) {
@@ -456,7 +456,7 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
     const pillX = x + 2.5;
     const maxPillW = w - 5;
     let chiefText = `チーフ ${chiefs.join('・')}`;
-    doc.setFontSize(5.5);
+    doc.setFontSize(6.5);
     while (maxPillW > 0 && doc.getTextWidth(chiefText) + 3 > maxPillW && chiefText.length > 1) {
       chiefText = chiefText.slice(0, -1);
     }
@@ -481,7 +481,7 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
     doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.15);
     doc.line(x + halfW, staffY, x + halfW, cardBottom);
     doc.line(x, staffY + SIDE_HEADER_H, x + w, staffY + SIDE_HEADER_H);
-    doc.setFontSize(6); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(100, 116, 139);
+    doc.setFontSize(7); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(71, 85, 105);
     // 左側=下手(←)、右側=上手(→)。矢印で舞台向きを明示
     doc.text('← 下手', x + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
     doc.text('上手 →', x + halfW + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
@@ -517,16 +517,16 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
 // カラムヘッダーをY座標指定で描画
 function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, startY) {
   const colors = SLOT_COLORS[slot];
-  const line1Y = startY + 3.2;
-  const line2Y = startY + 6.8;
+  const line1Y = startY + 2.8;
+  const line2Y = startY + 5.6;
 
   doc.setDrawColor(...colors.border); doc.setLineWidth(0.4); doc.setFillColor(...colors.headerBg);
   doc.roundedRect(x, startY, colW, COL_HEADER_H, 1.5, 1.5, 'FD');
 
-  doc.setFontSize(9); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...colors.headerText);
+  doc.setFontSize(9.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...colors.headerText);
   doc.text(slot, x + 2.5, line1Y);
 
-  doc.setFontSize(6);
+  doc.setFontSize(6.5);
   const numCards = slotPositions.length;
   const slotRequiredCount = slotPositions.reduce((sum, p) => sum + (p.required_count || 0), 0);
   const slotAssignedNames = new Set();
@@ -545,7 +545,7 @@ function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, sta
   // 時間帯（開場時刻など）
   const timeRange = formatSlotTimeRange(event, slot);
   if (timeRange) {
-    doc.setFontSize(6); doc.setTextColor(...colors.headerText);
+    doc.setFontSize(6.5); doc.setTextColor(...colors.headerText);
     doc.text(timeRange, x + 2.5, line2Y);
   }
 
