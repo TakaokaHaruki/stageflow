@@ -51,7 +51,8 @@ export default function DeviceRegisterForm({ users, onRegistered }) {
         toast.error(res?.error || "登録に失敗しました");
       }
     } catch (e) {
-      toast.error("登録に失敗しました");
+      const msg = e?.data?.error || e?.message || "登録に失敗しました";
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
