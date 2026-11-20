@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { getDeviceInfo, setDeviceToken, getDeviceToken } from "@/lib/deviceRequest";
+import { unwrapFunctionResponse } from "@/lib/base44Response";
 import { CheckCircle2, XCircle, ShieldCheck, LogOut } from "lucide-react";
 
 export default function DeviceActivate() {
@@ -36,10 +37,11 @@ export default function DeviceActivate() {
           return;
         }
         const info = getDeviceInfo();
-        const res = await base44.functions.invoke("activateDevice", {
+        const rawRes = await base44.functions.invoke("activateDevice", {
           device_token: token,
           device_info: `${info.browser} / ${info.os}`,
         });
+        const res = unwrapFunctionResponse(rawRes);
         if (res?.ok) {
           setDeviceToken(res.device_token || token);
           setDeviceLabel(res.label || "");

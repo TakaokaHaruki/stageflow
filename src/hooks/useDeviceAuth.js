@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { getDeviceToken, setDeviceToken, getDeviceInfo } from "@/lib/deviceRequest";
+import { unwrapFunctionResponse } from "@/lib/base44Response";
 import { CONFIG_KEY } from "@/lib/deviceFeatures";
 
 /**
@@ -29,7 +30,8 @@ export function useDeviceAuth() {
       // 現在の端末トークンから端末情報を取得
       const token = getDeviceToken();
       if (token) {
-        const res = await base44.functions.invoke("getDeviceStatus", { device_token: token }).catch(() => null);
+        const rawRes = await base44.functions.invoke("getDeviceStatus", { device_token: token }).catch(() => null);
+        const res = unwrapFunctionResponse(rawRes);
         if (res?.device) {
           setDevice(res.device);
         } else {
@@ -64,10 +66,11 @@ export function useDeviceAuth() {
 
   const activate = useCallback(async (token) => {
     const info = getDeviceInfo();
-    const res = await base44.functions.invoke("activateDevice", {
+    const rawRes = await base44.functions.invoke("activateDevice", {
       device_token: token,
       device_info: `${info.browser} / ${info.os}`,
     });
+    const res = unwrapFunctionResponse(rawRes);
     if (res?.ok && res?.device_token) {
       setDeviceToken(res.device_token);
       await refresh();
