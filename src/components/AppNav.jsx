@@ -70,7 +70,7 @@ export default function AppNav() {
       <GlobalBanner />
       <UserNotificationBanner />
       {/* 共通ヘッダ */}
-      <div ref={headerRef} className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
+      <div ref={headerRef} className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky z-50 safe-area-top" style={{ top: "var(--device-banner-height, 0px)" }}>
         <div className="max-w-[1400px] mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
           <CrewlyLogo className="mr-1" administrator={isAdmin} />
           <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">{title}</h1>

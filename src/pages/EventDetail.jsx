@@ -276,7 +276,7 @@ export default function EventDetail() {
       <UserNotificationBanner />
 
       {/* Top bar */}
-      <div ref={topBarRef} className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
+      <div ref={topBarRef} className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky z-50 safe-area-top" style={{ top: "var(--device-banner-height, 0px)" }}>
         <div className="max-w-[1400px] mx-auto px-1.5 pb-1 pt-1 flex flex-wrap items-center gap-1 sm:flex-nowrap sm:gap-1.5">
           <BackButton to="/events" label="イベント一覧へ戻る" />
           <div className="hidden sm:flex flex-col items-start mr-1">

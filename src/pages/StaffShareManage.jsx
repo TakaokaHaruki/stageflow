@@ -123,7 +123,7 @@ export default function StaffShareManage() {
   return (
     <div className="min-h-screen bg-background">
       {/* ヘッダー */}
-      <header className="bg-card border-b border-border sticky top-0 z-40 safe-area-top">
+      <header className="bg-card border-b border-border sticky z-40 safe-area-top" style={{ top: "var(--device-banner-height, 0px)" }}>
         <div className="px-2 py-1.5 flex items-center gap-1.5">
           <Link to="/" className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted shrink-0">
             <ArrowLeft className="w-4 h-4" />

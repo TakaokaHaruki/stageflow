@@ -653,7 +653,7 @@ export default function StaffPortal() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50 safe-area-top">
+      <div className="bg-card/80 backdrop-blur-md border-b border-border sticky z-50 safe-area-top" style={{ top: "var(--device-banner-height, 0px)" }}>
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <CrewlyLogo />
           <div className="flex items-center gap-2">
