@@ -5,9 +5,11 @@ import { useDeviceAuth } from "@/hooks/useDeviceAuth";
 import { getUserDisplayName } from "@/lib/userDisplay";
 
 /**
- * 認証済み貸与端末でのみ表示されるバナー。
- * 端末名・アクセス元IP・ログイン名を表示し、
- * 通常画面の最上部に配置する（スクロールで流れる）。
+ * 認証済み貸与端末でのみ表示される固定バナー。
+ * 端末名・アクセス元IP・ログイン名を常時表示し、
+ * 画面最上部に固定で表示する。
+ * fixedで画面上部に固定しつつ、同サイズのスペーサーで
+ * 本文コンテンツを押し下げて重なりを防ぐ。
  */
 export default function DeviceAuthBanner() {
   const { device, clientIp, isRegistered, isLoading } = useDeviceAuth();
@@ -32,23 +34,32 @@ export default function DeviceAuthBanner() {
   const loginName = getUserDisplayName(user) || "（未ログイン）";
 
   return (
-    <div className="bg-slate-800 dark:bg-slate-900 text-white safe-area-top">
-      <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-2 py-1 text-[11px] leading-none sm:gap-3 sm:px-4 sm:py-1.5 sm:text-xs">
-        <span className="flex min-w-0 items-center gap-1">
-          <Smartphone className="h-3 w-3 shrink-0 text-sky-300" />
-          <span className="max-w-[40%] truncate font-semibold sm:max-w-none">{device.label || "端末"}</span>
-        </span>
-        <span className="h-3 w-px shrink-0 bg-slate-500/50" />
-        <span className="flex min-w-0 items-center gap-1">
-          <Globe className="h-3 w-3 shrink-0 text-emerald-300" />
-          <span className="truncate font-mono">{clientIp || "---.---.---.---"}</span>
-        </span>
-        <span className="h-3 w-px shrink-0 bg-slate-500/50" />
-        <span className="flex min-w-0 items-center gap-1">
-          <UserIcon className="h-3 w-3 shrink-0 text-amber-300" />
-          <span className="truncate">{loginName}</span>
-        </span>
+    <>
+      {/* 固定バナー本体 */}
+      <div className="fixed top-0 left-0 right-0 z-[60] bg-slate-800 dark:bg-slate-900 text-white safe-area-top">
+        <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-2 py-1 text-[11px] leading-none sm:gap-3 sm:px-4 sm:py-1.5 sm:text-xs">
+          <span className="flex min-w-0 items-center gap-1">
+            <Smartphone className="h-3 w-3 shrink-0 text-sky-300" />
+            <span className="max-w-[40%] truncate font-semibold sm:max-w-none">{device.label || "端末"}</span>
+          </span>
+          <span className="h-3 w-px shrink-0 bg-slate-500/50" />
+          <span className="flex min-w-0 items-center gap-1">
+            <Globe className="h-3 w-3 shrink-0 text-emerald-300" />
+            <span className="truncate font-mono">{clientIp || "---.---.---.---"}</span>
+          </span>
+          <span className="h-3 w-px shrink-0 bg-slate-500/50" />
+          <span className="flex min-w-0 items-center gap-1">
+            <UserIcon className="h-3 w-3 shrink-0 text-amber-300" />
+            <span className="truncate">{loginName}</span>
+          </span>
+        </div>
       </div>
-    </div>
+      {/* 同サイズのスペーサーで本文を押し下げ（fixed分の空間を確保） */}
+      <div className="safe-area-top invisible" aria-hidden="true">
+        <div className="mx-auto flex max-w-[1400px] items-center px-2 py-1 text-[11px] leading-none sm:px-4 sm:py-1.5 sm:text-xs">
+          <span>&nbsp;</span>
+        </div>
+      </div>
+    </>
   );
 }
