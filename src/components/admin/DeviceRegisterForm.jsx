@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ResponsiveSelect } from "@/components/ui/responsive-select";
 import { Plus, Copy, Check, Link as LinkIcon, X, MonitorSmartphone } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -146,27 +146,30 @@ export default function DeviceRegisterForm({ users, onRegistered }) {
                   </div>
                   <div className="space-y-2">
                     <Label>利用範囲</Label>
-                    <Select value={scope} onValueChange={setScope}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="shared">全社共通（誰が使っても有効）</SelectItem>
-                        <SelectItem value="user">ユーザー個別（特定ユーザーのみ）</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <ResponsiveSelect
+                      value={scope}
+                      onValueChange={setScope}
+                      placeholder="選択してください"
+                      label="利用範囲"
+                      options={[
+                        { value: "shared", label: "全社共通（誰が使っても有効）" },
+                        { value: "user", label: "ユーザー個別（特定ユーザーのみ）" },
+                      ]}
+                    />
                   </div>
                   {scope === "user" && (
                     <div className="space-y-2">
                       <Label>対象ユーザー *</Label>
-                      <Select value={targetUserId} onValueChange={setTargetUserId}>
-                        <SelectTrigger><SelectValue placeholder="ユーザーを選択" /></SelectTrigger>
-                        <SelectContent>
-                          {(users || []).map((u) => (
-                            <SelectItem key={u.id} value={u.id}>
-                              {u.full_name || u.email}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <ResponsiveSelect
+                        value={targetUserId}
+                        onValueChange={setTargetUserId}
+                        placeholder="ユーザーを選択"
+                        label="対象ユーザー"
+                        options={(users || []).map((u) => ({
+                          value: u.id,
+                          label: u.full_name || u.email,
+                        }))}
+                      />
                     </div>
                   )}
                   <div className="flex gap-2 pt-2">
