@@ -7,6 +7,7 @@ import { ShieldCheck, Monitor, Smartphone, Ban, Users, User, CheckCircle2, XCirc
 import { toast } from "sonner";
 import { RESTRICTABLE_FEATURES, CONFIG_KEY } from "@/lib/deviceFeatures";
 import DeviceRegisterForm from "@/components/admin/DeviceRegisterForm";
+import DeviceEditModal from "@/components/admin/DeviceEditModal";
 
 // プレビュー用のサンプルデータ（Deviceエンティティ未作成時のフォールバック）
 const SAMPLE_DEVICES = [
@@ -49,43 +50,48 @@ function statusBadge(status) {
   );
 }
 
-function DeviceRow({ device, onRevoke }) {
+function DeviceRow({ device, users, onRevoke, onEdited }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-3">
-      <div className="mt-0.5 shrink-0">
-        {device.device_info?.includes("iOS") || device.device_info?.includes("Android") ? (
-          <Smartphone className="w-5 h-5 text-muted-foreground" />
-        ) : (
-          <Monitor className="w-5 h-5 text-muted-foreground" />
+    <div className="rounded-lg border border-border bg-card p-3 space-y-2">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 shrink-0">
+          {device.device_info?.includes("iOS") || device.device_info?.includes("Android") ? (
+            <Smartphone className="w-5 h-5 text-muted-foreground" />
+          ) : (
+            <Monitor className="w-5 h-5 text-muted-foreground" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1 space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-semibold truncate">{device.label}</span>
+            {scopeBadge(device.scope)}
+            {statusBadge(device.status)}
+          </div>
+          {device.target_user_name && (
+            <div className="text-xs text-muted-foreground">対象: {device.target_user_name}</div>
+          )}
+          {device.device_info && (
+            <div className="text-xs text-muted-foreground">{device.device_info}</div>
+          )}
+          <div className="text-xs text-muted-foreground">
+            登録: {device.registered_at_jst || "—"}
+            {device.last_access_jst ? ` ／ 最終アクセス: ${device.last_access_jst}` : ""}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center justify-end gap-2 pt-1 border-t border-border">
+        <DeviceEditModal device={device} users={users} onSaved={onEdited} />
+        {device.status !== "revoked" && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onRevoke(device)}
+            className="shrink-0 text-destructive hover:text-destructive"
+          >
+            <Ban className="w-3.5 h-3.5" /> 解除
+          </Button>
         )}
       </div>
-      <div className="min-w-0 flex-1 space-y-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold truncate">{device.label}</span>
-          {scopeBadge(device.scope)}
-          {statusBadge(device.status)}
-        </div>
-        {device.target_user_name && (
-          <div className="text-xs text-muted-foreground">対象: {device.target_user_name}</div>
-        )}
-        {device.device_info && (
-          <div className="text-xs text-muted-foreground">{device.device_info}</div>
-        )}
-        <div className="text-xs text-muted-foreground">
-          登録: {device.registered_at_jst || "—"}
-          {device.last_access_jst ? ` ／ 最終アクセス: ${device.last_access_jst}` : ""}
-        </div>
-      </div>
-      {device.status !== "revoked" && (
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => onRevoke(device)}
-          className="shrink-0 text-destructive hover:text-destructive"
-        >
-          <Ban className="w-3.5 h-3.5" /> 解除
-        </Button>
-      )}
     </div>
   );
 }
@@ -244,7 +250,13 @@ export default function DeviceManager() {
         ) : (
           <div className="grid gap-2">
             {devices.map((device) => (
-              <DeviceRow key={device.id} device={device} onRevoke={handleRevoke} />
+              <DeviceRow
+                key={device.id}
+                device={device}
+                users={users}
+                onRevoke={handleRevoke}
+                onEdited={() => queryClient.invalidateQueries({ queryKey: ["devices"] })}
+              />
             ))}
           </div>
         )}
