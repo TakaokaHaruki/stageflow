@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { ResponsiveSelect } from "@/components/ui/responsive-select";
 import { Search, Bell, FileText, LayoutList, ChevronDown, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -79,16 +79,19 @@ export default function ViewLogPanel() {
           </label>
           <div className="space-y-1">
             <span className="text-[10px] font-medium text-muted-foreground">閲覧種別</span>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">すべて</SelectItem>
-                <SelectItem value="announcement_open">お知らせ</SelectItem>
-                <SelectItem value="file_open">配布資料</SelectItem>
-                <SelectItem value="tab_open">タブ</SelectItem>
-                <SelectItem value="item_expand">項目展開</SelectItem>
-              </SelectContent>
-            </Select>
+            <ResponsiveSelect
+              value={typeFilter}
+              onValueChange={setTypeFilter}
+              placeholder="すべて"
+              label="閲覧種別"
+              options={[
+                { value: "all", label: "すべて" },
+                { value: "announcement_open", label: "お知らせ" },
+                { value: "file_open", label: "配布資料" },
+                { value: "tab_open", label: "タブ" },
+                { value: "item_expand", label: "項目展開" },
+              ]}
+            />
           </div>
           <label className="col-span-2 space-y-1">
             <span className="text-[10px] font-medium text-muted-foreground">キーワード（スタッフ名・対象名）</span>

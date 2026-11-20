@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { invokeWithDevice } from "@/lib/deviceRequest";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { ResponsiveSelect } from "@/components/ui/responsive-select";
 import { Database, RotateCcw, Plus, Trash2, ShieldCheck, Clock, GitCompare } from "lucide-react";
 import { toast } from "sonner";
 import DeviceGate from "@/components/DeviceGate";
@@ -133,23 +133,21 @@ export default function BackupManager() {
         <div className="space-y-2">
           <label className="text-xs font-semibold text-muted-foreground">対象イベント</label>
           <div className="flex flex-col sm:flex-row gap-2">
-            <Select
+            <ResponsiveSelect
               value={selectedEventId}
               onValueChange={(v) => {
                 setSelectedEventId(v);
                 setCompareIds([]);
                 setDiffOpen(false);
               }}
-            >
-              <SelectTrigger className="h-9 flex-1 text-sm">
-                <SelectValue placeholder="イベントを選択..." />
-              </SelectTrigger>
-              <SelectContent>
-                {events.map((ev) => (
-                  <SelectItem key={ev.id} value={ev.id}>{ev.name} ({ev.date || "日付未定"})</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="イベントを選択..."
+              label="対象イベント"
+              options={events.map((ev) => ({
+                value: ev.id,
+                label: `${ev.name} (${ev.date || "日付未定"})`,
+              }))}
+              className="flex-1"
+            />
             <Button
               size="sm"
               disabled={!selectedEventId || createBackupMutation.isPending}

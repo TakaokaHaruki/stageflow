@@ -14,6 +14,7 @@ export function ResponsiveSelect({
   placeholder,
   options,
   label,
+  className = "",
 }) {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
@@ -37,9 +38,9 @@ export function ResponsiveSelect({
           value={value ?? ""}
           onChange={(e) => onValueChange(e.target.value)}
           aria-label={label}
-          className={`w-full h-8 appearance-none rounded-md border border-input bg-background shadow-sm px-2.5 pr-7 text-[16px] sm:text-sm select-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
+          className={`w-full h-9 appearance-none rounded-md border border-input bg-background shadow-sm px-2.5 pr-8 text-[16px] sm:text-sm select-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
             value ? "text-foreground" : "text-muted-foreground"
-          }`}
+          } ${className}`}
         >
           <option value="">{placeholder}</option>
           {options.map((option) => (
@@ -48,14 +49,14 @@ export function ResponsiveSelect({
             </option>
           ))}
         </select>
-        <ChevronDown className="w-4 h-4 text-muted-foreground pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" />
+        <ChevronDown className="w-4 h-4 text-muted-foreground pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
       </div>
     );
   }
 
   return (
     <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className="h-8 select-none">
+      <SelectTrigger className={`h-9 select-none ${className}`}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

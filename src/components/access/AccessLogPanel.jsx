@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { ResponsiveSelect } from "@/components/ui/responsive-select";
 import { Search, Trash2, RefreshCw, Monitor, Smartphone, Tablet, Download } from "lucide-react";
 import { downloadLogCsv } from "@/lib/csvExport";
 import { fetchAllRecords } from "@/lib/fetchAllRecords";
@@ -124,41 +124,50 @@ export default function AccessLogPanel() {
           </label>
           <div className="space-y-1">
             <span className="text-[10px] font-medium text-muted-foreground">ログイン状況</span>
-            <Select value={authFilter} onValueChange={setAuthFilter}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">すべて</SelectItem>
-                <SelectItem value="app_user">アプリ</SelectItem>
-                <SelectItem value="portal_staff">ポータル</SelectItem>
-                <SelectItem value="anonymous">未ログイン</SelectItem>
-              </SelectContent>
-            </Select>
+            <ResponsiveSelect
+              value={authFilter}
+              onValueChange={setAuthFilter}
+              placeholder="すべて"
+              label="認証状態"
+              options={[
+                { value: "all", label: "すべて" },
+                { value: "app_user", label: "アプリ" },
+                { value: "portal_staff", label: "ポータル" },
+                { value: "anonymous", label: "未ログイン" },
+              ]}
+            />
           </div>
           <div className="space-y-1">
             <span className="text-[10px] font-medium text-muted-foreground">デバイス</span>
-            <Select value={deviceFilter} onValueChange={setDeviceFilter}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">すべて</SelectItem>
-                <SelectItem value="mobile">モバイル</SelectItem>
-                <SelectItem value="tablet">タブレット</SelectItem>
-                <SelectItem value="desktop">PC</SelectItem>
-              </SelectContent>
-            </Select>
+            <ResponsiveSelect
+              value={deviceFilter}
+              onValueChange={setDeviceFilter}
+              placeholder="すべて"
+              label="デバイス"
+              options={[
+                { value: "all", label: "すべて" },
+                { value: "mobile", label: "モバイル" },
+                { value: "tablet", label: "タブレット" },
+                { value: "desktop", label: "PC" },
+              ]}
+            />
           </div>
           <div className="space-y-1">
             <span className="text-[10px] font-medium text-muted-foreground">流入元</span>
-            <Select value={referrerFilter} onValueChange={setReferrerFilter}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">すべて</SelectItem>
-                <SelectItem value="internal">アプリ内</SelectItem>
-                <SelectItem value="direct">直接</SelectItem>
-                <SelectItem value="search">検索</SelectItem>
-                <SelectItem value="sns">SNS</SelectItem>
-                <SelectItem value="external">外部リンク</SelectItem>
-              </SelectContent>
-            </Select>
+            <ResponsiveSelect
+              value={referrerFilter}
+              onValueChange={setReferrerFilter}
+              placeholder="すべて"
+              label="流入元"
+              options={[
+                { value: "all", label: "すべて" },
+                { value: "internal", label: "アプリ内" },
+                { value: "direct", label: "直接" },
+                { value: "search", label: "検索" },
+                { value: "sns", label: "SNS" },
+                { value: "external", label: "外部リンク" },
+              ]}
+            />
           </div>
           <label className="col-span-2 space-y-1">
             <span className="text-[10px] font-medium text-muted-foreground">キーワード（パス・経路・ID・セッション）</span>

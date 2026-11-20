@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { History, RotateCcw, ChevronDown, ChevronUp, Trash2, ChevronRight, ArrowRight, User, ClipboardList, Settings, CheckSquare, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { ResponsiveSelect } from "@/components/ui/responsive-select";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchAllRecords } from "@/lib/fetchAllRecords";
@@ -438,16 +438,19 @@ export default function ActivityLogViewer({ eventId }) {
               </label>
               <div className="space-y-1">
                 <span className="text-[10px] font-medium text-muted-foreground">カテゴリ</span>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">すべて</SelectItem>
-                    <SelectItem value="staff">スタッフ操作</SelectItem>
-                    <SelectItem value="position">配置操作</SelectItem>
-                    <SelectItem value="settings">設定操作</SelectItem>
-                    <SelectItem value="task">タスク操作</SelectItem>
-                  </SelectContent>
-                </Select>
+                <ResponsiveSelect
+                  value={categoryFilter}
+                  onValueChange={setCategoryFilter}
+                  placeholder="すべて"
+                  label="操作カテゴリ"
+                  options={[
+                    { value: "all", label: "すべて" },
+                    { value: "staff", label: "スタッフ操作" },
+                    { value: "position", label: "配置操作" },
+                    { value: "settings", label: "設定操作" },
+                    { value: "task", label: "タスク操作" },
+                  ]}
+                />
               </div>
               <label className="col-span-2 space-y-1 sm:col-span-1 lg:col-span-1">
                 <span className="text-[10px] font-medium text-muted-foreground">キーワード（内容・操作者）</span>

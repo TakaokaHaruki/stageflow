@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Search, RefreshCw, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ResponsiveSelect } from "@/components/ui/responsive-select";
 import { toast } from "sonner";
 import { downloadLogCsv } from "@/lib/csvExport";
 import { fetchAllRecords } from "@/lib/fetchAllRecords";
@@ -70,14 +70,17 @@ export default function InteractionLogPanel() {
           </label>
           <div className="space-y-1">
             <span className="text-[10px] font-medium text-muted-foreground">操作種別</span>
-            <Select value={actionFilter} onValueChange={setActionFilter}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">すべて</SelectItem>
-                <SelectItem value="click">クリック</SelectItem>
-                <SelectItem value="change">選択変更</SelectItem>
-              </SelectContent>
-            </Select>
+            <ResponsiveSelect
+              value={actionFilter}
+              onValueChange={setActionFilter}
+              placeholder="すべて"
+              label="操作種別"
+              options={[
+                { value: "all", label: "すべて" },
+                { value: "click", label: "クリック" },
+                { value: "change", label: "選択変更" },
+              ]}
+            />
           </div>
           <label className="col-span-2 space-y-1">
             <span className="text-[10px] font-medium text-muted-foreground">キーワード（対象・パス・セッション）</span>
