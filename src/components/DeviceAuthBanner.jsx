@@ -61,6 +61,7 @@ export default function DeviceAuthBanner() {
         <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-2 py-1 text-[11px] leading-none sm:gap-3 sm:px-4 sm:py-1.5 sm:text-xs">
           <span className="flex min-w-0 items-center gap-1">
             <Smartphone className="h-3 w-3 shrink-0 text-sky-300" />
+            <span className="shrink-0 text-slate-400">端末名</span>
             <span className="max-w-[40%] truncate font-semibold sm:max-w-none">{device.label || "端末"}</span>
           </span>
           <span className="h-3 w-px shrink-0 bg-slate-500/50" />
