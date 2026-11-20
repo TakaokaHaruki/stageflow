@@ -5,9 +5,9 @@ import { useDeviceAuth } from "@/hooks/useDeviceAuth";
 import { getUserDisplayName } from "@/lib/userDisplay";
 
 /**
- * 認証済み貸与端末でのみ表示される固定バナー。
- * 端末名・アクセス元IP・ログイン名を常時表示し、
- * 通常画面の最上部に固定で挟み込む。
+ * 認証済み貸与端末でのみ表示されるバナー。
+ * 端末名・アクセス元IP・ログイン名を表示し、
+ * 通常画面の最上部に配置する（スクロールで流れる）。
  */
 export default function DeviceAuthBanner() {
   const { device, clientIp, isRegistered, isLoading } = useDeviceAuth();
@@ -32,7 +32,7 @@ export default function DeviceAuthBanner() {
   const loginName = getUserDisplayName(user) || "（未ログイン）";
 
   return (
-    <div className="sticky top-0 z-[60] bg-slate-800 dark:bg-slate-900 text-white safe-area-top">
+    <div className="bg-slate-800 dark:bg-slate-900 text-white safe-area-top">
       <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-2 py-1 text-[11px] leading-none sm:gap-3 sm:px-4 sm:py-1.5 sm:text-xs">
         <span className="flex min-w-0 items-center gap-1">
           <Smartphone className="h-3 w-3 shrink-0 text-sky-300" />
