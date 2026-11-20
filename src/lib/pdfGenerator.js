@@ -6,7 +6,7 @@ let cachedBizUdFontBase64 = null;  // BIZ UDGothic Bold TTF（環境依存文字
 
 // 配置表PDFの埋め込みフォントをBIZ UDゴシックに切替えるトグル。
 // false にすると従来の Noto Sans JP（Medium＋フルカバレッジ）構成にロールバックします。
-const USE_BIZ_UD_FONT = true;
+const USE_BIZ_UD_FONT = false;
 
 function arrayBufferToBase64(buffer) {
   let binary = '';
