@@ -320,7 +320,7 @@ function drawTitle(doc, event, partLabel) {
 function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const note = getStaffNote(staffData, slot);
   const rowH = STAFF_LINE_H + (note ? NOTE_LINE_H : 0);
-  if (y + rowH > cardBottom - 0.3) return 0;
+  if (y + rowH > cardBottom + 0.01) return 0;
   const textY = y + STAFF_LINE_H * 0.78;
   const nameX = x + 1;
 
