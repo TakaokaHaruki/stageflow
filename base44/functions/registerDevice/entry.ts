@@ -26,8 +26,9 @@ export default async function(req) {
       registered_at_jst: jstNow(),
     });
 
-    const appUrl = req.headers.get('X-Base44-App-Url') || 'https://clewly.jp';
-    const activationUrl = `${appUrl}/devices/activate?token=${token}`;
+    // 認証URLは本番ドメイン(clewly.jp)で固定生成する。
+    // ヘッダーX-Base44-App-Urlはsandbox/preview環境のURLになるため使用しない。
+    const activationUrl = `https://clewly.jp/devices/activate?token=${token}`;
 
     return Response.json({
       ok: true,
