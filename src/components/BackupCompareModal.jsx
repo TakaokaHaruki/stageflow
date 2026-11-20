@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { invokeWithDevice } from "@/lib/deviceRequest";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronDown, ChevronRight, AlertCircle, Plus, Minus, Edit3, Check } from "lucide-react";
 import ModalShell from "@/components/ModalShell";
@@ -49,7 +50,7 @@ export default function BackupCompareModal({ backup, onClose, onRestore, isResto
     let cancelled = false;
     (async () => {
       try {
-        const res = await base44.functions.invoke("restorePositions", { backup_id: backup.id, compare_only: true });
+        const res = await invokeWithDevice("restorePositions", { backup_id: backup.id, compare_only: true });
         if (cancelled) return;
         const data = res?.data || res;
         setComparison(data);

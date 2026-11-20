@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { verifyDeviceAccess } from "../../shared/deviceAuth.ts";
 
 const esc = (v) => {
   let s = v === null || v === undefined ? "" : String(v);
@@ -40,6 +41,12 @@ export default async function (req) {
     }
 
     const body = await req.json().catch(() => ({}));
+
+    const access = await verifyDeviceAccess(base44, body.device_token, 'export_logs');
+    if (!access.allowed) {
+      return Response.json({ error: "この機能は貸与端末限定です", reason: access.reason }, { status: 403 });
+    }
+
     const target = body.target === "view" ? "view" : body.target === "interaction" ? "interaction" : "access";
     const from = typeof body.date_from === "string" && body.date_from ? body.date_from + " 00:00" : "";
     const to = typeof body.date_to === "string" && body.date_to ? body.date_to + " 23:59" : "";

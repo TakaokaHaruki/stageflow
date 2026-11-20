@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, UserCheck, HelpCircle, ShieldCheck, Lock, Eye, History, QrCode, LayoutTemplate, Bell, HardDriveDownload, Calendar } from "lucide-react";
+import { Users, UserCheck, HelpCircle, ShieldCheck, Lock, Eye, History, QrCode, LayoutTemplate, Bell, HardDriveDownload, Calendar, MonitorSmartphone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserRoleManager from "@/components/UserRoleManager";
 import ApprovalRequestManager from "@/components/ApprovalRequestManager";
@@ -14,6 +14,7 @@ import GlobalBannerManager from "@/components/GlobalBannerManager";
 import UserNotificationManager from "@/components/UserNotificationManager";
 import LoginHelpManager from "@/components/LoginHelpManager";
 import BackupManager from "@/components/BackupManager";
+import DeviceManager from "@/components/admin/DeviceManager";
 import EventScopeSelector from "@/components/admin/EventScopeSelector";
 import { useUserRole } from "@/hooks/useUserRole";
 import AdminSettingsNav from "@/components/admin/AdminSettingsNav";
@@ -38,6 +39,7 @@ const GROUPS = [
       { id: "portal_restriction", label: "ポータル制限", icon: ShieldCheck },
       { id: "access_restriction", label: "アクセス制限", icon: Lock },
       { id: "event_view_limit", label: "イベント閲覧制限", icon: Eye },
+      { id: "devices", label: "貸与端末", icon: MonitorSmartphone },
     ],
   },
   {
@@ -110,6 +112,7 @@ export default function AdminSettingsPage() {
       case "global_banner": return <GlobalBannerManager />;
       case "user_notification": return <UserNotificationManager />;
       case "login_help": return <LoginHelpManager />;
+      case "devices": return <DeviceManager />;
       case "backup": return <BackupManager />;
       default: return null;
     }

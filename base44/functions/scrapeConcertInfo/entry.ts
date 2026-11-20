@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { jstNow } from "../../shared/eventBackup.ts";
+import { verifyDeviceAccess } from "../../shared/deviceAuth.ts";
 import { fetchLtike, fetchPia, fetchEplus, fetchKyodo, fetchBeanet, SOURCE_PRIORITY } from "../../shared/concertSources.ts";
 import { buildClusters, normalizeVenue } from "../../shared/concertMatch.ts";
 
@@ -14,6 +15,11 @@ export default async function(req) {
     }
 
     const body = await req.json().catch(() => ({}));
+
+    const access = await verifyDeviceAccess(base44, body.device_token, 'scrape');
+    if (!access.allowed) {
+      return Response.json({ error: 'この機能は貸与端末限定です', reason: access.reason }, { status: 403 });
+    }
 
     // 5ソース（L-Tike / チケpia / e+ / 京楽西日本 / bea-net）を並列取得
     const results = await Promise.all(

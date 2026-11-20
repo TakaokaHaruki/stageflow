@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { invokeWithDevice } from "@/lib/deviceRequest";
 import { RefreshCw, Music2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { formatJaDate } from "@/lib/dateFormat";
 import { unwrapFunctionResponse } from "@/lib/base44Response";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useDeviceAuth } from "@/hooks/useDeviceAuth";
 import { getTodayJST } from "@/components/home/ConcertCard";
 
 export default function Concerts() {
   const { isAdmin } = useUserRole();
+  const { canAccess, isLoading: deviceLoading } = useDeviceAuth();
   const queryClient = useQueryClient();
   const [updating, setUpdating] = useState(false);
   const { data: concerts = [], isLoading } = useQuery({
@@ -24,7 +27,7 @@ export default function Concerts() {
   const handleUpdate = async () => {
     setUpdating(true);
     try {
-      const data = unwrapFunctionResponse(await base44.functions.invoke("scrapeConcertInfo", {}));
+      const data = unwrapFunctionResponse(await invokeWithDevice("scrapeConcertInfo", {}));
       if (data.error) {
         toast.error(data.error);
       } else {
@@ -53,7 +56,12 @@ export default function Concerts() {
               </p>
             </div>
           </div>
-          {isAdmin && (
+          {isAdmin && !canAccess("scrape") && !deviceLoading && (
+            <span className="shrink-0 text-[10px] text-amber-600 dark:text-amber-400">
+              貸与端末限定
+            </span>
+          )}
+          {isAdmin && canAccess("scrape") && (
             <Button
               variant="outline"
               size="sm"

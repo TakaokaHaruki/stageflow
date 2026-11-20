@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { invokeWithDevice } from "@/lib/deviceRequest";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, Download, Loader2, CheckCircle2, AlertCircle, ChevronLeft, RefreshCw, Pencil } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { unwrapFunctionResponse } from "@/lib/base44Response";
+import { useDeviceAuth } from "@/hooks/useDeviceAuth";
+import DeviceGate from "@/components/DeviceGate";
 
 export default function StaffScrapeModal({ eventId, onClose }) {
+  const { canAccess } = useDeviceAuth();
   const [activeTab, setActiveTab] = useState("history"); // "history" | "manual"
   const [urlHistory, setUrlHistory] = useState([]);
   const [url, setUrl] = useState("");
@@ -57,7 +61,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
       setUrlHistory(nextHistory);
       setUrl(targetUrl);
 
-      const res = await base44.functions.invoke("scrapeStaffNames", { url: targetUrl, eventId });
+      const res = await invokeWithDevice("scrapeStaffNames", { url: targetUrl, eventId });
       const data = unwrapFunctionResponse(res);
       if (data.error) {
         setError(data.error);
@@ -111,7 +115,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
     setError(null);
     setErrorDetail(null);
     try {
-      const res = await base44.functions.invoke("scrapeStaffNames", { url: url.trim(), eventId, selectedStaff });
+      const res = await invokeWithDevice("scrapeStaffNames", { url: url.trim(), eventId, selectedStaff });
       const data = unwrapFunctionResponse(res);
       if (data.error) {
         setError(data.error);
@@ -176,6 +180,12 @@ export default function StaffScrapeModal({ eventId, onClose }) {
           </button>
         </div>
 
+        {!canAccess("scrape") ? (
+          <div className="p-5">
+            <DeviceGate featureKey="scrape" />
+          </div>
+        ) : (
+        <>
         {/* Tabs */}
         {showTabs && (
           <div className="flex border-b border-border shrink-0">
@@ -457,6 +467,8 @@ export default function StaffScrapeModal({ eventId, onClose }) {
             </Button>
           )}
         </div>
+        </>
+        )}
       </motion.div>
     </motion.div>
   );

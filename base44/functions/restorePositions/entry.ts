@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { collectEventRaw, cleanBackupData, buildFullComparison, restoreEventBackup, ENTITY_MAP } from "../../shared/eventBackup.ts";
+import { verifyDeviceAccess } from "../../shared/deviceAuth.ts";
 
 export default async function(req) {
   try {
@@ -13,6 +14,11 @@ export default async function(req) {
     const backup_id = body.backup_id;
     if (!backup_id) return Response.json({ error: 'backup_id required' }, { status: 400 });
     const compare_only = !!body.compare_only;
+
+    const access = await verifyDeviceAccess(base44, body.device_token, 'backup');
+    if (!access.allowed) {
+      return Response.json({ error: 'この機能は貸与端末限定です', reason: access.reason }, { status: 403 });
+    }
 
     const backup = await base44.entities.PositionBackup.get(backup_id);
     if (!backup) return Response.json({ error: 'backup not found' }, { status: 404 });

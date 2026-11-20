@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { invokeWithDevice } from "@/lib/deviceRequest";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Database, RotateCcw, Plus, Trash2, ShieldCheck, Clock, GitCompare } from "lucide-react";
 import { toast } from "sonner";
+import DeviceGate from "@/components/DeviceGate";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import BackupCompareModal from "@/components/BackupCompareModal";
 import BackupVersionDiffModal from "@/components/backup/BackupVersionDiffModal";
@@ -36,7 +38,7 @@ export default function BackupManager() {
 
   const createBackupMutation = useMutation({
     mutationFn: ({ eventId, label }) =>
-      base44.functions.invoke("backupPositions", { event_id: eventId, label, is_auto: false }),
+      invokeWithDevice("backupPositions", { event_id: eventId, label, is_auto: false }),
     onSuccess: (_data, { eventId }) => {
       toast.success("バックアップを作成しました");
       queryClient.invalidateQueries({ queryKey: ["position-backups", eventId] });
@@ -47,7 +49,7 @@ export default function BackupManager() {
   });
 
   const bulkBackupMutation = useMutation({
-    mutationFn: () => base44.functions.invoke("autoBackupAllEvents", { is_auto: false }),
+    mutationFn: () => invokeWithDevice("autoBackupAllEvents", { is_auto: false }),
     onSuccess: (res) => {
       const data = res?.data || res;
       const results = data?.results || [];
@@ -65,7 +67,7 @@ export default function BackupManager() {
   });
 
   const restoreMutation = useMutation({
-    mutationFn: (backupId) => base44.functions.invoke("restorePositions", { backup_id: backupId }),
+    mutationFn: (backupId) => invokeWithDevice("restorePositions", { backup_id: backupId }),
     onSuccess: (res) => {
       const data = res?.data || res;
       const restored = data?.restored || {};
@@ -117,6 +119,7 @@ export default function BackupManager() {
 
   return (
     <div className="space-y-4">
+    <DeviceGate featureKey="backup">
       <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
         <div className="flex items-center gap-2 mb-1 flex-wrap">
           <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
@@ -304,6 +307,7 @@ export default function BackupManager() {
           onConfirm={() => deleteBackupMutation.mutate(pendingDelete.id)}
         />
       )}
+    </DeviceGate>
     </div>
   );
 }

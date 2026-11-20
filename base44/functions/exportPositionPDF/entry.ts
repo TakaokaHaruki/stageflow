@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { verifyDeviceAccess } from "../../shared/deviceAuth.ts";
 
 Deno.serve(async (req) => {
   try {
@@ -8,7 +9,12 @@ Deno.serve(async (req) => {
     if (user.role !== 'admin' && user.role !== 'chief') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
-    const { eventId, type } = await req.json();
+    const { eventId, type, device_token } = await req.json();
+
+    const access = await verifyDeviceAccess(base44, device_token, 'export_pdf');
+    if (!access.allowed) {
+      return Response.json({ error: 'この機能は貸与端末限定です', reason: access.reason }, { status: 403 });
+    }
 
     if (!eventId) {
       return Response.json({ error: 'eventId required' }, { status: 400 });

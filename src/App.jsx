@@ -24,6 +24,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import DeviceActivate from "./pages/DeviceActivate";
 import ManagementSettings from "./pages/ManagementSettings";
 import StaffSearch from "./pages/StaffSearch";
 import SupportChat from "./pages/SupportChat";
@@ -60,6 +61,9 @@ const AuthenticatedApp = () => {
       {/* Public pages - accessible without login */}
       <Route path="/" element={<StaffPortal />} />
       <Route path="/events/:eventId/share" element={<StaffShareManage />} />
+
+      {/* Device activation - requires login (redirects to login if needed) */}
+      <Route path="/devices/activate" element={<DeviceActivate />} />
 
       {/* Protected app routes - require login */}
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to={loginPath} replace />} />}>

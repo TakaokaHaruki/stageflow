@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+import { invokeWithDevice } from "@/lib/deviceRequest";
 
 /**
  * アクセスログのCSVをダウンロードする（管理者用バックエンド関数経由）。
@@ -6,7 +6,7 @@ import { base44 } from "@/api/base44Client";
  * 戻り値: 出力件数
  */
 export async function downloadLogCsv({ target, dateFrom, dateTo }) {
-  const res = await base44.functions.invoke("exportAccessLogsCsv", {
+  const res = await invokeWithDevice("exportAccessLogsCsv", {
     target,
     date_from: dateFrom || "",
     date_to: dateTo || "",

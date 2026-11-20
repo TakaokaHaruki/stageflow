@@ -1,15 +1,21 @@
 import { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { invokeWithDevice } from "@/lib/deviceRequest";
 import { generatePositionPDF } from "@/lib/pdfGenerator";
+import { useDeviceAuth } from "@/hooks/useDeviceAuth";
 
 export function usePDFExport(eventId, type, filename) {
   const [exporting, setExporting] = useState(false);
+  const { canAccess } = useDeviceAuth();
 
   const exportPDF = async () => {
+    if (!canAccess("export_pdf")) {
+      alert("この機能は貸与端末限定です。管理者から貸与端末の認証URLを取得し、この端末で認証してください。");
+      return;
+    }
     setExporting(true);
     try {
       // バックエンド関数でデータを一括取得し、クライアント側のAPI呼び出しを集約してレート制限を回避
-      const res = await base44.functions.invoke("exportPositionPDF", { eventId, type });
+      const res = await invokeWithDevice("exportPositionPDF", { eventId, type });
       const { event, positions = [], staff = [] } = res?.data || {};
       const payload = { event, positions, staff, type };
       await generatePositionPDF(payload, filename);

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { collectEventRaw, cleanBackupData, backupSummary, jstNow } from "../../shared/eventBackup.ts";
+import { verifyDeviceAccess } from "../../shared/deviceAuth.ts";
 
 export default async function(req) {
   try {
@@ -12,6 +13,11 @@ export default async function(req) {
     const body = await req.json().catch(() => ({}));
     const event_id = body.event_id;
     if (!event_id) return Response.json({ error: 'event_id required' }, { status: 400 });
+
+    const access = await verifyDeviceAccess(base44, body.device_token, 'backup');
+    if (!access.allowed) {
+      return Response.json({ error: 'この機能は貸与端末限定です', reason: access.reason }, { status: 403 });
+    }
     const is_auto = !!body.is_auto;
     const label = body.label || (is_auto ? '自動バックアップ' : '手動バックアップ');
 
