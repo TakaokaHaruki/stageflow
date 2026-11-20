@@ -14,6 +14,7 @@ import { CONFIG_KEY } from "@/lib/deviceFeatures";
 export function useDeviceAuth() {
   const [restrictedFeatures, setRestrictedFeatures] = useState([]);
   const [device, setDevice] = useState(null);
+  const [clientIp, setClientIp] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -34,11 +35,14 @@ export function useDeviceAuth() {
         const res = unwrapFunctionResponse(rawRes);
         if (res?.device) {
           setDevice(res.device);
+          setClientIp(res.client_ip || "");
         } else {
           setDevice(null);
+          setClientIp("");
         }
       } else {
         setDevice(null);
+        setClientIp("");
       }
     } catch {
       setDevice(null);
@@ -81,6 +85,7 @@ export function useDeviceAuth() {
   return {
     restrictedFeatures,
     device,
+    clientIp,
     isRegistered,
     canAccess,
     isLoading,

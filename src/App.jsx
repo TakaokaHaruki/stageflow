@@ -31,6 +31,7 @@ import SupportChat from "./pages/SupportChat";
 import Concerts from "./pages/Concerts";
 import AccessInsights from "./pages/AccessInsights";
 import AccessLogTracker from "./components/AccessLogTracker";
+import DeviceAuthBanner from "./components/DeviceAuthBanner";
 import GeoGuard from "./components/GeoGuard";
 
 const AuthenticatedApp = () => {
@@ -44,6 +45,7 @@ const AuthenticatedApp = () => {
   return (
     <>
       <AccessLogTracker />
+      <DeviceAuthBanner />
       {authError?.type === 'user_not_registered' ? (
         <UserNotRegisteredError />
       ) : user?.role === 'unapproved' ? (
