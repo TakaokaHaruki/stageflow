@@ -73,6 +73,7 @@ export default function DeviceAuthBanner() {
           <span className="h-3 w-px shrink-0 bg-slate-500/50" />
           <span className="flex min-w-0 items-center gap-1">
             <UserIcon className="h-3 w-3 shrink-0 text-amber-300" />
+            <span className="shrink-0 text-slate-400">ユーザー名</span>
             <span className="truncate">{loginName}</span>
           </span>
         </div>
