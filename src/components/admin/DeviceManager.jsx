@@ -138,7 +138,7 @@ export default function DeviceManager() {
     queryKey: ["allUsers"],
     queryFn: async () => {
       try {
-        return await base44.entities.User.list({ limit: 200 });
+        return await base44.entities.User.list();
       } catch {
         return [];
       }
