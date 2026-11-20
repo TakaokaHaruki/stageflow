@@ -76,6 +76,10 @@ export default function DeviceAuthBanner() {
             <span className="shrink-0 text-slate-400">ユーザー名</span>
             <span className="truncate">{loginName}</span>
           </span>
+          <span className="flex min-w-0 items-center gap-1">
+            <span className="h-3 w-px shrink-0 bg-slate-500/50" />
+            <span className="truncate text-slate-400">この端末は認証されています。貸与本人以外の使用を禁じます。</span>
+          </span>
         </div>
       </div>
       {/* fixed分と同じ高さのスペーサーで本文を押し下げ */}
