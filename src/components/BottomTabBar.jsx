@@ -85,7 +85,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/90 backdrop-blur-md safe-area-bottom">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card safe-area-bottom">
         <div
           className="grid min-h-14"
           style={{ gridTemplateColumns: `repeat(${PRIMARY_TABS.length + (moreTabs.length > 0 ? 1 : 0)}, minmax(0, 1fr))` }}

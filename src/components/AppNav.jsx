@@ -51,6 +51,11 @@ export default function AppNav() {
     loadUser();
   }, []);
 
+  // ページ遷移時にスクロール位置をトップへリセット（ブラウザの自動復元を抑止）
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   const navItems = getNavItems({ isAdmin, canEdit });
 
   // 表示中ページのタブ・タイトルをルートパスから解決
@@ -132,7 +137,7 @@ export default function AppNav() {
       )}
 
       {/* モバイル用グローバルナビ */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/90 backdrop-blur-md safe-area-bottom sm:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card safe-area-bottom sm:hidden">
         <div className="grid min-h-14" style={{ gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` }}>
           {navItems.map(({ id, label, short, icon: Icon }) => (
             <button
