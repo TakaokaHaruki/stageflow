@@ -149,45 +149,57 @@ export default function PositionCard({
     <div className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/30 transition-colors"
       onDragOver={onDragOver} onDrop={onDrop}>
       <div
-        className={`flex items-center gap-1.5 px-1.5 py-1 border-b border-border/60 bg-muted/20 select-none ${isAdmin && onPosDragStart ? "cursor-grab active:cursor-grabbing" : ""}`}
+        className={`px-1.5 py-1 border-b border-border/60 bg-muted/20 select-none ${isAdmin && onPosDragStart ? "cursor-grab active:cursor-grabbing" : ""}`}
         draggable={isAdmin && !!onPosDragStart}
         onDragStart={isAdmin && onPosDragStart ? onPosDragStart : undefined}
         onDragEnd={isAdmin && onPosDragEnd ? onPosDragEnd : undefined}
       >
-        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pos.color || "#6366f1" }} />
-        <span className="text-xs font-semibold text-foreground">{pos.name}</span>
-        {multiShowMode && getParts(pos).length > 1 && (
-          <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-violet-500/15 text-violet-600 dark:text-violet-300 border border-violet-500/30 shrink-0">{partLabel(getParts(pos))}</span>
-        )}
-        {onRequiredCountChange && isAdmin && !isView ? (
-          <div className="flex items-center border border-border/60 rounded overflow-hidden bg-background ml-1">
-            <button type="button" onClick={() => onRequiredCountChange(Math.max(0, requiredCount - 1))}
-              className="flex h-7 w-7 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-4 sm:w-4"><Minus className="w-2 h-2" /></button>
-            <span className="w-5 text-center text-[11px] leading-7 sm:text-[10px] sm:leading-4">{requiredCount}</span>
-            <button type="button" onClick={() => onRequiredCountChange(requiredCount + 1)}
-              className="flex h-7 w-7 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-4 sm:w-4"><Plus className="w-2 h-2" /></button>
-          </div>
-        ) : (
-          <span className="text-[10px] text-muted-foreground">{assignedCount}名</span>
-        )}
-        {statusBadge && <span className={`text-[10px] font-semibold px-1 py-0.5 rounded border ${statusBadge.cls}`}>{statusBadge.label}</span>}
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pos.color || "#6366f1" }} />
+          <span className="text-xs font-semibold text-foreground truncate">{pos.name}</span>
+          {multiShowMode && getParts(pos).length > 1 && (
+            <span className="text-[9px] font-bold px-1 py-0.5 rounded bg-violet-500/15 text-violet-600 dark:text-violet-300 border border-violet-500/30 shrink-0">{partLabel(getParts(pos))}</span>
+          )}
+          {onRequiredCountChange && isAdmin && !isView ? (
+            <div className="flex items-center border border-border/60 rounded overflow-hidden bg-background ml-1">
+              <button type="button" onClick={() => onRequiredCountChange(Math.max(0, requiredCount - 1))}
+                className="flex h-7 w-7 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-4 sm:w-4"><Minus className="w-2 h-2" /></button>
+              <span className="w-5 text-center text-[11px] leading-7 sm:text-[10px] sm:leading-4">{requiredCount}</span>
+              <button type="button" onClick={() => onRequiredCountChange(requiredCount + 1)}
+                className="flex h-7 w-7 items-center justify-center bg-muted text-muted-foreground hover:bg-muted/80 sm:h-4 sm:w-4"><Plus className="w-2 h-2" /></button>
+            </div>
+          ) : (
+            <span className="text-[10px] text-muted-foreground">{assignedCount}名</span>
+          )}
+          {statusBadge && <span className={`text-[10px] font-semibold px-1 py-0.5 rounded border ${statusBadge.cls}`}>{statusBadge.label}</span>}
+          {onEdit && !isView && (
+            <div className="flex gap-1 ml-auto flex-shrink-0">
+              <button onClick={() => onEdit(pos)} disabled={!isAdmin} className="flex h-7 w-7 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-5 sm:w-5" aria-label={`${pos.name}を編集`}><Pencil className="w-3 h-3" /></button>
+            </div>
+          )}
+        </div>
         {(() => {
           const chiefCandidates = (pos.chief_names && pos.chief_names.length > 0)
             ? pos.chief_names
             : (pos.chief_name ? [pos.chief_name] : []);
           const chiefs = chiefCandidates.filter((c) => staffNames.includes(c));
-          if (chiefs.length === 0) return null;
-          return (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-              チーフ：{chiefs.join("・")}
-            </span>
-          );
-        })()}
-        {pos.notes && <span className="text-[10px] text-muted-foreground truncate flex-1">{pos.notes}</span>}
-        {onEdit && !isView && (
-          <div className="flex gap-1 ml-auto flex-shrink-0">
-            <button onClick={() => onEdit(pos)} disabled={!isAdmin} className="flex h-7 w-7 items-center justify-center rounded hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none sm:h-5 sm:w-5" aria-label={`${pos.name}を編集`}><Pencil className="w-3 h-3" /></button>
+          return chiefs.length > 0 || pos.notes;
+        })() && (
+          <div className="flex flex-wrap items-center gap-1 mt-1 pl-3.5">
+            {(() => {
+              const chiefCandidates = (pos.chief_names && pos.chief_names.length > 0)
+                ? pos.chief_names
+                : (pos.chief_name ? [pos.chief_name] : []);
+              const chiefs = chiefCandidates.filter((c) => staffNames.includes(c));
+              if (chiefs.length === 0) return null;
+              return (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                  チーフ：{chiefs.join("・")}
+                </span>
+              );
+            })()}
+            {pos.notes && <span className="text-[10px] text-muted-foreground break-all min-w-0">{pos.notes}</span>}
           </div>
         )}
       </div>
