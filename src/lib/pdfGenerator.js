@@ -208,6 +208,7 @@ const SIDE_HEADER_H = 2.8;
 const CHECKBOX_SIZE = 2;
 const CHECKBOX_GAP = 0.4;
 const CHIEF_LINE_H = 3.2; // チーフ印字行の高さ（チーフがある場合のみ）
+const POS_NOTE_LINE_H = 2.8; // ポジション備考行の高さ（ポジション名の下に印字）
 const NOTE_FONT_SIZE = 5.4; // 備考のフォントサイズ（スタッフ名の下に小さく印字）
 const NOTE_LINE_H = 2.8;    // 備考行の高さ
 const PENLIGHT_ICON_W = 2.6;   // ペンライトアイコン（筒＋光束）の幅
@@ -283,6 +284,7 @@ function calcCardHeight(pos, staffMap) {
     : (pos.staff_names || []).length;
   const extraH = splitBySide ? SIDE_HEADER_H : 0;
   const chiefH = getChiefs(pos).length > 0 ? CHIEF_LINE_H : 0;
+  const posNoteH = pos.notes && String(pos.notes).trim() ? POS_NOTE_LINE_H : 0;
   // 備考を持つスタッフの行は高さを追加（備考行の数だけ）
   let noteExtra = 0;
   if (staffMap) {
@@ -294,7 +296,7 @@ function calcCardHeight(pos, staffMap) {
       ? Math.max(countNotes(pos.staff_names_kamite || []), countNotes(pos.staff_names_shimote || []))
       : countNotes(staffNamesList);
   }
-  return CARD_HEADER_H + chiefH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + noteExtra + CARD_PADDING_V;
+  return CARD_HEADER_H + posNoteH + chiefH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + noteExtra + CARD_PADDING_V;
 }
 
 function drawTitle(doc, event, partLabel) {
@@ -445,12 +447,30 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
 
   const chiefs = getChiefs(pos);
   const chiefH = chiefs.length > 0 ? CHIEF_LINE_H : 0;
-  let staffY = y + CARD_HEADER_H + 0.3;
+  const posNoteH = pos.notes && String(pos.notes).trim() ? POS_NOTE_LINE_H : 0;
+  const noteStartY = y + CARD_HEADER_H;
+
+  // ポジション備考をポジション名の下に小さく印字
+  if (posNoteH > 0) {
+    doc.setFontSize(NOTE_FONT_SIZE);
+    doc.setFont('NotoSansJP', 'normal');
+    doc.setTextColor(120, 113, 108);
+    let posNote = String(pos.notes);
+    const maxNoteW = w - 3;
+    while (posNote.length > 1 && doc.getTextWidth(posNote) > maxNoteW) {
+      posNote = posNote.slice(0, -1);
+    }
+    if (posNote !== String(pos.notes) && posNote.length > 0) posNote = posNote.slice(0, -1) + '…';
+    doc.text(posNote, x + 1, noteStartY + POS_NOTE_LINE_H * 0.75);
+    doc.setFontSize(STAFF_FONT_SIZE);
+  }
+
+  let staffY = noteStartY + posNoteH + 0.3;
   const cardBottom = y + cardH;
 
   // チーフ印字（ヘッダー直下・バッジ風）
   if (chiefs.length > 0) {
-    const chiefY = y + CARD_HEADER_H;
+    const chiefY = noteStartY + posNoteH;
     const pillH = CHIEF_LINE_H - 0.9;
     const pillY = chiefY + 0.35;
     const pillX = x + 2.5;
