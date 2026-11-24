@@ -19,7 +19,7 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
       onMouseEnter={() => setCollapsed(false)}
       onMouseLeave={() => setCollapsed(true)}
       className="hidden sm:flex sticky self-start flex-col border-r border-border bg-card/80 backdrop-blur-md z-40 transition-[width] duration-150"
-      style={{ width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH, top: topOffset, height: `calc(100vh - ${topOffset}px)` }}
+      style={{ width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH, top: `calc(var(--device-banner-height, 0px) + ${topOffset}px)`, height: `calc(100vh - var(--device-banner-height, 0px) - ${topOffset}px)` }}
     >
       {/* 展開切替 */}
       <div className="flex justify-end px-1.5 pt-1.5">
