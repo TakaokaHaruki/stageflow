@@ -34,7 +34,7 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
         className="hidden sm:flex fixed left-0 flex-col border-r border-border bg-card dark:bg-card z-40 transition-[width] duration-150"
         style={{ width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH, top, height }}
       >
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden pt-0 pb-2 scrollbar-hide">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden pt-1.5 pb-2 scrollbar-hide">
           <TooltipProvider delayDuration={200}>
             <ul className="flex flex-col gap-0.5 px-1.5">
               {tabs.map(({ id, label, icon: Icon }) => {
