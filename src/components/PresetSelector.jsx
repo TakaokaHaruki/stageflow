@@ -172,10 +172,10 @@ export default function PresetSelector({ eventId, compact = false, positions = [
 
   if (compact) {
     return (
-      <div className="relative">
+      <div className="relative w-full sm:w-auto">
         <button
           onClick={() => setOpen(!open)}
-          className="flex h-8 shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border border-border bg-card px-2 text-xs font-medium transition-colors hover:bg-muted/40"
+          className="flex h-8 w-full shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-border bg-card px-2 text-xs font-medium transition-colors hover:bg-muted/40 sm:w-auto"
         >
           <BookOpen className="w-3 h-3 text-primary" />
           {activePreset
