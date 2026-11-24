@@ -1227,15 +1227,16 @@ export async function generateMapPDF(data, filename) {
   doc.addImage(png, 'PNG', imgX, imgY, drawW, drawH);
 
   const positions = data.positions || [];
-  const posByName = {};
-  positions.forEach((p) => { posByName[p.name] = p; });
+  const staffByName = {};
+  positions.forEach((p) => {
+    (staffByName[p.name] ||= []).push(...mapStaffListOf(p));
+  });
   const pins = data.pins || [];
   pins.forEach((pin) => {
     if (pin.map_x == null || pin.map_y == null) return;
     const cx = imgX + (pin.map_x / 100) * drawW;
     const cy = imgY + (pin.map_y / 100) * drawH;
-    const pos = posByName[pin.position_name];
-    const staff = pos ? mapStaffListOf(pos) : [];
+    const staff = Array.from(new Set(staffByName[pin.position_name] || []));
     drawPinLabel(doc, cx, cy, pin.position_name, staff, margin, pageW - margin);
     doc.setFillColor(28, 49, 119);
     doc.circle(cx, cy, 1.3, 'F');

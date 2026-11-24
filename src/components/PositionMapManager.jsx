@@ -347,19 +347,21 @@ export default function PositionMapManager({ eventId }) {
                   draggable={false}
                   crossOrigin={mapImageSource?.type === "image" ? "anonymous" : undefined}
                 />
-                {positions
-                  .filter((p) => pinByPosition[p.name])
-                  .map((p) => {
-                    const pin = pinByPosition[p.name];
-                    const staff = staffListOf(p);
-                    const active = activePositionName === p.name;
+                {Array.from(new Set(positions.map((p) => p.name)))
+                  .filter((name) => pinByPosition[name])
+                  .map((name) => {
+                    const pin = pinByPosition[name];
+                    const staff = Array.from(
+                      new Set(positions.filter((p) => p.name === name).flatMap(staffListOf))
+                    );
+                    const active = activePositionName === name;
                     return (
                       <div
-                        key={p.id}
-                        onPointerDown={(e) => handlePinPointerDown(e, p.name)}
+                        key={name}
+                        onPointerDown={(e) => handlePinPointerDown(e, name)}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setActivePositionName(p.name);
+                          setActivePositionName(name);
                         }}
                         style={{ left: `${pin.map_x}%`, top: `${pin.map_y}%` }}
                         className={`absolute z-10 -translate-x-1/2 -translate-y-full touch-none ${editable ? "cursor-grab active:cursor-grabbing" : ""}`}
@@ -373,7 +375,7 @@ export default function PositionMapManager({ eventId }) {
                         >
                           <span className="flex items-center gap-0.5 text-[10px] font-bold leading-none">
                             <MapPin className="h-2.5 w-2.5 shrink-0" />
-                            {p.name}
+                            {name}
                           </span>
                           {staff.length > 0 && (
                             <span className={`max-w-32 text-[9px] leading-tight ${active ? "text-primary-foreground/90" : "text-muted-foreground"}`}>
