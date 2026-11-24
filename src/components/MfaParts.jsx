@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Check, ChevronsUpDown, Copy, ShieldCheck } from "lucide-react";
+import { Check, ChevronsUpDown, Copy } from "lucide-react";
+import CrewlyLogo from "@/components/CrewlyLogo";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
@@ -39,8 +40,8 @@ export function MfaScreen({ children }) {
 export function MfaHeader({ title, description }) {
   return (
     <div className="flex flex-col items-center text-center mb-6">
-      <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-primary mb-4">
-        <ShieldCheck className="w-7 h-7 text-primary-foreground" aria-hidden="true" />
+      <div className="flex justify-center mb-4">
+        <CrewlyLogo disableLink size={44} />
       </div>
       <h1 className="text-2xl font-bold tracking-tight text-foreground min-h-[2rem]">{title}</h1>
       {description && <p className="text-muted-foreground mt-2">{description}</p>}
