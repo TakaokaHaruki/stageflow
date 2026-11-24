@@ -76,7 +76,7 @@ export default function AppNav() {
       <UserNotificationBanner />
       {/* 共通ヘッダ */}
       <div ref={headerRef} className="bg-card/90 dark:bg-card/80 backdrop-blur-md border-b border-border sticky z-50 safe-area-top" style={{ top: "var(--device-banner-height, 0px)" }}>
-        <div className="max-w-[1400px] mx-auto px-3 pb-2 pt-2 flex items-center gap-2">
+        <div className="max-w-[1400px] mx-auto px-3 pb-1.5 pt-1.5 flex items-center gap-2">
           <CrewlyLogo className="mr-1" administrator={isAdmin} />
           <div className="hidden h-5 w-px bg-border sm:block" />
           <h1 className="shrink-0 text-[15px] font-bold tracking-tight text-foreground">{title}</h1>
@@ -122,7 +122,7 @@ export default function AppNav() {
 
       <div className="sm:flex">
         <SidebarNav tabs={navItems} activeTab={activeTab} onSelectTab={handleSelect} topOffset={headerHeight} />
-        <div className="flex-1 min-w-0 pb-16 sm:pb-0">
+        <div className="flex-1 min-w-0 pb-16 sm:pb-0 sm:pl-12">
           <Outlet />
         </div>
       </div>
