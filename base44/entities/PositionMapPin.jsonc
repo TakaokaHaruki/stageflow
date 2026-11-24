@@ -1,0 +1,78 @@
+{
+  "name": "PositionMapPin",
+  "type": "object",
+  "properties": {
+    "venue_id": {
+      "type": "string",
+      "description": "\u5bfe\u8c61\u4f1a\u5834ID"
+    },
+    "venue_name": {
+      "type": "string",
+      "default": "",
+      "description": "\u4f1a\u5834\u540d\uff08\u53c2\u7167\u7528\uff09"
+    },
+    "position_name": {
+      "type": "string",
+      "description": "\u30dd\u30b8\u30b7\u30e7\u30f3\u540d\uff08\u4f1a\u5834\u3054\u3068\u306b\u540c\u540d\u30dd\u30b8\u30b7\u30e7\u30f3\u3067\u4f4d\u7f6e\u3092\u5171\u7528\uff09"
+    },
+    "map_x": {
+      "type": "number",
+      "description": "\u30de\u30c3\u30d7\u4e0a\u306eX\u5ea7\u6a19\uff08%\uff09",
+      "default": 0
+    },
+    "map_y": {
+      "type": "number",
+      "description": "\u30de\u30c3\u30d7\u4e0a\u306eY\u5ea7\u6a19\uff08%\uff09",
+      "default": 0
+    }
+  },
+  "required": [
+    "venue_id",
+    "position_name"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    },
+    "read": true,
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    }
+  }
+}

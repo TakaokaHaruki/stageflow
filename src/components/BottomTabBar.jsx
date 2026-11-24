@@ -8,6 +8,7 @@ import {
   FileText,
   Paperclip,
   NotebookPen,
+  MapPin,
   MoreHorizontal,
   X,
 } from "lucide-react";
@@ -19,6 +20,7 @@ const PRIMARY_TABS = [
 ];
 
 const MORE_TABS = [
+  { id: "position_map", label: "配置表マップ", icon: MapPin },
   { id: "records", label: "イベント記録", icon: NotebookPen },
   { id: "pos_notes", label: "ポジション説明", icon: FileText, privileged: true },
   { id: "files", label: "配布資料", icon: Paperclip, privileged: true },

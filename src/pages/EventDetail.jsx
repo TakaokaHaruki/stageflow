@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip, HelpCircle, Database, Lock, NotebookPen } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip, HelpCircle, Database, Lock, NotebookPen, MapPin } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -30,6 +30,7 @@ import EventScreenSaver from "@/components/EventScreenSaver";
 import ThemeToggle from "@/components/ThemeToggle";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SeatingMapViewer from "@/components/SeatingMapViewer";
+import PositionMapManager from "@/components/PositionMapManager";
 import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
 import EmergencyContactManager from "@/components/EmergencyContactManager";
@@ -202,6 +203,7 @@ export default function EventDetail() {
   const desktopTabs = [
     { id: "staff", label: "スタッフ管理", icon: Users },
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
+    { id: "position_map", label: "配置表マップ", icon: MapPin },
     { id: "records", label: "イベント記録", icon: NotebookPen },
     { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
     ...(isPrivileged ? [{ id: "files", label: "配布資料", icon: Paperclip }] : []),
@@ -388,6 +390,7 @@ export default function EventDetail() {
             {activeTab === "settings" && settingsSection === "preset_apply" && <PositionTypeManagement eventId={eventId} section="presets" mode="event-apply" />}
             {activeTab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} isLocked={eventLocked} />}
             {activeTab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
+            {activeTab === "position_map" && <PositionMapManager eventId={eventId} />}
             {activeTab === "files" && <SharedFileManager eventId={eventId} showAll={true} isLocked={eventLocked} />}
           </motion.div>
         </AnimatePresence>
