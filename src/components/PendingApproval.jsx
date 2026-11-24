@@ -223,7 +223,7 @@ export default function PendingApproval() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8">
-      <div className="max-w-md w-full bg-card border border-border rounded-xl shadow-lg p-8 text-center">
+      <div className="max-w-md w-full bg-card border border-border rounded-xl shadow-elevated p-8 text-center">
         {isLoading ? (
           <div className="flex justify-center py-8">
             <div className="h-6 w-6 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />

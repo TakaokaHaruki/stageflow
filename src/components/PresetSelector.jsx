@@ -187,7 +187,7 @@ export default function PresetSelector({ eventId, compact = false, positions = [
         {open && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-            <div className="absolute right-0 top-8 z-50 w-56 border border-border rounded-xl bg-card shadow-lg overflow-hidden">
+            <div className="absolute right-0 top-8 z-50 w-56 border border-border rounded-xl bg-card shadow-elevated overflow-hidden">
               {/* 現在の配置を保存 */}
               <div className="px-3 py-2 border-b border-border">
                 <button
@@ -305,7 +305,7 @@ export default function PresetSelector({ eventId, compact = false, positions = [
       </button>
 
       {open && (
-        <div className="mt-1 border border-border rounded-xl bg-card shadow-sm overflow-hidden">
+        <div className="mt-1 border border-border rounded-xl bg-card shadow-card overflow-hidden">
           {presets.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-4">プリセットが登録されていません</p>
           ) : (

@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 /**
  * 標準モーダルシェル（情報漏洩・稼働注意事項モーダル準拠）
  * - 中央寄せフローティング / z-[100] / backdrop-blur
- * - rounded-xl / border / shadow-xl / bg-card / p-6
+ * - rounded-xl / border / shadow-elevated / bg-card / p-6
  * - コンテナ全体が max-h-[90dvh] で内部スクロール
  */
 export function ModalHeader({ icon, title, onClose, children, className = "" }) {

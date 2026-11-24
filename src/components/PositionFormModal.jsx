@@ -307,7 +307,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-xl shadow-xl w-full sm:max-w-md p-6 max-h-[90dvh] overflow-y-auto scrollbar-hide"
+        className="bg-card border border-border rounded-xl shadow-elevated w-full sm:max-w-md p-6 max-h-[90dvh] overflow-y-auto scrollbar-hide"
         initial={{ y: 34, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}

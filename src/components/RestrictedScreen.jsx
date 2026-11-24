@@ -9,7 +9,7 @@ import { base44 } from "@/api/base44Client";
 export default function RestrictedScreen() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8">
-      <div className="max-w-md w-full bg-card border border-border rounded-xl shadow-lg p-8 text-center">
+      <div className="max-w-md w-full bg-card border border-border rounded-xl shadow-elevated p-8 text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 mb-5 rounded-full bg-red-100 dark:bg-red-900/30">
           <Ban className="w-8 h-8 text-red-600 dark:text-red-400" />
         </div>

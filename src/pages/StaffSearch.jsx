@@ -139,7 +139,7 @@ export default function StaffSearch() {
           <button
             key={s.name}
             onClick={() => setSelected(s)}
-            className="w-full text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:shadow-md transition"
+            className="w-full text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:shadow-card transition"
           >
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">

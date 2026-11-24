@@ -84,7 +84,7 @@ export default function EventListItem({ event, isToday, isAdmin, canEdit, onEdit
     <>
       <Link
         to={`/events/${event.id}`}
-        className={`group block bg-card border rounded-lg px-2.5 py-1.5 hover:shadow-sm transition-all duration-200 ${
+        className={`group block bg-card border rounded-lg px-2.5 py-1.5 hover:shadow-card transition-all duration-200 ${
           isToday ? "border-primary hover:border-primary/60" : "border-border hover:border-primary/40"
         }`}>
         {content}

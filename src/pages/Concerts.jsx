@@ -43,7 +43,7 @@ export default function Concerts() {
 
   return (
     <div className="mx-auto max-w-3xl px-2 py-3">
-      <div className="rounded-xl border border-border bg-card p-3 shadow-md">
+      <div className="rounded-xl border border-border bg-card p-3 shadow-card">
         <div className="mb-2 flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">

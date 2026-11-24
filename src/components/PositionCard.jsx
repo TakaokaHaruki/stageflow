@@ -66,7 +66,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, is
             </button>
             {showNotePopup && notePopupPos && (
               <div
-                className="fixed z-50 bg-card border border-border shadow-md rounded-lg p-2 text-[10px] text-foreground max-w-48 break-all"
+                className="fixed z-50 bg-card border border-border shadow-card rounded-lg p-2 text-[10px] text-foreground max-w-48 break-all"
                 style={{ left: notePopupPos.left, top: notePopupPos.top }}
               >
                 {displayNote}

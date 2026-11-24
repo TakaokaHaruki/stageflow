@@ -133,7 +133,7 @@ export default function EventDetail() {
   if (!event) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <div className="w-full max-w-sm rounded-lg border border-border bg-card p-6 text-center shadow-sm">
+        <div className="w-full max-w-sm rounded-lg border border-border bg-card p-6 text-center shadow-card">
           <CalendarX2 className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
           <h1 className="text-base font-bold">イベントが見つかりません</h1>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -355,7 +355,7 @@ export default function EventDetail() {
             />
           )}
 
-          <div className="max-w-[1400px] mx-auto px-1 pt-0 pb-16 sm:pb-8">
+          <div className="max-w-[1400px] mx-auto px-2 pt-0 pb-16 sm:pb-8">
         <PresenceContext.Provider value={{ reportActivity, presences, currentUserId: presenceUserId ?? currentUser?.id }}>
         <UserRestrictionBanner role={role} />
         {activeTab !== "seating_map" && (

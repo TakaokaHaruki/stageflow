@@ -30,7 +30,7 @@ export function useAppInfo() {
 export function MfaScreen({ children }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
-      <div className="w-full max-w-md bg-card rounded-xl shadow-sm border border-border p-8">{children}</div>
+      <div className="w-full max-w-md bg-card rounded-xl shadow-card border border-border p-8">{children}</div>
     </div>
   );
 }

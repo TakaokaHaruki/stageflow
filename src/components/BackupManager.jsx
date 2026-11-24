@@ -120,7 +120,7 @@ export default function BackupManager() {
   return (
     <div className="space-y-4">
     <DeviceGate featureKey="backup">
-      <div className="rounded-xl border border-border bg-card p-4 shadow-md">
+      <div className="rounded-xl border border-border bg-card p-4 shadow-card">
         <div className="flex items-center gap-2 mb-1 flex-wrap">
           <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
           <h2 className="text-base font-bold">イベントバックアップ・復元</h2>
@@ -174,7 +174,7 @@ export default function BackupManager() {
       </div>
 
       {selectedEventId && (
-        <div className="rounded-xl border border-border bg-card p-4 shadow-md">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-card">
           <div className="flex items-center gap-2 mb-3">
             <Database className="w-4 h-4 text-muted-foreground" />
             <h3 className="text-sm font-bold flex-1">バックアップ一覧</h3>
@@ -241,7 +241,7 @@ export default function BackupManager() {
       )}
 
       {orphanBackups.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-4 shadow-md">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-card">
           <div className="flex items-center gap-2 mb-3">
             <Database className="w-4 h-4 text-muted-foreground" />
             <h3 className="text-sm font-bold flex-1">削除済みイベントのバックアップ</h3>

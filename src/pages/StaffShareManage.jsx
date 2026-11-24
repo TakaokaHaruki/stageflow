@@ -241,7 +241,7 @@ function MiniStat({ icon: Icon, label, checked, total, returned, colorClass }) {
 
 function StaffRow({ staff, onUpdate, updating }) {
   return (
-    <div className={`flex items-center gap-0.5 rounded-xl border border-border bg-card shadow-sm transition-opacity ${updating ? "opacity-60" : ""}`}>
+    <div className={`flex items-center gap-0.5 rounded-xl border border-border bg-card shadow-card transition-opacity ${updating ? "opacity-60" : ""}`}>
       {/* 名前（縦軸・1行・見切れなし） */}
       <div className="flex-1 min-w-0 flex items-center gap-1 px-2 py-2 border-r border-border/50">
         <p className="text-xs font-bold whitespace-nowrap">{staff.name}</p>

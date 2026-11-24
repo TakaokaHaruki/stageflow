@@ -74,7 +74,7 @@ export default function DeviceEditModal({ device, users, onSaved }) {
             onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
           >
             <motion.div
-              className="bg-card border border-border rounded-xl shadow-xl w-full max-w-md p-6 max-h-[90dvh] overflow-y-auto"
+              className="bg-card border border-border rounded-xl shadow-elevated w-full max-w-md p-6 max-h-[90dvh] overflow-y-auto"
               initial={{ y: 32, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 32, opacity: 0, scale: 0.98 }}

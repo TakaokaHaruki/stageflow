@@ -50,7 +50,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
       {moreOpen && (
         <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]" onClick={() => setMoreOpen(false)}>
           <div
-            className="absolute bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-2 right-2 rounded-lg border border-border bg-card p-1.5 shadow-xl"
+            className="absolute bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-2 right-2 rounded-lg border border-border bg-card p-1.5 shadow-elevated"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-1 flex items-center justify-between px-1">

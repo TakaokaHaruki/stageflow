@@ -73,7 +73,7 @@ export default function SupportChat() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col px-2 py-3">
-      <div className="mb-2 rounded-xl border border-border bg-card p-3 shadow-md">
+      <div className="mb-2 rounded-xl border border-border bg-card p-3 shadow-card">
         <h2 className="text-sm font-bold">運営サポート相談</h2>
         <p className="text-[11px] leading-snug text-muted-foreground">
           配置や運営についてご相談ください。イベント・ポジション・スタッフのデータを参照して回答します。
@@ -81,7 +81,7 @@ export default function SupportChat() {
       </div>
 
       {loadError ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-6 text-center shadow-md">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-6 text-center shadow-card">
           <CircleAlert className="h-8 w-8 text-destructive" />
           <p className="text-sm font-semibold">チャットを開けませんでした</p>
           <p className="text-xs text-muted-foreground">エージェントが利用できないか、通信に問題があります。</p>
@@ -145,7 +145,7 @@ export default function SupportChat() {
         }}
         className="sticky bottom-16 z-10 mt-3 sm:bottom-2"
       >
-        <div className="flex items-end gap-1.5 rounded-xl border border-border bg-card p-1.5 shadow-md">
+        <div className="flex items-end gap-1.5 rounded-xl border border-border bg-card p-1.5 shadow-card">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}

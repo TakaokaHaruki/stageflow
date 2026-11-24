@@ -58,7 +58,7 @@ export default function InteractionLogPanel() {
   return (
     <div>
       {/* フィルター */}
-      <div className="mb-3 rounded-xl border border-border bg-card p-2.5 shadow-md">
+      <div className="mb-3 rounded-xl border border-border bg-card p-2.5 shadow-card">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           <label className="space-y-1">
             <span className="text-[10px] font-medium text-muted-foreground">開始日</span>
@@ -120,11 +120,11 @@ export default function InteractionLogPanel() {
           <div className="h-6 w-6 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-border bg-card p-8 text-center shadow-md">
+        <div className="rounded-xl border border-border bg-card p-8 text-center shadow-card">
           <p className="text-sm font-medium text-muted-foreground">対象期間に操作ログはありません</p>
         </div>
       ) : (
-        <div className="divide-y divide-border rounded-xl border border-border bg-card shadow-md">
+        <div className="divide-y divide-border rounded-xl border border-border bg-card shadow-card">
           {filtered.slice(0, 300).map((l) => {
             const meta = ACTION_META[l.action_type] || ACTION_META.click;
             return (

@@ -83,7 +83,7 @@ export default function UserNotificationManager() {
         subtitle="ログインユーザー（ユーザー・チーフ等）に個別の通知バナーを表示します"
       />
 
-      <div className="bg-card border border-border rounded-xl shadow-md p-4 space-y-3">
+      <div className="bg-card border border-border rounded-xl shadow-card p-4 space-y-3">
         <Input
           placeholder="件名（任意）"
           value={title}
@@ -161,7 +161,7 @@ export default function UserNotificationManager() {
           <p className="text-sm text-muted-foreground text-center py-8">通知はまだありません</p>
         )}
         {notifications.map((n) => (
-          <div key={n.id} className="bg-card border border-border rounded-xl shadow-sm p-3">
+          <div key={n.id} className="bg-card border border-border rounded-xl shadow-card p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 {n.title && <p className="text-sm font-bold">{n.title}</p>}

@@ -41,13 +41,13 @@ export default function ManagementSettings() {
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] px-1.5 pb-2">
+    <div className="mx-auto max-w-[1400px] px-2 pb-2">
         {/* Section bar */}
         <SectionTabBar
           items={SECTIONS}
           activeId={section}
           onSelect={setSection}
-          className="sticky top-[var(--app-header-height)] z-40 mb-3 -mx-1.5 px-1.5"
+          className="sticky top-[var(--app-header-height)] z-40 mb-3 -mx-2 px-2"
         />
 
         <AnimatePresence mode="wait" initial={false}>

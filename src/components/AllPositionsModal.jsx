@@ -136,7 +136,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
           onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
           <motion.div
-            className="bg-card border border-border rounded-xl shadow-xl w-full max-w-lg max-h-[90dvh] flex flex-col"
+            className="bg-card border border-border rounded-xl shadow-elevated w-full max-w-lg max-h-[90dvh] flex flex-col"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}

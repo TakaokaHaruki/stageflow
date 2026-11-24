@@ -98,7 +98,7 @@ export default function StaffFileViewer({ events, staffName, staffRoles, positio
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-6 bg-card border border-border rounded-xl shadow-md p-4"
+        className="mt-6 bg-card border border-border rounded-xl shadow-card p-4"
       >
         <h3 className="font-bold text-sm mb-3 flex items-center gap-1.5">
           <span className="bg-primary/10 text-primary rounded-lg p-1.5">
