@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
-const EXPANDED_WIDTH = 184;
-const COLLAPSED_WIDTH = 52;
+const EXPANDED_WIDTH = 168;
+const COLLAPSED_WIDTH = 48;
 
 export const SIDEBAR_EXPANDED_WIDTH = EXPANDED_WIDTH;
 export const SIDEBAR_COLLAPSED_WIDTH = COLLAPSED_WIDTH;
@@ -42,8 +42,8 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
                 const button = (
                   <button
                     onClick={() => onSelectTab(id)}
-                    className={`relative flex w-full items-center rounded-md py-1.5 text-[13px] font-semibold transition-colors ${
-                      collapsed ? "justify-center" : "gap-2 px-2.5 pr-2"
+                    className={`relative flex w-full items-center rounded-md py-1.5 text-xs font-semibold transition-colors ${
+                      collapsed ? "justify-center" : "gap-2.5 px-2.5 pr-2"
                     } ${
                       isActive
                         ? "bg-primary text-primary-foreground"
@@ -54,7 +54,7 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
                     {isActive && (
                       <span className="absolute -left-1.5 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-sidebar-primary" />
                     )}
-                    <Icon className="h-[18px] w-[18px] shrink-0" />
+                    <Icon className="h-4 w-4 shrink-0" />
                     {!collapsed && <span className="truncate text-left">{label}</span>}
                   </button>
                 );

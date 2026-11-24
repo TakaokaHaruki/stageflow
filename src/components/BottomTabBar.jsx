@@ -70,13 +70,13 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
                   key={id}
                   type="button"
                   onClick={() => handleTabClick(id)}
-                  className={`flex min-h-10 items-center gap-2 rounded-md border px-2.5 text-left text-[13px] font-semibold ${
+                  className={`flex min-h-10 items-center gap-2 rounded-md border px-2.5 text-left text-xs font-semibold ${
                     activeTab === id
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border text-foreground hover:bg-muted"
                   }`}
                 >
-                  <Icon className="h-[18px] w-[18px] shrink-0" />
+                  <Icon className="h-4 w-4 shrink-0" />
                   {label}
                 </button>
               ))}
@@ -95,28 +95,28 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
               key={id}
               type="button"
               onClick={() => handleTabClick(id)}
-              className={`flex min-w-0 select-none flex-col items-center justify-center gap-0.5 px-0.5 py-1 transition-colors focus-visible:outline-none ${
+              className={`flex min-w-0 select-none flex-col items-center justify-center gap-0.5 px-0.5 py-0.5 transition-colors focus-visible:outline-none ${
                 activeTab === id ? "text-primary" : "text-muted-foreground"
               }`}
               aria-current={activeTab === id ? "page" : undefined}
               aria-label={label}
             >
-              <Icon className="h-[18px] w-[18px] shrink-0" />
-              <span className="max-w-full truncate text-[11px] font-medium leading-none">{label}</span>
+              <Icon className="h-4 w-4 shrink-0" />
+              <span className="max-w-full truncate text-[10px] font-medium leading-none">{label}</span>
             </button>
           ))}
           {moreTabs.length > 0 && (
             <button
               type="button"
               onClick={() => setMoreOpen((open) => !open)}
-              className={`flex min-w-0 select-none flex-col items-center justify-center gap-0.5 px-0.5 py-1 transition-colors focus-visible:outline-none ${
+              className={`flex min-w-0 select-none flex-col items-center justify-center gap-0.5 px-0.5 py-0.5 transition-colors focus-visible:outline-none ${
                 isMoreActive || moreOpen ? "text-primary" : "text-muted-foreground"
               }`}
               aria-expanded={moreOpen}
               aria-label="その他"
             >
-              <MoreHorizontal className="h-[18px] w-[18px] shrink-0" />
-              <span className="text-[11px] font-medium leading-none">その他</span>
+              <MoreHorizontal className="h-4 w-4 shrink-0" />
+              <span className="text-[10px] font-medium leading-none">その他</span>
             </button>
           )}
         </div>

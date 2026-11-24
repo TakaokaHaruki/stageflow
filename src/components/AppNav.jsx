@@ -122,7 +122,7 @@ export default function AppNav() {
 
       <div className="sm:flex">
         <SidebarNav tabs={navItems} activeTab={activeTab} onSelectTab={handleSelect} topOffset={headerHeight} />
-        <div className="flex-1 min-w-0 pb-16 sm:pb-0 sm:pl-[52px]">
+        <div className="flex-1 min-w-0 pb-16 sm:pb-0 sm:pl-12">
           <Outlet />
         </div>
       </div>
