@@ -344,7 +344,7 @@ export default function EventDetail() {
       {/* 2-column layout: sidebar + content (PC only) */}
       <div className="sm:flex">
         <SidebarNav tabs={desktopTabs} activeTab={activeTab} onSelectTab={selectTab} topOffset={topBarHeight} />
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 sm:pl-12">
           {/* Child tab bar */}
           {isManagementTab && (
             <AdminSettingsNav
