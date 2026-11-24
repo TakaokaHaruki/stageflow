@@ -353,7 +353,7 @@ export default function EventDetail() {
               groups={activeManagementGroups}
               activeSection={activeManagementChild}
               onSelect={selectManagementChild}
-              style={{ top: topBarHeight }}
+              style={{ top: `calc(var(--device-banner-height, 0px) + ${topBarHeight}px)` }}
             />
           )}
 
