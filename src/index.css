@@ -19,14 +19,14 @@
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 92%;
     --secondary-foreground: 0 0% 10%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 46%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 38%;
     --accent: 217 38% 87%;
     --accent-foreground: 226 62% 29%;
     --destructive: 0 84% 56%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 16% 90%;
-    --input: 220 16% 90%;
+    --border: 220 14% 80%;
+    --input: 220 14% 80%;
     --ring: 226 62% 29%;
     --radius: 0.5rem;
     --app-header-height: 56px;
