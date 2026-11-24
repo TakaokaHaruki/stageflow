@@ -21,7 +21,7 @@ export default function CrewlyLogo({ className = "", disableLink = false, admini
         src={LOGO_URL}
         alt="Crewly"
         height={size}
-        className="shrink-0 group-hover:opacity-85 transition-opacity"
+        className="shrink-0 group-hover:opacity-85 transition-opacity dark:brightness-0 dark:invert"
         style={{ height: size, width: "auto" }}
       />
     </Wrapper>
