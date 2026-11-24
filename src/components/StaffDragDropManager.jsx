@@ -34,6 +34,7 @@ import RoleTallyBar from "@/components/RoleTallyBar";
 import { useStaffTrends } from "@/hooks/useStaffTrends";
 import BulkDeleteDialog from "@/components/BulkDeleteDialog";
 import ShowSyncModal from "@/components/ShowSyncModal";
+import StaffTrendPopup from "@/components/StaffTrendPopup";
 import ShowPartOverview from "@/components/ShowPartOverview";
 import { getParts } from "@/lib/showParts";
 import SectionHeader from "@/components/SectionHeader";
@@ -71,6 +72,21 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [confirmRemovePart, setConfirmRemovePart] = useState(false);
   const [partViewMode, setPartViewMode] = useState("part"); // part=部別編集 / overview=全体一覧
+  const [trendStaff, setTrendStaff] = useState(null); // 長押しで表示する配置傾向ポップアップ対象スタッフ名
+  const longPressTimer = useRef(null);
+  const longPressFired = useRef(false);
+
+  const startLongPress = useCallback((name) => {
+    longPressFired.current = false;
+    clearTimeout(longPressTimer.current);
+    longPressTimer.current = setTimeout(() => {
+      longPressFired.current = true;
+      setTrendStaff(name);
+    }, 500);
+  }, []);
+  const cancelLongPress = useCallback(() => {
+    clearTimeout(longPressTimer.current);
+  }, []);
 
   const { data: staffList = [] } = useQuery({
     queryKey: ["staff", eventId],
@@ -108,7 +124,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   }, [continuousMode]);
 
   const { lockedNames, isLocked: isStaffLocked, toggleLock, clearAllLocks } = useLockedStaff(eventId, event ?? null);
-  const { tally: staffTrends } = useStaffTrends(eventId);
+  const { tally: staffTrends, recentEvents: trendEvents } = useStaffTrends(eventId);
 
   const { data: presets = [] } = useQuery({
     queryKey: ["positionPresets"],
@@ -433,6 +449,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   };
 
   const handleStaffDragStart = (e, staffName) => {
+    cancelLongPress();
     setDraggedStaff(staffName);
     e.dataTransfer.effectAllowed = "move";
   };
@@ -916,6 +933,11 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                    <div key={s.id} draggable={isAdmin && !isView}
                     onDragStart={isAdmin && !isView ? (e) => handleStaffDragStart(e, s.name) : undefined}
                     onDragEnd={isAdmin && !isView ? handleStaffDragEnd : undefined}
+                    onPointerDown={() => startLongPress(s.name)}
+                    onPointerUp={cancelLongPress}
+                    onPointerLeave={cancelLongPress}
+                    onPointerCancel={cancelLongPress}
+                    onContextMenu={(e) => e.preventDefault()}
                     className={`flex min-h-8 items-center justify-between gap-1.5 px-2 py-0.5 select-none bg-card border border-border rounded ${isAdmin && !isView ? "cursor-move hover:bg-muted/50" : "cursor-default"} ${draggedStaff === s.name ? "opacity-50" : ""}`}>
                    <div className="min-w-0 flex-1">
                    <div className="flex items-center gap-1.5 flex-wrap">
@@ -945,7 +967,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                       if (items.length === 0) return null;
                       return (
                         <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
-                          過去: {items.map((it) => `${it.slot} ${it.name}`).join(" / ")}
+                          過去: {items.map((it) => `${it.slot} ${it.name}`).join(" / ")}<span className="text-[9px]">　長押しで詳細</span>
                         </p>
                       );
                       })()}
@@ -1079,6 +1101,14 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
       })()}
       {showSyncModal && (
         <ShowSyncModal eventId={eventId} event={event} partsCount={partsCount} onClose={() => setShowSyncModal(false)} />
+      )}
+      {trendStaff && (
+        <StaffTrendPopup
+          staffName={trendStaff}
+          tally={staffTrends}
+          recentEventCount={trendEvents?.length || 0}
+          onClose={() => setTrendStaff(null)}
+        />
       )}
     </div>
   );

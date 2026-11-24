@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function CrewlyLogo({ className = "", disableLink = false, administrator = false, iconOnly = false, size = 26 }) {
+  const { isAuthenticated } = useAuth();
   const Wrapper = disableLink ? "div" : Link;
   const wrapperProps = disableLink
     ? { className: `flex items-center gap-1 select-none shrink-0 group ${className}` }
-    : { to: "/", className: `flex items-center gap-1 select-none shrink-0 group ${className}`, "aria-label": "Crewly トップへ" };
+    : { to: isAuthenticated ? "/home" : "/", className: `flex items-center gap-1 select-none shrink-0 group ${className}`, "aria-label": "Crewly トップへ" };
   const rectColor = administrator ? "hsl(335 72% 48%)" : "hsl(230 65% 45%)";
   const dotColor = administrator ? "hsl(45 95% 60%)" : "hsl(195 80% 65%)";
   return (
