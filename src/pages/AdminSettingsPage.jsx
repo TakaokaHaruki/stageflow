@@ -121,7 +121,7 @@ export default function AdminSettingsPage() {
   return (
     <div className="mx-auto max-w-[1400px] px-1.5 pb-2">
         {/* Section bar */}
-        <AdminSettingsNav groups={GROUPS} activeSection={section} onSelect={setSection} />
+        <AdminSettingsNav groups={GROUPS} activeSection={section} onSelect={setSection} className="-mx-1.5 px-1.5" />
 
         {EVENT_SCOPED.has(section) && (
           <EventScopeSelector value={selectedEventId} onChange={setSelectedEventId} />

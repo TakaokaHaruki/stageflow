@@ -47,7 +47,7 @@ export default function ManagementSettings() {
           items={SECTIONS}
           activeId={section}
           onSelect={setSection}
-          className="sticky top-[var(--app-header-height)] z-40 mb-3"
+          className="sticky top-[var(--app-header-height)] z-40 mb-3 -mx-1.5 px-1.5"
         />
 
         <AnimatePresence mode="wait" initial={false}>
