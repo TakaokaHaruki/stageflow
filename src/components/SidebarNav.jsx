@@ -31,7 +31,7 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
       <aside
         onMouseEnter={() => setCollapsed(false)}
         onMouseLeave={() => setCollapsed(true)}
-        className="hidden sm:flex fixed left-0 flex-col border-r border-border bg-card/95 dark:bg-card/90 backdrop-blur-md z-40 transition-[width] duration-150"
+        className="hidden sm:flex fixed left-0 flex-col border-r border-border bg-card dark:bg-card z-40 transition-[width] duration-150"
         style={{ width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH, top, height }}
       >
         <nav className="flex-1 overflow-y-auto overflow-x-hidden pt-0 pb-2 scrollbar-hide">
