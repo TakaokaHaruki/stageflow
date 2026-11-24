@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,65 +6,66 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 215 30% 17%;
+    /* ISCT Design System inspired — deep navy primary, generous whitespace, clean lines */
+    --background: 220 25% 99%;
+    --foreground: 225 30% 13%;
     --card: 0 0% 100%;
-    --card-foreground: 215 30% 17%;
+    --card-foreground: 225 30% 13%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 30% 17%;
-    --primary: 211 96% 34%;
+    --popover-foreground: 225 30% 13%;
+    --primary: 235 66% 30%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 212 38% 92%;
-    --secondary-foreground: 215 30% 17%;
-    --muted: 212 38% 92%;
-    --muted-foreground: 215 18% 45%;
-    --accent: 211 100% 93%;
-    --accent-foreground: 211 96% 30%;
+    --secondary: 220 16% 95%;
+    --secondary-foreground: 225 30% 13%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 42%;
+    --accent: 228 52% 93%;
+    --accent-foreground: 235 50% 24%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 213 32% 90%;
-    --input: 213 32% 90%;
-    --ring: 211 96% 34%;
-    --radius: 0.6rem;
+    --border: 220 16% 90%;
+    --input: 220 16% 90%;
+    --ring: 235 66% 30%;
+    --radius: 0.5rem;
     --app-header-height: 56px;
-    --sidebar-background: 214 50% 15%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 211 96% 52%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 214 45% 22%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 214 45% 24%;
-    --sidebar-ring: 211 96% 52%;
+    --sidebar-background: 235 40% 18%;
+    --sidebar-foreground: 220 30% 92%;
+    --sidebar-primary: 228 60% 80%;
+    --sidebar-primary-foreground: 235 50% 18%;
+    --sidebar-accent: 235 36% 24%;
+    --sidebar-accent-foreground: 220 30% 96%;
+    --sidebar-border: 235 32% 28%;
+    --sidebar-ring: 228 60% 80%;
   }
 
   .dark {
-    --background: 215 30% 9%;
-    --foreground: 210 40% 98%;
-    --card: 215 28% 13%;
-    --card-foreground: 210 40% 98%;
-    --popover: 215 28% 13%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 211 92% 62%;
-    --primary-foreground: 215 30% 9%;
-    --secondary: 215 28% 19%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 215 28% 17%;
-    --muted-foreground: 214 18% 64%;
-    --accent: 212 40% 22%;
-    --accent-foreground: 210 40% 98%;
+    --background: 225 30% 8%;
+    --foreground: 220 25% 96%;
+    --card: 225 28% 12%;
+    --card-foreground: 220 25% 96%;
+    --popover: 225 28% 12%;
+    --popover-foreground: 220 25% 96%;
+    --primary: 228 64% 70%;
+    --primary-foreground: 225 30% 10%;
+    --secondary: 225 24% 18%;
+    --secondary-foreground: 220 25% 96%;
+    --muted: 225 26% 16%;
+    --muted-foreground: 220 16% 64%;
+    --accent: 235 34% 24%;
+    --accent-foreground: 220 30% 92%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 215 25% 22%;
-    --input: 215 25% 22%;
-    --ring: 211 92% 62%;
-    --sidebar-background: 215 35% 8%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 211 92% 62%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 28% 14%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 215 28% 16%;
-    --sidebar-ring: 211 92% 62%;
+    --border: 225 24% 22%;
+    --input: 225 24% 22%;
+    --ring: 228 64% 70%;
+    --sidebar-background: 232 34% 10%;
+    --sidebar-foreground: 220 22% 82%;
+    --sidebar-primary: 228 64% 72%;
+    --sidebar-primary-foreground: 225 30% 10%;
+    --sidebar-accent: 225 28% 16%;
+    --sidebar-accent-foreground: 220 30% 96%;
+    --sidebar-border: 225 26% 18%;
+    --sidebar-ring: 228 64% 72%;
   }
 }
 
@@ -73,12 +74,13 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-inter;
+    @apply bg-background text-foreground font-inter antialiased;
     overscroll-behavior: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-inter;
+    letter-spacing: -0.01em;
   }
 
   /* iOS compatibility */
