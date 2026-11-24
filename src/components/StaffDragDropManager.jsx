@@ -641,11 +641,11 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
         description={continuousMode ? "一日通しモードです　各セクションチーフがスタッフを追加することができます" : multiShowMode ? (partViewMode === "overview" ? "全ての部のスタッフ配置と人員過不足を一覧で確認できます" : `${selectedPart}部目の配置です　部を切り替えて編集できます`) : undefined}
         actions={(
           <div className="flex w-full items-center gap-1 sm:w-auto sm:gap-2">
-          <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/60 p-0.5 shrink-0">
+          <div className="flex h-7 items-stretch gap-0.5 rounded-md border border-border bg-muted/60 p-0 shrink-0">
             <button
               type="button"
               onClick={() => setViewMode("edit")}
-              className={`flex min-h-7 items-center gap-0.5 rounded px-1.5 text-[11px] font-semibold transition-colors ${!isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex items-center gap-0.5 rounded px-1.5 text-[11px] font-semibold transition-colors ${!isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               aria-pressed={!isView}
             >
               <PencilLine className="w-3 h-3" />編集
@@ -653,7 +653,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
             <button
               type="button"
               onClick={() => setViewMode("view")}
-              className={`flex min-h-7 items-center gap-0.5 rounded px-1.5 text-[11px] font-semibold transition-colors ${isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex items-center gap-0.5 rounded px-1.5 text-[11px] font-semibold transition-colors ${isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               aria-pressed={isView}
             >
               <Eye className="w-3 h-3" />表示
