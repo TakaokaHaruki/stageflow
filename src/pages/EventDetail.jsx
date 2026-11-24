@@ -355,7 +355,7 @@ export default function EventDetail() {
             />
           )}
 
-          <div className="max-w-[1400px] mx-auto px-1 py-1 pb-16 sm:pb-8">
+          <div className="max-w-[1400px] mx-auto px-1 pt-0 pb-16 sm:pb-8">
         <PresenceContext.Provider value={{ reportActivity, presences, currentUserId: presenceUserId ?? currentUser?.id }}>
         <UserRestrictionBanner role={role} />
         {activeTab !== "seating_map" && (
