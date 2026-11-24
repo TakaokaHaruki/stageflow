@@ -31,7 +31,7 @@ import {
 import PresetSelector from "@/components/PresetSelector";
 import AutoAssignModal from "@/components/AutoAssignModal";
 import RoleTallyBar from "@/components/RoleTallyBar";
-import { useStaffTrends } from "@/hooks/useStaffTrends";
+import { useStaffTrends, SLOT_ORDER } from "@/hooks/useStaffTrends";
 import BulkDeleteDialog from "@/components/BulkDeleteDialog";
 import ShowSyncModal from "@/components/ShowSyncModal";
 import StaffTrendPopup from "@/components/StaffTrendPopup";
@@ -941,7 +941,9 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                       {(() => {
                       const trend = staffTrends?.[s.name];
                       if (!trend) return null;
-                      const items = Object.entries(trend).map(([slot, counts]) => {
+                      const items = Object.entries(trend)
+                        .sort((a, b) => (SLOT_ORDER.indexOf(a[0]) >>> 0) - (SLOT_ORDER.indexOf(b[0]) >>> 0))
+                        .map(([slot, counts]) => {
                         const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
                         return top ? { slot, name: top[0] } : null;
                       }).filter(Boolean);
