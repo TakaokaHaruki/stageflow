@@ -192,6 +192,20 @@ const ROLE_BADGE_STYLES = {
 };
 const ROLE_BADGE_DEFAULT = { bg: [241, 245, 249], border: [148, 163, 184], text: [51, 65, 85] };
 
+// ISCT Design System カラー（ブランドネイビー基準・Noto Sans JP・8/12/24px 体系）
+const ISCT = {
+  primary: [28, 49, 120],          // #1c3178 ブランドプライマリ
+  primaryText: [255, 255, 255],    // ネイビー上の白文字
+  secondary: [127, 150, 194],      // #7f96c2
+  tertiary: [207, 219, 237],       // #cfdbed
+  quaternary: [249, 251, 255],     // #f9fbff
+  monoPrimary: [26, 26, 26],       // #1a1a1a
+  monoSecondary: [118, 118, 118],  // #767676
+  monoTertiary: [204, 204, 204],   // #cccccc
+  monoQuaternary: [235, 235, 235], // #ebebeb
+  monoQuinary: [250, 250, 250],    // #fafafa
+};
+
 // A4縦・コンパクト設定
 const PAGE_W = 210;
 const PAGE_H = 297;
@@ -302,14 +316,15 @@ function calcCardHeight(pos, staffMap) {
 function drawTitle(doc, event, partLabel) {
   doc.setFontSize(11);
   doc.setFont('NotoSansJP', 'normal');
-  doc.setTextColor(0, 0, 0);
+  doc.setTextColor(...ISCT.monoPrimary);
   doc.text(event.name || '', MARGIN, MARGIN + 5);
   if (partLabel) {
     doc.setFontSize(11);
-    doc.setTextColor(30, 64, 175);
+    doc.setTextColor(...ISCT.primary);
     doc.text(partLabel, PAGE_W - MARGIN, MARGIN + 5, { align: 'right' });
   }
   doc.setFontSize(8);
+  doc.setTextColor(...ISCT.monoSecondary);
   let dateStr = '';
   if (event.date) {
     const d = new Date(event.date);
@@ -317,6 +332,10 @@ function drawTitle(doc, event, partLabel) {
   }
   const subText = `${dateStr}${event.venue ? '　' + event.venue : ''}`;
   if (subText) doc.text(subText, MARGIN, MARGIN + 10);
+  // ISCT ブランドのアクセント罫線
+  doc.setDrawColor(...ISCT.primary);
+  doc.setLineWidth(0.5);
+  doc.line(MARGIN, MARGIN + 11.5, PAGE_W - MARGIN, MARGIN + 11.5);
 }
 
 function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
@@ -333,7 +352,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
     const [r, g, b] = hexToRgb(nameColor);
     doc.setTextColor(r, g, b);
   } else {
-    doc.setTextColor(15, 23, 42);
+    doc.setTextColor(...ISCT.monoPrimary);
   }
   doc.text(name, nameX, textY);
 
@@ -342,7 +361,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   // 備考（共通＋該当時間帯を統合）をスタッフ名の下に小さく印字
   if (note) {
     doc.setFontSize(NOTE_FONT_SIZE);
-    doc.setTextColor(120, 113, 108);
+    doc.setTextColor(...ISCT.monoSecondary);
     let noteText = note;
     const maxNoteW = x + w - nameX - 0.5;
     while (noteText.length > 1 && doc.getTextWidth(noteText) > maxNoteW) {
@@ -416,13 +435,13 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
   const requiredCount = pos.required_count || 0;
   const cardH = calcCardHeight(pos, staffMap);
 
-  doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.15); doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(...ISCT.monoTertiary); doc.setLineWidth(0.2); doc.setFillColor(255, 255, 255);
   doc.roundedRect(x, y, w, cardH, 1, 1, 'FD');
 
-  doc.setFillColor(241, 245, 249);
+  doc.setFillColor(...ISCT.monoQuinary);
   doc.roundedRect(x, y, w, CARD_HEADER_H, 1, 1, 'F');
   doc.rect(x, y + CARD_HEADER_H - 1, w, 1, 'F');
-  doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.15);
+  doc.setDrawColor(...ISCT.monoTertiary); doc.setLineWidth(0.2);
   doc.line(x, y + CARD_HEADER_H, x + w, y + CARD_HEADER_H);
 
   const headerTextY = y + CARD_HEADER_H * 0.70;
@@ -431,12 +450,12 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
   doc.setFillColor(r, g, b);
   doc.circle(x + 2.2, y + CARD_HEADER_H / 2, 0.9, 'F');
 
-  doc.setFontSize(6.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(71, 85, 105);
+  doc.setFontSize(6.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...ISCT.monoSecondary);
   const countText = requiredCount > 0 ? `${assignedCount}/${requiredCount}名` : `${assignedCount}名`;
   doc.text(countText, x + w - 1.5, headerTextY, { align: 'right' });
   const countTextW = doc.getTextWidth(countText);
 
-  doc.setFontSize(7.5); doc.setTextColor(15, 23, 42);
+  doc.setFontSize(7.5); doc.setTextColor(...ISCT.monoPrimary);
   let posName = pos.name || '';
   const maxNameW = (x + w - 1.5 - countTextW - 1.5) - (x + 5);
   while (maxNameW > 0 && doc.getTextWidth(posName) > maxNameW && posName.length > 1) {
@@ -454,7 +473,7 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
   if (posNoteH > 0) {
     doc.setFontSize(NOTE_FONT_SIZE);
     doc.setFont('NotoSansJP', 'normal');
-    doc.setTextColor(120, 113, 108);
+    doc.setTextColor(...ISCT.monoSecondary);
     let posNote = String(pos.notes);
     const maxNoteW = w - 3;
     while (posNote.length > 1 && doc.getTextWidth(posNote) > maxNoteW) {
@@ -484,24 +503,24 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
       chiefText = chiefText.slice(0, -1) + '…';
     }
     const pillW = Math.min(doc.getTextWidth(chiefText) + 3, maxPillW);
-    doc.setFillColor(243, 232, 255); doc.setDrawColor(216, 180, 254); doc.setLineWidth(0.2);
+    doc.setFillColor(...ISCT.tertiary); doc.setDrawColor(...ISCT.secondary); doc.setLineWidth(0.2);
     doc.roundedRect(pillX, pillY, pillW, pillH, 0.6, 0.6, 'FD');
-    doc.setFillColor(126, 34, 206);
+    doc.setFillColor(...ISCT.primary);
     doc.circle(pillX + 1.3, pillY + pillH / 2, 0.5, 'F');
-    doc.setTextColor(107, 33, 168);
+    doc.setTextColor(...ISCT.primary);
     doc.text(chiefText, pillX + 2.2, pillY + pillH * 0.72);
     staffY = chiefY + CHIEF_LINE_H + 0.3;
   }
 
   if (splitBySide) {
     const halfW = w / 2;
-    doc.setFillColor(248, 250, 252);
+    doc.setFillColor(...ISCT.monoQuinary);
     doc.rect(x, staffY, halfW, SIDE_HEADER_H, 'F');
     doc.rect(x + halfW, staffY, halfW, SIDE_HEADER_H, 'F');
-    doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.15);
+    doc.setDrawColor(...ISCT.monoTertiary); doc.setLineWidth(0.2);
     doc.line(x + halfW, staffY, x + halfW, cardBottom);
     doc.line(x, staffY + SIDE_HEADER_H, x + w, staffY + SIDE_HEADER_H);
-    doc.setFontSize(7); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(71, 85, 105);
+    doc.setFontSize(7); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...ISCT.monoSecondary);
     // 左側=下手(←)、右側=上手(→)。矢印で舞台向きを明示
     doc.text('← 下手', x + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
     doc.text('上手 →', x + halfW + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
@@ -527,7 +546,7 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
       else break;
     }
     if (staffNames.length === 0) {
-      doc.setFontSize(7); doc.setTextColor(153, 153, 153);
+      doc.setFontSize(7); doc.setTextColor(...ISCT.monoSecondary);
       doc.text('（未配置）', x + 2.5, staffY + 3);
     }
   }
@@ -536,14 +555,15 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
 
 // カラムヘッダーをY座標指定で描画
 function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, startY) {
-  const colors = SLOT_COLORS[slot];
+  const slotAccent = SLOT_COLORS[slot].border; // スロット識別のアクセント色
   const line1Y = startY + 3.2;
   const line2Y = startY + 6.8;
 
-  doc.setDrawColor(...colors.border); doc.setLineWidth(0.4); doc.setFillColor(...colors.headerBg);
+  // ISCT: ヘッダー本体はブランドネイビー・白文字
+  doc.setDrawColor(...ISCT.primary); doc.setLineWidth(0.4); doc.setFillColor(...ISCT.primary);
   doc.roundedRect(x, startY, colW, COL_HEADER_H, 1.5, 1.5, 'FD');
 
-  doc.setFontSize(9); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...colors.headerText);
+  doc.setFontSize(9); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...ISCT.primaryText);
   doc.text(slot, x + 2.5, line1Y);
 
   doc.setFontSize(6);
@@ -565,9 +585,13 @@ function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, sta
   // 時間帯（開場時刻など）
   const timeRange = formatSlotTimeRange(event, slot);
   if (timeRange) {
-    doc.setFontSize(6); doc.setTextColor(...colors.headerText);
+    doc.setFontSize(6); doc.setTextColor(...ISCT.primaryText);
     doc.text(timeRange, x + 2.5, line2Y);
   }
+
+  // スロット識別のアクセント罫線（ヘッダー下端）
+  doc.setDrawColor(...slotAccent); doc.setLineWidth(0.6);
+  doc.line(x, startY + COL_HEADER_H, x + colW, startY + COL_HEADER_H);
 
   return startY + COL_HEADER_H + 1.5;
 }
@@ -640,7 +664,7 @@ function drawColumns(doc, positions, staff, event) {
 
       if (pageCards.length === 0) {
         if (pageIdx === 0 && slotPositions.length === 0) {
-          doc.setFontSize(7); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(153, 153, 153);
+          doc.setFontSize(7); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...ISCT.monoSecondary);
           doc.text('ポジションがありません', x + colW / 2, cardY + 4, { align: 'center' });
         }
         return;
