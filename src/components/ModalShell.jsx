@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 /**
  * 標準モーダルシェル（情報漏洩・稼働注意事項モーダル準拠）
  * - 中央寄せフローティング / z-[100] / backdrop-blur
- * - rounded-2xl / border / shadow-xl / bg-card / p-6
+ * - rounded-xl / border / shadow-xl / bg-card / p-6
  * - コンテナ全体が max-h-[90dvh] で内部スクロール
  */
 export function ModalHeader({ icon, title, onClose, children, className = "" }) {
@@ -53,7 +53,7 @@ export default function ModalShell({
       }}
     >
       <motion.div
-        className={`bg-card border border-border rounded-2xl shadow-xl ${maxWidth} w-full p-6 max-h-[90dvh] overflow-y-auto ${className}`}
+        className={`bg-card border border-border rounded-xl shadow-elevated ${maxWidth} w-full p-6 max-h-[90dvh] overflow-y-auto ${className}`}
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ delay: 0.1 }}

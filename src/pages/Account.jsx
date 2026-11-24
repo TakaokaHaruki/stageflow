@@ -38,7 +38,7 @@ export default function Account() {
   return (
     <div className="mx-auto max-w-2xl space-y-3 px-2 py-3">
         {/* プロフィール */}
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-md">
           <h2 className="mb-3 text-sm font-bold">プロフィール</h2>
           {profileError ? (
             <div className="flex items-center justify-between gap-2">
@@ -69,7 +69,7 @@ export default function Account() {
         <PasswordChangeCard currentUser={currentUser} />
 
         {/* 表示設定 */}
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 shadow-md">
+        <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-md">
           <div>
             <h2 className="text-sm font-bold">テーマ</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">ライト/ダーク表示を切り替えます</p>
@@ -78,7 +78,7 @@ export default function Account() {
         </div>
 
         {/* アカウント操作 */}
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-md">
           <h2 className="mb-3 text-sm font-bold">アカウント操作</h2>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" className="gap-1.5" onClick={() => base44.auth.logout()}>

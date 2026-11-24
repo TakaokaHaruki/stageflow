@@ -94,7 +94,7 @@ export default function MessageBubble({ message }) {
       )}
       <div className={`max-w-[85%] min-w-0 ${isUser ? "text-right" : "text-left"}`}>
         <div
-          className={`inline-block max-w-full rounded-2xl px-3 py-2 text-left ${
+          className={`inline-block max-w-full rounded-xl px-3 py-2 text-left ${
             isUser
               ? "rounded-br-md bg-primary text-primary-foreground"
               : "rounded-bl-md border border-border bg-card text-card-foreground"

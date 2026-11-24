@@ -47,7 +47,7 @@ export default function ResetPassword() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
+        <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
           <KeyRound className="w-7 h-7 text-primary" />
         </div>
 

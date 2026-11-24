@@ -83,7 +83,7 @@ export default function UserNotificationManager() {
         subtitle="ログインユーザー（ユーザー・チーフ等）に個別の通知バナーを表示します"
       />
 
-      <div className="bg-card border border-border rounded-2xl shadow-md p-4 space-y-3">
+      <div className="bg-card border border-border rounded-xl shadow-md p-4 space-y-3">
         <Input
           placeholder="件名（任意）"
           value={title}

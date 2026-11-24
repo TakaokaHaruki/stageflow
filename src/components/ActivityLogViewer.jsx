@@ -177,7 +177,7 @@ function UndoConfirmModal({ log, onConfirm, onCancel }) {
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md p-4 max-h-[90vh] overflow-y-auto scrollbar-hide"
+        className="bg-card border border-border rounded-t-2xl sm:rounded-xl shadow-2xl w-full max-w-md p-4 max-h-[90vh] overflow-y-auto scrollbar-hide"
         initial={{ y: 30, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
@@ -414,7 +414,7 @@ export default function ActivityLogViewer({ eventId }) {
       {/* ヘッダー（折りたたみ） */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-3 py-2.5 rounded-2xl border border-border bg-card shadow-md hover:bg-muted/50 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-border bg-card shadow-md hover:bg-muted/50 transition-colors"
       >
         <div className="flex items-center gap-2">
           <History className="w-4 h-4 text-primary" />
@@ -426,7 +426,7 @@ export default function ActivityLogViewer({ eventId }) {
       {expanded && (
         <div className="mt-2">
           {/* フィルター */}
-          <div className="mb-3 rounded-2xl border border-border bg-card p-3 shadow-md">
+          <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-md">
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
               <label className="space-y-1">
                 <span className="text-[10px] font-medium text-muted-foreground">開始日</span>
@@ -493,7 +493,7 @@ export default function ActivityLogViewer({ eventId }) {
           </div>
 
           {/* 一覧 */}
-          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-md">
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-md">
             {isLoading ? (
               <div className="flex justify-center py-12">
                 <div className="h-6 w-6 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />

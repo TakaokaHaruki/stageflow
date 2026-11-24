@@ -73,7 +73,7 @@ export default function SupportChat() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col px-2 py-3">
-      <div className="mb-2 rounded-2xl border border-border bg-card p-3 shadow-md">
+      <div className="mb-2 rounded-xl border border-border bg-card p-3 shadow-md">
         <h2 className="text-sm font-bold">運営サポート相談</h2>
         <p className="text-[11px] leading-snug text-muted-foreground">
           配置や運営についてご相談ください。イベント・ポジション・スタッフのデータを参照して回答します。
@@ -81,7 +81,7 @@ export default function SupportChat() {
       </div>
 
       {loadError ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 text-center shadow-md">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-6 text-center shadow-md">
           <CircleAlert className="h-8 w-8 text-destructive" />
           <p className="text-sm font-semibold">チャットを開けませんでした</p>
           <p className="text-xs text-muted-foreground">エージェントが利用できないか、通信に問題があります。</p>
@@ -92,9 +92,9 @@ export default function SupportChat() {
       ) : (
         <div className="flex flex-col gap-2.5">
           {loading && messages.length === 0 ? (
-            <div className="h-40 animate-pulse rounded-2xl bg-muted" aria-label="読み込み中" />
+            <div className="h-40 animate-pulse rounded-xl bg-muted" aria-label="読み込み中" />
           ) : messages.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border bg-card/50 p-4 text-center">
+            <div className="rounded-xl border border-dashed border-border bg-card/50 p-4 text-center">
               <p className="text-xs text-muted-foreground">以下からも相談を始められます</p>
               <div className="mt-2 flex flex-wrap justify-center gap-2">
                 {SUGGESTIONS.map((s) => (
@@ -122,7 +122,7 @@ export default function SupportChat() {
                   <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-delay:300ms]" />
                 </span>
               </span>
-              <span className="rounded-2xl rounded-bl-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
+              <span className="rounded-xl rounded-bl-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
                 回答を準備しています…
               </span>
             </div>
@@ -145,7 +145,7 @@ export default function SupportChat() {
         }}
         className="sticky bottom-16 z-10 mt-3 sm:bottom-2"
       >
-        <div className="flex items-end gap-1.5 rounded-2xl border border-border bg-card p-1.5 shadow-md">
+        <div className="flex items-end gap-1.5 rounded-xl border border-border bg-card p-1.5 shadow-md">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}

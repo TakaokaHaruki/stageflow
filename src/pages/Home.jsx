@@ -86,7 +86,7 @@ export default function Home() {
 
         {/* 次回イベントの時間帯別充足状況 */}
         {nextEvent && (
-          <div className="rounded-2xl border border-border bg-card p-3 shadow-md">
+          <div className="rounded-xl border border-border bg-card p-3 shadow-card">
             <div className="mb-2 flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <h2 className="text-sm font-bold">時間帯別の配置状況</h2>
@@ -118,7 +118,7 @@ export default function Home() {
         <ConcertCard />
 
         {/* クイックリンク */}
-        <div className="rounded-2xl border border-border bg-card p-3 shadow-md">
+        <div className="rounded-xl border border-border bg-card p-3 shadow-card">
           <h2 className="mb-2 text-sm font-bold">クイックリンク</h2>
           <div className="grid gap-2 sm:grid-cols-2">
             {quickLinks.map(({ id, label, description, icon: Icon, path }) => (

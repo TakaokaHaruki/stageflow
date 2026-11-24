@@ -518,7 +518,7 @@ export default function StaffPortal() {
             <p className="mt-3 text-sm text-muted-foreground">スタッフポータル</p>
           </div>
 
-          <div className="bg-card border border-border rounded-2xl shadow-lg p-6">
+          <div className="bg-card border border-border rounded-xl shadow-card p-6">
             <h1 className="text-base font-bold mb-1">スタッフログイン</h1>
             <p className="text-xs text-muted-foreground mb-4">A-CAST ID の QR コードをアップロード</p>
             
@@ -659,7 +659,7 @@ export default function StaffPortal() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => authenticate(acastId)}
-              className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               title="更新"
             >
               <RefreshCw className="w-4 h-4" />
@@ -670,7 +670,7 @@ export default function StaffPortal() {
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive"
+              className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive"
               title="ログアウト"
             >
               <LogOut className="w-4 h-4" />
@@ -709,7 +709,7 @@ export default function StaffPortal() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.06 }}
-            className="mb-4 bg-card border border-border rounded-2xl shadow-md p-4"
+            className="mb-4 bg-card border border-border rounded-xl shadow-card p-4"
           >
             {/* Section title */}
             <h3 className="font-bold text-sm mb-3 flex items-center gap-1.5">
@@ -865,7 +865,7 @@ export default function StaffPortal() {
 
         {/* 緊急連絡先の取得エラー */}
         {!loading && contactsError && emergencyContacts.length === 0 && events.length > 0 && (
-          <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50/60 p-4 text-center shadow-md dark:border-rose-900 dark:bg-rose-950/20">
+          <div className="mt-6 rounded-xl border border-rose-200 bg-rose-50/60 p-4 text-center shadow-card dark:border-rose-900 dark:bg-rose-950/20">
             <p className="text-xs font-semibold text-rose-700 dark:text-rose-400">緊急連絡先の取得に失敗しました</p>
             <Button variant="outline" size="sm" className="mt-2 gap-1.5" onClick={() => refreshPositions()}>
               <RefreshCw className="w-3.5 h-3.5" />再試行
@@ -893,7 +893,7 @@ export default function StaffPortal() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-6 bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-2xl shadow-md p-4"
+            className="mt-6 bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-xl shadow-card p-4"
           >
             <h3 className="font-bold text-sm text-rose-700 dark:text-rose-400 mb-3 flex items-center gap-1.5">
               <Phone className="w-4 h-4" />緊急連絡先

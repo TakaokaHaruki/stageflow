@@ -28,14 +28,14 @@ export default function AccessStats({ logs }) {
 
   return (
     <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5">
-      <div className="rounded-2xl border border-border bg-card p-3 shadow-md">
+      <div className="rounded-xl border border-border bg-card p-3 shadow-md">
         <p className="text-[10px] font-medium text-muted-foreground">総アクセス数（絞り込み後）</p>
         <p className="mt-1 text-2xl font-bold leading-none">{logs.length}</p>
         {(sessions.size > 0 || visitors.size > 0) && (
           <p className="mt-1 text-[10px] text-muted-foreground">セッション{sessions.size}・訪問者{visitors.size}</p>
         )}
       </div>
-      <div className="rounded-2xl border border-border bg-card p-3 shadow-md">
+      <div className="rounded-xl border border-border bg-card p-3 shadow-md">
         <p className="text-[10px] font-medium text-muted-foreground">ログイン別</p>
         <div className="mt-1 space-y-0.5">
           {Object.entries(byAuth).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
@@ -47,7 +47,7 @@ export default function AccessStats({ logs }) {
           {Object.keys(byAuth).length === 0 && <p className="text-xs text-muted-foreground">-</p>}
         </div>
       </div>
-      <div className="rounded-2xl border border-border bg-card p-3 shadow-md">
+      <div className="rounded-xl border border-border bg-card p-3 shadow-md">
         <p className="text-[10px] font-medium text-muted-foreground">デバイス別</p>
         <div className="mt-1 space-y-0.5">
           {Object.entries(byDevice).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
@@ -59,7 +59,7 @@ export default function AccessStats({ logs }) {
           {Object.keys(byDevice).length === 0 && <p className="text-xs text-muted-foreground">-</p>}
         </div>
       </div>
-      <div className="rounded-2xl border border-border bg-card p-3 shadow-md">
+      <div className="rounded-xl border border-border bg-card p-3 shadow-md">
         <p className="text-[10px] font-medium text-muted-foreground">流入元別</p>
         <div className="mt-1 space-y-0.5">
           {Object.entries(byRef).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
@@ -71,7 +71,7 @@ export default function AccessStats({ logs }) {
           {Object.keys(byRef).length === 0 && <p className="text-xs text-muted-foreground">-</p>}
         </div>
       </div>
-      <div className="rounded-2xl border border-border bg-card p-3 shadow-md">
+      <div className="rounded-xl border border-border bg-card p-3 shadow-md">
         <p className="text-[10px] font-medium text-muted-foreground">人気ページ TOP3</p>
         <div className="mt-1 space-y-0.5">
           {topPages.map(([p, c]) => (

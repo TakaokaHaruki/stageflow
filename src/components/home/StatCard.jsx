@@ -10,7 +10,7 @@ export default function StatCard({ icon: Icon, label, value, sub, tone = "defaul
         ? "text-emerald-600 dark:text-emerald-400"
         : "text-foreground";
   return (
-    <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
+    <div className="rounded-xl border border-border bg-card p-3 shadow-card">
       <div className="flex items-center gap-1.5 text-muted-foreground">
         {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
         <span className="text-[11px] font-semibold">{label}</span>
