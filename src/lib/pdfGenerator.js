@@ -1063,3 +1063,186 @@ export async function generatePositionPDF(data, filename) {
 
   doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
 }
+
+// ---- 配置表マップPDF ----
+
+// 画像ソース（SVG data URI / 画像URL）をPNG data URIに変換（jsPDF addImage用）
+function imageToPngDataUri(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const maxDim = 2200;
+      const w0 = img.naturalWidth || 1200;
+      const h0 = img.naturalHeight || 800;
+      const scale = Math.min(1, maxDim / Math.max(w0, h0));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(w0 * scale));
+      canvas.height = Math.max(1, Math.round(h0 * scale));
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      try {
+        resolve({ dataUri: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height });
+      } catch (e) {
+        reject(e);
+      }
+    };
+    img.onerror = () => reject(new Error('マップ画像の読み込みに失敗しました'));
+    img.src = src;
+  });
+}
+
+function mapStaffListOf(pos) {
+  if (pos?.split_by_side) {
+    return [...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])];
+  }
+  return pos?.staff_names || [];
+}
+
+function drawPinLabel(doc, cx, cy, name, staff, pageMinX, pageMaxX) {
+  doc.setFontSize(6);
+  const staffText = staff.length ? staff.join('・') : '';
+  const nameW = doc.getTextWidth(name);
+  const staffW = staffText ? doc.getTextWidth(staffText) : 0;
+  const padX = 1.2;
+  const padY = 0.5;
+  const lineH = 3.0;
+  const boxW = Math.max(nameW, staffW) + padX * 2;
+  const boxH = (staffText ? lineH * 2 : lineH) + padY * 2;
+  let boxX = cx + 1.8;
+  if (boxX + boxW > pageMaxX) boxX = cx - 1.8 - boxW;
+  if (boxX < pageMinX) boxX = pageMinX;
+  const boxY = cy - boxH / 2;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(28, 49, 119);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(boxX, boxY, boxW, boxH, 0.6, 0.6, 'FD');
+  doc.setTextColor(15, 23, 42);
+  doc.text(name, boxX + padX, boxY + padY + 2.1);
+  if (staffText) {
+    doc.setFontSize(5);
+    doc.setTextColor(71, 85, 105);
+    let t = staffText;
+    const maxW = boxW - padX * 2;
+    while (t.length > 1 && doc.getTextWidth(t) > maxW) t = t.slice(0, -1);
+    if (t !== staffText && t.length > 0) t = t.slice(0, -1) + '…';
+    doc.text(t, boxX + padX, boxY + padY + lineH + 2.1);
+    doc.setFontSize(6);
+  }
+}
+
+// 配置表マップPDF: 会場マップ画像＋ピン（ポジション名・担当スタッフ）を出力
+export async function generateMapPDF(data, filename) {
+  const { jsPDF } = await import('jspdf');
+  const { bizud: bizudFontBase64, full: fullFontBase64, medium: mediumFontBase64 } = await loadJapaneseFont();
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+  // フォント登録（generatePositionPDFと同等）
+  const hasBizUd = USE_BIZ_UD_FONT && Boolean(bizudFontBase64);
+  const hasMedium = Boolean(mediumFontBase64);
+  const hasFull = Boolean(fullFontBase64);
+  let fullFontName = null;
+  if (hasBizUd) {
+    doc.addFileToVFS('BIZUDGothic-Bold.ttf', bizudFontBase64);
+    doc.addFont('BIZUDGothic-Bold.ttf', 'NotoSansJP', 'normal');
+  } else {
+    if (hasMedium) {
+      doc.addFileToVFS('NotoSansJPM.ttf', mediumFontBase64);
+      doc.addFont('NotoSansJPM.ttf', 'NotoSansJP', 'normal');
+    } else if (hasFull) {
+      doc.addFileToVFS('NotoSansJPFull.ttf', fullFontBase64);
+      doc.addFont('NotoSansJPFull.ttf', 'NotoSansJP', 'normal');
+    }
+    fullFontName = hasFull && hasMedium ? 'NotoSansJPFull' : null;
+    if (fullFontName) {
+      doc.addFileToVFS('NotoSansJPFull.ttf', fullFontBase64);
+      doc.addFont('NotoSansJPFull.ttf', fullFontName, 'normal');
+    }
+  }
+  function needsFullFont(text) {
+    if (!text) return false;
+    const s = String(text);
+    for (const ch of s) {
+      const c = ch.codePointAt(0);
+      if (c === 0x9AD9) return true;
+      if (c >= 0xF900 && c <= 0xFAFF) return true;
+      if (c >= 0x3400 && c <= 0x4DBF) return true;
+      if (c >= 0xFE30 && c <= 0xFE4F) return true;
+    }
+    return false;
+  }
+  function selectFontForText(text) {
+    if (fullFontName && needsFullFont(text)) doc.setFont(fullFontName, 'normal');
+    else doc.setFont('NotoSansJP', 'normal');
+  }
+  const origText = doc.text.bind(doc);
+  doc.text = function (text, x, y, options) { selectFontForText(text); return origText(text, x, y, options); };
+  const origGetTextWidth = doc.getTextWidth.bind(doc);
+  doc.getTextWidth = function (text) { selectFontForText(text); return origGetTextWidth(text); };
+
+  const pageW = 297, pageH = 210, margin = 8;
+  const event = data.event || {};
+
+  // タイトル
+  doc.setFontSize(12);
+  doc.setTextColor(0, 0, 0);
+  doc.text(event.name || '配置表マップ', margin, margin + 4);
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+  const dateStr = event.date
+    ? (() => { const d = new Date(event.date); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`; })()
+    : '';
+  const sub = [dateStr, event.venue].filter(Boolean).join('　');
+  if (sub) doc.text(sub, pageW - margin, margin + 4, { align: 'right' });
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+  doc.text('配置表マップ', margin, margin + 9);
+  doc.setTextColor(0, 0, 0);
+
+  const topY = margin + 13;
+  const availW = pageW - 2 * margin;
+  const availH = pageH - topY - margin;
+
+  if (!data.mapImage) {
+    doc.setFontSize(10);
+    doc.setTextColor(120, 120, 120);
+    doc.text('会場マップが未登録です', pageW / 2, topY + availH / 2, { align: 'center' });
+    doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
+    return;
+  }
+
+  const { dataUri: png, width: iw, height: ih } = await imageToPngDataUri(data.mapImage);
+  const ratio = Math.min(availW / iw, availH / ih);
+  const drawW = iw * ratio;
+  const drawH = ih * ratio;
+  const imgX = margin + (availW - drawW) / 2;
+  const imgY = topY + (availH - drawH) / 2;
+
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.2);
+  doc.rect(imgX - 1, imgY - 1, drawW + 2, drawH + 2, 'FD');
+  doc.addImage(png, 'PNG', imgX, imgY, drawW, drawH);
+
+  const positions = data.positions || [];
+  const posByName = {};
+  positions.forEach((p) => { posByName[p.name] = p; });
+  const pins = data.pins || [];
+  pins.forEach((pin) => {
+    if (pin.map_x == null || pin.map_y == null) return;
+    const cx = imgX + (pin.map_x / 100) * drawW;
+    const cy = imgY + (pin.map_y / 100) * drawH;
+    const pos = posByName[pin.position_name];
+    const staff = pos ? mapStaffListOf(pos) : [];
+    drawPinLabel(doc, cx, cy, pin.position_name, staff, margin, pageW - margin);
+    doc.setFillColor(28, 49, 119);
+    doc.circle(cx, cy, 1.3, 'F');
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.3);
+    doc.circle(cx, cy, 1.3, 'S');
+  });
+
+  doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
+}

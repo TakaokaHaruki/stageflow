@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/SectionHeader";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePositionMapPins } from "@/hooks/usePositionMapPins";
-import { exportMapToPDF } from "@/lib/mapPdfExport";
+import { useDeviceAuth } from "@/hooks/useDeviceAuth";
+import { generateMapPDF } from "@/lib/pdfGenerator";
 import { loadEventById } from "@/lib/eventLoader";
 import { TIME_SLOT_STYLES } from "@/lib/constants";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ function staffListOf(pos) {
 export default function PositionMapManager({ eventId }) {
   const { canEdit } = useUserRole();
   const editable = canEdit;
+  const { canAccess } = useDeviceAuth();
 
   const mapWrapRef = useRef(null);
   const [activePositionName, setActivePositionName] = useState(null);
@@ -187,13 +189,26 @@ export default function PositionMapManager({ eventId }) {
   };
 
   const handleExportPDF = async () => {
-    if (!mapWrapRef.current) return;
+    if (!mapSrc) return;
+    if (!canAccess("export_pdf")) {
+      toast.error("この機能は貸与端末限定です。貸与端末で認証してください。");
+      return;
+    }
     setExporting(true);
     try {
-      await exportMapToPDF(mapWrapRef.current, {
-        title: `${event?.name || ""}　配置表マップ`,
-        subtitle: [event?.date, event?.venue].filter(Boolean).join("　"),
-      });
+      await generateMapPDF(
+        {
+          event,
+          mapImage: mapSrc,
+          pins: pins.map((p) => ({
+            position_name: p.position_name,
+            map_x: p.map_x,
+            map_y: p.map_y,
+          })),
+          positions: rawPositions,
+        },
+        `${(event?.name || "配置表マップ").replace(/[\\/:*?"<>|]/g, "")}_配置表マップ`
+      );
     } catch (err) {
       toast.error("PDF出力に失敗しました");
     } finally {
