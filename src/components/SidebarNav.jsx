@@ -42,7 +42,7 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
                 const button = (
                   <button
                     onClick={() => onSelectTab(id)}
-                    className={`relative flex w-full items-center rounded-md py-2 text-xs font-semibold transition-colors ${
+                    className={`relative flex w-full items-center rounded-md py-1.5 text-xs font-semibold transition-colors ${
                       collapsed ? "justify-center" : "gap-2.5 px-2.5 pr-2"
                     } ${
                       isActive
