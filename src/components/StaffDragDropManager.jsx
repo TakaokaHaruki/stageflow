@@ -640,12 +640,12 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
         title="配置表"
         description={continuousMode ? "一日通しモードです　各セクションチーフがスタッフを追加することができます" : multiShowMode ? (partViewMode === "overview" ? "全ての部のスタッフ配置と人員過不足を一覧で確認できます" : `${selectedPart}部目の配置です　部を切り替えて編集できます`) : undefined}
         actions={(
-          <div className="flex w-full flex-col gap-1.5 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
-          <div className="flex w-full items-center gap-0.5 rounded-md border border-border bg-muted/60 p-0.5 shrink-0 sm:w-auto">
+          <div className="flex w-full items-center gap-1 sm:w-auto sm:gap-2">
+          <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/60 p-0.5 shrink-0">
             <button
               type="button"
               onClick={() => setViewMode("edit")}
-              className={`flex flex-1 min-h-7 items-center justify-center gap-1 rounded px-2 text-xs font-semibold transition-colors sm:flex-none ${!isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex min-h-7 items-center gap-0.5 rounded px-1.5 text-[11px] font-semibold transition-colors ${!isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               aria-pressed={!isView}
             >
               <PencilLine className="w-3 h-3" />編集
@@ -653,7 +653,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
             <button
               type="button"
               onClick={() => setViewMode("view")}
-              className={`flex flex-1 min-h-7 items-center justify-center gap-1 rounded px-2 text-xs font-semibold transition-colors sm:flex-none ${isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex min-h-7 items-center gap-0.5 rounded px-1.5 text-[11px] font-semibold transition-colors ${isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               aria-pressed={isView}
             >
               <Eye className="w-3 h-3" />表示
@@ -661,11 +661,11 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           </div>
           {canManageSettings && !isLocked && !isView && <PresetSelector eventId={eventId} compact positions={positions} />}
           {canEdit && !isView && (
-            <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 w-full sm:w-auto shrink-0" onClick={() => editable && setShowAutoAssign(true)} disabled={!editable || positions.length === 0} title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>
+            <Button size="sm" variant="outline" className="gap-0.5 h-7 text-[11px] px-1.5 shrink-0" onClick={() => editable && setShowAutoAssign(true)} disabled={!editable || positions.length === 0} title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>
               <Wand2 className="w-3 h-3" />自動配置
             </Button>
           )}
-          <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 w-full sm:w-auto shrink-0" onClick={handleExportPDF} disabled={exportingPDF || positions.length === 0}>
+          <Button size="sm" variant="outline" className="gap-0.5 h-7 text-[11px] px-1.5 shrink-0" onClick={handleExportPDF} disabled={exportingPDF || positions.length === 0}>
             <Download className="w-3 h-3" />{exportingPDF ? '...' : 'PDF'}
           </Button>
           </div>
