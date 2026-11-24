@@ -948,8 +948,8 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
                       if (items.length === 0) return null;
                       return (
                         <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
-                          過去: {items.map((it) => `${it.slot} ${it.name}`).join(" / ")}<span className="text-[9px]">　ダブルクリックで詳細</span>
-                        </p>
+                          過去: {items.map((it) => `${it.slot} ${it.name}`).join(" / ")}
+                          </p>
                       );
                       })()}
                       </div>
