@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { PanelLeftClose, PanelLeft } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 const EXPANDED_WIDTH = 168;
@@ -9,7 +8,8 @@ export const SIDEBAR_EXPANDED_WIDTH = EXPANDED_WIDTH;
 export const SIDEBAR_COLLAPSED_WIDTH = COLLAPSED_WIDTH;
 
 /**
- * ホバーで開くサイドバー。展開時は本文を押し広げて表示する（内容と重ならない）。
+ * ホバーで開くサイドバー（純ホバー式・上部余白なし）。
+ * マウス进入で展開、離脱で折りたたみ。本文を押し広げて表示する（内容と重ならない）。
  */
 export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 56, extraNavItems }) {
   const [collapsed, setCollapsed] = useState(true);
@@ -21,17 +21,7 @@ export default function SidebarNav({ tabs, activeTab, onSelectTab, topOffset = 5
       className="hidden sm:flex sticky self-start flex-col border-r border-border bg-card/80 backdrop-blur-md z-40 transition-[width] duration-150"
       style={{ width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH, top: `calc(var(--device-banner-height, 0px) + ${topOffset}px)`, height: `calc(100vh - var(--device-banner-height, 0px) - ${topOffset}px)` }}
     >
-      {/* 展開切替 */}
-      <div className="flex justify-end px-1.5 pt-1.5">
-        <button
-          onClick={() => setCollapsed((c) => !c)}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          aria-label={collapsed ? "サイドバーを開く" : "サイドバーを閉じる"}
-        >
-          {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-        </button>
-      </div>
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden pt-2 pb-2 scrollbar-hide">
         <TooltipProvider delayDuration={200}>
           <ul className="flex flex-col gap-0.5 px-1.5 mb-2">
             {tabs.map(({ id, label, icon: Icon }) => {
