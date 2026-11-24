@@ -43,9 +43,9 @@ import EditingPresenceBanner from "@/components/EditingPresenceBanner";
 import { PresenceContext } from "@/lib/presenceContext";
 
 const tabVariants = {
-  initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.2 } },
-  exit: { opacity: 0, y: -8, transition: { duration: 0.15 } },
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
 };
 
 export default function EventDetail() {
