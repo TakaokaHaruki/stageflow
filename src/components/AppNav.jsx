@@ -76,10 +76,13 @@ export default function AppNav() {
       <UserNotificationBanner />
       {/* 共通ヘッダ */}
       <div ref={headerRef} className="bg-card/90 dark:bg-card/80 backdrop-blur-md border-b border-border sticky z-50 safe-area-top" style={{ top: "var(--device-banner-height, 0px)" }}>
-        <div className="max-w-[1400px] mx-auto px-3 pb-1.5 pt-1.5 flex items-center gap-2">
-          <CrewlyLogo className="mr-1" administrator={isAdmin} />
-          <div className="hidden h-5 w-px bg-border sm:block" />
-          <h1 className="shrink-0 text-[15px] font-bold tracking-tight text-foreground">{title}</h1>
+        <div className="max-w-[1400px] mx-auto px-3 pb-1.5 pt-1.5 flex items-center gap-2 relative">
+          {/* モバイル: ロゴ+タイトルを水平中央揃え / デスクトップ: 左寄せ */}
+          <div className="flex items-center gap-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 sm:static sm:translate-x-0 sm:translate-y-0">
+            <CrewlyLogo className="mr-1" administrator={isAdmin} />
+            <div className="hidden h-5 w-px bg-border sm:block" />
+            <h1 className="shrink-0 text-[15px] font-bold tracking-tight text-foreground">{title}</h1>
+          </div>
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
             {profileError ? (
