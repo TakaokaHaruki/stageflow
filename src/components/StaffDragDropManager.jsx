@@ -38,6 +38,7 @@ import StaffTrendPopup from "@/components/StaffTrendPopup";
 import ShowPartOverview from "@/components/ShowPartOverview";
 import { getParts } from "@/lib/showParts";
 import SectionHeader from "@/components/SectionHeader";
+import AssignmentSheetMetaEditor from "@/components/AssignmentSheetMetaEditor";
 import EventLockBanner from "@/components/EventLockBanner";
 import { LOCK_TOOLTIP_TEXT } from "@/lib/eventLock";
 import { usePresence, usePresenceActivity } from "@/lib/presenceContext";
@@ -671,6 +672,12 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           </div>
         )}
       />
+
+      {canEdit && (
+        <div className="mb-1.5">
+          <AssignmentSheetMetaEditor eventId={eventId} event={event} canEdit={canEdit && !isLocked} />
+        </div>
+      )}
 
       <div className="mb-1.5">
         <RoleTallyBar staffList={staffList} />

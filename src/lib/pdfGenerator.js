@@ -313,16 +313,24 @@ function calcCardHeight(pos, staffMap) {
   return CARD_HEADER_H + posNoteH + chiefH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + noteExtra + CARD_PADDING_V;
 }
 
-function drawTitle(doc, event, partLabel) {
-  doc.setFontSize(11);
+// 帳票風ヘッダー: 公演名・日時・会場・各時間帯・チーフ名・クローク名を帯状にまとめ、
+// その下のコンテンツ開始Yを返す
+function drawReportHeader(doc, event, partLabel) {
+  const x0 = MARGIN;
+  const w = PAGE_W - 2 * MARGIN;
+
+  // 公演名（大）
+  doc.setFontSize(13);
   doc.setFont('NotoSansJP', 'normal');
   doc.setTextColor(...ISCT.monoPrimary);
-  doc.text(event.name || '', MARGIN, MARGIN + 5);
+  doc.text(event.name || '', x0, MARGIN + 4.5);
   if (partLabel) {
     doc.setFontSize(11);
     doc.setTextColor(...ISCT.primary);
-    doc.text(partLabel, PAGE_W - MARGIN, MARGIN + 5, { align: 'right' });
+    doc.text(partLabel, PAGE_W - MARGIN, MARGIN + 4.5, { align: 'right' });
   }
+
+  // 日時・会場
   doc.setFontSize(8);
   doc.setTextColor(...ISCT.monoSecondary);
   let dateStr = '';
@@ -330,12 +338,89 @@ function drawTitle(doc, event, partLabel) {
     const d = new Date(event.date);
     dateStr = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
   }
-  const subText = `${dateStr}${event.venue ? '　' + event.venue : ''}`;
-  if (subText) doc.text(subText, MARGIN, MARGIN + 10);
-  // ISCT ブランドのアクセント罫線
+  const subText = [dateStr, event.venue].filter(Boolean).join('　');
+  if (subText) doc.text(subText, x0, MARGIN + 8.5);
+
+  // 上部アクセント罫線
+  let y = MARGIN + 10;
   doc.setDrawColor(...ISCT.primary);
   doc.setLineWidth(0.5);
-  doc.line(MARGIN, MARGIN + 11.5, PAGE_W - MARGIN, MARGIN + 11.5);
+  doc.line(x0, y, x0 + w, y);
+  y += 2;
+
+  // 時間帯テーブル（先行/開場/開演/終演）
+  const timeRows = [
+    { label: '先行', start: event.time_priority, end: event.time_priority_end },
+    { label: '開場', start: event.time_open, end: event.time_open_end },
+    { label: '開演', start: event.time_start, end: event.time_start_end },
+    { label: '終演', start: event.time_end, end: event.time_end_end },
+  ];
+  const timeColW = w / 4;
+  const timeCellH = 7;
+  const labelW = 10;
+  timeRows.forEach((r, i) => {
+    const cx = x0 + i * timeColW;
+    doc.setDrawColor(...ISCT.monoTertiary);
+    doc.setLineWidth(0.2);
+    doc.setFillColor(...ISCT.quaternary);
+    doc.rect(cx, y, timeColW, timeCellH, 'FD');
+    // ラベル帯
+    doc.setFillColor(...ISCT.tertiary);
+    doc.rect(cx, y, labelW, timeCellH, 'F');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...ISCT.primary);
+    doc.text(r.label, cx + labelW / 2, y + timeCellH / 2 + 0.5, { align: 'center' });
+    // 時刻
+    let range = '';
+    if (r.start && r.end) range = `${r.start}〜${r.end}`;
+    else if (r.start) range = `${r.start}〜`;
+    else if (r.end) range = `〜${r.end}`;
+    doc.setFontSize(9);
+    doc.setTextColor(...ISCT.monoPrimary);
+    doc.text(range || '－', cx + labelW + 1.5, y + timeCellH / 2 + 0.5);
+  });
+  y += timeCellH;
+
+  // チーフ・クローク行
+  const chiefCloakH = 6.5;
+  const halfW = w / 2;
+  const ccLabelW = 14;
+  // チーフ
+  doc.setDrawColor(...ISCT.monoTertiary);
+  doc.setLineWidth(0.2);
+  doc.setFillColor(...ISCT.quaternary);
+  doc.rect(x0, y, halfW, chiefCloakH, 'FD');
+  doc.setFillColor(...ISCT.tertiary);
+  doc.rect(x0, y, ccLabelW, chiefCloakH, 'F');
+  doc.setFontSize(7);
+  doc.setTextColor(...ISCT.primary);
+  doc.text('チーフ', x0 + ccLabelW / 2, y + chiefCloakH / 2 + 0.5, { align: 'center' });
+  doc.setFontSize(9);
+  doc.setTextColor(...ISCT.monoPrimary);
+  doc.text(event.chief_name || '', x0 + ccLabelW + 1.5, y + chiefCloakH / 2 + 0.5);
+  // 区切り
+  doc.setDrawColor(...ISCT.monoTertiary);
+  doc.setLineWidth(0.2);
+  doc.line(x0 + halfW, y, x0 + halfW, y + chiefCloakH);
+  // クローク
+  doc.setFillColor(...ISCT.quaternary);
+  doc.rect(x0 + halfW, y, halfW, chiefCloakH, 'FD');
+  doc.setFillColor(...ISCT.tertiary);
+  doc.rect(x0 + halfW, y, ccLabelW, chiefCloakH, 'F');
+  doc.setFontSize(7);
+  doc.setTextColor(...ISCT.primary);
+  doc.text('クローク', x0 + halfW + ccLabelW / 2, y + chiefCloakH / 2 + 0.5, { align: 'center' });
+  doc.setFontSize(9);
+  doc.setTextColor(...ISCT.monoPrimary);
+  doc.text(event.cloak_name || '', x0 + halfW + ccLabelW + 1.5, y + chiefCloakH / 2 + 0.5);
+  y += chiefCloakH;
+
+  // 下部アクセント罫線
+  doc.setDrawColor(...ISCT.primary);
+  doc.setLineWidth(0.4);
+  doc.line(x0, y, x0 + w, y);
+
+  return y + 2; // コンテンツ開始Y
 }
 
 function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
@@ -596,9 +681,9 @@ function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, sta
   return startY + COL_HEADER_H + 1.5;
 }
 
-function drawColumns(doc, positions, staff, event) {
+function drawColumns(doc, positions, staff, event, contentStartY) {
   const colW = getColWidth();
-  const colStartY = MARGIN + TITLE_H;
+  const colStartY = contentStartY ?? (MARGIN + TITLE_H);
   const pageBottom = PAGE_H - MARGIN;
 
   const staffMap = new Map();
@@ -1060,7 +1145,6 @@ export async function generatePositionPDF(data, filename) {
       const partsCount = Math.max(1, event.show_count || 1);
       for (let part = 1; part <= partsCount; part++) {
         if (part > 1) doc.addPage();
-        drawTitle(doc, event, `${part}部`);
         // 部別時刻（show_times）を優先し、未設定の項目はイベント共通の時刻で補完
         const st = event.show_times?.[String(part)] || {};
         const partEvent = {
@@ -1072,11 +1156,12 @@ export async function generatePositionPDF(data, filename) {
           time_end: st.time_end ?? event.time_end,
         };
         const partPositions = (data.positions || []).filter((p) => getParts(p).includes(part));
-        drawColumns(doc, partPositions, data.staff || [], partEvent);
+        const headerY = drawReportHeader(doc, partEvent, `${part}部`);
+        drawColumns(doc, partPositions, data.staff || [], partEvent, headerY);
       }
     } else {
-      drawTitle(doc, event);
-      drawColumns(doc, data.positions || [], data.staff || [], event);
+      const headerY = drawReportHeader(doc, event);
+      drawColumns(doc, data.positions || [], data.staff || [], event, headerY);
     }
 
     // 配置表の2枚目以降: 貸出・返却 管理チェック表（紙ベース管理用）
