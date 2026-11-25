@@ -53,7 +53,7 @@ export default function ModalShell({
       }}
     >
       <motion.div
-        className={`ios-glass-float border rounded-xl shadow-elevated sm:bg-card sm:border-border ${maxWidth} w-full p-6 max-h-[90dvh] overflow-y-auto ${className}`}
+        className={`bg-card border border-border rounded-xl shadow-elevated ${maxWidth} w-full p-6 max-h-[90dvh] overflow-y-auto ${className}`}
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ delay: 0.1 }}

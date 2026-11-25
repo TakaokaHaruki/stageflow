@@ -159,7 +159,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
-        className="ios-glass-float border rounded-xl shadow-elevated w-full max-w-lg flex flex-col max-h-[90dvh] sm:bg-card sm:border-border"
+        className="bg-card border border-border rounded-xl shadow-elevated w-full max-w-lg flex flex-col max-h-[90dvh]"
         initial={{ y: 34, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}

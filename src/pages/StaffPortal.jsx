@@ -518,7 +518,7 @@ export default function StaffPortal() {
             <p className="mt-3 text-sm text-muted-foreground">スタッフポータル</p>
           </div>
 
-          <div className="ios-glass-float border rounded-xl shadow-card sm:bg-card sm:border-border p-6">
+          <div className="bg-card border border-border rounded-xl shadow-card p-6">
             <h1 className="text-base font-bold mb-1">スタッフログイン</h1>
             <p className="text-xs text-muted-foreground mb-4">A-CAST ID の QR コードをアップロード</p>
             
@@ -653,7 +653,7 @@ export default function StaffPortal() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="ios-glass-bar border-b sticky z-50 safe-area-top sm:bg-card/80 sm:backdrop-blur-md sm:border-border" style={{ top: "var(--device-banner-height, 0px)" }}>
+      <div className="bg-card/80 backdrop-blur-md border-b border-border sticky z-50 safe-area-top" style={{ top: "var(--device-banner-height, 0px)" }}>
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <CrewlyLogo />
           <div className="flex items-center gap-2">

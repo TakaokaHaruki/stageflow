@@ -195,7 +195,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false, a
       onClick={(e) => { if (e.target === e.currentTarget && !processing) onClose(); }}
     >
       <motion.div
-        className="ios-glass-float border rounded-xl shadow-elevated w-full max-w-sm overflow-hidden sm:bg-card sm:border-border"
+        className="bg-card border border-border rounded-xl shadow-elevated w-full max-w-sm overflow-hidden"
         initial={{ y: 40, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         exit={{ y: 40, opacity: 0 }}

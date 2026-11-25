@@ -135,7 +135,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
-        className="ios-glass-float border rounded-xl shadow-elevated w-full max-w-2xl p-6 max-h-[90dvh] overflow-y-auto scrollbar-hide sm:bg-card sm:border-border"
+        className="bg-card border border-border rounded-xl shadow-elevated w-full max-w-2xl p-6 max-h-[90dvh] overflow-y-auto scrollbar-hide"
         initial={{ y: 32, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}

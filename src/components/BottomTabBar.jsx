@@ -50,9 +50,9 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
   return (
     <>
       {moreOpen && (
-        <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setMoreOpen(false)}>
+        <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]" onClick={() => setMoreOpen(false)}>
           <div
-            className="absolute bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-2 right-2 ios-glass-float rounded-2xl p-1.5 shadow-elevated"
+            className="absolute bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-2 right-2 rounded-lg border border-border bg-card p-1.5 shadow-elevated"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-1 flex items-center justify-between px-1">
@@ -87,7 +87,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 ios-glass-bar border-t safe-area-bottom">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card safe-area-bottom">
         <div
           className="grid min-h-14"
           style={{ gridTemplateColumns: `repeat(${PRIMARY_TABS.length + (moreTabs.length > 0 ? 1 : 0)}, minmax(0, 1fr))` }}
@@ -98,7 +98,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
               type="button"
               onClick={() => handleTabClick(id)}
               className={`flex min-w-0 select-none flex-col items-center justify-center gap-0.5 px-0.5 py-0.5 transition-colors focus-visible:outline-none ${
-                activeTab === id ? "text-primary ios-tab-active" : "text-muted-foreground"
+                activeTab === id ? "text-primary" : "text-muted-foreground"
               }`}
               aria-current={activeTab === id ? "page" : undefined}
               aria-label={label}
@@ -112,7 +112,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
               type="button"
               onClick={() => setMoreOpen((open) => !open)}
               className={`flex min-w-0 select-none flex-col items-center justify-center gap-0.5 px-0.5 py-0.5 transition-colors focus-visible:outline-none ${
-                isMoreActive || moreOpen ? "text-primary ios-tab-active" : "text-muted-foreground"
+                isMoreActive || moreOpen ? "text-primary" : "text-muted-foreground"
               }`}
               aria-expanded={moreOpen}
               aria-label="その他"
