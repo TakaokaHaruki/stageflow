@@ -35,6 +35,7 @@ import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
 import EmergencyContactManager from "@/components/EmergencyContactManager";
 import SharedFileManager from "@/components/SharedFileManager";
+import MeetingSheetManager from "@/components/MeetingSheetManager";
 import EventRecordManager from "@/components/records/EventRecordManager";
 import { isEventLocked } from "@/lib/eventLock";
 import { useEditingPresence } from "@/hooks/useEditingPresence";
@@ -207,6 +208,7 @@ export default function EventDetail() {
     { id: "records", label: "イベント記録", icon: NotebookPen },
     { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
     ...(isPrivileged ? [{ id: "files", label: "配布資料", icon: Paperclip }] : []),
+    ...(isPrivileged ? [{ id: "meeting_sheet", label: "ミーティング用紙", icon: FileText }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ];
@@ -392,6 +394,15 @@ export default function EventDetail() {
             {activeTab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
             {activeTab === "position_map" && <PositionMapManager eventId={eventId} />}
             {activeTab === "files" && <SharedFileManager eventId={eventId} showAll={true} isLocked={eventLocked} />}
+            {activeTab === "meeting_sheet" && (
+              <MeetingSheetManager
+                eventId={eventId}
+                eventName={event.name}
+                eventDate={event.date}
+                venue={event.venue}
+                canEdit={isPrivileged}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
         </PresenceContext.Provider>

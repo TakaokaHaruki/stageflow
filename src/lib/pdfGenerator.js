@@ -102,7 +102,7 @@ async function woffToTtfArrayBuffer(woffBuffer) {
 // 2フォント読み込み:
 //  - full: 変数TTF（400・フルカバレッジ・髙などの環境依存文字対応）。髙含みテキスト用および Medium 取得失敗時のフォールバック。
 //  - medium: fontsource Noto Sans JP 500 woff（Medium・JIS第1・第2水準）。髙は含まないため full で補完。
-async function loadJapaneseFont() {
+export async function loadJapaneseFont() {
   if (USE_BIZ_UD_FONT && !cachedBizUdFontBase64) {
     try {
       cachedBizUdFontBase64 = await fetchFontBase64('https://cdn.jsdelivr.net/gh/googlefonts/morisawa-biz-ud-gothic@main/fonts/ttf/BIZUDGothic-Bold.ttf');
