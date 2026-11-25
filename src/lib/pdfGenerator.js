@@ -225,6 +225,8 @@ const CHIEF_LINE_H = 3.2; // セクションチーフ印字行の高さ（チー
 const POS_NOTE_LINE_H = 2.8; // ポジション備考行の高さ（ポジション名の下に印字）
 const NOTE_FONT_SIZE = 5.4; // 備考のフォントサイズ（スタッフ名の下に小さく印字）
 const NOTE_LINE_H = 2.8;    // 備考行の高さ
+const FURIGANA_FONT_SIZE = 5; // フリガナのフォントサイズ（スタッフ名の下に小さく印字）
+const FURIGANA_LINE_H = 2.6;  // フリガナ行の高さ
 const PENLIGHT_ICON_W = 2.6;   // ペンライトアイコン（筒＋光束）の幅
 const PENLIGHT_ICON_H = 1.4;   // ペンライトアイコンの高さ
 const BENTO_ICON_W = 1.8;      // 弁当アイコン（箱）の幅
@@ -301,16 +303,24 @@ function calcCardHeight(pos, staffMap) {
   const posNoteH = pos.notes && String(pos.notes).trim() ? POS_NOTE_LINE_H : 0;
   // 備考を持つスタッフの行は高さを追加（備考行の数だけ）
   let noteExtra = 0;
+  // フリガナを持つスタッフの行は高さを追加（フリガナ行の数だけ）
+  let furiganaExtra = 0;
   if (staffMap) {
     const slot = normalizeSlot(pos.time_slot);
     const countNotes = (names) => names.reduce(
       (sum, n) => sum + (getStaffNote(staffMap.get(n), slot) ? NOTE_LINE_H : 0), 0
     );
+    const countFurigana = (names) => names.reduce(
+      (sum, n) => sum + (staffMap.get(n)?.furigana ? FURIGANA_LINE_H : 0), 0
+    );
     noteExtra = splitBySide
       ? Math.max(countNotes(pos.staff_names_kamite || []), countNotes(pos.staff_names_shimote || []))
       : countNotes(staffNamesList);
+    furiganaExtra = splitBySide
+      ? Math.max(countFurigana(pos.staff_names_kamite || []), countFurigana(pos.staff_names_shimote || []))
+      : countFurigana(staffNamesList);
   }
-  return CARD_HEADER_H + posNoteH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + noteExtra + CARD_PADDING_V;
+  return CARD_HEADER_H + posNoteH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + furiganaExtra + noteExtra + CARD_PADDING_V;
 }
 
 // 帳票風ヘッダー: 公演名・日時・会場・各時間帯・セクションチーフ名・クローク名を帯状にまとめ、
@@ -420,7 +430,8 @@ function drawReportHeader(doc, event, partLabel) {
 
 function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const note = getStaffNote(staffData, slot);
-  const rowH = STAFF_LINE_H + (note ? NOTE_LINE_H : 0);
+  const furigana = staffData?.furigana || '';
+  const rowH = STAFF_LINE_H + (furigana ? FURIGANA_LINE_H : 0) + (note ? NOTE_LINE_H : 0);
   if (y + rowH > cardBottom + 0.01) return 0;
   const textY = y + STAFF_LINE_H * 0.78;
   const nameX = x + 1;
@@ -438,6 +449,22 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
 
   let cursorX = nameX + doc.getTextWidth(name) + 1;
 
+  // フリガナをスタッフ名の下に小さく印字
+  let subLineY = y + STAFF_LINE_H;
+  if (furigana) {
+    doc.setFontSize(FURIGANA_FONT_SIZE);
+    doc.setTextColor(...ISCT.monoSecondary);
+    let furiText = furigana;
+    const maxFuriW = x + w - nameX - 0.5;
+    while (furiText.length > 1 && doc.getTextWidth(furiText) > maxFuriW) {
+      furiText = furiText.slice(0, -1);
+    }
+    if (furiText !== furigana && furiText.length > 0) furiText = furiText.slice(0, -1) + '…';
+    doc.text(furiText, nameX, subLineY + FURIGANA_LINE_H * 0.75);
+    subLineY += FURIGANA_LINE_H;
+    doc.setFontSize(STAFF_FONT_SIZE);
+  }
+
   // 備考（共通＋該当時間帯を統合）をスタッフ名の下に小さく印字
   if (note) {
     doc.setFontSize(NOTE_FONT_SIZE);
@@ -448,7 +475,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
       noteText = noteText.slice(0, -1);
     }
     if (noteText !== note && noteText.length > 0) noteText = noteText.slice(0, -1) + '…';
-    doc.text(noteText, nameX, y + STAFF_LINE_H + NOTE_LINE_H * 0.75);
+    doc.text(noteText, nameX, subLineY + NOTE_LINE_H * 0.75);
     doc.setFontSize(STAFF_FONT_SIZE);
   }
 
@@ -848,7 +875,19 @@ function drawTimelineTable(doc, positions, staff) {
     if (y + rowH > PAGE_H - MARGIN) { doc.addPage(); y = MARGIN; }
     doc.setFillColor(243, 237, 226);
     doc.rect(MARGIN, y, colW, rowH, 'F');
-    doc.text(name, MARGIN + 2, y + 5.5);
+    doc.text(name, MARGIN + 2, y + 4.2);
+    // フリガナ（スタッフ名の下に小さく印字）
+    const staffEntry = staff.find((s) => s.name === name);
+    if (staffEntry?.furigana) {
+      doc.setFontSize(5);
+      doc.setTextColor(100, 100, 100);
+      let furi = staffEntry.furigana;
+      while (furi.length > 1 && doc.getTextWidth(furi) > colW - 4) furi = furi.slice(0, -1);
+      if (furi !== staffEntry.furigana && furi.length > 0) furi = furi.slice(0, -1) + '…';
+      doc.text(furi, MARGIN + 2, y + 7);
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+    }
     TIME_SLOTS.forEach((slot, i) => {
       const cellX = MARGIN + (i + 1) * colW;
       const posNames = slots[slot] || [];
@@ -1036,7 +1075,17 @@ function drawCheckListSheet(doc, staff, event) {
     const nameMaxW = cols[1].w - 2;
     while (name.length > 1 && doc.getTextWidth(name) > nameMaxW) name = name.slice(0, -1);
     if (name !== (s.name || '') && name.length > 0) name = name.slice(0, -1) + '…';
-    doc.text(name, cellX + 1.5, y + rowH * 0.62);
+    doc.text(name, cellX + 1.5, y + rowH * (s.furigana ? 0.42 : 0.62));
+    // フリガナ（スタッフ名の下に小さく印字）
+    if (s.furigana) {
+      doc.setFontSize(5);
+      doc.setTextColor(100, 116, 139);
+      let furi = s.furigana;
+      while (furi.length > 1 && doc.getTextWidth(furi) > nameMaxW) furi = furi.slice(0, -1);
+      if (furi !== s.furigana && furi.length > 0) furi = furi.slice(0, -1) + '…';
+      doc.text(furi, cellX + 1.5, y + rowH * 0.82);
+      doc.setFontSize(8);
+    }
     cellX += cols[1].w;
 
     // パスNo（空欄）

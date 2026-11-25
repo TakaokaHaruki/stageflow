@@ -144,6 +144,7 @@ export default function StaffSearch() {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="font-semibold truncate">{s.name}</div>
+                {s.furigana && <div className="text-[11px] text-muted-foreground truncate">{s.furigana}</div>}
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   {s.gender && <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{s.gender}</span>}
                   {s.roles.slice(0, 2).map((r) => (

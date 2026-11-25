@@ -53,6 +53,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, is
       <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-1 gap-y-0.5">
         {isLocked && viewMode !== "view" && <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />}
         <span className={`text-xs font-medium ${isRemoving ? "opacity-50" : ""}`} style={{ color: nameColor }}>{displayName}</span>
+        {staffData?.furigana && <span className="text-[9px] text-muted-foreground leading-tight">{staffData.furigana}</span>}
         {displayNote && (
           <div className="relative shrink-0" ref={noteIconRef}>
             <button

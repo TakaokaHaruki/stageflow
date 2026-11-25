@@ -26,6 +26,7 @@ const PRESET_COLORS = [
 
 export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClose, onSaved, isLocked = false, onToggleLock }) {
   const [localName, setLocalName] = useState(staff.name);
+  const [localFurigana, setLocalFurigana] = useState(staff.furigana || "");
   const [localAcastId, setLocalAcastId] = useState(staff.acast_id || "");
   const [localGender, setLocalGender] = useState(staff.gender || "");
   const [localNote, setLocalNote] = useState(staff.note || "");
@@ -42,7 +43,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
   const { allRoles, getBadgeClass } = useAllRoles();
   const { record } = useOperationLog(staff.event_id);
   const prevDataRef = useRef({
-    name: staff.name, acast_id: staff.acast_id || "", gender: staff.gender || "", note: staff.note || "",
+    name: staff.name, furigana: staff.furigana || "", acast_id: staff.acast_id || "", gender: staff.gender || "", note: staff.note || "",
     note_before: staff.note_before || "", note_during: staff.note_during || "", note_after: staff.note_after || "",
     color: staff.color || "", skills: staff.skills || [], roles: staff.roles || []
   });
@@ -98,13 +99,13 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
     const skillsChanged = JSON.stringify(localSkills) !== JSON.stringify(prev.skills);
     const rolesChanged = JSON.stringify(localRoles) !== JSON.stringify(prev.roles);
     if (
-      localName === prev.name && localAcastId === prev.acast_id && localGender === prev.gender && localNote === prev.note &&
+      localName === prev.name && localFurigana === prev.furigana && localAcastId === prev.acast_id && localGender === prev.gender && localNote === prev.note &&
       localNoteBefore === prev.note_before && localNoteDuring === prev.note_during && localNoteAfter === prev.note_after &&
       localColor === prev.color && !skillsChanged && !rolesChanged
     ) return;
     const timer = setTimeout(() => {
       const nextData = {
-        name: localName.trim(), acast_id: localAcastId.trim(), gender: localGender, note: localNote.trim(),
+        name: localName.trim(), furigana: localFurigana.trim(), acast_id: localAcastId.trim(), gender: localGender, note: localNote.trim(),
         note_before: localNoteBefore.trim(), note_during: localNoteDuring.trim(), note_after: localNoteAfter.trim(),
         color: localColor, skills: localSkills, roles: localRoles
       };
@@ -124,7 +125,7 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
       });
     }, 500);
     return () => clearTimeout(timer);
-  }, [localName, localAcastId, localGender, localNote, localNoteBefore, localNoteDuring, localNoteAfter, localColor, localSkills, localRoles]);
+  }, [localName, localFurigana, localAcastId, localGender, localNote, localNoteBefore, localNoteDuring, localNoteAfter, localColor, localSkills, localRoles]);
 
   return (
     <motion.div
@@ -177,6 +178,10 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
           <div className="sm:col-span-2">
             <label className="text-xs font-medium text-muted-foreground">スタッフ名</label>
             <Input value={localName} onChange={(e) => setLocalName(e.target.value)} className="mt-1" style={{ color: localColor || undefined }} />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">フリガナ</label>
+            <Input value={localFurigana} onChange={(e) => setLocalFurigana(e.target.value)} className="mt-1" placeholder="例：ヤマダ タロウ" />
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground">A-CAST ID</label>

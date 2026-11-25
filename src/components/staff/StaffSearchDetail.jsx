@@ -45,6 +45,7 @@ export default function StaffSearchDetail({ staff, onBack }) {
 
       <div className="rounded-xl border border-border bg-card p-4 shadow-card">
         <h1 className="text-xl font-bold">{staff.name}</h1>
+        {staff.furigana && <p className="text-sm text-muted-foreground mt-0.5">{staff.furigana}</p>}
         <div className="mt-2 flex flex-wrap gap-1.5">
           {staff.gender && <span className="text-[11px] px-2 py-0.5 rounded-full bg-muted">{staff.gender}</span>}
           {staff.roles.map(r => (
