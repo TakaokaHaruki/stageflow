@@ -195,7 +195,7 @@ export default function PositionCard({
               return (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                  チーフ：{chiefs.join("・")}
+                  セクションチーフ：{chiefs.join("・")}
                 </span>
               );
             })()}

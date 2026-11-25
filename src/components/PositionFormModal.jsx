@@ -479,7 +479,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
           </div>
 
           <div>
-            <Label>担当チーフ（複数選択可・このポジションの所属スタッフから）</Label>
+            <Label>担当セクションチーフ（複数選択可・このポジションの所属スタッフから）</Label>
             {(() => {
               const assignedNames = form.split_by_side
                 ? [...new Set([...(form.staff_names_kamite || []), ...(form.staff_names_shimote || [])])]

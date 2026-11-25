@@ -57,7 +57,7 @@ export default function StaffSearchDetail({ staff, onBack }) {
         <div className="mt-3 grid grid-cols-3 gap-2 text-center">
           <Stat label="参加イベント" value={staff.eventCount} />
           <Stat label="ポジション数" value={staff.positionCount} />
-          <Stat label="チーフ経験" value={staff.chiefCount} />
+          <Stat label="セクションチーフ経験" value={staff.chiefCount} />
         </div>
       </div>
 

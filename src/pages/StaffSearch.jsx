@@ -151,7 +151,7 @@ export default function StaffSearch() {
                   ))}
                   {s.chiefCount > 0 && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                      チーフ{s.chiefCount}回
+                      セクションチーフ{s.chiefCount}回
                     </span>
                   )}
                 </div>

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { User, Shirt } from "lucide-react";
 import { toast } from "sonner";
 
-// 配置表PDFのヘッダーに印字するチーフ名・クローク名をイベントへ保存するインライン編集バー
+// 配置表PDFのヘッダーに印字するセクションチーフ名・クローク名をイベントへ保存するインライン編集バー
 export default function AssignmentSheetMetaEditor({ eventId, event, canEdit }) {
   const [chiefName, setChiefName] = useState("");
   const [cloakName, setCloakName] = useState("");
@@ -35,13 +35,13 @@ export default function AssignmentSheetMetaEditor({ eventId, event, canEdit }) {
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-border bg-card p-2 shadow-card">
       <div className="flex items-center gap-1.5">
         <User className="h-3.5 w-3.5 text-primary shrink-0" />
-        <span className="text-[11px] font-bold text-muted-foreground shrink-0">チーフ</span>
+        <span className="text-[11px] font-bold text-muted-foreground shrink-0">セクションチーフ</span>
         <Input
           className="h-7 w-40 text-xs"
           value={chiefName}
           onChange={(e) => setChiefName(e.target.value)}
           onBlur={() => save("chief_name", chiefName)}
-          placeholder="チーフ名"
+          placeholder="セクションチーフ名"
           disabled={saving}
         />
       </div>

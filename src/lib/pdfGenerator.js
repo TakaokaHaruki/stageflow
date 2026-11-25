@@ -221,7 +221,7 @@ const CARD_PADDING_V = 0.6;   // スタッフエリア上下パディング合�
 const SIDE_HEADER_H = 2.8;
 const CHECKBOX_SIZE = 2;
 const CHECKBOX_GAP = 0.4;
-const CHIEF_LINE_H = 3.2; // チーフ印字行の高さ（チーフがある場合のみ）
+const CHIEF_LINE_H = 3.2; // セクションチーフ印字行の高さ（チーフがある場合のみ）
 const POS_NOTE_LINE_H = 2.8; // ポジション備考行の高さ（ポジション名の下に印字）
 const NOTE_FONT_SIZE = 5.4; // 備考のフォントサイズ（スタッフ名の下に小さく印字）
 const NOTE_LINE_H = 2.8;    // 備考行の高さ
@@ -297,7 +297,7 @@ function calcCardHeight(pos, staffMap) {
     ? Math.max((pos.staff_names_kamite || []).length, (pos.staff_names_shimote || []).length)
     : (pos.staff_names || []).length;
   const extraH = splitBySide ? SIDE_HEADER_H : 0;
-  // チーフはポジション名の横にインライン表示するため高さ不要
+  // セクションチーフはポジション名の横にインライン表示するため高さ不要
   const posNoteH = pos.notes && String(pos.notes).trim() ? POS_NOTE_LINE_H : 0;
   // 備考を持つスタッフの行は高さを追加（備考行の数だけ）
   let noteExtra = 0;
@@ -313,7 +313,7 @@ function calcCardHeight(pos, staffMap) {
   return CARD_HEADER_H + posNoteH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + noteExtra + CARD_PADDING_V;
 }
 
-// 帳票風ヘッダー: 公演名・日時・会場・各時間帯・チーフ名・クローク名を帯状にまとめ、
+// 帳票風ヘッダー: 公演名・日時・会場・各時間帯・セクションチーフ名・クローク名を帯状にまとめ、
 // その下のコンテンツ開始Yを返す
 function drawReportHeader(doc, event, partLabel) {
   const x0 = MARGIN;
@@ -381,11 +381,11 @@ function drawReportHeader(doc, event, partLabel) {
   });
   y += timeCellH;
 
-  // チーフ・クローク行
+  // セクションチーフ・クローク行
   const chiefCloakH = 6.5;
   const halfW = w / 2;
-  const ccLabelW = 14;
-  // チーフ
+  const ccLabelW = 18;
+  // セクションチーフ
   doc.setDrawColor(...ISCT.monoTertiary);
   doc.setLineWidth(0.2);
   doc.setFillColor(...ISCT.quaternary);
@@ -394,7 +394,7 @@ function drawReportHeader(doc, event, partLabel) {
   doc.rect(x0, y, ccLabelW, chiefCloakH, 'F');
   doc.setFontSize(7);
   doc.setTextColor(...ISCT.primary);
-  doc.text('チーフ', x0 + ccLabelW / 2, y + chiefCloakH / 2, { align: 'center', baseline: 'middle' });
+  doc.text('セクションチーフ', x0 + ccLabelW / 2, y + chiefCloakH / 2, { align: 'center', baseline: 'middle' });
   doc.setFontSize(9);
   doc.setTextColor(...ISCT.monoPrimary);
   doc.text(event.chief_name || '', x0 + ccLabelW + 1.5, y + chiefCloakH / 2, { baseline: 'middle' });
@@ -517,7 +517,7 @@ function drawPositionRow(doc, pos, x, y, w, staffMap, slot, slotColor) {
   const requiredCount = pos.required_count || 0;
   const rowH = calcCardHeight(pos, staffMap);
 
-  // --- タイトル帯（ポジション名＋チーフ＋説明を同一要素・同背景色） ---
+  // --- タイトル帯（ポジション名＋セクションチーフ＋説明を同一要素・同背景色） ---
   const hasPosNote = pos.notes && String(pos.notes).trim();
   const titleH = CARD_HEADER_H + (hasPosNote ? POS_NOTE_LINE_H : 0);
 
@@ -542,9 +542,9 @@ function drawPositionRow(doc, pos, x, y, w, staffMap, slot, slotColor) {
   doc.setFontSize(7.5); doc.setTextColor(...ISCT.monoPrimary);
   let posName = pos.name || '';
   const chiefs = getChiefs(pos);
-  // チーフ表記をポジション名の横に結合
-  const chiefSuffix = chiefs.length > 0 ? `／チーフ ${chiefs.join('・')}` : '';
-  // 名前+チーフ の全体幅で制限
+  // セクションチーフ表記をポジション名の横に結合
+  const chiefSuffix = chiefs.length > 0 ? `／セクションチーフ ${chiefs.join('・')}` : '';
+  // 名前+セクションチーフ の全体幅で制限
   const maxNameW = (x + w - 1.5 - countTextW - 1.5) - (x + 5);
   let posNameW = doc.getTextWidth(posName);
   if (chiefSuffix) {
@@ -564,7 +564,7 @@ function drawPositionRow(doc, pos, x, y, w, staffMap, slot, slotColor) {
   if (posName !== (pos.name || '') && posName.length > 0) posName = posName.slice(0, -1) + '…';
   doc.text(posName, x + 5, headerTextY);
 
-  // チーフ表記をポジション名の直後（横）に印字
+  // セクションチーフ表記をポジション名の直後（横）に印字
   if (chiefSuffix) {
     const chiefX = x + 5 + doc.getTextWidth(posName) + 0.6;
     doc.setFontSize(5.8);
