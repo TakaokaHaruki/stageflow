@@ -177,7 +177,7 @@ function UndoConfirmModal({ log, onConfirm, onCancel }) {
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-t-2xl sm:rounded-xl shadow-2xl w-full max-w-md p-4 max-h-[90vh] overflow-y-auto scrollbar-hide"
+        className="bg-card border border-border rounded-t-2xl sm:rounded-xl shadow-elevated w-full max-w-md p-4 max-h-[90vh] overflow-y-auto scrollbar-hide"
         initial={{ y: 30, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}

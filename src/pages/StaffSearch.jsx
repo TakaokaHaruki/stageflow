@@ -103,7 +103,7 @@ export default function StaffSearch() {
           <Button type="submit" disabled={loading}>検索</Button>
         </div>
         {showSuggest && suggestions.length > 0 && (
-          <div className="absolute z-30 mt-1 w-full max-w-[calc(100%-5rem)] rounded-lg border border-border bg-popover shadow-lg overflow-hidden">
+          <div className="absolute z-30 mt-1 w-full max-w-[calc(100%-5rem)] rounded-lg border border-border bg-popover shadow-elevated overflow-hidden">
             {suggestions.map((s) => (
               <button
                 key={s.name}
@@ -139,7 +139,7 @@ export default function StaffSearch() {
           <button
             key={s.name}
             onClick={() => setSelected(s)}
-            className="w-full text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:shadow-card transition"
+            className="w-full text-left rounded-xl border border-border bg-card p-3 shadow-card hover:shadow-elevated transition"
           >
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">

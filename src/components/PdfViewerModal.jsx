@@ -207,7 +207,7 @@ export default function PdfViewerModal({ fileUrl, fileName, forcePdf, onClose })
           <img
             src={fileUrl}
             alt={fileName || "画像"}
-            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            className="max-w-full max-h-full object-contain rounded-lg shadow-elevated"
           />
         )}
 

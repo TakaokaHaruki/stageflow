@@ -66,7 +66,7 @@ function VisibilityPanel({ file, roles, staffNames, onSave, onClose }) {
   return (
     <div
       ref={panelRef}
-      className="absolute left-0 top-full mt-1 z-50 bg-card border border-border rounded-xl shadow-2xl p-3 w-64 space-y-2.5"
+      className="absolute left-0 top-full mt-1 z-50 bg-card border border-border rounded-xl shadow-elevated p-3 w-64 space-y-2.5"
       onClick={(e) => e.stopPropagation()}
     >
       <p className="text-[11px] font-semibold text-muted-foreground">公開範囲を変更</p>
@@ -185,7 +185,7 @@ function FileFormModal({ eventId, roles, staffNames, file, onClose, onSaved }) {
       className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-md p-2"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-card border border-border rounded-t-2xl sm:rounded-xl shadow-2xl w-full max-w-md p-4 space-y-3 max-h-[90vh] overflow-y-auto">
+      <div className="bg-card border border-border rounded-t-2xl sm:rounded-xl shadow-elevated w-full max-w-md p-4 space-y-3 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-sm">{isEdit ? "ファイルを編集" : "ファイルを追加"}</h3>
           <button onClick={onClose} className="p-1 rounded hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
