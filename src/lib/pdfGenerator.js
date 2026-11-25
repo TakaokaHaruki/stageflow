@@ -301,12 +301,25 @@ function calcCardHeight(pos, staffMap) {
   const extraH = splitBySide ? SIDE_HEADER_H : 0;
   // セクションチーフはポジション名の横にインライン表示するため高さ不要
   const posNoteH = pos.notes && String(pos.notes).trim() ? POS_NOTE_LINE_H : 0;
+  const slot = normalizeSlot(pos.time_slot);
+  const rowH = (sd) => STAFF_LINE_H + (sd?.furigana ? FURIGANA_LINE_H : 0) + (getStaffNote(sd, slot) ? NOTE_LINE_H : 0);
+
+  // 5名以上は2列表示: 行高さは各段の最大値で集計
+  if (!splitBySide && staffCount > 4) {
+    let h = 0;
+    for (let i = 0; i < staffCount; i += 2) {
+      const hA = staffMap ? rowH(staffMap.get(staffNamesList[i])) : STAFF_LINE_H;
+      const hB = staffNamesList[i + 1] != null ? (staffMap ? rowH(staffMap.get(staffNamesList[i + 1])) : STAFF_LINE_H) : 0;
+      h += Math.max(hA, hB);
+    }
+    return CARD_HEADER_H + posNoteH + h + CARD_PADDING_V;
+  }
+
   // 備考を持つスタッフの行は高さを追加（備考行の数だけ）
   let noteExtra = 0;
   // フリガナを持つスタッフの行は高さを追加（フリガナ行の数だけ）
   let furiganaExtra = 0;
   if (staffMap) {
-    const slot = normalizeSlot(pos.time_slot);
     const countNotes = (names) => names.reduce(
       (sum, n) => sum + (getStaffNote(staffMap.get(n), slot) ? NOTE_LINE_H : 0), 0
     );
@@ -357,39 +370,6 @@ function drawReportHeader(doc, event, partLabel) {
   doc.setLineWidth(0.5);
   doc.line(x0, y, x0 + w, y);
   y += 2;
-
-  // 時間帯テーブル（先行/開場/開演/終演）
-  const timeRows = [
-    { label: '先行', start: event.time_priority, end: event.time_priority_end },
-    { label: '開場', start: event.time_open, end: event.time_open_end },
-    { label: '開演', start: event.time_start, end: event.time_start_end },
-    { label: '終演', start: event.time_end, end: event.time_end_end },
-  ];
-  const timeColW = w / 4;
-  const timeCellH = 7;
-  const labelW = 10;
-  timeRows.forEach((r, i) => {
-    const cx = x0 + i * timeColW;
-    doc.setDrawColor(...ISCT.monoTertiary);
-    doc.setLineWidth(0.2);
-    doc.setFillColor(...ISCT.quaternary);
-    doc.rect(cx, y, timeColW, timeCellH, 'FD');
-    // ラベル帯
-    doc.setFillColor(...ISCT.tertiary);
-    doc.rect(cx, y, labelW, timeCellH, 'F');
-    doc.setFontSize(6.5);
-    doc.setTextColor(...ISCT.primary);
-    doc.text(r.label, cx + labelW / 2, y + timeCellH / 2, { align: 'center', baseline: 'middle' });
-    // 時刻
-    let range = '';
-    if (r.start && r.end) range = `${r.start}〜${r.end}`;
-    else if (r.start) range = `${r.start}〜`;
-    else if (r.end) range = `〜${r.end}`;
-    doc.setFontSize(9);
-    doc.setTextColor(...ISCT.monoPrimary);
-    doc.text(range || '－', cx + labelW + 1.5, y + timeCellH / 2, { baseline: 'middle' });
-  });
-  y += timeCellH;
 
   // セクションチーフ・クローク行
   const chiefCloakH = 6.5;
@@ -648,6 +628,20 @@ function drawPositionRow(doc, pos, x, y, w, staffMap, slot, slotColor) {
       if (drawnH > 0) ky += drawnH;
       else break;
     }
+  } else if (staffNames.length > 4) {
+    // 5名以上は2列表示
+    const halfW = w / 2;
+    let rowY = staffY;
+    for (let i = 0; i < staffNames.length; i += 2) {
+      const leftName = staffNames[i];
+      const rightName = staffNames[i + 1];
+      const hL = drawStaffRow(doc, leftName, staffMap.get(leftName), slot, x, rowY, halfW, cardBottom);
+      const hR = rightName ? drawStaffRow(doc, rightName, staffMap.get(rightName), slot, x + halfW, rowY, halfW, cardBottom) : 0;
+      const step = Math.max(hL, hR);
+      if (step > 0) rowY += step; else break;
+    }
+    doc.setDrawColor(...slotColor.divider); doc.setLineWidth(0.2);
+    doc.line(x + halfW, staffY, x + halfW, rowY);
   } else {
     let rowY = staffY;
     for (const nm of staffNames) {
