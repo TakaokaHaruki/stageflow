@@ -108,7 +108,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
         const gender = genders[i] || "";
         const color = gender === "男" ? "#3b82f6" : gender === "女" ? "#dc2626" : "";
         const name = editedNames[i] ?? s.name;
-        return { name, acast_id: s.acast_id || null, gender, color };
+        return { name, acast_id: s.acast_id || null, gender, color, furigana: s.furigana || "" };
       });
     if (selectedStaff.length === 0) { setError("スタッフが選択されていません"); return; }
     setLoading(true);
@@ -285,6 +285,7 @@ export default function StaffScrapeModal({ eventId, onClose }) {
                     <tr>
                       <th className="w-8 px-2 py-2 text-center font-medium text-muted-foreground">✓</th>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">氏名</th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">フリガナ</th>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">性別</th>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">種別</th>
                       <th className="px-3 py-2 text-left font-medium text-muted-foreground">メモ</th>
@@ -374,6 +375,9 @@ export default function StaffScrapeModal({ eventId, onClose }) {
                                 {isRegistered && <span className="ml-1.5 text-[10px] text-muted-foreground border border-border px-1 py-0.5 rounded">登録済</span>}
                               </>
                             )}
+                          </td>
+                          <td className="px-3 py-2 text-muted-foreground text-[11px]">
+                            {staff.furigana || ""}
                           </td>
                           <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
                             <div className="flex gap-1">

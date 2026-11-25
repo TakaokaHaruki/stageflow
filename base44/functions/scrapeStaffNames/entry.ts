@@ -111,6 +111,7 @@ Deno.serve(async (req) => {
           await base44.asServiceRole.entities.Staff.create({
             event_id: eventId,
             name: staff.name,
+            furigana: staff.furigana || "",
             acast_id: staff.acast_id || null,
             gender: staff.gender || "",
             color: staff.color || ""
@@ -121,6 +122,7 @@ Deno.serve(async (req) => {
           if (existing) {
             const updates: Record<string, string> = {};
             if (staff.acast_id && !existing.acast_id) updates.acast_id = staff.acast_id;
+            if (staff.furigana && !existing.furigana) updates.furigana = staff.furigana;
             if (staff.gender && !existing.gender) updates.gender = staff.gender;
             if (staff.color && !existing.color) updates.color = staff.color;
             if (Object.keys(updates).length > 0) {
@@ -199,13 +201,23 @@ Deno.serve(async (req) => {
       const idMatch = /<span[^>]*class="[^"]*staffId[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml);
       const acast_id = idMatch ? idMatch[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() : '';
 
+      // フリガナ（class名に furigana/hurigana/kana を含む span、または ruby>rt）
+      const furiganaMatch =
+        /<span[^>]*class="[^"]*furigana[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
+        /<span[^>]*class="[^"]*hurigana[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
+        /<span[^>]*class="[^"]*kana[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
+        /<span[^>]*class="[^"]*furigana[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
+        /<span[^>]*class="[^"]*hurigana[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
+        /<ruby[^>]*>[^<]*<rt>([\s\S]*?)<\/rt>/i.exec(rowHtml);
+      const furigana = furiganaMatch ? furiganaMatch[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() : '';
+
       const typeMatch = /<span[^>]*class="[^"]*type[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml);
       const type = typeMatch ? typeMatch[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() : '';
       const memoMatch = /class="memo_i"[^>]*value="([^"]*)"/i.exec(rowHtml);
       const memo = memoMatch ? memoMatch[1].trim() : '';
       const defaultChecked = !type.includes('物販') && memo !== '帰宅';
 
-      staffList.push({ name, acast_id, type, memo, defaultChecked });
+      staffList.push({ name, furigana, acast_id, type, memo, defaultChecked });
     }
     detail.hasStaffTable = exists;
 
@@ -213,16 +225,23 @@ Deno.serve(async (req) => {
     const acastIds = staffList.map((s) => s.acast_id).filter((id) => id);
     if (acastIds.length > 0) {
       try {
-        const pastStaff = await base44.asServiceRole.entities.Staff.filter({ acast_id: { $in: acastIds }, gender: { $ne: "" } });
+        const pastStaff = await base44.asServiceRole.entities.Staff.filter({ acast_id: { $in: acastIds } });
         const genderByAcast: Record<string, string> = {};
+        const furiganaByAcast: Record<string, string> = {};
         for (const ps of pastStaff) {
           if (ps.acast_id && ps.gender && !genderByAcast[ps.acast_id]) {
             genderByAcast[ps.acast_id] = ps.gender;
+          }
+          if (ps.acast_id && ps.furigana && !furiganaByAcast[ps.acast_id]) {
+            furiganaByAcast[ps.acast_id] = ps.furigana;
           }
         }
         for (const s of staffList) {
           if (s.acast_id && genderByAcast[s.acast_id as string]) {
             s.gender = genderByAcast[s.acast_id as string];
+          }
+          if (s.acast_id && !s.furigana && furiganaByAcast[s.acast_id as string]) {
+            s.furigana = furiganaByAcast[s.acast_id as string];
           }
         }
       } catch (e) {
