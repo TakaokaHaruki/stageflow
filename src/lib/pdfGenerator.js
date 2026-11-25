@@ -747,11 +747,9 @@ function drawColumns(doc, positions, staff, event, contentStartY) {
       // ページ内のリスト全体の高さを計算
       const listH = pageCards.reduce((sum, pos) => sum + calcCardHeight(pos, staffMap), 0);
 
-      // 外枠（角ばった矩形・時間帯テーマカラーの枠線）
-      doc.setDrawColor(...slotColor.border);
-      doc.setLineWidth(0.4);
+      // 背景塗りのみ先に描画（枠線は最後に描画して要素に隠れないようにする）
       doc.setFillColor(255, 255, 255);
-      doc.rect(x, contentTop, colW, listH, 'FD');
+      doc.rect(x, contentTop, colW, listH, 'F');
 
       // ポジションを連続描画（余白なし・区切り線で分割）
       let rowY = contentTop;
@@ -765,6 +763,11 @@ function drawColumns(doc, positions, staff, event, contentStartY) {
         }
         rowY += posH;
       });
+
+      // 外枠を最後に描画（要素に隠れず均一に見える）
+      doc.setDrawColor(...slotColor.border);
+      doc.setLineWidth(0.4);
+      doc.rect(x, contentTop, colW, listH, 'S');
 
       maxBottom = Math.max(maxBottom, rowY);
     });
