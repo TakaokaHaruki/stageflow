@@ -201,13 +201,12 @@ Deno.serve(async (req) => {
       const idMatch = /<span[^>]*class="[^"]*staffId[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml);
       const acast_id = idMatch ? idMatch[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() : '';
 
-      // フリガナ（class名に furigana/hurigana/kana を含む span、または ruby>rt）
+      // フリガナ（A-CASTの yomigana span、または furigana/kana/ruby パターン）
       const furiganaMatch =
+        /<span[^>]*class="[^"]*yomigana[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
         /<span[^>]*class="[^"]*furigana[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
-        /<span[^>]*class="[^"]*hurigana[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
         /<span[^>]*class="[^"]*kana[^"]*"[^>]*>\s*<span[^>]*class="[^"]*search[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
-        /<span[^>]*class="[^"]*furigana[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
-        /<span[^>]*class="[^"]*hurigana[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
+        /<span[^>]*class="[^"]*yomigana[^"]*"[^>]*>([\s\S]*?)<\/span>/i.exec(rowHtml) ||
         /<ruby[^>]*>[^<]*<rt>([\s\S]*?)<\/rt>/i.exec(rowHtml);
       const furigana = furiganaMatch ? furiganaMatch[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() : '';
 
