@@ -369,7 +369,7 @@ function drawReportHeader(doc, event, partLabel) {
     doc.rect(cx, y, labelW, timeCellH, 'F');
     doc.setFontSize(6.5);
     doc.setTextColor(...ISCT.primary);
-    doc.text(r.label, cx + labelW / 2, y + timeCellH / 2 + 0.5, { align: 'center' });
+    doc.text(r.label, cx + labelW / 2, y + timeCellH / 2, { align: 'center', baseline: 'middle' });
     // 時刻
     let range = '';
     if (r.start && r.end) range = `${r.start}〜${r.end}`;
@@ -377,7 +377,7 @@ function drawReportHeader(doc, event, partLabel) {
     else if (r.end) range = `〜${r.end}`;
     doc.setFontSize(9);
     doc.setTextColor(...ISCT.monoPrimary);
-    doc.text(range || '－', cx + labelW + 1.5, y + timeCellH / 2 + 0.5);
+    doc.text(range || '－', cx + labelW + 1.5, y + timeCellH / 2, { baseline: 'middle' });
   });
   y += timeCellH;
 
@@ -394,10 +394,10 @@ function drawReportHeader(doc, event, partLabel) {
   doc.rect(x0, y, ccLabelW, chiefCloakH, 'F');
   doc.setFontSize(7);
   doc.setTextColor(...ISCT.primary);
-  doc.text('チーフ', x0 + ccLabelW / 2, y + chiefCloakH / 2 + 0.5, { align: 'center' });
+  doc.text('チーフ', x0 + ccLabelW / 2, y + chiefCloakH / 2, { align: 'center', baseline: 'middle' });
   doc.setFontSize(9);
   doc.setTextColor(...ISCT.monoPrimary);
-  doc.text(event.chief_name || '', x0 + ccLabelW + 1.5, y + chiefCloakH / 2 + 0.5);
+  doc.text(event.chief_name || '', x0 + ccLabelW + 1.5, y + chiefCloakH / 2, { baseline: 'middle' });
   // 区切り
   doc.setDrawColor(...ISCT.monoTertiary);
   doc.setLineWidth(0.2);
@@ -409,10 +409,10 @@ function drawReportHeader(doc, event, partLabel) {
   doc.rect(x0 + halfW, y, ccLabelW, chiefCloakH, 'F');
   doc.setFontSize(7);
   doc.setTextColor(...ISCT.primary);
-  doc.text('クローク', x0 + halfW + ccLabelW / 2, y + chiefCloakH / 2 + 0.5, { align: 'center' });
+  doc.text('クローク', x0 + halfW + ccLabelW / 2, y + chiefCloakH / 2, { align: 'center', baseline: 'middle' });
   doc.setFontSize(9);
   doc.setTextColor(...ISCT.monoPrimary);
-  doc.text(event.cloak_name || '', x0 + halfW + ccLabelW + 1.5, y + chiefCloakH / 2 + 0.5);
+  doc.text(event.cloak_name || '', x0 + halfW + ccLabelW + 1.5, y + chiefCloakH / 2, { baseline: 'middle' });
   y += chiefCloakH;
 
   return y + 2; // コンテンツ開始Y
