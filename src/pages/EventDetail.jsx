@@ -401,6 +401,16 @@ export default function EventDetail() {
                 eventDate={event.date}
                 venue={event.venue}
                 canEdit={isPrivileged}
+                eventTimes={{
+                  time_priority: event.time_priority,
+                  time_priority_end: event.time_priority_end,
+                  time_open: event.time_open,
+                  time_open_end: event.time_open_end,
+                  time_start: event.time_start,
+                  time_start_end: event.time_start_end,
+                  time_end: event.time_end,
+                  time_end_end: event.time_end_end,
+                }}
               />
             )}
           </motion.div>

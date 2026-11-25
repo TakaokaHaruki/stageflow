@@ -7,6 +7,24 @@ import ModalShell, { ModalHeader, ModalFooter } from "@/components/ModalShell";
 import { TIME_FIELDS, TIME_NOTE_FIELD, MEETING_SECTIONS } from "@/lib/meetingSheetSections";
 import { getJstNow } from "@/lib/accessTracker";
 
+// イベントの開始/終了時刻から「HH:MM-HH:MM」形式の文字列を生成
+function buildTimeRange(start, end) {
+  if (start && end) return `${start}-${end}`;
+  if (start) return `${start}-`;
+  if (end) return `-${end}`;
+  return "";
+}
+
+// イベント時刻 → ミーティング用紙のタイムスケジュール項目へマッピング
+function timeDefaultsFromEvent(eventTimes = {}) {
+  return {
+    time_priority: buildTimeRange(eventTimes.time_priority, eventTimes.time_priority_end),
+    time_open: buildTimeRange(eventTimes.time_open, eventTimes.time_open_end),
+    time_start: buildTimeRange(eventTimes.time_start, eventTimes.time_start_end),
+    time_end: buildTimeRange(eventTimes.time_end, eventTimes.time_end_end),
+  };
+}
+
 const EMPTY_FORM = {
   title: "",
   event_name: "",
@@ -30,21 +48,27 @@ function toForm(sheet) {
   };
 }
 
-export default function MeetingSheetEditor({ sheet, eventName, eventDate, venue, onSave, onCancel, saving }) {
+export default function MeetingSheetEditor({ sheet, eventName, eventDate, venue, eventTimes, onSave, onCancel, saving }) {
   const [form, setForm] = useState(() => toForm(sheet));
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // 新規作成時はイベント情報を初期値として補完
+    // 新規作成時はイベント情報とタイムスケジュールを初期値として補完
     if (!sheet) {
+      const timeDefaults = timeDefaultsFromEvent(eventTimes);
       setForm((prev) => ({
         ...prev,
         event_name: prev.event_name || eventName || "",
         event_date: prev.event_date || eventDate || "",
         venue: prev.venue || venue || "",
+        time_priority: prev.time_priority || timeDefaults.time_priority || "",
+        time_open: prev.time_open || timeDefaults.time_open || "",
+        time_start: prev.time_start || timeDefaults.time_start || "",
+        time_end: prev.time_end || timeDefaults.time_end || "",
       }));
     }
-  }, [sheet, eventName, eventDate, venue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheet, eventName, eventDate, venue, eventTimes]);
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 

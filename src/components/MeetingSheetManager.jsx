@@ -9,7 +9,7 @@ import MeetingSheetEditor from "@/components/MeetingSheetEditor";
 import { generateMeetingSheetPDF } from "@/lib/meetingSheetPdf";
 import { getJstNow } from "@/lib/accessTracker";
 
-export default function MeetingSheetManager({ eventId, eventName, eventDate, venue, canEdit }) {
+export default function MeetingSheetManager({ eventId, eventName, eventDate, venue, canEdit, eventTimes }) {
   const [sheets, setSheets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -163,6 +163,7 @@ export default function MeetingSheetManager({ eventId, eventName, eventDate, ven
           eventName={eventName}
           eventDate={eventDate}
           venue={venue}
+          eventTimes={eventTimes}
           onSave={handleSave}
           onCancel={() => { setEditorOpen(false); setEditing(null); }}
           saving={saving}
