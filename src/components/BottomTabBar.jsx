@@ -24,6 +24,7 @@ const MORE_TABS = [
   { id: "records", label: "イベント記録", icon: NotebookPen },
   { id: "pos_notes", label: "ポジション説明", icon: FileText, privileged: true },
   { id: "files", label: "配布資料", icon: Paperclip, privileged: true },
+  { id: "meeting_sheet", label: "ミーティング用紙", icon: FileText, privileged: true },
   { id: "admin", label: "管理者設定", icon: ShieldCheck, admin: true },
   { id: "settings", label: "管理設定", icon: Settings, privileged: true },
 ];
