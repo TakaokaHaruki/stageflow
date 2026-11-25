@@ -415,11 +415,6 @@ function drawReportHeader(doc, event, partLabel) {
   doc.text(event.cloak_name || '', x0 + halfW + ccLabelW + 1.5, y + chiefCloakH / 2 + 0.5);
   y += chiefCloakH;
 
-  // 下部アクセント罫線
-  doc.setDrawColor(...ISCT.primary);
-  doc.setLineWidth(0.4);
-  doc.line(x0, y, x0 + w, y);
-
   return y + 2; // コンテンツ開始Y
 }
 
