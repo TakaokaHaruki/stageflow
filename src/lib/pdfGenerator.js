@@ -225,8 +225,8 @@ const CHIEF_LINE_H = 3.2; // セクションチーフ印字行の高さ（チー
 const POS_NOTE_LINE_H = 2.8; // ポジション備考行の高さ（ポジション名の下に印字）
 const NOTE_FONT_SIZE = 5.4; // 備考のフォントサイズ（スタッフ名の下に小さく印字）
 const NOTE_LINE_H = 2.8;    // 備考行の高さ
-const FURIGANA_FONT_SIZE = 5; // フリガナのフォントサイズ（スタッフ名の下に小さく印字）
-const FURIGANA_LINE_H = 2.6;  // フリガナ行の高さ
+const FURIGANA_FONT_SIZE = 4.2; // フリガナのフォントサイズ（スタッフ名の上に小さく印字）
+const FURIGANA_LINE_H = 2.2;  // フリガナ行の高さ
 const PENLIGHT_ICON_W = 2.6;   // ペンライトアイコン（筒＋光束）の幅
 const PENLIGHT_ICON_H = 1.4;   // ペンライトアイコンの高さ
 const BENTO_ICON_W = 1.8;      // 弁当アイコン（箱）の幅
@@ -404,7 +404,7 @@ function drawReportHeader(doc, event, partLabel) {
   doc.rect(x0, y, ccLabelW, chiefCloakH, 'F');
   doc.setFontSize(7);
   doc.setTextColor(...ISCT.primary);
-  doc.text('セクションチーフ', x0 + ccLabelW / 2, y + chiefCloakH / 2, { align: 'center', baseline: 'middle' });
+  doc.text('チーフ', x0 + ccLabelW / 2, y + chiefCloakH / 2, { align: 'center', baseline: 'middle' });
   doc.setFontSize(9);
   doc.setTextColor(...ISCT.monoPrimary);
   doc.text(event.chief_name || '', x0 + ccLabelW + 1.5, y + chiefCloakH / 2, { baseline: 'middle' });
@@ -433,8 +433,23 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const furigana = staffData?.furigana || '';
   const rowH = STAFF_LINE_H + (furigana ? FURIGANA_LINE_H : 0) + (note ? NOTE_LINE_H : 0);
   if (y + rowH > cardBottom + 0.01) return 0;
-  const textY = y + STAFF_LINE_H * 0.78;
   const nameX = x + 1;
+  const nameLineY = furigana ? y + FURIGANA_LINE_H : y;
+  const textY = nameLineY + STAFF_LINE_H * 0.78;
+
+  // フリガナをスタッフ名の上に小さく印字
+  if (furigana) {
+    doc.setFontSize(FURIGANA_FONT_SIZE);
+    doc.setTextColor(...ISCT.monoSecondary);
+    let furiText = furigana;
+    const maxFuriW = x + w - nameX - 0.5;
+    while (furiText.length > 1 && doc.getTextWidth(furiText) > maxFuriW) {
+      furiText = furiText.slice(0, -1);
+    }
+    if (furiText !== furigana && furiText.length > 0) furiText = furiText.slice(0, -1) + '…';
+    doc.text(furiText, nameX, y + FURIGANA_LINE_H * 0.75);
+    doc.setFontSize(STAFF_FONT_SIZE);
+  }
 
   doc.setFontSize(STAFF_FONT_SIZE);
   doc.setFont('NotoSansJP', 'normal');
@@ -449,23 +464,8 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
 
   let cursorX = nameX + doc.getTextWidth(name) + 1;
 
-  // フリガナをスタッフ名の下に小さく印字
-  let subLineY = y + STAFF_LINE_H;
-  if (furigana) {
-    doc.setFontSize(FURIGANA_FONT_SIZE);
-    doc.setTextColor(...ISCT.monoSecondary);
-    let furiText = furigana;
-    const maxFuriW = x + w - nameX - 0.5;
-    while (furiText.length > 1 && doc.getTextWidth(furiText) > maxFuriW) {
-      furiText = furiText.slice(0, -1);
-    }
-    if (furiText !== furigana && furiText.length > 0) furiText = furiText.slice(0, -1) + '…';
-    doc.text(furiText, nameX, subLineY + FURIGANA_LINE_H * 0.75);
-    subLineY += FURIGANA_LINE_H;
-    doc.setFontSize(STAFF_FONT_SIZE);
-  }
-
   // 備考（共通＋該当時間帯を統合）をスタッフ名の下に小さく印字
+  const noteLineY = nameLineY + STAFF_LINE_H;
   if (note) {
     doc.setFontSize(NOTE_FONT_SIZE);
     doc.setTextColor(...ISCT.monoSecondary);
@@ -475,11 +475,11 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
       noteText = noteText.slice(0, -1);
     }
     if (noteText !== note && noteText.length > 0) noteText = noteText.slice(0, -1) + '…';
-    doc.text(noteText, nameX, subLineY + NOTE_LINE_H * 0.75);
+    doc.text(noteText, nameX, noteLineY + NOTE_LINE_H * 0.75);
     doc.setFontSize(STAFF_FONT_SIZE);
   }
 
-  const badgeTop = y + 0.4;
+  const badgeTop = nameLineY + 0.4;
   const badgeH = STAFF_LINE_H - 0.8;
   const badgeTextY = badgeTop + badgeH * 0.72;
   const badgeMaxRight = x + w - 1;
@@ -570,7 +570,7 @@ function drawPositionRow(doc, pos, x, y, w, staffMap, slot, slotColor) {
   let posName = pos.name || '';
   const chiefs = getChiefs(pos);
   // セクションチーフ表記をポジション名の横に結合
-  const chiefSuffix = chiefs.length > 0 ? `／セクションチーフ ${chiefs.join('・')}` : '';
+  const chiefSuffix = chiefs.length > 0 ? `／チーフ ${chiefs.join('・')}` : '';
   // 名前+セクションチーフ の全体幅で制限
   const maxNameW = (x + w - 1.5 - countTextW - 1.5) - (x + 5);
   let posNameW = doc.getTextWidth(posName);
