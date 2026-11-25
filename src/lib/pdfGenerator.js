@@ -226,7 +226,7 @@ const POS_NOTE_LINE_H = 2.8; // ポジション備考行の高さ（ポジショ
 const NOTE_FONT_SIZE = 5.4; // 備考のフォントサイズ（スタッフ名の下に小さく印字）
 const NOTE_LINE_H = 2.8;    // 備考行の高さ
 const FURIGANA_FONT_SIZE = 4.2; // フリガナのフォントサイズ（スタッフ名の上に小さく印字）
-const FURIGANA_LINE_H = 2.2;  // フリガナ行の高さ
+const FURIGANA_LINE_H = 1.8;  // フリガナ行の高さ
 const PENLIGHT_ICON_W = 2.6;   // ペンライトアイコン（筒＋光束）の幅
 const PENLIGHT_ICON_H = 1.4;   // ペンライトアイコンの高さ
 const BENTO_ICON_W = 1.8;      // 弁当アイコン（箱）の幅
@@ -435,7 +435,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   if (y + rowH > cardBottom + 0.01) return 0;
   const nameX = x + 1;
   const nameLineY = furigana ? y + FURIGANA_LINE_H : y;
-  const textY = nameLineY + STAFF_LINE_H * 0.78;
+  const textY = nameLineY + STAFF_LINE_H * 0.72;
 
   // フリガナをスタッフ名の上に小さく印字
   if (furigana) {
@@ -447,7 +447,7 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
       furiText = furiText.slice(0, -1);
     }
     if (furiText !== furigana && furiText.length > 0) furiText = furiText.slice(0, -1) + '…';
-    doc.text(furiText, nameX, y + FURIGANA_LINE_H * 0.75);
+    doc.text(furiText, nameX, y + FURIGANA_LINE_H * 0.95);
     doc.setFontSize(STAFF_FONT_SIZE);
   }
 
