@@ -148,9 +148,9 @@ function compareByOrder(a, b) {
 const TIME_SLOTS = ['開場中', '開演中', '終演後'];
 
 const SLOT_COLORS = {
-  '開場中': { headerBg: [253, 230, 138], headerText: [69, 26, 3],   border: [251, 191, 36] },
-  '開演中': { headerBg: [191, 219, 254], headerText: [23, 37, 84],  border: [96, 165, 250] },
-  '終演後': { headerBg: [203, 213, 225], headerText: [15, 23, 42],  border: [148, 163, 184] },
+  '開場中': { tintBg: [254, 249, 230], headerBg: [253, 230, 138], headerText: [69, 26, 3],   border: [245, 158, 11], divider: [253, 224, 168] },
+  '開演中': { tintBg: [237, 244, 254], headerBg: [191, 219, 254], headerText: [23, 37, 84],  border: [59, 130, 246], divider: [191, 219, 254] },
+  '終演後': { tintBg: [238, 242, 247], headerBg: [203, 213, 225], headerText: [15, 23, 42],  border: [100, 116, 139], divider: [203, 213, 225] },
 };
 
 const SLOT_NOTE_KEY = { '開場中': 'note_before', '開演中': 'note_during', '終演後': 'note_after' };
@@ -297,7 +297,7 @@ function calcCardHeight(pos, staffMap) {
     ? Math.max((pos.staff_names_kamite || []).length, (pos.staff_names_shimote || []).length)
     : (pos.staff_names || []).length;
   const extraH = splitBySide ? SIDE_HEADER_H : 0;
-  const chiefH = getChiefs(pos).length > 0 ? CHIEF_LINE_H : 0;
+  // チーフはポジション名の横にインライン表示するため高さ不要
   const posNoteH = pos.notes && String(pos.notes).trim() ? POS_NOTE_LINE_H : 0;
   // 備考を持つスタッフの行は高さを追加（備考行の数だけ）
   let noteExtra = 0;
@@ -310,7 +310,7 @@ function calcCardHeight(pos, staffMap) {
       ? Math.max(countNotes(pos.staff_names_kamite || []), countNotes(pos.staff_names_shimote || []))
       : countNotes(staffNamesList);
   }
-  return CARD_HEADER_H + posNoteH + chiefH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + noteExtra + CARD_PADDING_V;
+  return CARD_HEADER_H + posNoteH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + noteExtra + CARD_PADDING_V;
 }
 
 // 帳票風ヘッダー: 公演名・日時・会場・各時間帯・チーフ名・クローク名を帯状にまとめ、
@@ -509,7 +509,9 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   return rowH;
 }
 
-function drawCard(doc, pos, x, y, w, staffMap, slot) {
+// 連続リスト形式のポジション行を描画（角ばったデザイン・時間帯テーマカラー適用）
+// 外枠・区切りは呼び出し側で描画済みの前提。本関数はタイトル帯＋スタッフエリアを描く。
+function drawPositionRow(doc, pos, x, y, w, staffMap, slot, slotColor) {
   const splitBySide = Boolean(pos.split_by_side);
   const kamiteNames = splitBySide ? (pos.staff_names_kamite || []) : [];
   const shimoteNames = splitBySide ? (pos.staff_names_shimote || []) : [];
@@ -518,44 +520,66 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
     : (pos.staff_names || []);
   const assignedCount = staffNames.length;
   const requiredCount = pos.required_count || 0;
-  const cardH = calcCardHeight(pos, staffMap);
+  const rowH = calcCardHeight(pos, staffMap);
 
-  doc.setDrawColor(...ISCT.monoTertiary); doc.setLineWidth(0.2); doc.setFillColor(255, 255, 255);
-  doc.roundedRect(x, y, w, cardH, 1, 1, 'FD');
+  // --- タイトル帯（ポジション名＋チーフ＋説明を同一要素・同背景色） ---
+  const hasPosNote = pos.notes && String(pos.notes).trim();
+  const titleH = CARD_HEADER_H + (hasPosNote ? POS_NOTE_LINE_H : 0);
 
-  doc.setFillColor(...ISCT.monoQuinary);
-  doc.roundedRect(x, y, w, CARD_HEADER_H, 1, 1, 'F');
-  doc.rect(x, y + CARD_HEADER_H - 1, w, 1, 'F');
-  doc.setDrawColor(...ISCT.monoTertiary); doc.setLineWidth(0.2);
-  doc.line(x, y + CARD_HEADER_H, x + w, y + CARD_HEADER_H);
+  // タイトル背景：時間帯テーマの淡色
+  doc.setFillColor(...slotColor.tintBg);
+  doc.rect(x, y, w, titleH, 'F');
 
   const headerTextY = y + CARD_HEADER_H * 0.70;
 
+  // ポジションカラーのドット
   const [r, g, b] = hexToRgb(pos.color || '#6366f1');
   doc.setFillColor(r, g, b);
   doc.circle(x + 2.2, y + CARD_HEADER_H / 2, 0.9, 'F');
 
+  // 人数（右端）
   doc.setFontSize(6.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...ISCT.monoSecondary);
   const countText = requiredCount > 0 ? `${assignedCount}/${requiredCount}名` : `${assignedCount}名`;
   doc.text(countText, x + w - 1.5, headerTextY, { align: 'right' });
   const countTextW = doc.getTextWidth(countText);
 
+  // ポジション名
   doc.setFontSize(7.5); doc.setTextColor(...ISCT.monoPrimary);
   let posName = pos.name || '';
+  const chiefs = getChiefs(pos);
+  // チーフ表記をポジション名の横に結合
+  const chiefSuffix = chiefs.length > 0 ? `／チーフ ${chiefs.join('・')}` : '';
+  // 名前+チーフ の全体幅で制限
   const maxNameW = (x + w - 1.5 - countTextW - 1.5) - (x + 5);
-  while (maxNameW > 0 && doc.getTextWidth(posName) > maxNameW && posName.length > 1) {
-    posName = posName.slice(0, -1);
+  let posNameW = doc.getTextWidth(posName);
+  if (chiefSuffix) {
+    doc.setFontSize(5.8);
+    const chiefW = doc.getTextWidth(chiefSuffix);
+    doc.setFontSize(7.5);
+    while (posName.length > 1 && posNameW + chiefW > maxNameW) {
+      posName = posName.slice(0, -1);
+      posNameW = doc.getTextWidth(posName);
+    }
+  } else {
+    while (posName.length > 1 && posNameW > maxNameW) {
+      posName = posName.slice(0, -1);
+      posNameW = doc.getTextWidth(posName);
+    }
   }
   if (posName !== (pos.name || '') && posName.length > 0) posName = posName.slice(0, -1) + '…';
   doc.text(posName, x + 5, headerTextY);
 
-  const chiefs = getChiefs(pos);
-  const chiefH = chiefs.length > 0 ? CHIEF_LINE_H : 0;
-  const posNoteH = pos.notes && String(pos.notes).trim() ? POS_NOTE_LINE_H : 0;
-  const noteStartY = y + CARD_HEADER_H;
+  // チーフ表記をポジション名の直後（横）に印字
+  if (chiefSuffix) {
+    const chiefX = x + 5 + doc.getTextWidth(posName) + 0.6;
+    doc.setFontSize(5.8);
+    doc.setTextColor(...slotColor.border);
+    doc.text(chiefSuffix, chiefX, headerTextY);
+    doc.setFontSize(7.5);
+  }
 
-  // ポジション備考をポジション名の下に小さく印字
-  if (posNoteH > 0) {
+  // ポジション説明（タイトルと同じ要素・同じ背景色）
+  if (hasPosNote) {
     doc.setFontSize(NOTE_FONT_SIZE);
     doc.setFont('NotoSansJP', 'normal');
     doc.setTextColor(...ISCT.monoSecondary);
@@ -565,52 +589,31 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
       posNote = posNote.slice(0, -1);
     }
     if (posNote !== String(pos.notes) && posNote.length > 0) posNote = posNote.slice(0, -1) + '…';
-    doc.text(posNote, x + 1, noteStartY + POS_NOTE_LINE_H * 0.75);
+    doc.text(posNote, x + 1, y + CARD_HEADER_H + POS_NOTE_LINE_H * 0.75);
     doc.setFontSize(STAFF_FONT_SIZE);
   }
 
-  let staffY = noteStartY + posNoteH + 0.3;
-  const cardBottom = y + cardH;
+  // タイトルとスタッフエリアの区切り線（テーマカラー）
+  doc.setDrawColor(...slotColor.divider);
+  doc.setLineWidth(0.2);
+  doc.line(x, y + titleH, x + w, y + titleH);
 
-  // チーフ印字（ヘッダー直下・バッジ風）
-  if (chiefs.length > 0) {
-    const chiefY = noteStartY + posNoteH;
-    const pillH = CHIEF_LINE_H - 0.9;
-    const pillY = chiefY + 0.35;
-    const pillX = x + 2.5;
-    const maxPillW = w - 5;
-    let chiefText = `チーフ ${chiefs.join('・')}`;
-    doc.setFontSize(5.5);
-    while (maxPillW > 0 && doc.getTextWidth(chiefText) + 3 > maxPillW && chiefText.length > 1) {
-      chiefText = chiefText.slice(0, -1);
-    }
-    if (chiefText !== `チーフ ${chiefs.join('・')}` && chiefText.length > 0) {
-      chiefText = chiefText.slice(0, -1) + '…';
-    }
-    const pillW = Math.min(doc.getTextWidth(chiefText) + 3, maxPillW);
-    doc.setFillColor(...ISCT.tertiary); doc.setDrawColor(...ISCT.secondary); doc.setLineWidth(0.2);
-    doc.roundedRect(pillX, pillY, pillW, pillH, 0.6, 0.6, 'FD');
-    doc.setFillColor(...ISCT.primary);
-    doc.circle(pillX + 1.3, pillY + pillH / 2, 0.5, 'F');
-    doc.setTextColor(...ISCT.primary);
-    doc.text(chiefText, pillX + 2.2, pillY + pillH * 0.72);
-    staffY = chiefY + CHIEF_LINE_H + 0.3;
-  }
+  // --- スタッフエリア（白背景） ---
+  const cardBottom = y + rowH;
+  let staffY = y + titleH + 0.3;
 
   if (splitBySide) {
     const halfW = w / 2;
     doc.setFillColor(...ISCT.monoQuinary);
     doc.rect(x, staffY, halfW, SIDE_HEADER_H, 'F');
     doc.rect(x + halfW, staffY, halfW, SIDE_HEADER_H, 'F');
-    doc.setDrawColor(...ISCT.monoTertiary); doc.setLineWidth(0.2);
+    doc.setDrawColor(...slotColor.divider); doc.setLineWidth(0.2);
     doc.line(x + halfW, staffY, x + halfW, cardBottom);
     doc.line(x, staffY + SIDE_HEADER_H, x + w, staffY + SIDE_HEADER_H);
     doc.setFontSize(7); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...ISCT.monoSecondary);
-    // 左側=下手(←)、右側=上手(→)。矢印で舞台向きを明示
     doc.text('← 下手', x + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
     doc.text('上手 →', x + halfW + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
     const nameStartY = staffY + SIDE_HEADER_H;
-    // 左側に下手、右側に上手の担当者を配置（順番入れ替え）
     let sy = nameStartY;
     for (const nm of shimoteNames) {
       const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 1.5, sy, halfW - 1.5, cardBottom);
@@ -624,7 +627,7 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
       else break;
     }
   } else {
-    let rowY = staffY + 0.3;
+    let rowY = staffY;
     for (const nm of staffNames) {
       const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 2.5, rowY, w - 2.5, cardBottom);
       if (drawnH > 0) rowY += drawnH;
@@ -635,20 +638,21 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
       doc.text('（未配置）', x + 2.5, staffY + 3);
     }
   }
-  return cardH;
+
+  return rowH;
 }
 
-// カラムヘッダーをY座標指定で描画
+// カラムヘッダーをY座標指定で描画（角ばったデザイン・時間帯テーマカラー）
 function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, startY) {
-  const slotAccent = SLOT_COLORS[slot].border; // スロット識別のアクセント色
+  const slotColor = SLOT_COLORS[slot];
   const line1Y = startY + 3.2;
   const line2Y = startY + 6.8;
 
-  // ISCT: ヘッダー本体はブランドネイビー・白文字
-  doc.setDrawColor(...ISCT.primary); doc.setLineWidth(0.4); doc.setFillColor(...ISCT.primary);
-  doc.roundedRect(x, startY, colW, COL_HEADER_H, 1.5, 1.5, 'FD');
+  // ヘッダー本体：時間帯テーマカラーの濃色・白文字（角ばった矩形）
+  doc.setDrawColor(...slotColor.border); doc.setLineWidth(0.4); doc.setFillColor(...slotColor.border);
+  doc.rect(x, startY, colW, COL_HEADER_H, 'FD');
 
-  doc.setFontSize(9); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...ISCT.primaryText);
+  doc.setFontSize(9); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(255, 255, 255);
   doc.text(slot, x + 2.5, line1Y);
 
   doc.setFontSize(6);
@@ -670,13 +674,9 @@ function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, sta
   // 時間帯（開場時刻など）
   const timeRange = formatSlotTimeRange(event, slot);
   if (timeRange) {
-    doc.setFontSize(6); doc.setTextColor(...ISCT.primaryText);
+    doc.setFontSize(6); doc.setTextColor(255, 255, 255);
     doc.text(timeRange, x + 2.5, line2Y);
   }
-
-  // スロット識別のアクセント罫線（ヘッダー下端）
-  doc.setDrawColor(...slotAccent); doc.setLineWidth(0.6);
-  doc.line(x, startY + COL_HEADER_H, x + colW, startY + COL_HEADER_H);
 
   return startY + COL_HEADER_H + 1.5;
 }
@@ -698,11 +698,10 @@ function drawColumns(doc, positions, staff, event, contentStartY) {
     grouped[slot].push(pos);
   });
 
-  // 各スロットのカードリストをページ分割（スロットまたいで同一ページ行を揃える）
-  // ページごとに3スロット横並びで描画するため、
-  // スロットごとにカードをページ分割してから、同一ページ番号分を一緒に描画する
+  // 連続リスト形式: 各スロットのポジションをページ分割し、
+  // ページごとに外枠（角ばった矩形）＋区切り線で連続描画する
 
-  // 各スロットのカードを「ページ×カードリスト」に分割
+  // 各スロットのポジションを「ページ×リスト」に分割
   const slotPages = {}; // slotPages[slot] = [[pos, ...], [pos, ...], ...]
   TIME_SLOTS.forEach(slot => {
     const slotPositions = grouped[slot] || [];
@@ -718,7 +717,7 @@ function drawColumns(doc, positions, staff, event, contentStartY) {
         currentY = colStartY + COL_HEADER_H + 1.5;
       }
       currentPageCards.push(pos);
-      currentY += cardH + CARD_GAP;
+      currentY += cardH;
     });
     if (currentPageCards.length > 0 || pages.length === 0) {
       pages.push(currentPageCards);
@@ -726,7 +725,6 @@ function drawColumns(doc, positions, staff, event, contentStartY) {
     slotPages[slot] = pages;
   });
 
-  // 最大ページ数
   const maxPages = Math.max(...TIME_SLOTS.map(slot => slotPages[slot].length));
 
   let maxBottom = colStartY;
@@ -734,33 +732,46 @@ function drawColumns(doc, positions, staff, event, contentStartY) {
   for (let pageIdx = 0; pageIdx < maxPages; pageIdx++) {
     if (pageIdx > 0) doc.addPage();
 
-    if (pageIdx === 0) {
-      // タイトルは1ページ目のみ
-      // drawTitle は外で呼ぶので不要
-    }
-
     TIME_SLOTS.forEach((slot, colIdx) => {
       const x = getColX(colIdx);
+      const slotColor = SLOT_COLORS[slot];
       const slotPositions = grouped[slot] || [];
       const pageCards = slotPages[slot][pageIdx] || [];
 
-      // ヘッダーは全ページで描画
-      let cardY = drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, colStartY);
+      // ヘッダーは全ページで描画（角ばったデザイン）
+      const contentTop = drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, colStartY);
 
       if (pageCards.length === 0) {
         if (pageIdx === 0 && slotPositions.length === 0) {
           doc.setFontSize(7); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...ISCT.monoSecondary);
-          doc.text('ポジションがありません', x + colW / 2, cardY + 4, { align: 'center' });
+          doc.text('ポジションがありません', x + colW / 2, contentTop + 4, { align: 'center' });
         }
         return;
       }
 
-      pageCards.forEach(pos => {
-        drawCard(doc, pos, x, cardY, colW, staffMap, slot);
-        cardY += calcCardHeight(pos, staffMap) + CARD_GAP;
+      // ページ内のリスト全体の高さを計算
+      const listH = pageCards.reduce((sum, pos) => sum + calcCardHeight(pos, staffMap), 0);
+
+      // 外枠（角ばった矩形・時間帯テーマカラーの枠線）
+      doc.setDrawColor(...slotColor.border);
+      doc.setLineWidth(0.4);
+      doc.setFillColor(255, 255, 255);
+      doc.rect(x, contentTop, colW, listH, 'FD');
+
+      // ポジションを連続描画（余白なし・区切り線で分割）
+      let rowY = contentTop;
+      pageCards.forEach((pos, idx) => {
+        const posH = drawPositionRow(doc, pos, x, rowY, colW, staffMap, slot, slotColor);
+        // 次のポジションとの区切り線（最後は除く）
+        if (idx < pageCards.length - 1) {
+          doc.setDrawColor(...slotColor.divider);
+          doc.setLineWidth(0.2);
+          doc.line(x, rowY + posH, x + colW, rowY + posH);
+        }
+        rowY += posH;
       });
 
-      maxBottom = Math.max(maxBottom, cardY - CARD_GAP);
+      maxBottom = Math.max(maxBottom, rowY);
     });
   }
 
