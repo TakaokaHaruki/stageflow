@@ -56,13 +56,13 @@ function SvgDisplay({ svgUrl }) {
   return (
     <div className="relative">
       <div className="absolute right-2 top-2 z-10 flex gap-1">
-        <button onClick={() => setScale((value) => clampScale(value + 0.2))} className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:w-7" aria-label="拡大">
+        <button onClick={() => setScale((value) => clampScale(value + 0.2))} className="ios-glass-float flex h-8 w-8 items-center justify-center rounded-md border text-muted-foreground hover:text-foreground sm:bg-card/80 sm:backdrop-blur-sm sm:border-border sm:h-7 sm:w-7" aria-label="拡大">
           <ZoomIn className="h-3.5 w-3.5" />
         </button>
-        <button onClick={() => setScale((value) => clampScale(value - 0.2))} className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:w-7" aria-label="縮小">
+        <button onClick={() => setScale((value) => clampScale(value - 0.2))} className="ios-glass-float flex h-8 w-8 items-center justify-center rounded-md border text-muted-foreground hover:text-foreground sm:bg-card/80 sm:backdrop-blur-sm sm:border-border sm:h-7 sm:w-7" aria-label="縮小">
           <ZoomOut className="h-3.5 w-3.5" />
         </button>
-        <button onClick={() => { setScale(1); setOffset({ x: 0, y: 0 }); }} className="flex h-8 items-center justify-center rounded-md border border-border bg-card/80 px-2 text-[11px] text-muted-foreground backdrop-blur-sm hover:text-foreground sm:h-7 sm:text-xs">
+        <button onClick={() => { setScale(1); setOffset({ x: 0, y: 0 }); }} className="ios-glass-float flex h-8 items-center justify-center rounded-md border px-2 text-[11px] text-muted-foreground hover:text-foreground sm:bg-card/80 sm:backdrop-blur-sm sm:border-border sm:h-7 sm:text-xs">
           リセット
         </button>
       </div>

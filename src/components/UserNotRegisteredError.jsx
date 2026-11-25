@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 const UserNotRegisteredError = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4">
-      <div className="max-w-md w-full bg-card border border-border rounded-xl shadow-elevated p-8 text-center">
+      <div className="max-w-md w-full ios-glass-float border rounded-xl shadow-elevated p-8 text-center sm:bg-card sm:border-border">
         <div className="inline-flex items-center justify-center w-16 h-16 mb-5 rounded-full bg-amber-100 dark:bg-amber-900/30">
           <ShieldAlert className="w-8 h-8 text-amber-600 dark:text-amber-400" />
         </div>

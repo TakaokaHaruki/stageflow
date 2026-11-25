@@ -11,7 +11,7 @@ export default function ComplianceAgreementModal({ staffName, onConfirm, onBack,
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="bg-card border border-border rounded-xl shadow-elevated max-w-md w-full p-6 max-h-[90dvh] overflow-y-auto"
+        className="ios-glass-float border rounded-xl shadow-elevated max-w-md w-full p-6 max-h-[90dvh] overflow-y-auto sm:bg-card sm:border-border"
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ delay: 0.1 }}

@@ -68,7 +68,7 @@ export default function StaffCsvImportModal({ eventId, onClose, onImported }) {
       onClick={(e) => { if (e.target === e.currentTarget && !importing) onClose(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-xl shadow-elevated w-full max-w-lg p-6 max-h-[90dvh] overflow-y-auto"
+        className="ios-glass-float border rounded-xl shadow-elevated w-full max-w-lg p-6 max-h-[90dvh] overflow-y-auto sm:bg-card sm:border-border"
         initial={{ y: 30, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}

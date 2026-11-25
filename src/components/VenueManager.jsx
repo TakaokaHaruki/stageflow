@@ -107,7 +107,7 @@ function VenueEditModal({ venue, seatingMap, onClose }) {
       onClick={(event) => event.target === event.currentTarget && onClose()}
     >
       <motion.div
-        className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-lg border border-border bg-card shadow-2xl sm:rounded-lg"
+        className="ios-glass-float flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-lg border shadow-2xl sm:rounded-lg sm:bg-card sm:border-border"
         initial={{ y: 36, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 36, opacity: 0 }}

@@ -75,7 +75,7 @@ export default function AppNav() {
       <GlobalBanner />
       <UserNotificationBanner />
       {/* 共通ヘッダ */}
-      <div ref={headerRef} className="bg-card/90 dark:bg-card/80 backdrop-blur-md border-b border-border sticky z-50 safe-area-top" style={{ top: "var(--device-banner-height, 0px)" }}>
+      <div ref={headerRef} className="ios-glass-bar border-b sticky z-50 safe-area-top sm:bg-card/90 sm:dark:bg-card/80 sm:backdrop-blur-md sm:border-border" style={{ top: "var(--device-banner-height, 0px)" }}>
         <div className="max-w-[1400px] mx-auto px-3 pb-1.5 pt-1.5 flex items-center gap-2">
           <CrewlyLogo className="mr-1" administrator={isAdmin} />
           <div className="hidden h-5 w-px bg-border sm:block" />
@@ -138,7 +138,7 @@ export default function AppNav() {
       )}
 
       {/* モバイル用グローバルナビ */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card safe-area-bottom sm:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-50 ios-glass-bar border-t safe-area-bottom sm:hidden">
         <div className="grid min-h-14" style={{ gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` }}>
           {navItems.map(({ id, label, short, icon: Icon }) => (
             <button
@@ -146,7 +146,7 @@ export default function AppNav() {
               type="button"
               onClick={() => handleSelect(id)}
               className={`flex min-w-0 select-none flex-col items-center justify-center gap-0.5 px-0.5 py-0.5 transition-colors ${
-                activeTab === id ? "text-primary" : "text-muted-foreground"
+                activeTab === id ? "text-primary ios-tab-active" : "text-muted-foreground"
               }`}
               aria-current={activeTab === id ? "page" : undefined}
               aria-label={label}
