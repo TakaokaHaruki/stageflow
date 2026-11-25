@@ -45,7 +45,7 @@ export default function AccessInsights() {
         items={SECTIONS}
         activeId={section}
         onSelect={setSection}
-        className="sticky top-[var(--app-header-height)] z-40 mb-3 -mx-2 px-2"
+        className="sticky top-[var(--app-header-height)] z-20 mb-3 -mx-2 px-2"
       />
 
       <AnimatePresence mode="wait" initial={false}>
