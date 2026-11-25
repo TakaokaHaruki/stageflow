@@ -616,26 +616,26 @@ function drawPositionRow(doc, pos, x, y, w, staffMap, slot, slotColor) {
     const nameStartY = staffY + SIDE_HEADER_H;
     let sy = nameStartY;
     for (const nm of shimoteNames) {
-      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 1.5, sy, halfW - 1.5, cardBottom);
+      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x, sy, halfW, cardBottom);
       if (drawnH > 0) sy += drawnH;
       else break;
     }
     let ky = nameStartY;
     for (const nm of kamiteNames) {
-      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + halfW + 1.5, ky, halfW - 1.5, cardBottom);
+      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + halfW, ky, halfW, cardBottom);
       if (drawnH > 0) ky += drawnH;
       else break;
     }
   } else {
     let rowY = staffY;
     for (const nm of staffNames) {
-      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 2.5, rowY, w - 2.5, cardBottom);
+      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x, rowY, w, cardBottom);
       if (drawnH > 0) rowY += drawnH;
       else break;
     }
     if (staffNames.length === 0) {
       doc.setFontSize(7); doc.setTextColor(...ISCT.monoSecondary);
-      doc.text('（未配置）', x + 2.5, staffY + 3);
+      doc.text('（未配置）', x + 2, staffY + 3);
     }
   }
 
