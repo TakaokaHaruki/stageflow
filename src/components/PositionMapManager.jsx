@@ -207,7 +207,7 @@ export default function PositionMapManager({ eventId }) {
           })),
           positions: rawPositions,
         },
-        `${(event?.name || "配置表マップ").replace(/[\\/:*?"<>|]/g, "")}_配置表マップ`
+        "配置表マップ"
       );
     } catch (err) {
       toast.error("PDF出力に失敗しました");

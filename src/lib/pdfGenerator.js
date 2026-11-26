@@ -1112,6 +1112,15 @@ function drawCheckListSheet(doc, staff, event) {
   });
 }
 
+// PDFファイル名を「公演名_文書種類_日付」形式で生成
+// dateStr には公演日(YYYY-MM-DD)を渡す。未指定時は出力日を補完。
+export function buildPdfFilename(eventName, docType, dateStr) {
+  const safe = (s) => String(s || '').replace(/[\\/:*?"<>|]/g, '_').trim();
+  const name = safe(eventName) || '公演';
+  const date = safe(dateStr) || new Date().toISOString().split('T')[0];
+  return `${name}_${docType}_${date}`;
+}
+
 export async function generatePositionPDF(data, filename) {
   const { jsPDF } = await import('jspdf');
   const { bizud: bizudFontBase64, full: fullFontBase64, medium: mediumFontBase64 } = await loadJapaneseFont();
@@ -1222,7 +1231,7 @@ export async function generatePositionPDF(data, filename) {
     }
   }
 
-  doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`${buildPdfFilename(data.event?.name, filename || '配置表', data.event?.date)}.pdf`);
 }
 
 // ---- 配置表マップPDF ----
@@ -1346,23 +1355,26 @@ export async function generateMapPDF(data, filename) {
   const pageW = 297, pageH = 210, margin = 8;
   const event = data.event || {};
 
-  // タイトル
-  doc.setFontSize(12);
-  doc.setTextColor(0, 0, 0);
-  doc.text(event.name || '配置表マップ', margin, margin + 4);
+  // 帳票風ヘッダー（配置表PDFと共通デザイン・ISCT準拠）
+  const headerW = pageW - 2 * margin;
+  doc.setFontSize(13);
+  doc.setTextColor(...ISCT.monoPrimary);
+  doc.text(event.name || '', margin, margin + 4.5);
+  doc.setFontSize(11);
+  doc.setTextColor(...ISCT.primary);
+  doc.text('配置表マップ', pageW - margin, margin + 4.5, { align: 'right' });
   doc.setFontSize(8);
-  doc.setTextColor(100, 116, 139);
+  doc.setTextColor(...ISCT.monoSecondary);
   const dateStr = event.date
     ? (() => { const d = new Date(event.date); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`; })()
     : '';
   const sub = [dateStr, event.venue].filter(Boolean).join('　');
-  if (sub) doc.text(sub, pageW - margin, margin + 4, { align: 'right' });
-  doc.setFontSize(8);
-  doc.setTextColor(100, 116, 139);
-  doc.text('配置表マップ', margin, margin + 9);
-  doc.setTextColor(0, 0, 0);
+  if (sub) doc.text(sub, margin, margin + 8.5);
+  doc.setDrawColor(...ISCT.primary);
+  doc.setLineWidth(0.5);
+  doc.line(margin, margin + 10, margin + headerW, margin + 10);
 
-  const topY = margin + 13;
+  const topY = margin + 14;
   const availW = pageW - 2 * margin;
   const availH = pageH - topY - margin;
 
@@ -1370,7 +1382,7 @@ export async function generateMapPDF(data, filename) {
     doc.setFontSize(10);
     doc.setTextColor(120, 120, 120);
     doc.text('会場マップが未登録です', pageW / 2, topY + availH / 2, { align: 'center' });
-    doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(`${buildPdfFilename(event.name, filename || '配置表マップ', event.date)}.pdf`);
     return;
   }
 
@@ -1406,5 +1418,5 @@ export async function generateMapPDF(data, filename) {
     doc.circle(cx, cy, 1.3, 'S');
   });
 
-  doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`${buildPdfFilename(event.name, filename || '配置表マップ', event.date)}.pdf`);
 }

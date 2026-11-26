@@ -87,8 +87,7 @@ export default function MeetingSheetManager({ eventId, eventName, eventDate, ven
   const handleExport = async (sheet) => {
     setExporting(true);
     try {
-      const safeName = (sheet.title || "meeting_sheet").replace(/[\\/:*?"<>|]/g, "_");
-      await generateMeetingSheetPDF(sheet, safeName);
+      await generateMeetingSheetPDF(sheet);
     } catch (e) {
       toast.error("PDF出力に失敗しました");
     } finally {
