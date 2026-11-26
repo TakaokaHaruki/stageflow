@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Settings, ClipboardList, Tag } from "lucide-react";
+import { ShieldCheck, Settings, ClipboardList, Tag, FileStack } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PositionTypeManagement from "@/components/PositionTypeManagement";
 import PositionPresetManager from "@/components/PositionPresetManager";
 import TagManagement from "@/components/TagManagement";
+import MeetingSheetTemplateManager from "@/components/MeetingSheetTemplateManager";
 import { useUserRole } from "@/hooks/useUserRole";
 import SectionTabBar from "@/components/SectionTabBar";
 
@@ -12,6 +13,7 @@ const SECTIONS = [
   { id: "positions", label: "ポジション共通定義", icon: Settings },
   { id: "presets", label: "プリセット共通定義", icon: ClipboardList },
   { id: "tag_management", label: "タグ・役割管理", icon: Tag },
+  { id: "meeting_templates", label: "用紙テンプレート", icon: FileStack },
 ];
 
 export default function ManagementSettings() {
@@ -36,6 +38,7 @@ export default function ManagementSettings() {
       case "positions": return <PositionTypeManagement mode="global" section="positions" />;
       case "presets": return <PositionPresetManager mode="global" />;
       case "tag_management": return <TagManagement />;
+      case "meeting_templates": return <MeetingSheetTemplateManager />;
       default: return null;
     }
   };

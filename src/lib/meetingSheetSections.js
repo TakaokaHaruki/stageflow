@@ -1,6 +1,6 @@
 // ミーティング用紙の入力項目定義（編集画面とPDF出力で共用）
 // timeFields: ヘッダー直下のタイムスケジュール（短い1行入力）
-// sections: 本文の各項目（複数行テキスト）
+// sections: 本文の各項目（複数行テキスト・リッチテキスト対応）
 
 export const TIME_FIELDS = [
   { key: "time_priority", label: "先行販売", placeholder: "例: 15:00-15:45" },
@@ -34,3 +34,42 @@ export const ALL_FIELD_KEYS = [
   TIME_NOTE_FIELD.key,
   ...MEETING_SECTIONS.map((s) => s.key),
 ];
+
+// 新規セクションIDを生成
+let sectionSeq = 0;
+export function newSectionId() {
+  sectionSeq += 1;
+  return `sec_${Date.now().toString(36)}_${sectionSeq}`;
+}
+
+// 従来の固定項目からセクション配列へ変換（互換用）
+export function legacyToSections(sheet) {
+  return MEETING_SECTIONS.map((s) => ({
+    id: s.key,
+    label: s.label,
+    content: (sheet && sheet[s.key]) || "",
+  }));
+}
+
+// 用紙から描画・編集用のセクション配列を解決
+// sheet.sections が存在すればそれを、なければ従来の固定項目から生成
+export function resolveSections(sheet) {
+  if (sheet?.sections && Array.isArray(sheet.sections) && sheet.sections.length > 0) {
+    return sheet.sections.map((s, i) => ({
+      id: s.id || `sec_${i}`,
+      label: s.label || "",
+      content: s.content || "",
+    }));
+  }
+  return legacyToSections(sheet);
+}
+
+// テンプレートから用紙へ適用するためのセクション配列（新ID付与・深コピー）
+export function templateToSections(template) {
+  if (!template?.sections) return [];
+  return template.sections.map((s) => ({
+    id: newSectionId(),
+    label: s.label || "",
+    content: s.content || "",
+  }));
+}

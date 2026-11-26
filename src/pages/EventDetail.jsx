@@ -400,6 +400,8 @@ export default function EventDetail() {
                 eventName={event.name}
                 eventDate={event.date}
                 venue={event.venue}
+                eventChief={event.chief_name}
+                eventCloak={event.cloak_name}
                 canEdit={isPrivileged}
                 eventTimes={{
                   time_priority: event.time_priority,

@@ -155,3 +155,24 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding-top: max(env(safe-area-inset-top), 0);
   }
 }
+
+/* リッチテキストエディタ（react-quill snow）のISCT準拠サイジング */
+.rich-text-editor .ql-toolbar {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  border-color: hsl(var(--border));
+  background: hsl(var(--muted) / 0.4);
+  padding: 4px 6px;
+}
+.rich-text-editor .ql-container {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  border-color: hsl(var(--border));
+  font-family: "Noto Sans JP", Inter, sans-serif;
+  font-size: 13px;
+}
+.rich-text-editor .ql-editor {
+  min-height: var(--rt-min-h, 64px);
+  padding: 8px 10px;
+  line-height: 1.6;
+}
