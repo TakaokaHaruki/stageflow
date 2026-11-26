@@ -10,6 +10,7 @@ import { useCaptureTags } from "@/hooks/useCaptureTags";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import RoleIcon from "@/components/RoleIcon";
 import StaffTrendSummary from "@/components/StaffTrendSummary";
+import SaveMethodHint from "@/components/SaveMethodHint";
 import { useOperationLog } from "@/hooks/useOperationLog";
 
 const PRESET_COLORS = [
@@ -111,7 +112,6 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
       };
       updateMutation.mutate(nextData, {
         onSuccess: () => {
-          toast.success("保存しました");
           record({
             action_type: "staff_update",
             description: `スタッフ「${prevDataRef.current.name}」の情報を更新しました`,
@@ -146,6 +146,9 @@ export default function StaffEditModal({ staff, pos, onRemoveFromPosition, onClo
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="閉じる">
             <X className="w-4 h-4" />
           </button>
+        </div>
+        <div className="mb-3">
+          <SaveMethodHint mode="realtime" />
         </div>
         {(onToggleLock || (pos && onRemoveFromPosition)) && (
           <div className="flex gap-2 mb-3">

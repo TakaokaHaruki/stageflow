@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Sparkles } from "lucide-react";
 import ModalShell, { ModalHeader, ModalFooter } from "@/components/ModalShell";
+import SaveMethodHint from "@/components/SaveMethodHint";
 import { TIME_FIELDS, TIME_NOTE_FIELD, resolveSections, templateToSections } from "@/lib/meetingSheetSections";
 import { getJstNow } from "@/lib/accessTracker";
 import MeetingSectionList from "@/components/MeetingSectionList";
@@ -114,6 +115,9 @@ export default function MeetingSheetEditor({ sheet, eventName, eventDate, venue,
   return (
     <ModalShell onClose={onCancel} maxWidth="max-w-3xl">
       <ModalHeader title={sheet ? "ミーティング用紙を編集" : "ミーティング用紙を新規作成"} onClose={onCancel} />
+      <div className="mb-3">
+        <SaveMethodHint mode="explicit" />
+      </div>
       <div className="space-y-3">
         {/* ヘッダー情報 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

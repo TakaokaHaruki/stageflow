@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ModalShell, { ModalHeader, ModalFooter } from "@/components/ModalShell";
+import SaveMethodHint from "@/components/SaveMethodHint";
 import { resolveSections, newSectionId } from "@/lib/meetingSheetSections";
 import { getJstNow } from "@/lib/accessTracker";
 import MeetingSectionList from "@/components/MeetingSectionList";
@@ -34,6 +35,9 @@ export default function MeetingSheetTemplateEditor({ template, onSave, onCancel,
   return (
     <ModalShell onClose={onCancel} maxWidth="max-w-3xl">
       <ModalHeader title={template ? "テンプレートを編集" : "テンプレートを新規作成"} onClose={onCancel} />
+      <div className="mb-3">
+        <SaveMethodHint mode="explicit" />
+      </div>
       <div className="space-y-3">
         <div className="space-y-1">
           <Label htmlFor="tpl_name">テンプレート名</Label>

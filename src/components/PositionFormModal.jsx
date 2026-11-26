@@ -22,6 +22,7 @@ import { useCaptureTags } from "@/hooks/useCaptureTags";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import CategoryPicker from "@/components/CategoryPicker";
 import GenderToggle from "@/components/GenderToggle";
+import SaveMethodHint from "@/components/SaveMethodHint";
 import { getSyncGroup } from "@/lib/showParts";
 
 const PRESET_COLORS = [
@@ -198,7 +199,6 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     const timer = setTimeout(() => {
       savePosition(nextData, {
         onSuccess: () => {
-          toast.success("保存しました");
           prevFormRef.current = nextData;
         }
       });
@@ -318,6 +318,15 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
             <X className="w-5 h-5" />
           </button>
         </div>
+        {position ? (
+          <div className="mb-3">
+            <SaveMethodHint mode="realtime" />
+          </div>
+        ) : (
+          <div className="mb-3">
+            <SaveMethodHint mode="explicit" />
+          </div>
+        )}
         {position && (
           <Button
             variant="destructive"
