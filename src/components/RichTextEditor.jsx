@@ -20,7 +20,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
     <div className="rich-text-editor">
       <ReactQuill
         theme="snow"
-        value={value || ""}
+        defaultValue={value || ""}
         onChange={onChange}
         modules={modules}
         formats={["bold", "italic", "color", "list", "bullet", "ordered", "align"]}
