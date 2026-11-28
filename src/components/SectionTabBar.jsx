@@ -5,7 +5,7 @@
 export default function SectionTabBar({ items, activeId, onSelect, className = "", style }) {
   return (
     <div className={`border-b border-border/70 bg-muted/40 ${className}`} style={style}>
-      <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+      <div className="flex flex-wrap gap-x-4 gap-y-0 overflow-x-auto scrollbar-hide sm:flex-nowrap sm:overflow-x-auto">
         {items.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
