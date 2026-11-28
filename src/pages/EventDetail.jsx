@@ -310,7 +310,7 @@ export default function EventDetail() {
           <button
             type="button"
             onClick={() => setConfirmScreenSaver(true)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:ml-0 sm:h-7 sm:w-7"
+            className="ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:ml-0 sm:h-7 sm:w-7"
             title="スクリーンセーバー"
             aria-label="スクリーンセーバーを表示"
           >
