@@ -19,7 +19,7 @@ export default function BackupStatusCard() {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-3 shadow-md">
+    <div className="rounded-xl border border-border bg-card p-3 shadow-card">
       <div className="flex items-center gap-2">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <DatabaseBackup className="h-4 w-4" />

@@ -64,11 +64,13 @@ export default async function(req) {
       const rolesSet = new Set();
       const skillsSet = new Set();
       const genderCounter = {};
+      let furigana = "";
 
       for (const s of staffRecords) {
         if (s.gender) genderCounter[s.gender] = (genderCounter[s.gender] || 0) + 1;
         (s.roles || []).forEach(r => rolesSet.add(r));
         (s.skills || []).forEach(sk => skillsSet.add(sk));
+        if (!furigana && s.furigana) furigana = s.furigana;
       }
 
       for (const eid of eids) {
@@ -120,6 +122,7 @@ export default async function(req) {
 
       results.push({
         name,
+        furigana,
         matchScore: nameScore.get(name) ?? 0,
         gender,
         roles: [...rolesSet],

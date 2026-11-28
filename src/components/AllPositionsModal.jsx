@@ -136,7 +136,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
           onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
           <motion.div
-            className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-lg max-h-[90dvh] flex flex-col"
+            className="bg-card border border-border rounded-xl shadow-elevated w-full max-w-lg max-h-[90dvh] flex flex-col"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
@@ -228,7 +228,7 @@ export default function AllPositionsModal({ open, onClose, events, staffName, ac
                                         className="inline-flex items-center gap-0.5 text-xs font-bold px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
                                       >
                                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                                        <span className="text-[10px] opacity-80">チーフ</span>
+                                        <span className="text-[10px] opacity-80">セクションチーフ</span>
                                         {chiefName}
                                       </span>
                                     ))}

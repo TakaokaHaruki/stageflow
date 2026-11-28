@@ -141,7 +141,7 @@ export default function Events() {
 
   return (
     <>
-      <div className="mx-auto max-w-6xl px-1.5 py-1">
+      <div className="mx-auto max-w-6xl px-2 py-3">
         {/* Pull-to-refresh indicator */}
         {isPulling &&
           <div className="fixed top-0 left-0 right-0 z-30 flex justify-center pt-2">

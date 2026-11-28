@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ClipboardList, Plus, Download, Users, Trash2, Wand2, ChevronDown, Pencil, Eye, PencilLine } from "lucide-react";
+import { ClipboardList, Plus, Users, Trash2, Wand2, ChevronDown, Pencil, Eye, PencilLine, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import PositionCard from "@/components/PositionCard";
@@ -9,9 +9,9 @@ import PositionBulkAddModal from "@/components/PositionBulkAddModal";
 import PositionFormModal from "@/components/PositionFormModal";
 import StaffEditModal from "@/components/StaffEditModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import PdfExportMenu from "@/components/PdfExportMenu";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
-import { usePDFExport } from "@/hooks/usePDFExport";
 import { TIME_SLOTS, TIME_SLOT_STYLES, CONTINUOUS_SLOT } from "@/lib/constants";
 import { getStaffDisplayName, getStaffColor } from "@/lib/staffName";
 import { unwrapFunctionResponse } from "@/lib/base44Response";
@@ -38,6 +38,7 @@ import StaffTrendPopup from "@/components/StaffTrendPopup";
 import ShowPartOverview from "@/components/ShowPartOverview";
 import { getParts } from "@/lib/showParts";
 import SectionHeader from "@/components/SectionHeader";
+import AssignmentSheetMetaEditor from "@/components/AssignmentSheetMetaEditor";
 import EventLockBanner from "@/components/EventLockBanner";
 import { LOCK_TOOLTIP_TEXT } from "@/lib/eventLock";
 import { usePresence, usePresenceActivity } from "@/lib/presenceContext";
@@ -226,8 +227,6 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
     },
   });
 
-  const { exporting: exportingPDF, exportPDF: handleExportPDF } = usePDFExport(eventId, "staff", "配置表");
-
   const [draggedStaff, setDraggedStaff] = useState(null);
   const [draggingPosId, setDraggingPosId] = useState(null);
   const [dragOverPosId, setDragOverPosId] = useState(null);
@@ -242,6 +241,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(null); // slot name
   const [showAutoAssign, setShowAutoAssign] = useState(false);
+  const [showPdfMenu, setShowPdfMenu] = useState(false);
 
   const stopAutoScroll = useCallback(() => {
     autoScrollActiveRef.current = false;
@@ -640,12 +640,12 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
         title="配置表"
         description={continuousMode ? "一日通しモードです　各セクションチーフがスタッフを追加することができます" : multiShowMode ? (partViewMode === "overview" ? "全ての部のスタッフ配置と人員過不足を一覧で確認できます" : `${selectedPart}部目の配置です　部を切り替えて編集できます`) : undefined}
         actions={(
-          <>
-          <div className="flex items-center gap-0.5 rounded-md border border-border bg-muted/60 p-0.5 shrink-0">
+          <div className="flex w-full items-center gap-1 sm:w-auto sm:gap-2">
+          <div className="flex h-7 items-stretch gap-0.5 rounded-md border border-border bg-muted/60 p-0 shrink-0">
             <button
               type="button"
               onClick={() => setViewMode("edit")}
-              className={`flex min-h-7 items-center gap-1 rounded px-2 text-xs font-semibold transition-colors ${!isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex items-center gap-0.5 rounded px-1.5 text-[11px] font-semibold transition-colors ${!isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               aria-pressed={!isView}
             >
               <PencilLine className="w-3 h-3" />編集
@@ -653,7 +653,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
             <button
               type="button"
               onClick={() => setViewMode("view")}
-              className={`flex min-h-7 items-center gap-1 rounded px-2 text-xs font-semibold transition-colors ${isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex items-center gap-0.5 rounded px-1.5 text-[11px] font-semibold transition-colors ${isView ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               aria-pressed={isView}
             >
               <Eye className="w-3 h-3" />表示
@@ -661,16 +661,22 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           </div>
           {canManageSettings && !isLocked && !isView && <PresetSelector eventId={eventId} compact positions={positions} />}
           {canEdit && !isView && (
-            <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 shrink-0" onClick={() => editable && setShowAutoAssign(true)} disabled={!editable || positions.length === 0} title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>
+            <Button size="sm" variant="outline" className="gap-0.5 h-7 text-[11px] px-1.5 shrink-0" onClick={() => editable && setShowAutoAssign(true)} disabled={!editable || positions.length === 0} title={isLocked ? LOCK_TOOLTIP_TEXT : undefined}>
               <Wand2 className="w-3 h-3" />自動配置
             </Button>
           )}
-          <Button size="sm" variant="outline" className="gap-1 h-8 text-xs px-2 shrink-0" onClick={handleExportPDF} disabled={exportingPDF || positions.length === 0}>
-            <Download className="w-3 h-3" />{exportingPDF ? '...' : 'PDF'}
+          <Button size="sm" variant="outline" className="gap-0.5 h-7 text-[11px] px-1.5 shrink-0" onClick={() => setShowPdfMenu(true)} disabled={positions.length === 0}>
+            <Download className="w-3 h-3" />PDF
           </Button>
-          </>
+          </div>
         )}
       />
+
+      {canEdit && (
+        <div className="mb-1.5">
+          <AssignmentSheetMetaEditor eventId={eventId} event={event} canEdit={canEdit && !isLocked} />
+        </div>
+      )}
 
       <div className="mb-1.5">
         <RoleTallyBar staffList={staffList} />
@@ -1092,6 +1098,9 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           recentEventCount={trendEvents?.length || 0}
           onClose={() => setTrendStaff(null)}
         />
+      )}
+      {showPdfMenu && (
+        <PdfExportMenu eventId={eventId} event={event} onClose={() => setShowPdfMenu(false)} initialSelected={["assignment"]} />
       )}
     </div>
   );

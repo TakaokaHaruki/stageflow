@@ -8,6 +8,7 @@ import {
   FileText,
   Paperclip,
   NotebookPen,
+  MapPin,
   MoreHorizontal,
   X,
 } from "lucide-react";
@@ -19,9 +20,11 @@ const PRIMARY_TABS = [
 ];
 
 const MORE_TABS = [
+  { id: "position_map", label: "配置表マップ", icon: MapPin },
   { id: "records", label: "イベント記録", icon: NotebookPen },
   { id: "pos_notes", label: "ポジション説明", icon: FileText, privileged: true },
   { id: "files", label: "配布資料", icon: Paperclip, privileged: true },
+  { id: "meeting_sheet", label: "ミーティング用紙", icon: FileText, privileged: true },
   { id: "admin", label: "管理者設定", icon: ShieldCheck, admin: true },
   { id: "settings", label: "管理設定", icon: Settings, privileged: true },
 ];
@@ -50,7 +53,7 @@ export default function BottomTabBar({ activeTab, onTabChange, onActiveTabReset,
       {moreOpen && (
         <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]" onClick={() => setMoreOpen(false)}>
           <div
-            className="absolute bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-2 right-2 rounded-lg border border-border bg-card p-1.5 shadow-xl"
+            className="absolute bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-2 right-2 rounded-lg border border-border bg-card p-1.5 shadow-elevated"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-1 flex items-center justify-between px-1">

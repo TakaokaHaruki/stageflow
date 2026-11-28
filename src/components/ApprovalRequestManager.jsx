@@ -129,7 +129,7 @@ export default function ApprovalRequestManager() {
   return (
     <div className="space-y-3">
       {/* 承認待ち */}
-      <div className="rounded-2xl border border-border bg-card shadow-md overflow-hidden">
+      <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
         <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-muted/40">
           <Clock className="w-3.5 h-3.5 text-amber-600" />
           <h2 className="text-xs font-semibold">承認待ち</h2>
@@ -149,7 +149,7 @@ export default function ApprovalRequestManager() {
       </div>
 
       {/* 処理済み */}
-      <div className="rounded-2xl border border-border bg-card shadow-md overflow-hidden">
+      <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
         <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-muted/40">
           {handled.some((r) => r.status === "rejected") ? (
             <XCircle className="w-3.5 h-3.5 text-destructive" />

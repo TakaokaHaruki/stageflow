@@ -24,7 +24,7 @@ function Stat({ label, value }) {
 
 function Section({ icon: Icon, title, children }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-card">
       <div className="flex items-center gap-1.5 mb-3">
         <Icon className="w-4 h-4 text-primary" />
         <h2 className="text-sm font-semibold">{title}</h2>
@@ -43,8 +43,9 @@ export default function StaffSearchDetail({ staff, onBack }) {
         <ArrowLeft className="w-4 h-4" />検索結果へ戻る
       </button>
 
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="rounded-xl border border-border bg-card p-4 shadow-card">
         <h1 className="text-xl font-bold">{staff.name}</h1>
+        {staff.furigana && <p className="text-sm text-muted-foreground mt-0.5">{staff.furigana}</p>}
         <div className="mt-2 flex flex-wrap gap-1.5">
           {staff.gender && <span className="text-[11px] px-2 py-0.5 rounded-full bg-muted">{staff.gender}</span>}
           {staff.roles.map(r => (
@@ -57,7 +58,7 @@ export default function StaffSearchDetail({ staff, onBack }) {
         <div className="mt-3 grid grid-cols-3 gap-2 text-center">
           <Stat label="参加イベント" value={staff.eventCount} />
           <Stat label="ポジション数" value={staff.positionCount} />
-          <Stat label="チーフ経験" value={staff.chiefCount} />
+          <Stat label="セクションチーフ経験" value={staff.chiefCount} />
         </div>
       </div>
 

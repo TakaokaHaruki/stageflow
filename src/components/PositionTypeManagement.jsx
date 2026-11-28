@@ -305,7 +305,7 @@ export default function PositionTypeManagement({ eventId, section = "positions",
         <div className="grid grid-cols-1 gap-2 mb-2 sm:grid-cols-2 lg:grid-cols-3">
           {positionTypes.map((pt) => (
             <div key={pt.id}
-              className={`bg-card border border-border rounded-xl px-3 py-2.5 shadow-sm transition-shadow hover:shadow-md ${draggingId === pt.id ? "opacity-40" : ""} ${dragOverId === pt.id ? "ring-2 ring-primary" : ""}`}
+              className={`bg-card border border-border rounded-xl px-3 py-2.5 shadow-card transition-shadow hover:shadow-elevated ${draggingId === pt.id ? "opacity-40" : ""} ${dragOverId === pt.id ? "ring-2 ring-primary" : ""}`}
               onDragOver={(e) => handleDragOver(e, pt.id)}
               onDrop={(e) => handleDrop(e, pt.id)}
             >

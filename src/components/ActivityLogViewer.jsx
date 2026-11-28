@@ -46,7 +46,7 @@ const ACTION_LABELS = {
   position_add: { label: "ポジション追加", color: "bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700" },
   position_delete: { label: "ポジション削除", color: "bg-red-100 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700" },
   position_reorder: { label: "順序変更", color: "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600" },
-  chief_update: { label: "チーフ変更", color: "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700" },
+  chief_update: { label: "セクションチーフ変更", color: "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700" },
   feature_toggle: { label: "機能設定", color: "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600" },
   announcement_create: { label: "連絡作成", color: "bg-teal-100 text-teal-700 border-teal-300 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-700" },
   announcement_delete: { label: "連絡削除", color: "bg-red-100 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700" },
@@ -77,7 +77,7 @@ const FIELD_LABELS = {
   staff_names_kamite: "上手スタッフ",
   staff_names_shimote: "下手スタッフ",
   split_by_side: "上手/下手分割",
-  chief_staff_name: "チーフ",
+  chief_staff_name: "セクションチーフ",
   time_slot: "時間帯",
   notes: "備考",
   required_count: "必要人数",
@@ -177,7 +177,7 @@ function UndoConfirmModal({ log, onConfirm, onCancel }) {
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md p-4 max-h-[90vh] overflow-y-auto scrollbar-hide"
+        className="bg-card border border-border rounded-t-2xl sm:rounded-xl shadow-elevated w-full max-w-md p-4 max-h-[90vh] overflow-y-auto scrollbar-hide"
         initial={{ y: 30, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
@@ -414,7 +414,7 @@ export default function ActivityLogViewer({ eventId }) {
       {/* ヘッダー（折りたたみ） */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-3 py-2.5 rounded-2xl border border-border bg-card shadow-md hover:bg-muted/50 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-border bg-card shadow-card hover:bg-muted/50 transition-colors"
       >
         <div className="flex items-center gap-2">
           <History className="w-4 h-4 text-primary" />
@@ -426,7 +426,7 @@ export default function ActivityLogViewer({ eventId }) {
       {expanded && (
         <div className="mt-2">
           {/* フィルター */}
-          <div className="mb-3 rounded-2xl border border-border bg-card p-3 shadow-md">
+          <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-card">
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
               <label className="space-y-1">
                 <span className="text-[10px] font-medium text-muted-foreground">開始日</span>
@@ -493,7 +493,7 @@ export default function ActivityLogViewer({ eventId }) {
           </div>
 
           {/* 一覧 */}
-          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-md">
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-card">
             {isLoading ? (
               <div className="flex justify-center py-12">
                 <div className="h-6 w-6 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />

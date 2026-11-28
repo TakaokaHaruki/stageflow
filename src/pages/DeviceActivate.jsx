@@ -59,7 +59,7 @@ export default function DeviceActivate() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
-      <div className="w-full max-w-md space-y-4 rounded-2xl border border-border bg-card p-8 shadow-lg">
+      <div className="w-full max-w-md space-y-4 rounded-xl border border-border bg-card p-8 shadow-elevated">
         <div className="flex justify-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <ShieldCheck className="h-8 w-8 text-primary" />

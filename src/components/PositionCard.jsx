@@ -66,7 +66,7 @@ function StaffRow({ name, pos, staffList, maskStaffNames, draggable, isAdmin, is
             </button>
             {showNotePopup && notePopupPos && (
               <div
-                className="fixed z-50 bg-card border border-border shadow-md rounded-lg p-2 text-[10px] text-foreground max-w-48 break-all"
+                className="fixed z-50 bg-card border border-border shadow-card rounded-lg p-2 text-[10px] text-foreground max-w-48 break-all"
                 style={{ left: notePopupPos.left, top: notePopupPos.top }}
               >
                 {displayNote}
@@ -195,7 +195,7 @@ export default function PositionCard({
               return (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                  チーフ：{chiefs.join("・")}
+                  セクションチーフ：{chiefs.join("・")}
                 </span>
               );
             })()}

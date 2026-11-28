@@ -1,0 +1,61 @@
+{
+  "name": "MeetingSheetTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "\u30c6\u30f3\u30d7\u30ec\u30fc\u30c8\u540d"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "default": [],
+      "description": "\u672c\u6587\u30bb\u30af\u30b7\u30e7\u30f3\u5b9a\u7fa9 [{id, label, content(HTML)}]"
+    },
+    "created_by_name": {
+      "type": "string",
+      "default": "",
+      "description": "\u4f5c\u6210\u8005\u540d"
+    },
+    "updated_at_jst": {
+      "type": "string",
+      "description": "\u6700\u7d42\u66f4\u65b0\u65e5\u6642(JST YYYY-MM-DD HH:mm)"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "chief"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

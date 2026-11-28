@@ -22,6 +22,7 @@ import { useCaptureTags } from "@/hooks/useCaptureTags";
 import { useAllRoles } from "@/hooks/useAllRoles";
 import CategoryPicker from "@/components/CategoryPicker";
 import GenderToggle from "@/components/GenderToggle";
+import SaveMethodHint from "@/components/SaveMethodHint";
 import { getSyncGroup } from "@/lib/showParts";
 
 const PRESET_COLORS = [
@@ -198,7 +199,6 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
     const timer = setTimeout(() => {
       savePosition(nextData, {
         onSuccess: () => {
-          toast.success("保存しました");
           prevFormRef.current = nextData;
         }
       });
@@ -307,7 +307,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-2xl shadow-xl w-full sm:max-w-md p-6 max-h-[90dvh] overflow-y-auto scrollbar-hide"
+        className="bg-card border border-border rounded-xl shadow-elevated w-full sm:max-w-md p-6 max-h-[90dvh] overflow-y-auto scrollbar-hide"
         initial={{ y: 34, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
@@ -318,6 +318,15 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
             <X className="w-5 h-5" />
           </button>
         </div>
+        {position ? (
+          <div className="mb-3">
+            <SaveMethodHint mode="realtime" />
+          </div>
+        ) : (
+          <div className="mb-3">
+            <SaveMethodHint mode="explicit" />
+          </div>
+        )}
         {position && (
           <Button
             variant="destructive"
@@ -479,7 +488,7 @@ export default function PositionFormModal({ position, eventId, defaultTimeSlot =
           </div>
 
           <div>
-            <Label>担当チーフ（複数選択可・このポジションの所属スタッフから）</Label>
+            <Label>担当セクションチーフ（複数選択可・このポジションの所属スタッフから）</Label>
             {(() => {
               const assignedNames = form.split_by_side
                 ? [...new Set([...(form.staff_names_kamite || []), ...(form.staff_names_shimote || [])])]

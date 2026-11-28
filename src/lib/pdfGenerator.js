@@ -102,7 +102,7 @@ async function woffToTtfArrayBuffer(woffBuffer) {
 // 2フォント読み込み:
 //  - full: 変数TTF（400・フルカバレッジ・髙などの環境依存文字対応）。髙含みテキスト用および Medium 取得失敗時のフォールバック。
 //  - medium: fontsource Noto Sans JP 500 woff（Medium・JIS第1・第2水準）。髙は含まないため full で補完。
-async function loadJapaneseFont() {
+export async function loadJapaneseFont() {
   if (USE_BIZ_UD_FONT && !cachedBizUdFontBase64) {
     try {
       cachedBizUdFontBase64 = await fetchFontBase64('https://cdn.jsdelivr.net/gh/googlefonts/morisawa-biz-ud-gothic@main/fonts/ttf/BIZUDGothic-Bold.ttf');
@@ -148,9 +148,9 @@ function compareByOrder(a, b) {
 const TIME_SLOTS = ['開場中', '開演中', '終演後'];
 
 const SLOT_COLORS = {
-  '開場中': { headerBg: [253, 230, 138], headerText: [69, 26, 3],   border: [251, 191, 36] },
-  '開演中': { headerBg: [191, 219, 254], headerText: [23, 37, 84],  border: [96, 165, 250] },
-  '終演後': { headerBg: [203, 213, 225], headerText: [15, 23, 42],  border: [148, 163, 184] },
+  '開場中': { tintBg: [254, 249, 230], headerBg: [253, 230, 138], headerText: [69, 26, 3],   border: [245, 158, 11], divider: [253, 224, 168] },
+  '開演中': { tintBg: [237, 244, 254], headerBg: [191, 219, 254], headerText: [23, 37, 84],  border: [59, 130, 246], divider: [191, 219, 254] },
+  '終演後': { tintBg: [238, 242, 247], headerBg: [203, 213, 225], headerText: [15, 23, 42],  border: [100, 116, 139], divider: [203, 213, 225] },
 };
 
 const SLOT_NOTE_KEY = { '開場中': 'note_before', '開演中': 'note_during', '終演後': 'note_after' };
@@ -192,6 +192,20 @@ const ROLE_BADGE_STYLES = {
 };
 const ROLE_BADGE_DEFAULT = { bg: [241, 245, 249], border: [148, 163, 184], text: [51, 65, 85] };
 
+// ISCT Design System カラー（ブランドネイビー基準・Noto Sans JP・8/12/24px 体系）
+const ISCT = {
+  primary: [28, 49, 120],          // #1c3178 ブランドプライマリ
+  primaryText: [255, 255, 255],    // ネイビー上の白文字
+  secondary: [127, 150, 194],      // #7f96c2
+  tertiary: [207, 219, 237],       // #cfdbed
+  quaternary: [249, 251, 255],     // #f9fbff
+  monoPrimary: [26, 26, 26],       // #1a1a1a
+  monoSecondary: [118, 118, 118],  // #767676
+  monoTertiary: [204, 204, 204],   // #cccccc
+  monoQuaternary: [235, 235, 235], // #ebebeb
+  monoQuinary: [250, 250, 250],    // #fafafa
+};
+
 // A4縦・コンパクト設定
 const PAGE_W = 210;
 const PAGE_H = 297;
@@ -207,10 +221,12 @@ const CARD_PADDING_V = 0.6;   // スタッフエリア上下パディング合�
 const SIDE_HEADER_H = 2.8;
 const CHECKBOX_SIZE = 2;
 const CHECKBOX_GAP = 0.4;
-const CHIEF_LINE_H = 3.2; // チーフ印字行の高さ（チーフがある場合のみ）
+const CHIEF_LINE_H = 3.2; // セクションチーフ印字行の高さ（チーフがある場合のみ）
 const POS_NOTE_LINE_H = 2.8; // ポジション備考行の高さ（ポジション名の下に印字）
 const NOTE_FONT_SIZE = 5.4; // 備考のフォントサイズ（スタッフ名の下に小さく印字）
 const NOTE_LINE_H = 2.8;    // 備考行の高さ
+const FURIGANA_FONT_SIZE = 4.2; // フリガナのフォントサイズ（スタッフ名の上に小さく印字）
+const FURIGANA_LINE_H = 1.8;  // フリガナ行の高さ
 const PENLIGHT_ICON_W = 2.6;   // ペンライトアイコン（筒＋光束）の幅
 const PENLIGHT_ICON_H = 1.4;   // ペンライトアイコンの高さ
 const BENTO_ICON_W = 1.8;      // 弁当アイコン（箱）の幅
@@ -283,48 +299,137 @@ function calcCardHeight(pos, staffMap) {
     ? Math.max((pos.staff_names_kamite || []).length, (pos.staff_names_shimote || []).length)
     : (pos.staff_names || []).length;
   const extraH = splitBySide ? SIDE_HEADER_H : 0;
-  const chiefH = getChiefs(pos).length > 0 ? CHIEF_LINE_H : 0;
+  // セクションチーフはポジション名の横にインライン表示するため高さ不要
   const posNoteH = pos.notes && String(pos.notes).trim() ? POS_NOTE_LINE_H : 0;
+  const slot = normalizeSlot(pos.time_slot);
+  const rowH = (sd) => STAFF_LINE_H + (sd?.furigana ? FURIGANA_LINE_H : 0) + (getStaffNote(sd, slot) ? NOTE_LINE_H : 0);
+
+  // 5名以上は2列表示: 行高さは各段の最大値で集計
+  if (!splitBySide && staffCount > 4) {
+    let h = 0;
+    for (let i = 0; i < staffCount; i += 2) {
+      const hA = staffMap ? rowH(staffMap.get(staffNamesList[i])) : STAFF_LINE_H;
+      const hB = staffNamesList[i + 1] != null ? (staffMap ? rowH(staffMap.get(staffNamesList[i + 1])) : STAFF_LINE_H) : 0;
+      h += Math.max(hA, hB);
+    }
+    return CARD_HEADER_H + posNoteH + h + CARD_PADDING_V;
+  }
+
   // 備考を持つスタッフの行は高さを追加（備考行の数だけ）
   let noteExtra = 0;
+  // フリガナを持つスタッフの行は高さを追加（フリガナ行の数だけ）
+  let furiganaExtra = 0;
   if (staffMap) {
-    const slot = normalizeSlot(pos.time_slot);
     const countNotes = (names) => names.reduce(
       (sum, n) => sum + (getStaffNote(staffMap.get(n), slot) ? NOTE_LINE_H : 0), 0
+    );
+    const countFurigana = (names) => names.reduce(
+      (sum, n) => sum + (staffMap.get(n)?.furigana ? FURIGANA_LINE_H : 0), 0
     );
     noteExtra = splitBySide
       ? Math.max(countNotes(pos.staff_names_kamite || []), countNotes(pos.staff_names_shimote || []))
       : countNotes(staffNamesList);
+    furiganaExtra = splitBySide
+      ? Math.max(countFurigana(pos.staff_names_kamite || []), countFurigana(pos.staff_names_shimote || []))
+      : countFurigana(staffNamesList);
   }
-  return CARD_HEADER_H + posNoteH + chiefH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + noteExtra + CARD_PADDING_V;
+  return CARD_HEADER_H + posNoteH + extraH + (staffCount > 0 ? staffCount * STAFF_LINE_H : STAFF_LINE_H) + furiganaExtra + noteExtra + CARD_PADDING_V;
 }
 
-function drawTitle(doc, event, partLabel) {
-  doc.setFontSize(11);
+// 帳票風ヘッダー: 公演名・日時・会場・各時間帯・セクションチーフ名・クローク名を帯状にまとめ、
+// その下のコンテンツ開始Yを返す
+function drawReportHeader(doc, event, partLabel) {
+  const x0 = MARGIN;
+  const w = PAGE_W - 2 * MARGIN;
+
+  // 公演名（大）
+  doc.setFontSize(13);
   doc.setFont('NotoSansJP', 'normal');
-  doc.setTextColor(0, 0, 0);
-  doc.text(event.name || '', MARGIN, MARGIN + 5);
+  doc.setTextColor(...ISCT.monoPrimary);
+  doc.text(event.name || '', x0, MARGIN + 4.5);
   if (partLabel) {
     doc.setFontSize(11);
-    doc.setTextColor(30, 64, 175);
-    doc.text(partLabel, PAGE_W - MARGIN, MARGIN + 5, { align: 'right' });
+    doc.setTextColor(...ISCT.primary);
+    doc.text(partLabel, PAGE_W - MARGIN, MARGIN + 4.5, { align: 'right' });
   }
+
+  // 日時・会場
   doc.setFontSize(8);
+  doc.setTextColor(...ISCT.monoSecondary);
   let dateStr = '';
   if (event.date) {
     const d = new Date(event.date);
     dateStr = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
   }
-  const subText = `${dateStr}${event.venue ? '　' + event.venue : ''}`;
-  if (subText) doc.text(subText, MARGIN, MARGIN + 10);
+  const subText = [dateStr, event.venue].filter(Boolean).join('　');
+  if (subText) doc.text(subText, x0, MARGIN + 8.5);
+
+  // 上部アクセント罫線
+  let y = MARGIN + 10;
+  doc.setDrawColor(...ISCT.primary);
+  doc.setLineWidth(0.5);
+  doc.line(x0, y, x0 + w, y);
+  y += 2;
+
+  // セクションチーフ・クローク行
+  const chiefCloakH = 6.5;
+  const halfW = w / 2;
+  const ccLabelW = 18;
+  // セクションチーフ
+  doc.setDrawColor(...ISCT.monoTertiary);
+  doc.setLineWidth(0.2);
+  doc.setFillColor(...ISCT.quaternary);
+  doc.rect(x0, y, halfW, chiefCloakH, 'FD');
+  doc.setFillColor(...ISCT.tertiary);
+  doc.rect(x0, y, ccLabelW, chiefCloakH, 'F');
+  doc.setFontSize(7);
+  doc.setTextColor(...ISCT.primary);
+  doc.text('チーフ', x0 + ccLabelW / 2, y + chiefCloakH / 2, { align: 'center', baseline: 'middle' });
+  doc.setFontSize(9);
+  doc.setTextColor(...ISCT.monoPrimary);
+  doc.text(event.chief_name || '', x0 + ccLabelW + 1.5, y + chiefCloakH / 2, { baseline: 'middle' });
+  // 区切り
+  doc.setDrawColor(...ISCT.monoTertiary);
+  doc.setLineWidth(0.2);
+  doc.line(x0 + halfW, y, x0 + halfW, y + chiefCloakH);
+  // クローク
+  doc.setFillColor(...ISCT.quaternary);
+  doc.rect(x0 + halfW, y, halfW, chiefCloakH, 'FD');
+  doc.setFillColor(...ISCT.tertiary);
+  doc.rect(x0 + halfW, y, ccLabelW, chiefCloakH, 'F');
+  doc.setFontSize(7);
+  doc.setTextColor(...ISCT.primary);
+  doc.text('クローク', x0 + halfW + ccLabelW / 2, y + chiefCloakH / 2, { align: 'center', baseline: 'middle' });
+  doc.setFontSize(9);
+  doc.setTextColor(...ISCT.monoPrimary);
+  doc.text(event.cloak_name || '', x0 + halfW + ccLabelW + 1.5, y + chiefCloakH / 2, { baseline: 'middle' });
+  y += chiefCloakH;
+
+  return y + 2; // コンテンツ開始Y
 }
 
 function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   const note = getStaffNote(staffData, slot);
-  const rowH = STAFF_LINE_H + (note ? NOTE_LINE_H : 0);
+  const furigana = staffData?.furigana || '';
+  const rowH = STAFF_LINE_H + (furigana ? FURIGANA_LINE_H : 0) + (note ? NOTE_LINE_H : 0);
   if (y + rowH > cardBottom + 0.01) return 0;
-  const textY = y + STAFF_LINE_H * 0.78;
   const nameX = x + 1;
+  const nameLineY = furigana ? y + FURIGANA_LINE_H : y;
+  const textY = nameLineY + STAFF_LINE_H * 0.72;
+
+  // フリガナをスタッフ名の上に小さく印字
+  if (furigana) {
+    doc.setFontSize(FURIGANA_FONT_SIZE);
+    doc.setTextColor(...ISCT.monoSecondary);
+    let furiText = furigana;
+    const maxFuriW = x + w - nameX - 0.5;
+    while (furiText.length > 1 && doc.getTextWidth(furiText) > maxFuriW) {
+      furiText = furiText.slice(0, -1);
+    }
+    if (furiText !== furigana && furiText.length > 0) furiText = furiText.slice(0, -1) + '…';
+    doc.text(furiText, nameX, y + FURIGANA_LINE_H * 0.95);
+    doc.setFontSize(STAFF_FONT_SIZE);
+  }
 
   doc.setFontSize(STAFF_FONT_SIZE);
   doc.setFont('NotoSansJP', 'normal');
@@ -333,27 +438,28 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
     const [r, g, b] = hexToRgb(nameColor);
     doc.setTextColor(r, g, b);
   } else {
-    doc.setTextColor(15, 23, 42);
+    doc.setTextColor(...ISCT.monoPrimary);
   }
   doc.text(name, nameX, textY);
 
   let cursorX = nameX + doc.getTextWidth(name) + 1;
 
   // 備考（共通＋該当時間帯を統合）をスタッフ名の下に小さく印字
+  const noteLineY = nameLineY + STAFF_LINE_H;
   if (note) {
     doc.setFontSize(NOTE_FONT_SIZE);
-    doc.setTextColor(120, 113, 108);
+    doc.setTextColor(...ISCT.monoSecondary);
     let noteText = note;
     const maxNoteW = x + w - nameX - 0.5;
     while (noteText.length > 1 && doc.getTextWidth(noteText) > maxNoteW) {
       noteText = noteText.slice(0, -1);
     }
     if (noteText !== note && noteText.length > 0) noteText = noteText.slice(0, -1) + '…';
-    doc.text(noteText, nameX, y + STAFF_LINE_H + NOTE_LINE_H * 0.75);
+    doc.text(noteText, nameX, noteLineY + NOTE_LINE_H * 0.75);
     doc.setFontSize(STAFF_FONT_SIZE);
   }
 
-  const badgeTop = y + 0.4;
+  const badgeTop = nameLineY + 0.4;
   const badgeH = STAFF_LINE_H - 0.8;
   const badgeTextY = badgeTop + badgeH * 0.72;
   const badgeMaxRight = x + w - 1;
@@ -405,7 +511,9 @@ function drawStaffRow(doc, name, staffData, slot, x, y, w, cardBottom) {
   return rowH;
 }
 
-function drawCard(doc, pos, x, y, w, staffMap, slot) {
+// 連続リスト形式のポジション行を描画（角ばったデザイン・時間帯テーマカラー適用）
+// 外枠・区切りは呼び出し側で描画済みの前提。本関数はタイトル帯＋スタッフエリアを描く。
+function drawPositionRow(doc, pos, x, y, w, staffMap, slot, slotColor) {
   const splitBySide = Boolean(pos.split_by_side);
   const kamiteNames = splitBySide ? (pos.staff_names_kamite || []) : [];
   const shimoteNames = splitBySide ? (pos.staff_names_shimote || []) : [];
@@ -414,136 +522,153 @@ function drawCard(doc, pos, x, y, w, staffMap, slot) {
     : (pos.staff_names || []);
   const assignedCount = staffNames.length;
   const requiredCount = pos.required_count || 0;
-  const cardH = calcCardHeight(pos, staffMap);
+  const rowH = calcCardHeight(pos, staffMap);
 
-  doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.15); doc.setFillColor(255, 255, 255);
-  doc.roundedRect(x, y, w, cardH, 1, 1, 'FD');
+  // --- タイトル帯（ポジション名＋セクションチーフ＋説明を同一要素・同背景色） ---
+  const hasPosNote = pos.notes && String(pos.notes).trim();
+  const titleH = CARD_HEADER_H + (hasPosNote ? POS_NOTE_LINE_H : 0);
 
-  doc.setFillColor(241, 245, 249);
-  doc.roundedRect(x, y, w, CARD_HEADER_H, 1, 1, 'F');
-  doc.rect(x, y + CARD_HEADER_H - 1, w, 1, 'F');
-  doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.15);
-  doc.line(x, y + CARD_HEADER_H, x + w, y + CARD_HEADER_H);
+  // タイトル背景：時間帯テーマの淡色
+  doc.setFillColor(...slotColor.tintBg);
+  doc.rect(x, y, w, titleH, 'F');
 
   const headerTextY = y + CARD_HEADER_H * 0.70;
 
+  // ポジションカラーのドット
   const [r, g, b] = hexToRgb(pos.color || '#6366f1');
   doc.setFillColor(r, g, b);
   doc.circle(x + 2.2, y + CARD_HEADER_H / 2, 0.9, 'F');
 
-  doc.setFontSize(6.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(71, 85, 105);
+  // 人数（右端）
+  doc.setFontSize(6.5); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...ISCT.monoSecondary);
   const countText = requiredCount > 0 ? `${assignedCount}/${requiredCount}名` : `${assignedCount}名`;
   doc.text(countText, x + w - 1.5, headerTextY, { align: 'right' });
   const countTextW = doc.getTextWidth(countText);
 
-  doc.setFontSize(7.5); doc.setTextColor(15, 23, 42);
+  // ポジション名
+  doc.setFontSize(7.5); doc.setTextColor(...ISCT.monoPrimary);
   let posName = pos.name || '';
+  const chiefs = getChiefs(pos);
+  // セクションチーフ表記をポジション名の横に結合
+  const chiefSuffix = chiefs.length > 0 ? `／チーフ ${chiefs.join('・')}` : '';
+  // 名前+セクションチーフ の全体幅で制限
   const maxNameW = (x + w - 1.5 - countTextW - 1.5) - (x + 5);
-  while (maxNameW > 0 && doc.getTextWidth(posName) > maxNameW && posName.length > 1) {
-    posName = posName.slice(0, -1);
+  let posNameW = doc.getTextWidth(posName);
+  if (chiefSuffix) {
+    doc.setFontSize(5.8);
+    const chiefW = doc.getTextWidth(chiefSuffix);
+    doc.setFontSize(7.5);
+    while (posName.length > 1 && posNameW + chiefW > maxNameW) {
+      posName = posName.slice(0, -1);
+      posNameW = doc.getTextWidth(posName);
+    }
+  } else {
+    while (posName.length > 1 && posNameW > maxNameW) {
+      posName = posName.slice(0, -1);
+      posNameW = doc.getTextWidth(posName);
+    }
   }
   if (posName !== (pos.name || '') && posName.length > 0) posName = posName.slice(0, -1) + '…';
   doc.text(posName, x + 5, headerTextY);
 
-  const chiefs = getChiefs(pos);
-  const chiefH = chiefs.length > 0 ? CHIEF_LINE_H : 0;
-  const posNoteH = pos.notes && String(pos.notes).trim() ? POS_NOTE_LINE_H : 0;
-  const noteStartY = y + CARD_HEADER_H;
+  // セクションチーフ表記をポジション名の直後（横）に印字
+  if (chiefSuffix) {
+    const chiefX = x + 5 + doc.getTextWidth(posName) + 0.6;
+    doc.setFontSize(5.8);
+    doc.setTextColor(...slotColor.border);
+    doc.text(chiefSuffix, chiefX, headerTextY);
+    doc.setFontSize(7.5);
+  }
 
-  // ポジション備考をポジション名の下に小さく印字
-  if (posNoteH > 0) {
+  // ポジション説明（タイトルと同じ要素・同じ背景色）
+  if (hasPosNote) {
     doc.setFontSize(NOTE_FONT_SIZE);
     doc.setFont('NotoSansJP', 'normal');
-    doc.setTextColor(120, 113, 108);
+    doc.setTextColor(...ISCT.monoSecondary);
     let posNote = String(pos.notes);
     const maxNoteW = w - 3;
     while (posNote.length > 1 && doc.getTextWidth(posNote) > maxNoteW) {
       posNote = posNote.slice(0, -1);
     }
     if (posNote !== String(pos.notes) && posNote.length > 0) posNote = posNote.slice(0, -1) + '…';
-    doc.text(posNote, x + 1, noteStartY + POS_NOTE_LINE_H * 0.75);
+    doc.text(posNote, x + 1, y + CARD_HEADER_H + POS_NOTE_LINE_H * 0.75);
     doc.setFontSize(STAFF_FONT_SIZE);
   }
 
-  let staffY = noteStartY + posNoteH + 0.3;
-  const cardBottom = y + cardH;
+  // タイトルとスタッフエリアの区切り線（テーマカラー）
+  doc.setDrawColor(...slotColor.divider);
+  doc.setLineWidth(0.2);
+  doc.line(x, y + titleH, x + w, y + titleH);
 
-  // チーフ印字（ヘッダー直下・バッジ風）
-  if (chiefs.length > 0) {
-    const chiefY = noteStartY + posNoteH;
-    const pillH = CHIEF_LINE_H - 0.9;
-    const pillY = chiefY + 0.35;
-    const pillX = x + 2.5;
-    const maxPillW = w - 5;
-    let chiefText = `チーフ ${chiefs.join('・')}`;
-    doc.setFontSize(5.5);
-    while (maxPillW > 0 && doc.getTextWidth(chiefText) + 3 > maxPillW && chiefText.length > 1) {
-      chiefText = chiefText.slice(0, -1);
-    }
-    if (chiefText !== `チーフ ${chiefs.join('・')}` && chiefText.length > 0) {
-      chiefText = chiefText.slice(0, -1) + '…';
-    }
-    const pillW = Math.min(doc.getTextWidth(chiefText) + 3, maxPillW);
-    doc.setFillColor(243, 232, 255); doc.setDrawColor(216, 180, 254); doc.setLineWidth(0.2);
-    doc.roundedRect(pillX, pillY, pillW, pillH, 0.6, 0.6, 'FD');
-    doc.setFillColor(126, 34, 206);
-    doc.circle(pillX + 1.3, pillY + pillH / 2, 0.5, 'F');
-    doc.setTextColor(107, 33, 168);
-    doc.text(chiefText, pillX + 2.2, pillY + pillH * 0.72);
-    staffY = chiefY + CHIEF_LINE_H + 0.3;
-  }
+  // --- スタッフエリア（白背景） ---
+  const cardBottom = y + rowH;
+  let staffY = y + titleH + 0.3;
 
   if (splitBySide) {
     const halfW = w / 2;
-    doc.setFillColor(248, 250, 252);
+    doc.setFillColor(...ISCT.monoQuinary);
     doc.rect(x, staffY, halfW, SIDE_HEADER_H, 'F');
     doc.rect(x + halfW, staffY, halfW, SIDE_HEADER_H, 'F');
-    doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.15);
+    doc.setDrawColor(...slotColor.divider); doc.setLineWidth(0.2);
     doc.line(x + halfW, staffY, x + halfW, cardBottom);
     doc.line(x, staffY + SIDE_HEADER_H, x + w, staffY + SIDE_HEADER_H);
-    doc.setFontSize(7); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(71, 85, 105);
-    // 左側=下手(←)、右側=上手(→)。矢印で舞台向きを明示
+    doc.setFontSize(7); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...ISCT.monoSecondary);
     doc.text('← 下手', x + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
     doc.text('上手 →', x + halfW + halfW / 2, staffY + SIDE_HEADER_H * 0.72, { align: 'center' });
     const nameStartY = staffY + SIDE_HEADER_H;
-    // 左側に下手、右側に上手の担当者を配置（順番入れ替え）
     let sy = nameStartY;
     for (const nm of shimoteNames) {
-      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 1.5, sy, halfW - 1.5, cardBottom);
+      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x, sy, halfW, cardBottom);
       if (drawnH > 0) sy += drawnH;
       else break;
     }
     let ky = nameStartY;
     for (const nm of kamiteNames) {
-      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + halfW + 1.5, ky, halfW - 1.5, cardBottom);
+      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + halfW, ky, halfW, cardBottom);
       if (drawnH > 0) ky += drawnH;
       else break;
     }
+  } else if (staffNames.length > 4) {
+    // 5名以上は2列表示
+    const halfW = w / 2;
+    let rowY = staffY;
+    for (let i = 0; i < staffNames.length; i += 2) {
+      const leftName = staffNames[i];
+      const rightName = staffNames[i + 1];
+      const hL = drawStaffRow(doc, leftName, staffMap.get(leftName), slot, x, rowY, halfW, cardBottom);
+      const hR = rightName ? drawStaffRow(doc, rightName, staffMap.get(rightName), slot, x + halfW, rowY, halfW, cardBottom) : 0;
+      const step = Math.max(hL, hR);
+      if (step > 0) rowY += step; else break;
+    }
+    doc.setDrawColor(...slotColor.divider); doc.setLineWidth(0.2);
+    doc.line(x + halfW, staffY, x + halfW, rowY);
   } else {
-    let rowY = staffY + 0.3;
+    let rowY = staffY;
     for (const nm of staffNames) {
-      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x + 2.5, rowY, w - 2.5, cardBottom);
+      const drawnH = drawStaffRow(doc, nm, staffMap.get(nm), slot, x, rowY, w, cardBottom);
       if (drawnH > 0) rowY += drawnH;
       else break;
     }
     if (staffNames.length === 0) {
-      doc.setFontSize(7); doc.setTextColor(153, 153, 153);
-      doc.text('（未配置）', x + 2.5, staffY + 3);
+      doc.setFontSize(7); doc.setTextColor(...ISCT.monoSecondary);
+      doc.text('（未配置）', x + 2, staffY + 3);
     }
   }
-  return cardH;
+
+  return rowH;
 }
 
-// カラムヘッダーをY座標指定で描画
+// カラムヘッダーをY座標指定で描画（角ばったデザイン・時間帯テーマカラー）
 function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, startY) {
-  const colors = SLOT_COLORS[slot];
+  const slotColor = SLOT_COLORS[slot];
   const line1Y = startY + 3.2;
   const line2Y = startY + 6.8;
 
-  doc.setDrawColor(...colors.border); doc.setLineWidth(0.4); doc.setFillColor(...colors.headerBg);
-  doc.roundedRect(x, startY, colW, COL_HEADER_H, 1.5, 1.5, 'FD');
+  // ヘッダー本体：時間帯テーマカラーの濃色・白文字（角ばった矩形）
+  doc.setDrawColor(...slotColor.border); doc.setLineWidth(0.4); doc.setFillColor(...slotColor.border);
+  doc.rect(x, startY, colW, COL_HEADER_H, 'FD');
 
-  doc.setFontSize(9); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...colors.headerText);
+  doc.setFontSize(9); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(255, 255, 255);
   doc.text(slot, x + 2.5, line1Y);
 
   doc.setFontSize(6);
@@ -565,16 +690,16 @@ function drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, sta
   // 時間帯（開場時刻など）
   const timeRange = formatSlotTimeRange(event, slot);
   if (timeRange) {
-    doc.setFontSize(6); doc.setTextColor(...colors.headerText);
+    doc.setFontSize(6); doc.setTextColor(255, 255, 255);
     doc.text(timeRange, x + 2.5, line2Y);
   }
 
   return startY + COL_HEADER_H + 1.5;
 }
 
-function drawColumns(doc, positions, staff, event) {
+function drawColumns(doc, positions, staff, event, contentStartY) {
   const colW = getColWidth();
-  const colStartY = MARGIN + TITLE_H;
+  const colStartY = contentStartY ?? (MARGIN + TITLE_H);
   const pageBottom = PAGE_H - MARGIN;
 
   const staffMap = new Map();
@@ -589,11 +714,10 @@ function drawColumns(doc, positions, staff, event) {
     grouped[slot].push(pos);
   });
 
-  // 各スロットのカードリストをページ分割（スロットまたいで同一ページ行を揃える）
-  // ページごとに3スロット横並びで描画するため、
-  // スロットごとにカードをページ分割してから、同一ページ番号分を一緒に描画する
+  // 連続リスト形式: 各スロットのポジションをページ分割し、
+  // ページごとに外枠（角ばった矩形）＋区切り線で連続描画する
 
-  // 各スロットのカードを「ページ×カードリスト」に分割
+  // 各スロットのポジションを「ページ×リスト」に分割
   const slotPages = {}; // slotPages[slot] = [[pos, ...], [pos, ...], ...]
   TIME_SLOTS.forEach(slot => {
     const slotPositions = grouped[slot] || [];
@@ -609,7 +733,7 @@ function drawColumns(doc, positions, staff, event) {
         currentY = colStartY + COL_HEADER_H + 1.5;
       }
       currentPageCards.push(pos);
-      currentY += cardH + CARD_GAP;
+      currentY += cardH;
     });
     if (currentPageCards.length > 0 || pages.length === 0) {
       pages.push(currentPageCards);
@@ -617,7 +741,6 @@ function drawColumns(doc, positions, staff, event) {
     slotPages[slot] = pages;
   });
 
-  // 最大ページ数
   const maxPages = Math.max(...TIME_SLOTS.map(slot => slotPages[slot].length));
 
   let maxBottom = colStartY;
@@ -625,33 +748,49 @@ function drawColumns(doc, positions, staff, event) {
   for (let pageIdx = 0; pageIdx < maxPages; pageIdx++) {
     if (pageIdx > 0) doc.addPage();
 
-    if (pageIdx === 0) {
-      // タイトルは1ページ目のみ
-      // drawTitle は外で呼ぶので不要
-    }
-
     TIME_SLOTS.forEach((slot, colIdx) => {
       const x = getColX(colIdx);
+      const slotColor = SLOT_COLORS[slot];
       const slotPositions = grouped[slot] || [];
       const pageCards = slotPages[slot][pageIdx] || [];
 
-      // ヘッダーは全ページで描画
-      let cardY = drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, colStartY);
+      // ヘッダーは全ページで描画（角ばったデザイン）
+      const contentTop = drawColumnHeaderAt(doc, slot, x, colW, slotPositions, staff, event, colStartY);
 
       if (pageCards.length === 0) {
         if (pageIdx === 0 && slotPositions.length === 0) {
-          doc.setFontSize(7); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(153, 153, 153);
-          doc.text('ポジションがありません', x + colW / 2, cardY + 4, { align: 'center' });
+          doc.setFontSize(7); doc.setFont('NotoSansJP', 'normal'); doc.setTextColor(...ISCT.monoSecondary);
+          doc.text('ポジションがありません', x + colW / 2, contentTop + 4, { align: 'center' });
         }
         return;
       }
 
-      pageCards.forEach(pos => {
-        drawCard(doc, pos, x, cardY, colW, staffMap, slot);
-        cardY += calcCardHeight(pos, staffMap) + CARD_GAP;
+      // ページ内のリスト全体の高さを計算
+      const listH = pageCards.reduce((sum, pos) => sum + calcCardHeight(pos, staffMap), 0);
+
+      // 背景塗りのみ先に描画（枠線は最後に描画して要素に隠れないようにする）
+      doc.setFillColor(255, 255, 255);
+      doc.rect(x, contentTop, colW, listH, 'F');
+
+      // ポジションを連続描画（余白なし・区切り線で分割）
+      let rowY = contentTop;
+      pageCards.forEach((pos, idx) => {
+        const posH = drawPositionRow(doc, pos, x, rowY, colW, staffMap, slot, slotColor);
+        // 次のポジションとの区切り線（最後は除く）
+        if (idx < pageCards.length - 1) {
+          doc.setDrawColor(...slotColor.divider);
+          doc.setLineWidth(0.2);
+          doc.line(x, rowY + posH, x + colW, rowY + posH);
+        }
+        rowY += posH;
       });
 
-      maxBottom = Math.max(maxBottom, cardY - CARD_GAP);
+      // 外枠を最後に描画（要素に隠れず均一に見える）
+      doc.setDrawColor(...slotColor.border);
+      doc.setLineWidth(0.4);
+      doc.rect(x, contentTop, colW, listH, 'S');
+
+      maxBottom = Math.max(maxBottom, rowY);
     });
   }
 
@@ -730,7 +869,19 @@ function drawTimelineTable(doc, positions, staff) {
     if (y + rowH > PAGE_H - MARGIN) { doc.addPage(); y = MARGIN; }
     doc.setFillColor(243, 237, 226);
     doc.rect(MARGIN, y, colW, rowH, 'F');
-    doc.text(name, MARGIN + 2, y + 5.5);
+    doc.text(name, MARGIN + 2, y + 4.2);
+    // フリガナ（スタッフ名の下に小さく印字）
+    const staffEntry = staff.find((s) => s.name === name);
+    if (staffEntry?.furigana) {
+      doc.setFontSize(5);
+      doc.setTextColor(100, 100, 100);
+      let furi = staffEntry.furigana;
+      while (furi.length > 1 && doc.getTextWidth(furi) > colW - 4) furi = furi.slice(0, -1);
+      if (furi !== staffEntry.furigana && furi.length > 0) furi = furi.slice(0, -1) + '…';
+      doc.text(furi, MARGIN + 2, y + 7);
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+    }
     TIME_SLOTS.forEach((slot, i) => {
       const cellX = MARGIN + (i + 1) * colW;
       const posNames = slots[slot] || [];
@@ -918,7 +1069,17 @@ function drawCheckListSheet(doc, staff, event) {
     const nameMaxW = cols[1].w - 2;
     while (name.length > 1 && doc.getTextWidth(name) > nameMaxW) name = name.slice(0, -1);
     if (name !== (s.name || '') && name.length > 0) name = name.slice(0, -1) + '…';
-    doc.text(name, cellX + 1.5, y + rowH * 0.62);
+    doc.text(name, cellX + 1.5, y + rowH * (s.furigana ? 0.42 : 0.62));
+    // フリガナ（スタッフ名の下に小さく印字）
+    if (s.furigana) {
+      doc.setFontSize(5);
+      doc.setTextColor(100, 116, 139);
+      let furi = s.furigana;
+      while (furi.length > 1 && doc.getTextWidth(furi) > nameMaxW) furi = furi.slice(0, -1);
+      if (furi !== s.furigana && furi.length > 0) furi = furi.slice(0, -1) + '…';
+      doc.text(furi, cellX + 1.5, y + rowH * 0.82);
+      doc.setFontSize(8);
+    }
     cellX += cols[1].w;
 
     // パスNo（空欄）
@@ -951,7 +1112,16 @@ function drawCheckListSheet(doc, staff, event) {
   });
 }
 
-export async function generatePositionPDF(data, filename) {
+// PDFファイル名を「公演名_文書種類_日付」形式で生成
+// dateStr には公演日(YYYY-MM-DD)を渡す。未指定時は出力日を補完。
+export function buildPdfFilename(eventName, docType, dateStr) {
+  const safe = (s) => String(s || '').replace(/[\\/:*?"<>|]/g, '_').trim();
+  const name = safe(eventName) || '公演';
+  const date = safe(dateStr) || new Date().toISOString().split('T')[0];
+  return `${name}_${docType}_${date}`;
+}
+
+export async function generatePositionPDF(data, filename, { preview = false } = {}) {
   const { jsPDF } = await import('jspdf');
   const { bizud: bizudFontBase64, full: fullFontBase64, medium: mediumFontBase64 } = await loadJapaneseFont();
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -1036,7 +1206,6 @@ export async function generatePositionPDF(data, filename) {
       const partsCount = Math.max(1, event.show_count || 1);
       for (let part = 1; part <= partsCount; part++) {
         if (part > 1) doc.addPage();
-        drawTitle(doc, event, `${part}部`);
         // 部別時刻（show_times）を優先し、未設定の項目はイベント共通の時刻で補完
         const st = event.show_times?.[String(part)] || {};
         const partEvent = {
@@ -1048,11 +1217,12 @@ export async function generatePositionPDF(data, filename) {
           time_end: st.time_end ?? event.time_end,
         };
         const partPositions = (data.positions || []).filter((p) => getParts(p).includes(part));
-        drawColumns(doc, partPositions, data.staff || [], partEvent);
+        const headerY = drawReportHeader(doc, partEvent, `${part}部`);
+        drawColumns(doc, partPositions, data.staff || [], partEvent, headerY);
       }
     } else {
-      drawTitle(doc, event);
-      drawColumns(doc, data.positions || [], data.staff || [], event);
+      const headerY = drawReportHeader(doc, event);
+      drawColumns(doc, data.positions || [], data.staff || [], event, headerY);
     }
 
     // 配置表の2枚目以降: 貸出・返却 管理チェック表（紙ベース管理用）
@@ -1061,5 +1231,198 @@ export async function generatePositionPDF(data, filename) {
     }
   }
 
-  doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
+  const fname = `${buildPdfFilename(data.event?.name, filename || '配置表', data.event?.date)}.pdf`;
+  if (preview) return { blobUrl: doc.output('bloburl'), filename: fname };
+  doc.save(fname);
+}
+
+// ---- 配置表マップPDF ----
+
+// 画像ソース（SVG data URI / 画像URL）をPNG data URIに変換（jsPDF addImage用）
+function imageToPngDataUri(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const maxDim = 2200;
+      const w0 = img.naturalWidth || 1200;
+      const h0 = img.naturalHeight || 800;
+      const scale = Math.min(1, maxDim / Math.max(w0, h0));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(w0 * scale));
+      canvas.height = Math.max(1, Math.round(h0 * scale));
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      try {
+        resolve({ dataUri: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height });
+      } catch (e) {
+        reject(e);
+      }
+    };
+    img.onerror = () => reject(new Error('マップ画像の読み込みに失敗しました'));
+    img.src = src;
+  });
+}
+
+function mapStaffListOf(pos) {
+  if (pos?.split_by_side) {
+    return [...(pos.staff_names_kamite || []), ...(pos.staff_names_shimote || [])];
+  }
+  return pos?.staff_names || [];
+}
+
+function drawPinLabel(doc, cx, cy, name, staff, pageMinX, pageMaxX) {
+  doc.setFontSize(6);
+  const staffText = staff.length ? staff.join('・') : '';
+  const nameW = doc.getTextWidth(name);
+  const staffW = staffText ? doc.getTextWidth(staffText) : 0;
+  const padX = 1.2;
+  const padY = 0.5;
+  const lineH = 3.0;
+  const boxW = Math.max(nameW, staffW) + padX * 2;
+  const boxH = (staffText ? lineH * 2 : lineH) + padY * 2;
+  let boxX = cx + 1.8;
+  if (boxX + boxW > pageMaxX) boxX = cx - 1.8 - boxW;
+  if (boxX < pageMinX) boxX = pageMinX;
+  const boxY = cy - boxH / 2;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(28, 49, 119);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(boxX, boxY, boxW, boxH, 0.6, 0.6, 'FD');
+  doc.setTextColor(15, 23, 42);
+  doc.text(name, boxX + padX, boxY + padY + 2.1);
+  if (staffText) {
+    doc.setFontSize(5);
+    doc.setTextColor(71, 85, 105);
+    let t = staffText;
+    const maxW = boxW - padX * 2;
+    while (t.length > 1 && doc.getTextWidth(t) > maxW) t = t.slice(0, -1);
+    if (t !== staffText && t.length > 0) t = t.slice(0, -1) + '…';
+    doc.text(t, boxX + padX, boxY + padY + lineH + 2.1);
+    doc.setFontSize(6);
+  }
+}
+
+// 配置表マップPDF: 会場マップ画像＋ピン（ポジション名・担当スタッフ）を出力
+export async function generateMapPDF(data, filename, { preview = false } = {}) {
+  const { jsPDF } = await import('jspdf');
+  const { bizud: bizudFontBase64, full: fullFontBase64, medium: mediumFontBase64 } = await loadJapaneseFont();
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+  // フォント登録（generatePositionPDFと同等）
+  const hasBizUd = USE_BIZ_UD_FONT && Boolean(bizudFontBase64);
+  const hasMedium = Boolean(mediumFontBase64);
+  const hasFull = Boolean(fullFontBase64);
+  let fullFontName = null;
+  if (hasBizUd) {
+    doc.addFileToVFS('BIZUDGothic-Bold.ttf', bizudFontBase64);
+    doc.addFont('BIZUDGothic-Bold.ttf', 'NotoSansJP', 'normal');
+  } else {
+    if (hasMedium) {
+      doc.addFileToVFS('NotoSansJPM.ttf', mediumFontBase64);
+      doc.addFont('NotoSansJPM.ttf', 'NotoSansJP', 'normal');
+    } else if (hasFull) {
+      doc.addFileToVFS('NotoSansJPFull.ttf', fullFontBase64);
+      doc.addFont('NotoSansJPFull.ttf', 'NotoSansJP', 'normal');
+    }
+    fullFontName = hasFull && hasMedium ? 'NotoSansJPFull' : null;
+    if (fullFontName) {
+      doc.addFileToVFS('NotoSansJPFull.ttf', fullFontBase64);
+      doc.addFont('NotoSansJPFull.ttf', fullFontName, 'normal');
+    }
+  }
+  function needsFullFont(text) {
+    if (!text) return false;
+    const s = String(text);
+    for (const ch of s) {
+      const c = ch.codePointAt(0);
+      if (c === 0x9AD9) return true;
+      if (c >= 0xF900 && c <= 0xFAFF) return true;
+      if (c >= 0x3400 && c <= 0x4DBF) return true;
+      if (c >= 0xFE30 && c <= 0xFE4F) return true;
+    }
+    return false;
+  }
+  function selectFontForText(text) {
+    if (fullFontName && needsFullFont(text)) doc.setFont(fullFontName, 'normal');
+    else doc.setFont('NotoSansJP', 'normal');
+  }
+  const origText = doc.text.bind(doc);
+  doc.text = function (text, x, y, options) { selectFontForText(text); return origText(text, x, y, options); };
+  const origGetTextWidth = doc.getTextWidth.bind(doc);
+  doc.getTextWidth = function (text) { selectFontForText(text); return origGetTextWidth(text); };
+
+  const pageW = 297, pageH = 210, margin = 8;
+  const event = data.event || {};
+
+  // 帳票風ヘッダー（配置表PDFと共通デザイン・ISCT準拠）
+  const headerW = pageW - 2 * margin;
+  doc.setFontSize(13);
+  doc.setTextColor(...ISCT.monoPrimary);
+  doc.text(event.name || '', margin, margin + 4.5);
+  doc.setFontSize(11);
+  doc.setTextColor(...ISCT.primary);
+  doc.text('配置表マップ', pageW - margin, margin + 4.5, { align: 'right' });
+  doc.setFontSize(8);
+  doc.setTextColor(...ISCT.monoSecondary);
+  const dateStr = event.date
+    ? (() => { const d = new Date(event.date); return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`; })()
+    : '';
+  const sub = [dateStr, event.venue].filter(Boolean).join('　');
+  if (sub) doc.text(sub, margin, margin + 8.5);
+  doc.setDrawColor(...ISCT.primary);
+  doc.setLineWidth(0.5);
+  doc.line(margin, margin + 10, margin + headerW, margin + 10);
+
+  const topY = margin + 14;
+  const availW = pageW - 2 * margin;
+  const availH = pageH - topY - margin;
+
+  if (!data.mapImage) {
+    doc.setFontSize(10);
+    doc.setTextColor(120, 120, 120);
+    doc.text('会場マップが未登録です', pageW / 2, topY + availH / 2, { align: 'center' });
+    const fname = `${buildPdfFilename(event.name, filename || '配置表マップ', event.date)}.pdf`;
+    if (preview) return { blobUrl: doc.output('bloburl'), filename: fname };
+    doc.save(fname);
+    return;
+  }
+
+  const { dataUri: png, width: iw, height: ih } = await imageToPngDataUri(data.mapImage);
+  const ratio = Math.min(availW / iw, availH / ih);
+  const drawW = iw * ratio;
+  const drawH = ih * ratio;
+  const imgX = margin + (availW - drawW) / 2;
+  const imgY = topY + (availH - drawH) / 2;
+
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.2);
+  doc.rect(imgX - 1, imgY - 1, drawW + 2, drawH + 2, 'FD');
+  doc.addImage(png, 'PNG', imgX, imgY, drawW, drawH);
+
+  const positions = data.positions || [];
+  const staffByName = {};
+  positions.forEach((p) => {
+    (staffByName[p.name] ||= []).push(...mapStaffListOf(p));
+  });
+  const pins = data.pins || [];
+  pins.forEach((pin) => {
+    if (pin.map_x == null || pin.map_y == null) return;
+    const cx = imgX + (pin.map_x / 100) * drawW;
+    const cy = imgY + (pin.map_y / 100) * drawH;
+    const staff = Array.from(new Set(staffByName[pin.position_name] || []));
+    drawPinLabel(doc, cx, cy, pin.position_name, staff, margin, pageW - margin);
+    doc.setFillColor(28, 49, 119);
+    doc.circle(cx, cy, 1.3, 'F');
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.3);
+    doc.circle(cx, cy, 1.3, 'S');
+  });
+
+  const fname = `${buildPdfFilename(event.name, filename || '配置表マップ', event.date)}.pdf`;
+  if (preview) return { blobUrl: doc.output('bloburl'), filename: fname };
+  doc.save(fname);
 }

@@ -10,10 +10,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: '必要なパラメータが不足しています' }, { status: 400 });
     }
 
-    // チーフの存在確認（asServiceRole を使用 - ポータルの未ログインユーザー対応）
+    // セクションチーフの存在確認（asServiceRole を使用 - ポータルの未ログインユーザー対応）
     const chiefStaff = (await base44.asServiceRole.entities.Staff.filter({ event_id: eventId, acast_id: chiefAcastId }))[0];
     if (!chiefStaff) {
-      return Response.json({ error: 'チーフが見つかりません' }, { status: 404 });
+      return Response.json({ error: 'セクションチーフが見つかりません' }, { status: 404 });
     }
 
     // ポジションの取得（asServiceRole を使用）
@@ -22,12 +22,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'ポジションが見つかりません' }, { status: 404 });
     }
 
-    // チーフ権限を確認（chief_names ベース・旧 chief_name はフォールバック）
+    // セクションチーフ権限を確認（chief_names ベース・旧 chief_name はフォールバック）
     const positionChiefs = (position.chief_names && position.chief_names.length > 0)
       ? position.chief_names
       : (position.chief_name ? [position.chief_name] : []);
     if (!positionChiefs.includes(chiefStaff.name)) {
-      return Response.json({ error: 'このポジションの担当チーフではありません' }, { status: 403 });
+      return Response.json({ error: 'このポジションの担当セクションチーフではありません' }, { status: 403 });
     }
 
     // 操作ログ用のスナップショット（削除前）
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     if (position.staff_names_shimote?.includes(staffName)) {
       updateData.staff_names_shimote = position.staff_names_shimote.filter((name: string) => name !== staffName);
     }
-    // 削除対象がチーフに設定されている場合は chief_names からも除去
+    // 削除対象がセクションチーフに設定されている場合は chief_names からも除去
     if (position.chief_names?.includes(staffName)) {
       updateData.chief_names = position.chief_names.filter((name: string) => name !== staffName);
     }

@@ -103,7 +103,7 @@ export default function StaffSearch() {
           <Button type="submit" disabled={loading}>検索</Button>
         </div>
         {showSuggest && suggestions.length > 0 && (
-          <div className="absolute z-30 mt-1 w-full max-w-[calc(100%-5rem)] rounded-lg border border-border bg-popover shadow-lg overflow-hidden">
+          <div className="absolute z-30 mt-1 w-full max-w-[calc(100%-5rem)] rounded-lg border border-border bg-popover shadow-elevated overflow-hidden">
             {suggestions.map((s) => (
               <button
                 key={s.name}
@@ -139,11 +139,12 @@ export default function StaffSearch() {
           <button
             key={s.name}
             onClick={() => setSelected(s)}
-            className="w-full text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:shadow-md transition"
+            className="w-full text-left rounded-xl border border-border bg-card p-3 shadow-card hover:shadow-elevated transition"
           >
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="font-semibold truncate">{s.name}</div>
+                {s.furigana && <div className="text-[11px] text-muted-foreground truncate">{s.furigana}</div>}
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   {s.gender && <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">{s.gender}</span>}
                   {s.roles.slice(0, 2).map((r) => (
@@ -151,7 +152,7 @@ export default function StaffSearch() {
                   ))}
                   {s.chiefCount > 0 && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                      チーフ{s.chiefCount}回
+                      セクションチーフ{s.chiefCount}回
                     </span>
                   )}
                 </div>

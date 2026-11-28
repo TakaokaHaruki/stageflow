@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip, HelpCircle, Database, Lock, NotebookPen } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip, HelpCircle, Database, Lock, NotebookPen, MapPin } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -30,10 +30,12 @@ import EventScreenSaver from "@/components/EventScreenSaver";
 import ThemeToggle from "@/components/ThemeToggle";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import SeatingMapViewer from "@/components/SeatingMapViewer";
+import PositionMapManager from "@/components/PositionMapManager";
 import VenueManager from "@/components/VenueManager";
 import TagManagement from "@/components/TagManagement";
 import EmergencyContactManager from "@/components/EmergencyContactManager";
 import SharedFileManager from "@/components/SharedFileManager";
+import MeetingSheetManager from "@/components/MeetingSheetManager";
 import EventRecordManager from "@/components/records/EventRecordManager";
 import { isEventLocked } from "@/lib/eventLock";
 import { useEditingPresence } from "@/hooks/useEditingPresence";
@@ -42,9 +44,9 @@ import EditingPresenceBanner from "@/components/EditingPresenceBanner";
 import { PresenceContext } from "@/lib/presenceContext";
 
 const tabVariants = {
-  initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.2 } },
-  exit: { opacity: 0, y: -8, transition: { duration: 0.15 } },
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
 };
 
 export default function EventDetail() {
@@ -133,7 +135,7 @@ export default function EventDetail() {
   if (!event) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <div className="w-full max-w-sm rounded-lg border border-border bg-card p-6 text-center shadow-sm">
+        <div className="w-full max-w-sm rounded-lg border border-border bg-card p-6 text-center shadow-card">
           <CalendarX2 className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
           <h1 className="text-base font-bold">イベントが見つかりません</h1>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -202,9 +204,11 @@ export default function EventDetail() {
   const desktopTabs = [
     { id: "staff", label: "スタッフ管理", icon: Users },
     { id: "dragdrop", label: "配置表", icon: ClipboardList },
+    { id: "position_map", label: "配置表マップ", icon: MapPin },
     { id: "records", label: "イベント記録", icon: NotebookPen },
     { id: "seating_map", label: "客席配置図", icon: LayoutTemplate },
     ...(isPrivileged ? [{ id: "files", label: "配布資料", icon: Paperclip }] : []),
+    ...(isPrivileged ? [{ id: "meeting_sheet", label: "ミーティング用紙", icon: FileText }] : []),
     ...(isAdmin ? [{ id: "admin", label: "管理者設定", icon: ShieldCheck }] : []),
     ...(isPrivileged ? [{ id: "settings", label: "管理設定", icon: Settings }] : []),
   ];
@@ -344,18 +348,18 @@ export default function EventDetail() {
       {/* 2-column layout: sidebar + content (PC only) */}
       <div className="sm:flex">
         <SidebarNav tabs={desktopTabs} activeTab={activeTab} onSelectTab={selectTab} topOffset={topBarHeight} />
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 sm:pl-12">
           {/* Child tab bar */}
           {isManagementTab && (
             <AdminSettingsNav
               groups={activeManagementGroups}
               activeSection={activeManagementChild}
               onSelect={selectManagementChild}
-              style={{ top: topBarHeight }}
+              style={{ top: `calc(var(--device-banner-height, 0px) + ${topBarHeight}px)` }}
             />
           )}
 
-          <div className="max-w-[1400px] mx-auto px-1 py-1 pb-16 sm:pb-8">
+          <div className="max-w-[1400px] mx-auto px-2 pt-0 pb-16 sm:pb-8">
         <PresenceContext.Provider value={{ reportActivity, presences, currentUserId: presenceUserId ?? currentUser?.id }}>
         <UserRestrictionBanner role={role} />
         {activeTab !== "seating_map" && (
@@ -388,7 +392,29 @@ export default function EventDetail() {
             {activeTab === "settings" && settingsSection === "preset_apply" && <PositionTypeManagement eventId={eventId} section="presets" mode="event-apply" />}
             {activeTab === "settings" && settingsSection === "emergency_contacts" && <EmergencyContactManager eventId={eventId} isLocked={eventLocked} />}
             {activeTab === "seating_map" && <SeatingMapViewer eventId={eventId} />}
+            {activeTab === "position_map" && <PositionMapManager eventId={eventId} />}
             {activeTab === "files" && <SharedFileManager eventId={eventId} showAll={true} isLocked={eventLocked} />}
+            {activeTab === "meeting_sheet" && (
+              <MeetingSheetManager
+                eventId={eventId}
+                eventName={event.name}
+                eventDate={event.date}
+                venue={event.venue}
+                eventChief={event.chief_name}
+                eventCloak={event.cloak_name}
+                canEdit={isPrivileged}
+                eventTimes={{
+                  time_priority: event.time_priority,
+                  time_priority_end: event.time_priority_end,
+                  time_open: event.time_open,
+                  time_open_end: event.time_open_end,
+                  time_start: event.time_start,
+                  time_start_end: event.time_start_end,
+                  time_end: event.time_end,
+                  time_end_end: event.time_end_end,
+                }}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
         </PresenceContext.Provider>
@@ -422,6 +448,8 @@ export default function EventDetail() {
           }}
         />
       )}
+
+
 
       {/* Bottom Tab Navigation - Mobile Only */}
       <div className="sm:hidden">

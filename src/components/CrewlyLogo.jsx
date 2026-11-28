@@ -1,38 +1,29 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 
+const LOGO_URL = "https://base44.app/api/apps/6a04d375dd2d16805b295b5a/files/mp/public/6a04d375dd2d16805b295b5a/d7e2f908adce0f4fa31f27d7e6ecb43b_crewly-logo.png";
+
+/**
+ * Crewly ロゴ（公式ロゴ画像）。
+ * シンボル + Crewly ワードマークの横長ロックアップ。
+ * 高さ基準で表示し、リンクはログイン状態に応じて遷移先を切り替える。
+ */
 export default function CrewlyLogo({ className = "", disableLink = false, administrator = false, iconOnly = false, size = 26 }) {
   const { isAuthenticated } = useAuth();
   const Wrapper = disableLink ? "div" : Link;
   const wrapperProps = disableLink
-    ? { className: `flex items-center gap-1 select-none shrink-0 group ${className}` }
-    : { to: isAuthenticated ? "/home" : "/", className: `flex items-center gap-1 select-none shrink-0 group ${className}`, "aria-label": "Crewly トップへ" };
-  const rectColor = administrator ? "hsl(335 72% 48%)" : "hsl(230 65% 45%)";
-  const dotColor = administrator ? "hsl(45 95% 60%)" : "hsl(195 80% 65%)";
+    ? { className: `flex items-center select-none shrink-0 group ${className}` }
+    : { to: isAuthenticated ? "/home" : "/", className: `flex items-center select-none shrink-0 group ${className}`, "aria-label": "Crewly トップへ" };
+
   return (
     <Wrapper {...wrapperProps}>
-      <svg
-        width={size}
+      <img
+        src={LOGO_URL}
+        alt="Crewly"
         height={size}
-        viewBox="0 0 26 26"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="shrink-0 group-hover:opacity-85 transition-opacity"
-      >
-        <rect width="26" height="26" rx="7" fill={rectColor} />
-        <path d="M 18.2 8.3 A 6.5 6.5 0 1 0 18.2 17.7" stroke="white" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-        <circle cx="18.2" cy="17.7" r="1.6" fill={dotColor} />
-      </svg>
-      {!iconOnly && (
-        <span className="flex flex-col justify-center leading-none group-hover:opacity-80 transition-opacity">
-          <span className="text-[14px] font-black tracking-tight leading-none text-foreground">
-            Crew<span className={administrator ? "" : "text-primary"} style={administrator ? { color: rectColor } : undefined}>ly</span>
-          </span>
-          {administrator && (
-            <span className="mt-0.5 text-[5px] font-extrabold leading-none tracking-[0.25px]" style={{ color: rectColor }}>ADMINISTRATOR</span>
-          )}
-        </span>
-      )}
+        className="shrink-0 group-hover:opacity-85 transition-opacity dark:brightness-0 dark:invert"
+        style={{ height: size, width: "auto" }}
+      />
     </Wrapper>
   );
 }

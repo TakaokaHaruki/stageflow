@@ -195,7 +195,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false, a
       onClick={(e) => { if (e.target === e.currentTarget && !processing) onClose(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-sm overflow-hidden"
+        className="bg-card border border-border rounded-xl shadow-elevated w-full max-w-sm overflow-hidden"
         initial={{ y: 40, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         exit={{ y: 40, opacity: 0 }}
@@ -302,8 +302,8 @@ export default function QrCameraScanner({ onScan, onClose, processing = false, a
                 className="flex flex-col items-center"
               >
                 <div className="relative mb-5">
-                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl" />
-                  <div className="relative w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-primary/20 rounded-xl blur-xl" />
+                  <div className="relative w-16 h-16 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center">
                     <ScanLine className="w-8 h-8 text-primary" />
                   </div>
                 </div>
@@ -313,7 +313,7 @@ export default function QrCameraScanner({ onScan, onClose, processing = false, a
                 </p>
                 <button
                   onClick={startCamera}
-                  className="flex items-center gap-2 text-sm text-white bg-primary px-7 py-3 rounded-2xl font-semibold shadow-lg active:scale-95 transition-transform"
+                  className="flex items-center gap-2 text-sm text-white bg-primary px-7 py-3 rounded-xl font-semibold shadow-lg active:scale-95 transition-transform"
                 >
                   <Camera className="w-4 h-4" />
                   カメラを起動

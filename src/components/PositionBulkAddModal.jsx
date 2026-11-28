@@ -114,7 +114,7 @@ export default function PositionBulkAddModal({ eventId, defaultTimeSlot = "é–‹å 
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-2xl shadow-xl w-full sm:max-w-sm p-4 max-h-[90dvh] flex flex-col"
+        className="bg-card border border-border rounded-xl shadow-elevated w-full sm:max-w-sm p-4 max-h-[90dvh] flex flex-col"
         initial={{ y: 34, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}

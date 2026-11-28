@@ -62,7 +62,7 @@ export default function PasswordChangeCard({ currentUser }) {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-md">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-card">
       <div className="mb-3 flex items-center gap-2">
         <KeyRound className="h-4 w-4 text-primary" />
         <h2 className="text-sm font-bold">パスワード変更</h2>

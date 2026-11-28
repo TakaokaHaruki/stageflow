@@ -17,13 +17,13 @@ export function staffSideInPosition(position, name) {
   return "";
 }
 
-// ポジションのチーフ名リストを取得（chief_names 優先、次に chief_name）
+// ポジションのセクションチーフ名リストを取得（chief_names 優先、次に chief_name）
 export function getChiefNames(position) {
   if (position.chief_names && position.chief_names.length > 0) return position.chief_names;
   return position.chief_name ? [position.chief_name] : [];
 }
 
-// 指定スタッフがポジションのチーフか
+// 指定スタッフがポジションのセクションチーフか
 export function isChiefOfPosition(position, name) {
   return getChiefNames(position).includes(name);
 }

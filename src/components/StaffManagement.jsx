@@ -296,6 +296,7 @@ export default function StaffManagement({ eventId, isLocked = false }) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1 flex-wrap">
                       <p className="font-medium text-xs" style={{ color: getStaffColor(staff) }}>{displayName}</p>
+                      {staff.furigana && <span className="text-[10px] text-muted-foreground leading-tight">{staff.furigana}</span>}
                       {staff.note && <span className="text-[10px] text-muted-foreground">({staff.note})</span>}
                       {(staff.roles || []).map((role) => (
                         <span key={role} className={`inline-flex items-center gap-0.5 text-[10px] px-1 rounded border font-medium ${getBadgeClass(role)}`}>

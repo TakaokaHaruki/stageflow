@@ -91,7 +91,7 @@ export default function ShowPartOverview({ positions = [], staffList = [], parts
             ].filter(Boolean);
             const isSufficient = assignedNames.size >= staffList.length;
             return (
-              <div key={part} className="rounded-xl border border-border bg-card p-2 shadow-sm">
+              <div key={part} className="rounded-xl border border-border bg-card p-2 shadow-card">
                 <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                   <span className="text-sm font-bold">{part}部</span>
                   <span className={`flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
@@ -132,7 +132,7 @@ export default function ShowPartOverview({ positions = [], staffList = [], parts
             スタッフが登録されていません
           </p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+          <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-card">
             <table className="w-full text-[11px] min-w-[480px]">
               <thead>
                 <tr className="border-b border-border bg-muted/50">

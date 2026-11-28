@@ -12,6 +12,7 @@ import { X, CalendarClock } from "lucide-react";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import TimeField from "@/components/TimeField";
+import SaveMethodHint from "@/components/SaveMethodHint";
 
 export default function EventFormModal({ event, onClose, onSaved }) {
   const queryClient = useQueryClient();
@@ -144,7 +145,6 @@ export default function EventFormModal({ event, onClose, onSaved }) {
       const before = prevFormRef.current;
       mutation.mutate(form, {
         onSuccess: () => {
-          toast.success("保存しました");
           record({ action_type: "event_update", description: `イベント「${form.name}」を更新しました`, entity_type: "Event", entity_id: event.id, snapshot_before: before, snapshot_after: form });
           prevFormRef.current = form;
         }
@@ -162,7 +162,7 @@ export default function EventFormModal({ event, onClose, onSaved }) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
-        className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[90dvh] overflow-y-auto"
+        className="bg-card border border-border rounded-xl shadow-elevated w-full max-w-md p-6 max-h-[90dvh] overflow-y-auto"
         initial={{ y: 32, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
@@ -172,6 +172,9 @@ export default function EventFormModal({ event, onClose, onSaved }) {
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted transition-colors">
             <X className="w-5 h-5" />
           </button>
+        </div>
+        <div className="mb-4">
+          <SaveMethodHint mode={event ? "realtime" : "explicit"} />
         </div>
         <div className="space-y-3">
           <div>

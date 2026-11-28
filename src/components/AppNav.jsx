@@ -75,10 +75,11 @@ export default function AppNav() {
       <GlobalBanner />
       <UserNotificationBanner />
       {/* 共通ヘッダ */}
-      <div ref={headerRef} className="bg-card/80 dark:bg-card/70 backdrop-blur-md border-b border-border sticky z-50 safe-area-top" style={{ top: "var(--device-banner-height, 0px)" }}>
-        <div className="max-w-[1400px] mx-auto px-2 pb-1.5 pt-1 flex items-center gap-1.5">
+      <div ref={headerRef} className="bg-card/90 dark:bg-card/80 backdrop-blur-md border-b border-border sticky z-50 safe-area-top" style={{ top: "var(--device-banner-height, 0px)" }}>
+        <div className="max-w-[1400px] mx-auto px-3 pb-1.5 pt-1.5 flex items-center gap-2">
           <CrewlyLogo className="mr-1" administrator={isAdmin} />
-          <h1 className="shrink-0 text-base font-bold tracking-tight text-foreground">{title}</h1>
+          <div className="hidden h-5 w-px bg-border sm:block" />
+          <h1 className="shrink-0 text-[15px] font-bold tracking-tight text-foreground">{title}</h1>
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
             {profileError ? (
@@ -100,18 +101,18 @@ export default function AppNav() {
                 <LogIn className="w-3 h-3" />ログイン
               </Button>
             ) : (
-              <div className="flex h-11 max-w-36 shrink-0 items-center gap-0.5 rounded-md bg-muted px-0.5 sm:h-7 sm:gap-1 sm:px-1">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-5 sm:w-5">
+              <div className="flex h-11 max-w-40 shrink-0 items-center gap-1 rounded-md border border-border bg-card px-1 sm:h-8 sm:gap-1.5 sm:px-1.5">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 sm:h-6 sm:w-6">
                   <UserIcon className="w-3 h-3 text-primary" />
                 </div>
                 <span className="hidden max-w-20 truncate text-[11px] font-medium sm:block">{getUserDisplayName(currentUser)}</span>
                 <button
                   onClick={() => setConfirmLogout(true)}
-                  className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition-colors hover:text-destructive sm:h-5 sm:w-5"
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-destructive sm:h-6 sm:w-6"
                   title="ログアウト"
                   aria-label="ログアウト"
                 >
-                  <LogOut className="h-3 w-3" />
+                  <LogOut className="h-3.5 w-3.5" />
                 </button>
               </div>
             )}
@@ -121,7 +122,7 @@ export default function AppNav() {
 
       <div className="sm:flex">
         <SidebarNav tabs={navItems} activeTab={activeTab} onSelectTab={handleSelect} topOffset={headerHeight} />
-        <div className="flex-1 min-w-0 pb-16 sm:pb-0">
+        <div className="flex-1 min-w-0 pb-16 sm:pb-0 sm:pl-12">
           <Outlet />
         </div>
       </div>

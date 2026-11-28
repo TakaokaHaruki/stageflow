@@ -14,7 +14,7 @@ export default function EventRecordCard({ record, showEvent = false, onEdit, onD
   const dateLabel = [formatJaDate(record.event_date), record.author_name].filter(Boolean).join("・");
 
   return (
-    <div className="space-y-2 rounded-2xl border border-border bg-card p-3 shadow-sm">
+    <div className="space-y-2 rounded-xl border border-border bg-card p-3 shadow-card">
       <div className="flex items-center gap-1.5">
         <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${category.badgeClass}`}>
           <Icon className="h-3 w-3" />

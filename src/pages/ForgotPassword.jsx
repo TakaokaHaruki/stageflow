@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, ArrowLeft } from "lucide-react";
+import CrewlyLogo from "@/components/CrewlyLogo";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -35,8 +36,8 @@ export default function ForgotPassword() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
-          <Mail className="w-7 h-7 text-primary" />
+        <div className="flex justify-center mb-5">
+          <CrewlyLogo disableLink size={44} />
         </div>
 
         <h1 className="text-2xl font-bold text-foreground mb-1 tracking-tight">パスワードをお忘れの方</h1>

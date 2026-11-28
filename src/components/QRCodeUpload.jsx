@@ -136,7 +136,7 @@ export default function QRCodeUpload({ onQRRead, loading, error }) {
               <img
                 src={previewUrl}
                 alt="QR コード"
-                className="max-h-48 mx-auto rounded-lg shadow-sm"
+                className="max-h-48 mx-auto rounded-lg shadow-card"
               />
               {loading && (
                 <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
@@ -149,7 +149,7 @@ export default function QRCodeUpload({ onQRRead, loading, error }) {
                   e.stopPropagation();
                   handleReset();
                 }}
-                className="absolute top-2 right-2 w-7 h-7 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90 transition-colors shadow-lg"
+                className="absolute top-2 right-2 w-7 h-7 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90 transition-colors shadow-elevated"
                 disabled={loading}
               >
                 <X className="w-4 h-4" />

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,79 +6,85 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 215 30% 17%;
+    /* ISCT Design System — exact brand values applied via semantic tokens.
+       Brand: primary #1c3177 / secondary #7f96c2 / tertiary #cfdbed / quaternary #f9fbff
+       Mono: primary #1a1a1a / secondary #767676 / tertiary #cccccc / quaternary #ebebeb / quinary #fafafa */
+    --background: 220 40% 99%;
+    --foreground: 0 0% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 215 30% 17%;
+    --card-foreground: 0 0% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 30% 17%;
-    --primary: 211 96% 34%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 226 62% 29%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 212 38% 92%;
-    --secondary-foreground: 215 30% 17%;
-    --muted: 212 38% 92%;
-    --muted-foreground: 215 18% 45%;
-    --accent: 211 100% 93%;
-    --accent-foreground: 211 96% 30%;
-    --destructive: 0 72% 51%;
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 38%;
+    --accent: 217 38% 87%;
+    --accent-foreground: 226 62% 29%;
+    --destructive: 0 84% 56%;
     --destructive-foreground: 0 0% 100%;
-    --border: 213 32% 90%;
-    --input: 213 32% 90%;
-    --ring: 211 96% 34%;
-    --radius: 0.6rem;
+    --border: 220 14% 80%;
+    --input: 220 14% 80%;
+    --ring: 226 62% 29%;
+    --radius: 0.5rem;
     --app-header-height: 56px;
-    --sidebar-background: 214 50% 15%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 211 96% 52%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 214 45% 22%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 214 45% 24%;
-    --sidebar-ring: 211 96% 52%;
+    --sidebar-background: 226 40% 18%;
+    --sidebar-foreground: 220 30% 92%;
+    --sidebar-primary: 220 36% 70%;
+    --sidebar-primary-foreground: 226 50% 16%;
+    --sidebar-accent: 226 34% 24%;
+    --sidebar-accent-foreground: 220 30% 96%;
+    --sidebar-border: 226 30% 28%;
+    --sidebar-ring: 220 36% 70%;
   }
 
   .dark {
-    --background: 215 30% 9%;
-    --foreground: 210 40% 98%;
-    --card: 215 28% 13%;
-    --card-foreground: 210 40% 98%;
-    --popover: 215 28% 13%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 211 92% 62%;
-    --primary-foreground: 215 30% 9%;
-    --secondary: 215 28% 19%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 215 28% 17%;
-    --muted-foreground: 214 18% 64%;
-    --accent: 212 40% 22%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 72% 51%;
+    --background: 226 30% 9%;
+    --foreground: 220 20% 92%;
+    --card: 225 28% 13%;
+    --card-foreground: 220 20% 92%;
+    --popover: 225 28% 13%;
+    --popover-foreground: 220 20% 92%;
+    --primary: 220 44% 72%;
+    --primary-foreground: 226 40% 12%;
+    --secondary: 225 24% 18%;
+    --secondary-foreground: 220 20% 92%;
+    --muted: 225 24% 16%;
+    --muted-foreground: 220 14% 62%;
+    --accent: 226 30% 24%;
+    --accent-foreground: 217 50% 86%;
+    --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 215 25% 22%;
-    --input: 215 25% 22%;
-    --ring: 211 92% 62%;
-    --sidebar-background: 215 35% 8%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 211 92% 62%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 28% 14%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 215 28% 16%;
-    --sidebar-ring: 211 92% 62%;
+    --border: 225 22% 22%;
+    --input: 225 22% 22%;
+    --ring: 220 44% 72%;
+    --sidebar-background: 232 34% 10%;
+    --sidebar-foreground: 220 22% 82%;
+    --sidebar-primary: 220 44% 74%;
+    --sidebar-primary-foreground: 226 40% 12%;
+    --sidebar-accent: 225 28% 16%;
+    --sidebar-accent-foreground: 220 30% 96%;
+    --sidebar-border: 225 26% 18%;
+    --sidebar-ring: 220 44% 74%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/40;
   }
   body {
-    @apply bg-background text-foreground font-inter;
+    @apply bg-background text-foreground font-inter antialiased;
     overscroll-behavior: none;
+    font-feature-settings: "palt" 1;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-inter;
+    letter-spacing: -0.01em;
+    font-feature-settings: "palt" 1;
   }
 
   /* iOS compatibility */
@@ -88,12 +94,10 @@
     -webkit-user-select: none;
   }
 
-  /* Allow text selection in descriptions and content areas */
   p, span, div:not(button):not([role="button"]):not(header):not(nav) {
     @apply select-auto;
   }
 
-  /* Hide scrollbars globally */
   * {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -110,11 +114,26 @@
   }
 }
 
-/* Fix native select dropdown in dark mode: render OS popup with dark scheme */
+@layer utilities {
+  /* ISCT Elevation LV1 (cards, surfaces) */
+  .shadow-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+  .dark .shadow-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  /* ISCT Elevation LV2 (modals, popovers, floating) */
+  .shadow-elevated {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+  }
+  .dark .shadow-elevated {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+}
+
 select { color-scheme: light; }
 .dark select { color-scheme: dark; }
 
-/* Fix date/time input native UI */
 input[type="date"],
 input[type="time"] {
   -webkit-appearance: none;
@@ -135,4 +154,25 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   .safe-area-top {
     padding-top: max(env(safe-area-inset-top), 0);
   }
+}
+
+/* リッチテキストエディタ（react-quill snow）のISCT準拠サイジング */
+.rich-text-editor .ql-toolbar {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  border-color: hsl(var(--border));
+  background: hsl(var(--muted) / 0.4);
+  padding: 4px 6px;
+}
+.rich-text-editor .ql-container {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  border-color: hsl(var(--border));
+  font-family: "Noto Sans JP", Inter, sans-serif;
+  font-size: 13px;
+}
+.rich-text-editor .ql-editor {
+  min-height: var(--rt-min-h, 64px);
+  padding: 8px 10px;
+  line-height: 1.6;
 }

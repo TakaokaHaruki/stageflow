@@ -19,17 +19,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'chiefAcastId, targetAcastId, positionId, eventId は必須です' }, { status: 400 });
     }
 
-    // チーフ情報を取得
+    // セクションチーフ情報を取得
     const chiefStaffList = await base44.asServiceRole.entities.Staff.filter({
       acast_id: chiefAcastId,
       event_id: eventId,
     });
     if (!chiefStaffList || chiefStaffList.length === 0) {
-      return Response.json({ error: 'チーフ情報が見つかりません' }, { status: 404 });
+      return Response.json({ error: 'セクションチーフ情報が見つかりません' }, { status: 404 });
     }
     const chief = chiefStaffList[0];
 
-    // ポジションを取得してチーフ権限を確認（chief_name ベース）
+    // ポジションを取得してセクションチーフ権限を確認（chief_name ベース）
     let position;
     try {
       position = await base44.asServiceRole.entities.Position.get(positionId);
@@ -40,11 +40,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'ポジションが見つかりません' }, { status: 404 });
     }
 
-    // チーフ権限を確認（同一イベント内のいずれかのポジションの chief_names に含まれること）
+    // セクションチーフ権限を確認（同一イベント内のいずれかのポジションの chief_names に含まれること）
     const eventAllPositions = await base44.asServiceRole.entities.Position.filter({ event_id: eventId });
     const isChiefInEvent = (eventAllPositions || []).some((p) => getChiefNames(p).includes(chief.name));
     if (!isChiefInEvent) {
-      return Response.json({ error: 'このイベントの担当チーフではありません' }, { status: 403 });
+      return Response.json({ error: 'このイベントの担当セクションチーフではありません' }, { status: 403 });
     }
 
     // 対象スタッフを取得

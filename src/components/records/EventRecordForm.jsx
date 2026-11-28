@@ -70,7 +70,7 @@ export default function EventRecordForm({ eventId, eventName = "", eventDate = "
   };
 
   return (
-    <div className="space-y-2.5 rounded-2xl border border-border bg-card p-3 shadow-sm">
+    <div className="space-y-2.5 rounded-xl border border-border bg-card p-3 shadow-card">
       <div className="flex items-center justify-between">
         <p className="text-xs font-bold">{isEdit ? "記録を編集" : "記録を追加"}</p>
         {isEdit && (

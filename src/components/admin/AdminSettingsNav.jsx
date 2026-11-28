@@ -9,7 +9,7 @@ export default function AdminSettingsNav({ groups, activeSection, onSelect, clas
   const groupItems = groups.map(({ id, label, icon }) => ({ id, label, icon }));
 
   return (
-    <div className={`sticky top-[var(--app-header-height)] z-40 mb-3 border-b border-border/70 bg-muted/40 ${className}`} style={style}>
+    <div className={`sticky top-[var(--app-header-height)] z-20 mb-3 border-b border-border/70 bg-muted/40 ${className}`} style={style}>
       <SectionTabBar
         items={groupItems}
         activeId={activeGroup.id}

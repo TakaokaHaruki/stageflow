@@ -112,7 +112,7 @@ export default function AccessLogPanel() {
   return (
     <div>
       {/* フィルター */}
-      <div className="mb-3 rounded-2xl border border-border bg-card p-3 shadow-md">
+      <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-card">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           <label className="space-y-1">
             <span className="text-[10px] font-medium text-muted-foreground">開始日</span>
@@ -209,7 +209,7 @@ export default function AccessLogPanel() {
       </div>
 
       {/* 一覧 */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-md">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-card">
         {isLoading ? (
           <div className="flex justify-center py-12">
             <div className="h-6 w-6 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />

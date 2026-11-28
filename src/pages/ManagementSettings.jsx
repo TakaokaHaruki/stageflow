@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Settings, ClipboardList, Tag } from "lucide-react";
+import { ShieldCheck, Settings, ClipboardList, Tag, FileStack } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PositionTypeManagement from "@/components/PositionTypeManagement";
 import PositionPresetManager from "@/components/PositionPresetManager";
 import TagManagement from "@/components/TagManagement";
+import MeetingSheetTemplateManager from "@/components/MeetingSheetTemplateManager";
 import { useUserRole } from "@/hooks/useUserRole";
 import SectionTabBar from "@/components/SectionTabBar";
 
@@ -12,6 +13,7 @@ const SECTIONS = [
   { id: "positions", label: "ポジション共通定義", icon: Settings },
   { id: "presets", label: "プリセット共通定義", icon: ClipboardList },
   { id: "tag_management", label: "タグ・役割管理", icon: Tag },
+  { id: "meeting_templates", label: "用紙テンプレート", icon: FileStack },
 ];
 
 export default function ManagementSettings() {
@@ -36,18 +38,19 @@ export default function ManagementSettings() {
       case "positions": return <PositionTypeManagement mode="global" section="positions" />;
       case "presets": return <PositionPresetManager mode="global" />;
       case "tag_management": return <TagManagement />;
+      case "meeting_templates": return <MeetingSheetTemplateManager />;
       default: return null;
     }
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] px-1.5 pb-2">
+    <div className="mx-auto max-w-[1400px] px-2 pb-2">
         {/* Section bar */}
         <SectionTabBar
           items={SECTIONS}
           activeId={section}
           onSelect={setSection}
-          className="sticky top-[var(--app-header-height)] z-40 mb-3"
+          className="sticky top-[var(--app-header-height)] z-20 mb-3 -mx-2 px-2"
         />
 
         <AnimatePresence mode="wait" initial={false}>
