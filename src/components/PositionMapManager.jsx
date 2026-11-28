@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Users, Layers, Trash2, Crosshair } from "lucide-react";
+import { MapPin, Users, Layers, Trash2, Crosshair, Download } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/SectionHeader";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePositionMapPins } from "@/hooks/usePositionMapPins";
+import PdfExportMenu from "@/components/PdfExportMenu";
 import { loadEventById } from "@/lib/eventLoader";
 import { TIME_SLOT_STYLES } from "@/lib/constants";
 
@@ -31,6 +32,7 @@ export default function PositionMapManager({ eventId }) {
   const [activePositionName, setActivePositionName] = useState(null);
   const [svgContent, setSvgContent] = useState("");
   const [mapSrc, setMapSrc] = useState("");
+  const [showPdfMenu, setShowPdfMenu] = useState(false);
 
   const { data: event } = useQuery({
     queryKey: ["event", eventId],
@@ -192,6 +194,18 @@ export default function PositionMapManager({ eventId }) {
         icon={MapPin}
         title="配置表マップ"
         description={positions.length ? `${positions.length}ポジション` : undefined}
+        actions={
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1 h-7 text-[11px] px-1.5 shrink-0"
+            onClick={() => setShowPdfMenu(true)}
+            disabled={noMap || !mapSrc}
+          >
+            <Download className="w-3 h-3" />
+            PDF出力
+          </Button>
+        }
       />
 
       {noVenue && (
@@ -346,6 +360,9 @@ export default function PositionMapManager({ eventId }) {
           )}
         </div>
       </div>
+      {showPdfMenu && (
+        <PdfExportMenu eventId={eventId} event={event} onClose={() => setShowPdfMenu(false)} initialSelected={["map"]} />
+      )}
     </div>
   );
 }

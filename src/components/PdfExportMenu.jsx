@@ -15,7 +15,7 @@ import { toast } from "sonner";
  * 配置表・配置マップ・ミーティング用紙をチェックボックスで選択し、
  * 個別にプレビュー、または選択分を一括出力できる。
  */
-export default function PdfExportMenu({ eventId, event, onClose }) {
+export default function PdfExportMenu({ eventId, event, onClose, initialSelected }) {
   const { canAccess } = useDeviceAuth();
   const { sheets, sheetsLoading, positions, pins, mapSrc, hasMap } = usePdfExportData(eventId, event);
 
@@ -46,7 +46,12 @@ export default function PdfExportMenu({ eventId, event, onClose }) {
     return list;
   }, [positions, hasMap, sheets]);
 
-  const [selected, setSelected] = useState(() => new Set(items.filter((i) => i.available).map((i) => i.id)));
+  const [selected, setSelected] = useState(() => {
+    if (initialSelected && initialSelected.length > 0) {
+      return new Set(initialSelected.filter((id) => items.some((i) => i.id === id && i.available)));
+    }
+    return new Set(items.filter((i) => i.available).map((i) => i.id));
+  });
   const [generatingId, setGeneratingId] = useState(null);
   const [outputting, setOutputing] = useState(false);
   const [preview, setPreview] = useState(null); // { blobUrl, filename }

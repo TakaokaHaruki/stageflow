@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { FileText, Plus, Pencil, Trash2, Loader2, FileDown } from "lucide-react";
 import SectionHeader from "@/components/SectionHeader";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import MeetingSheetEditor from "@/components/MeetingSheetEditor";
+import PdfExportMenu from "@/components/PdfExportMenu";
 import { getJstNow } from "@/lib/accessTracker";
 
 export default function MeetingSheetManager({ eventId, eventName, eventDate, venue, eventChief, eventCloak, canEdit, eventTimes }) {
@@ -15,6 +16,7 @@ export default function MeetingSheetManager({ eventId, eventName, eventDate, ven
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [pdfSheetId, setPdfSheetId] = useState(null);
 
   const loadSheets = async () => {
     setLoading(true);
@@ -124,6 +126,9 @@ export default function MeetingSheetManager({ eventId, eventName, eventDate, ven
                 </div>
               </div>
               <div className="flex flex-wrap gap-1.5 mt-2">
+                <Button size="sm" variant="outline" onClick={() => { setPdfSheetId(sheet.id); }}>
+                  <FileDown className="h-3.5 w-3.5" />PDF出力
+                </Button>
                 {canEdit && (
                   <>
                     <Button size="sm" variant="ghost" onClick={() => openEdit(sheet)}>
@@ -161,6 +166,15 @@ export default function MeetingSheetManager({ eventId, eventName, eventDate, ven
           confirmLabel="削除"
           onCancel={() => setDeleteTarget(null)}
           onConfirm={handleDelete}
+        />
+      )}
+
+      {pdfSheetId && (
+        <PdfExportMenu
+          eventId={eventId}
+          event={{ name: eventName, date: eventDate, venue, chief_name: eventChief, cloak_name: eventCloak }}
+          onClose={() => setPdfSheetId(null)}
+          initialSelected={[`sheet_${pdfSheetId}`]}
         />
       )}
     </div>

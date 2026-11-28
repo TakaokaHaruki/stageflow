@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ClipboardList, Plus, Users, Trash2, Wand2, ChevronDown, Pencil, Eye, PencilLine } from "lucide-react";
+import { ClipboardList, Plus, Users, Trash2, Wand2, ChevronDown, Pencil, Eye, PencilLine, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import PositionCard from "@/components/PositionCard";
@@ -9,6 +9,7 @@ import PositionBulkAddModal from "@/components/PositionBulkAddModal";
 import PositionFormModal from "@/components/PositionFormModal";
 import StaffEditModal from "@/components/StaffEditModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import PdfExportMenu from "@/components/PdfExportMenu";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { TIME_SLOTS, TIME_SLOT_STYLES, CONTINUOUS_SLOT } from "@/lib/constants";
@@ -240,6 +241,7 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(null); // slot name
   const [showAutoAssign, setShowAutoAssign] = useState(false);
+  const [showPdfMenu, setShowPdfMenu] = useState(false);
 
   const stopAutoScroll = useCallback(() => {
     autoScrollActiveRef.current = false;
@@ -663,6 +665,9 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
               <Wand2 className="w-3 h-3" />自動配置
             </Button>
           )}
+          <Button size="sm" variant="outline" className="gap-0.5 h-7 text-[11px] px-1.5 shrink-0" onClick={() => setShowPdfMenu(true)} disabled={positions.length === 0}>
+            <Download className="w-3 h-3" />PDF
+          </Button>
           </div>
         )}
       />
@@ -1093,6 +1098,9 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
           recentEventCount={trendEvents?.length || 0}
           onClose={() => setTrendStaff(null)}
         />
+      )}
+      {showPdfMenu && (
+        <PdfExportMenu eventId={eventId} event={event} onClose={() => setShowPdfMenu(false)} initialSelected={["assignment"]} />
       )}
     </div>
   );
