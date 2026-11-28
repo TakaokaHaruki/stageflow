@@ -5,7 +5,7 @@ import { drawRichText, estimateRichTextHeight } from "@/lib/richTextPdf";
 // A4縦・ミーティング用紙PDF出力
 // 配置表PDFの帳票デザインを踏襲しつつ、ベタ塗を廃して印刷インクを抑えたISCT準拠レイアウト。
 // チーフ・クローク欄＋横一列のタイムスケジュール表＋本文セクション（リッチテキスト対応・1pt小）。
-export async function generateMeetingSheetPDF(sheet) {
+export async function generateMeetingSheetPDF(sheet, { preview = false } = {}) {
   const { jsPDF } = await import("jspdf");
   const { bizud, full, medium } = await loadJapaneseFont();
 
@@ -241,5 +241,7 @@ export async function generateMeetingSheetPDF(sheet) {
     else rightY += blockH + 2;
   });
 
-  doc.save(`${buildPdfFilename(sheet.event_name, "ミーティング用紙", sheet.event_date)}.pdf`);
+  const fname = `${buildPdfFilename(sheet.event_name, "ミーティング用紙", sheet.event_date)}.pdf`;
+  if (preview) return { blobUrl: doc.output('bloburl'), filename: fname };
+  doc.save(fname);
 }

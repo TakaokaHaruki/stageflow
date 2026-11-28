@@ -2,11 +2,10 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus, Pencil, Trash2, FileDown, Loader2 } from "lucide-react";
+import { FileText, Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import SectionHeader from "@/components/SectionHeader";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import MeetingSheetEditor from "@/components/MeetingSheetEditor";
-import { generateMeetingSheetPDF } from "@/lib/meetingSheetPdf";
 import { getJstNow } from "@/lib/accessTracker";
 
 export default function MeetingSheetManager({ eventId, eventName, eventDate, venue, eventChief, eventCloak, canEdit, eventTimes }) {
@@ -15,7 +14,6 @@ export default function MeetingSheetManager({ eventId, eventName, eventDate, ven
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [exporting, setExporting] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const loadSheets = async () => {
@@ -84,17 +82,6 @@ export default function MeetingSheetManager({ eventId, eventName, eventDate, ven
     }
   };
 
-  const handleExport = async (sheet) => {
-    setExporting(true);
-    try {
-      await generateMeetingSheetPDF(sheet);
-    } catch (e) {
-      toast.error("PDF出力に失敗しました");
-    } finally {
-      setExporting(false);
-    }
-  };
-
   return (
     <div>
       <SectionHeader
@@ -137,9 +124,6 @@ export default function MeetingSheetManager({ eventId, eventName, eventDate, ven
                 </div>
               </div>
               <div className="flex flex-wrap gap-1.5 mt-2">
-                <Button size="sm" variant="outline" onClick={() => handleExport(sheet)} disabled={exporting}>
-                  <FileDown className="h-3.5 w-3.5" />PDF出力
-                </Button>
                 {canEdit && (
                   <>
                     <Button size="sm" variant="ghost" onClick={() => openEdit(sheet)}>

@@ -1,16 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Download, Users, Layers, Trash2, Crosshair } from "lucide-react";
+import { MapPin, Users, Layers, Trash2, Crosshair } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/SectionHeader";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePositionMapPins } from "@/hooks/usePositionMapPins";
-import { useDeviceAuth } from "@/hooks/useDeviceAuth";
-import { generateMapPDF } from "@/lib/pdfGenerator";
 import { loadEventById } from "@/lib/eventLoader";
 import { TIME_SLOT_STYLES } from "@/lib/constants";
-import { toast } from "sonner";
 
 function svgDataUri(svg) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg || "")}`;
@@ -29,13 +26,11 @@ function staffListOf(pos) {
 export default function PositionMapManager({ eventId }) {
   const { canEdit } = useUserRole();
   const editable = canEdit;
-  const { canAccess } = useDeviceAuth();
 
   const mapWrapRef = useRef(null);
   const [activePositionName, setActivePositionName] = useState(null);
   const [svgContent, setSvgContent] = useState("");
   const [mapSrc, setMapSrc] = useState("");
-  const [exporting, setExporting] = useState(false);
 
   const { data: event } = useQuery({
     queryKey: ["event", eventId],
@@ -188,34 +183,6 @@ export default function PositionMapManager({ eventId }) {
     }
   };
 
-  const handleExportPDF = async () => {
-    if (!mapSrc) return;
-    if (!canAccess("export_pdf")) {
-      toast.error("この機能は貸与端末限定です。貸与端末で認証してください。");
-      return;
-    }
-    setExporting(true);
-    try {
-      await generateMapPDF(
-        {
-          event,
-          mapImage: mapSrc,
-          pins: pins.map((p) => ({
-            position_name: p.position_name,
-            map_x: p.map_x,
-            map_y: p.map_y,
-          })),
-          positions: rawPositions,
-        },
-        "配置表マップ"
-      );
-    } catch (err) {
-      toast.error("PDF出力に失敗しました");
-    } finally {
-      setExporting(false);
-    }
-  };
-
   const noVenue = !venueId;
   const noMap = !mapImageSource;
 
@@ -225,18 +192,6 @@ export default function PositionMapManager({ eventId }) {
         icon={MapPin}
         title="配置表マップ"
         description={positions.length ? `${positions.length}ポジション` : undefined}
-        actions={
-          <Button
-            size="sm"
-            variant="outline"
-            className="gap-1 h-7 text-[11px] px-1.5 shrink-0"
-            onClick={handleExportPDF}
-            disabled={exporting || noMap || !mapSrc}
-          >
-            <Download className="w-3 h-3" />
-            {exporting ? "..." : "PDF出力"}
-          </Button>
-        }
       />
 
       {noVenue && (

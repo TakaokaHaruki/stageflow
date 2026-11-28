@@ -1121,7 +1121,7 @@ export function buildPdfFilename(eventName, docType, dateStr) {
   return `${name}_${docType}_${date}`;
 }
 
-export async function generatePositionPDF(data, filename) {
+export async function generatePositionPDF(data, filename, { preview = false } = {}) {
   const { jsPDF } = await import('jspdf');
   const { bizud: bizudFontBase64, full: fullFontBase64, medium: mediumFontBase64 } = await loadJapaneseFont();
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -1231,7 +1231,9 @@ export async function generatePositionPDF(data, filename) {
     }
   }
 
-  doc.save(`${buildPdfFilename(data.event?.name, filename || '配置表', data.event?.date)}.pdf`);
+  const fname = `${buildPdfFilename(data.event?.name, filename || '配置表', data.event?.date)}.pdf`;
+  if (preview) return { blobUrl: doc.output('bloburl'), filename: fname };
+  doc.save(fname);
 }
 
 // ---- 配置表マップPDF ----
@@ -1304,7 +1306,7 @@ function drawPinLabel(doc, cx, cy, name, staff, pageMinX, pageMaxX) {
 }
 
 // 配置表マップPDF: 会場マップ画像＋ピン（ポジション名・担当スタッフ）を出力
-export async function generateMapPDF(data, filename) {
+export async function generateMapPDF(data, filename, { preview = false } = {}) {
   const { jsPDF } = await import('jspdf');
   const { bizud: bizudFontBase64, full: fullFontBase64, medium: mediumFontBase64 } = await loadJapaneseFont();
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
@@ -1382,7 +1384,9 @@ export async function generateMapPDF(data, filename) {
     doc.setFontSize(10);
     doc.setTextColor(120, 120, 120);
     doc.text('会場マップが未登録です', pageW / 2, topY + availH / 2, { align: 'center' });
-    doc.save(`${buildPdfFilename(event.name, filename || '配置表マップ', event.date)}.pdf`);
+    const fname = `${buildPdfFilename(event.name, filename || '配置表マップ', event.date)}.pdf`;
+    if (preview) return { blobUrl: doc.output('bloburl'), filename: fname };
+    doc.save(fname);
     return;
   }
 
@@ -1418,5 +1422,7 @@ export async function generateMapPDF(data, filename) {
     doc.circle(cx, cy, 1.3, 'S');
   });
 
-  doc.save(`${buildPdfFilename(event.name, filename || '配置表マップ', event.date)}.pdf`);
+  const fname = `${buildPdfFilename(event.name, filename || '配置表マップ', event.date)}.pdf`;
+  if (preview) return { blobUrl: doc.output('bloburl'), filename: fname };
+  doc.save(fname);
 }

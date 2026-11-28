@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { ClipboardList, Plus, Download, Users, Trash2, Wand2, ChevronDown, Pencil, Eye, PencilLine } from "lucide-react";
+import { ClipboardList, Plus, Users, Trash2, Wand2, ChevronDown, Pencil, Eye, PencilLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import PositionCard from "@/components/PositionCard";
@@ -11,7 +11,6 @@ import StaffEditModal from "@/components/StaffEditModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
-import { usePDFExport } from "@/hooks/usePDFExport";
 import { TIME_SLOTS, TIME_SLOT_STYLES, CONTINUOUS_SLOT } from "@/lib/constants";
 import { getStaffDisplayName, getStaffColor } from "@/lib/staffName";
 import { unwrapFunctionResponse } from "@/lib/base44Response";
@@ -226,8 +225,6 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
       queryClient.invalidateQueries({ queryKey: ["positions", eventId] });
     },
   });
-
-  const { exporting: exportingPDF, exportPDF: handleExportPDF } = usePDFExport(eventId, "staff", "配置表");
 
   const [draggedStaff, setDraggedStaff] = useState(null);
   const [draggingPosId, setDraggingPosId] = useState(null);
@@ -666,9 +663,6 @@ export default function StaffDragDropManager({ eventId, isLocked = false }) {
               <Wand2 className="w-3 h-3" />自動配置
             </Button>
           )}
-          <Button size="sm" variant="outline" className="gap-0.5 h-7 text-[11px] px-1.5 shrink-0" onClick={handleExportPDF} disabled={exportingPDF || positions.length === 0}>
-            <Download className="w-3 h-3" />{exportingPDF ? '...' : 'PDF'}
-          </Button>
           </div>
         )}
       />

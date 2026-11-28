@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip, HelpCircle, Database, Lock, NotebookPen, MapPin } from "lucide-react";
+import { User, LogOut, Users, ClipboardList, Bell, Settings, LogIn, ShieldCheck, FileText, Monitor, LayoutTemplate, RefreshCw, CalendarX2, Tag, QrCode, Phone, KeyRound, Paperclip, HelpCircle, Database, Lock, NotebookPen, MapPin, FileDown } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import StaffManagement from "@/components/StaffManagement";
@@ -37,6 +37,7 @@ import EmergencyContactManager from "@/components/EmergencyContactManager";
 import SharedFileManager from "@/components/SharedFileManager";
 import MeetingSheetManager from "@/components/MeetingSheetManager";
 import EventRecordManager from "@/components/records/EventRecordManager";
+import PdfExportMenu from "@/components/PdfExportMenu";
 import { isEventLocked } from "@/lib/eventLock";
 import { useEditingPresence } from "@/hooks/useEditingPresence";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
@@ -56,6 +57,7 @@ export default function EventDetail() {
   const [showScreenSaver, setShowScreenSaver] = useState(false);
   const [confirmScreenSaver, setConfirmScreenSaver] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const [showPdfMenu, setShowPdfMenu] = useState(false);
   const [adminSection, setAdminSection] = useState("operation_logs"); // 'operation_logs' | 'access_restriction' | 'staff_qr'
   const [settingsSection, setSettingsSection] = useState("positions");
   const topBarRef = useRef(null);
@@ -307,10 +309,21 @@ export default function EventDetail() {
               </div>
             )}
           </div>
+          {isPrivileged && (
+            <button
+              type="button"
+              onClick={() => setShowPdfMenu(true)}
+              className="flex h-11 shrink-0 items-center gap-1 rounded-md border border-border bg-card px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted sm:h-7 sm:px-2"
+              title="PDF出力"
+            >
+              <FileDown className="h-3.5 w-3.5" />
+              <span className="sm:hidden">PDF出力</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setConfirmScreenSaver(true)}
-            className="ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:ml-0 sm:h-7 sm:w-7"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:ml-0 sm:h-7 sm:w-7"
             title="スクリーンセーバー"
             aria-label="スクリーンセーバーを表示"
           >
@@ -447,6 +460,10 @@ export default function EventDetail() {
             setShowScreenSaver(true);
           }}
         />
+      )}
+
+      {showPdfMenu && (
+        <PdfExportMenu eventId={eventId} event={event} onClose={() => setShowPdfMenu(false)} />
       )}
 
       {/* Bottom Tab Navigation - Mobile Only */}
